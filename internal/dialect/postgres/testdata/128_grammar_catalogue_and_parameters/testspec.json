@@ -1,0 +1,26 @@
+{
+  "description": "PostgreSQL: a VALUES list is an arm of a set operation and a recursive anchor; a set operation of queries in parentheses is a derived table; (TABLE t) is a subquery; schema.table.* is a star; row names a table alias and a column; a table's column alias list renames its columns; LIMIT and OFFSET take expressions over parameters; <-> is a distance, a text search phrase and pg_trgm's trigram distance; everyday built-ins, the binary string functions and jsonb path functions with variables; an argument default written with =; @name and ? are warned of as no parameters; a parameter met first as the operand of IS NULL is warned of, a cast one not.",
+  "expectedDiagnosticCount": 4,
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "Q063",
+      "messageContains": "@label is no parameter here: @ before a name is the absolute value operator"
+    },
+    {
+      "severity": "warning",
+      "code": "Q063",
+      "messageContains": "? is no parameter here"
+    },
+    {
+      "severity": "warning",
+      "code": "Q063",
+      "messageContains": "? is no parameter here"
+    },
+    {
+      "severity": "warning",
+      "code": "Q063",
+      "messageContains": "the server cannot determine the type of :label"
+    }
+  ]
+}

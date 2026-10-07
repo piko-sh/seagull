@@ -1,0 +1,61 @@
+{
+  "all_tags": {
+    "tags": [
+      "admin",
+      "early",
+      "early"
+    ]
+  },
+  "create_ada": {
+    "email_domain": "Example.com",
+    "email_lower": "ada@example.com"
+  },
+  "create_bob": {
+    "email_domain": "example.org",
+    "email_lower": "bob@example.org"
+  },
+  "digest": {
+    "digest": "f52fbd32b2b3b86ff88ef6c490628285f482af15ddcb29541f94bcf526a3f6c7"
+  },
+  "identifiers": {
+    "has_rowid": true,
+    "has_ulid": true
+  },
+  "list_users": [
+    {
+      "created_at": "2024-01-01T00:00:00Z",
+      "email": "Ada@Example.com",
+      "email_domain": "Example.com",
+      "email_lower": "ada@example.com",
+      "id": "00000000-0000-0000-0000-000000000000",
+      "settings": {},
+      "tags": [
+        "admin",
+        "early"
+      ]
+    },
+    {
+      "created_at": "2024-01-01T00:00:00Z",
+      "email": "bob@example.org",
+      "email_domain": "example.org",
+      "email_lower": "bob@example.org",
+      "id": "00000000-0000-0000-0000-000000000000",
+      "settings": {},
+      "tags": [
+        "early"
+      ]
+    }
+  ],
+  "similar": [
+    {
+      "distance": 4,
+      "email": "Ada@Example.com",
+      "sound": "A325"
+    },
+    {
+      "distance": 3,
+      "email": "bob@example.org",
+      "sound": "B125"
+    }
+  ]
+}

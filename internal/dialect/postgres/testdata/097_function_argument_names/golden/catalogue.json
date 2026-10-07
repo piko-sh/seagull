@@ -1,0 +1,128 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "public": {
+      "Functions": {
+        "scale_price": [
+          {
+            "Arguments": [
+              {
+                "Name": "amount",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int4",
+                  "Width": 32
+                }
+              },
+              {
+                "Name": "factor",
+                "Type": {
+                  "Category": "float",
+                  "EngineName": "float8",
+                  "Width": 64
+                }
+              }
+            ],
+            "BodySQL": " SELECT amount * factor ",
+            "DataAccess": "read-only",
+            "IsStrict": true,
+            "Language": "sql",
+            "MinArguments": 2,
+            "Name": "scale_price",
+            "NullableBehaviour": "returns-null-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 1
+            },
+            "ReturnType": {
+              "Category": "float",
+              "EngineName": "float8",
+              "Width": 64
+            }
+          }
+        ],
+        "tidy_catches": [
+          {
+            "Arguments": [
+              {
+                "Name": "older_than",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int4",
+                  "Width": 32
+                }
+              },
+              {
+                "Name": "keep",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int4",
+                  "Width": 32
+                }
+              }
+            ],
+            "BodySQL": " DELETE FROM catches WHERE id \u003c older_than AND kilos \u003e keep ",
+            "DataAccess": "modifies-data",
+            "Language": "sql",
+            "MinArguments": 2,
+            "Name": "tidy_catches",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 2
+            },
+            "ReturnType": {
+              "Category": "unknown",
+              "EngineName": "void"
+            }
+          }
+        ]
+      },
+      "Name": "public",
+      "Tables": {
+        "catches": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "kilos",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            }
+          ],
+          "Name": "catches",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

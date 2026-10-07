@@ -1,0 +1,7 @@
+{
+  "description": "A case that pins its diagnostics.",
+  "emitter": "pgx",
+  "expectedDiagnostics": [],
+  "skip": true,
+  "skipReason": "the engine is not ready"
+}

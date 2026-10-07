@@ -1,0 +1,201 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "public": {
+      "Enums": {
+        "mood": {
+          "Name": "mood",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "Schema": "public",
+          "Values": [
+            "sad",
+            "ok",
+            "happy"
+          ]
+        }
+      },
+      "Name": "public",
+      "Tables": {
+        "events": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "body",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "raw",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "binary",
+                "EngineName": "bytea"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "payload",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "json",
+                "EngineName": "jsonb"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "created_at",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "temporal",
+                "EngineName": "timestamptz",
+                "Temporal": "timestamp",
+                "TimeZone": true
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "happened",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "temporal",
+                "EngineName": "timestamp",
+                "Temporal": "timestamp"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "amount",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "decimal",
+                "EngineName": "numeric"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "ratio",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "float",
+                "EngineName": "float8",
+                "Width": 64
+              }
+            },
+            {
+              "ArrayDimensions": 1,
+              "GeneratedKind": "none",
+              "IsArray": true,
+              "Name": "tags",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text",
+                "Nullable": true
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "booked",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "range",
+                "EngineName": "tstzrange"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "seats",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "range",
+                "EngineName": "int4range"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "feeling",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "enum",
+                "EngineName": "mood",
+                "EnumValues": [
+                  "sad",
+                  "ok",
+                  "happy"
+                ],
+                "Schema": "public"
+              }
+            }
+          ],
+          "Name": "events",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 1
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

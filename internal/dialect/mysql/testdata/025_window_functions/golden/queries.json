@@ -1,0 +1,62 @@
+[
+  {
+    "Command": "many",
+    "Filename": "ranked_scores.sql",
+    "Line": 1,
+    "Name": "RankedScores",
+    "OutputColumns": [
+      {
+        "Name": "player_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        },
+        "SourceColumn": "player_name",
+        "SourceQualifier": "scores",
+        "SourceTable": "scores"
+      },
+      {
+        "Name": "game",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 50
+        },
+        "SourceColumn": "game",
+        "SourceQualifier": "scores",
+        "SourceTable": "scores"
+      },
+      {
+        "Name": "score",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "score",
+        "SourceQualifier": "scores",
+        "SourceTable": "scores"
+      },
+      {
+        "Name": "rank_num",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "rank_pos",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: RankedScores, command: many)\nSELECT\n    player_name,\n    game,\n    score,\n    ROW_NUMBER() OVER (PARTITION BY game ORDER BY score DESC) AS rank_num,\n    RANK() OVER (PARTITION BY game ORDER BY score DESC) AS rank_pos\nFROM scores;",
+    "Template": "SELECT\\n    ⟨c0:player_name⟩,\\n    ⟨c1:game⟩,\\n    ⟨c2:score⟩,\\n    ⟨c3 aliased:ROW_NUMBER() OVER (PARTITION BY game ORDER BY score DESC)⟩ AS rank_num,\\n    ⟨c4 aliased:RANK() OVER (PARTITION BY game ORDER BY score DESC)⟩ AS rank_pos\\nFROM scores;"
+  }
+]

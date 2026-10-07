@@ -1,0 +1,14 @@
+{
+  "metrics": [
+    {
+      "page_id": 1,
+      "total_views": 19,
+      "unique_visitors": 3
+    },
+    {
+      "page_id": 2,
+      "total_views": 9,
+      "unique_visitors": 1
+    }
+  ]
+}

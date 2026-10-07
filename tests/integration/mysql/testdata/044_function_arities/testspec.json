@@ -1,0 +1,4 @@
+{
+  "description": "MySQL's further arities generate without warnings and run: UUID_TO_BIN with the swap flag stores a time-ordered key and BIN_TO_UUID with the flag reads it back, COUNT(DISTINCT a, b) counts combinations, LAST_INSERT_ID(expression) advances a counter in an UPDATE and LAST_INSERT_ID() reads it, and IS_IPV4 and IS_IPV6 test addresses.",
+  "expectedDiagnostics": []
+}

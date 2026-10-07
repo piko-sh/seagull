@@ -1,0 +1,46 @@
+{
+  "numbered": [
+    {
+      "id": 1,
+      "note": "assigned"
+    }
+  ],
+  "pairs": [
+    {
+      "left_id": 1,
+      "note": "keyed",
+      "right_id": 2
+    },
+    {
+      "left_id": null,
+      "note": "unkeyed",
+      "right_id": null
+    }
+  ],
+  "plain": [
+    {
+      "code": "a",
+      "note": "keyed"
+    },
+    {
+      "code": null,
+      "note": "no key"
+    }
+  ],
+  "plain_view": [
+    {
+      "plain_code": "a",
+      "plain_note": "keyed"
+    },
+    {
+      "plain_code": null,
+      "plain_note": "no key"
+    }
+  ],
+  "strict": [
+    {
+      "code": "s",
+      "note": null
+    }
+  ]
+}

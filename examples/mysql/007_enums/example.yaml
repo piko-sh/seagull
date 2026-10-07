@@ -1,0 +1,28 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: A chip shop menu with two MySQL ENUM columns, read back as the named enum types Seagull generates and, through a column override and sgl.column, as the shop's own Go types.
+differs:
+  - "ENUM('fish', 'sides', 'puddings') is declared on the column itself; ORDER BY sorts its values in declaration order"
+  - "Each ENUM becomes a named string type in models.go, named after its table and column (store.MenuItemsSection), with a constant per value and a Valid method"
+  - "An inline ENUM has no type name for a sql: override, so a column override in types.overrides gives menu_items.status your own type, in models.go, rows and the parameters bound to it"
+  - "sgl.column(section, go_type: ...) changes only the column ItemsInSection returns; its parameter stays the generated store.MenuItemsSection"
+  - "Strict mode refuses a value the ENUM does not list, reporting it as data truncated"
+entry: {file: db/queries/menu.sql, query: ItemsInSection}
+live: "no"
+test: integration

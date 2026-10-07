@@ -1,0 +1,13 @@
+CREATE DATABASE IF NOT EXISTS archive;
+CREATE TABLE IF NOT EXISTS placed (a Int32, b Int32, c Int32) ENGINE = MergeTree ORDER BY a;
+CREATE TABLE IF NOT EXISTS placed (id Int64) ENGINE = MergeTree ORDER BY id;
+ALTER TABLE placed ADD COLUMN z Int32 FIRST;
+ALTER TABLE placed ADD COLUMN IF NOT EXISTS m Int32 AFTER a;
+ALTER TABLE placed ADD COLUMN IF NOT EXISTS z Int32;
+ALTER TABLE placed MODIFY COLUMN c Int64 FIRST;
+ALTER TABLE placed MODIFY COLUMN IF EXISTS missing String;
+CREATE TABLE old_name (id Int64, label String) ENGINE = MergeTree ORDER BY id;
+CREATE VIEW old_view AS SELECT old_name.* FROM old_name;
+RENAME TABLE old_name TO new_name, old_view TO new_view;
+CREATE TABLE moving (id Int64) ENGINE = MergeTree ORDER BY id;
+RENAME TABLE moving TO archive.moved;

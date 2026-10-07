@@ -1,0 +1,4 @@
+{
+  "description": "MySQL semantics and set operations against MySQL 8.4: \"...\" is a string in the default sql_mode, strings written together join and a string after an item names it; || is a logical OR, so '%' || ? || '%' matches every row, which generation warns of (Q063), and the placeholder, an operand of OR, takes a bool; a division or remainder by a zero visit count reads NULL, and so do STR_TO_DATE and CAST(... AS DATE) of a string that holds no date; select-list aliases are operands in HAVING and ORDER BY and the HAVING parameters take their types; queries in parentheses with their own ORDER BY and LIMIT, a VALUES list, a recursive CTE with a VALUES anchor, a derived table over parenthesised queries and a view defined that way read their rows; SHOW WARNINGS, COUNT(*) WARNINGS, VARIABLES, FULL TABLES and CREATE TABLE read declared columns.",
+  "expectedDiagnostics": ["Q063"]
+}

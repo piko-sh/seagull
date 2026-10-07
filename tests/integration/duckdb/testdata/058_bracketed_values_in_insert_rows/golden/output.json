@@ -1,0 +1,73 @@
+{
+  "add_nested_reading": "added",
+  "add_reading": "added",
+  "add_reading_pair": "added",
+  "add_struct_reading": "added",
+  "readings": [
+    {
+      "flagged": true,
+      "id": 1,
+      "label": "first",
+      "scores": [
+        1,
+        2
+      ],
+      "tags": [
+        "a",
+        "b"
+      ]
+    },
+    {
+      "flagged": false,
+      "id": 2,
+      "label": "struct",
+      "scores": [
+        1,
+        2
+      ],
+      "tags": [
+        "c",
+        "d"
+      ]
+    },
+    {
+      "flagged": true,
+      "id": 3,
+      "label": "nested",
+      "scores": [
+        1,
+        2
+      ],
+      "tags": [
+        "e",
+        "f"
+      ]
+    },
+    {
+      "flagged": false,
+      "id": 4,
+      "label": "fourth",
+      "scores": [
+        4,
+        5
+      ],
+      "tags": [
+        "g"
+      ]
+    },
+    {
+      "flagged": true,
+      "id": 5,
+      "label": "reset",
+      "scores": [
+        8,
+        9
+      ],
+      "tags": [
+        "h",
+        "i"
+      ]
+    }
+  ],
+  "set_reading": "set"
+}

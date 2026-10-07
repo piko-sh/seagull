@@ -1,0 +1,6 @@
+{
+  "description": "A nullable decimal parameter, a *apd.Decimal, binds NULL when nil and the decimal otherwise, as a decimal held by value binds, in every position through database/sql and pgx's stdlib: an INSERT, a batch, a copyfrom, an UPDATE's SET, a comparison, optional filters, a runtime builder's own parameter and COALESCE's fallback; a slice of decimals and a runtime builder's Where value bind, and nullable decimals read back as NULL or their value. pgx binds such a pointer itself, through the value's driver.Valuer.",
+  "expectedDiagnostics": [
+    "Q022"
+  ]
+}

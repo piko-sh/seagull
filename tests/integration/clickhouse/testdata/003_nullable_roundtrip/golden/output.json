@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "label": "primary"
+  },
+  {
+    "id": 2,
+    "label": null
+  },
+  {
+    "id": 3,
+    "label": "back\\slash and tab\\t"
+  }
+]

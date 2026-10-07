@@ -1,0 +1,73 @@
+[
+  {
+    "Command": "one",
+    "Filename": "upsert_setting.sql",
+    "InsertColumns": [
+      "key",
+      "value"
+    ],
+    "InsertTarget": {
+      "Name": "settings"
+    },
+    "Line": 1,
+    "Name": "UpsertSetting",
+    "OutputColumns": [
+      {
+        "Name": "key",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "key",
+        "SourceQualifier": "settings",
+        "SourceTable": "settings"
+      },
+      {
+        "Name": "value",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "value",
+        "SourceQualifier": "settings",
+        "SourceTable": "settings"
+      },
+      {
+        "Name": "updated_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "updated_at",
+        "SourceQualifier": "settings",
+        "SourceTable": "settings"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "key",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "value",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: UpsertSetting, command: one)\nINSERT INTO settings (key, value)\nVALUES ($1, $2)\nON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()\nRETURNING key, value, updated_at;",
+    "Template": "INSERT INTO settings (key, value)\\nVALUES ⟨values:(⟨p0⟩, ⟨p1⟩)⟩\\nON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()\\nRETURNING ⟨c0:key⟩, ⟨c1:value⟩, ⟨c2:updated_at⟩;⟨arguments p0 p1⟩"
+  }
+]

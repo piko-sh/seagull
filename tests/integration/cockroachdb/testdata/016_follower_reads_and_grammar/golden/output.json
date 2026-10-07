@@ -1,0 +1,34 @@
+{
+  "add": "added",
+  "follower_owners": [
+    {
+      "id": 12,
+      "label": "ada"
+    }
+  ],
+  "historical_balance": {
+    "balance": 1250,
+    "id": 10,
+    "name": "current"
+  },
+  "renamed": [
+    {
+      "key": 11,
+      "title": "savings"
+    }
+  ],
+  "with_none": [
+    {
+      "column1": 0,
+      "column2": "none"
+    },
+    {
+      "column1": 1,
+      "column2": "ada"
+    },
+    {
+      "column1": 2,
+      "column2": "grace"
+    }
+  ]
+}

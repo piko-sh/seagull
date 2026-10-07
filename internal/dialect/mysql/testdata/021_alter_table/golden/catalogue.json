@@ -1,0 +1,81 @@
+{
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "": {
+      "Tables": {
+        "items": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Length": 100
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "price",
+              "Origin": {
+                "Filename": "002_alter.up.sql",
+                "Index": 1
+              },
+              "SQLType": {
+                "Category": "decimal",
+                "EngineName": "decimal",
+                "Precision": 10,
+                "Scale": 2
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "quantity",
+              "Origin": {
+                "Filename": "002_alter.up.sql",
+                "Index": 1,
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            }
+          ],
+          "Name": "items",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ]
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    ""
+  ]
+}

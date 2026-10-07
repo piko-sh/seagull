@@ -1,0 +1,91 @@
+{
+  "DefaultSchema": "main",
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "main": {
+      "Name": "main",
+      "Tables": {
+        "left_values": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "label",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar"
+              }
+            }
+          ],
+          "Name": "left_values",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "main"
+        },
+        "right_values": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "score",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "float",
+                "EngineName": "float8",
+                "Width": 64
+              }
+            }
+          ],
+          "Name": "right_values",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 1
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "main"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "main"
+  ]
+}

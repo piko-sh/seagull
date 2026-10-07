@@ -1,0 +1,44 @@
+[
+  {
+    "Command": "many",
+    "Filename": "list_books.sql",
+    "Line": 1,
+    "Name": "ListBooks",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "book_details",
+        "SourceTable": "book_details"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "book_details",
+        "SourceTable": "book_details"
+      },
+      {
+        "Name": "author_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "author_name",
+        "SourceQualifier": "book_details",
+        "SourceTable": "book_details"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListBooks, command: many)\nSELECT id, title, author_name FROM book_details;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:title⟩, ⟨c2:author_name⟩ FROM book_details;"
+  }
+]

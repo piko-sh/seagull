@@ -1,0 +1,89 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "public": {
+      "Name": "public",
+      "Tables": {
+        "tasks": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "project",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "ArrayDimensions": 1,
+              "GeneratedKind": "none",
+              "IsArray": true,
+              "Name": "tags",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text",
+                "Nullable": true
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "spent",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "temporal",
+                "EngineName": "interval",
+                "Temporal": "interval"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "estimate_hours",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            }
+          ],
+          "Name": "tasks",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

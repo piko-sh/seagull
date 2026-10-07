@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q001",
+    "Column": 12,
+    "EndColumn": 26,
+    "EndLine": 2,
+    "Filename": "unknown_column_expression.sql",
+    "Line": 2,
+    "Message": "unknown column \"missing_column\"",
+    "Severity": "warning"
+  }
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q042",
+    "Column": 4,
+    "EndColumn": 27,
+    "EndLine": 4,
+    "Filename": "search_users.sql",
+    "Line": 4,
+    "Message": "parameter 3 declared as \"unused\" but not referenced in query",
+    "Severity": "error"
+  }
+]

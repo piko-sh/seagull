@@ -1,0 +1,19 @@
+{
+  "get_user": {
+    "email": "alice@example.com",
+    "id": 1218016563317997569,
+    "name": "Alice"
+  },
+  "list_users": [
+    {
+      "email": "alice@example.com",
+      "id": 1218016563317997569,
+      "name": "Alice"
+    },
+    {
+      "email": "bob@example.com",
+      "id": 1218016563326255105,
+      "name": "Bob"
+    }
+  ]
+}

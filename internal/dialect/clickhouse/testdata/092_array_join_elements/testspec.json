@@ -1,0 +1,4 @@
+{
+  "description": "ARRAY JOIN reads elements as ClickHouse does: an entry without an alias unfolds its column in place, so SELECT * lists the element where it lists the column and a Nested column unfolds the columns it is flattened into; an alias names the element, its fields read by name or position, and is left out of SELECT *; LEFT ARRAY JOIN gives an empty array the element's default, so an element is NULL only when its type is Nullable; an expression source is typed by its expression.",
+  "expectedDiagnosticCount": 0
+}

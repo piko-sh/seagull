@@ -1,0 +1,4 @@
+{
+  "description": "Temporal arithmetic reads back as the engine computes it: the difference of two timestamps is an interval, of two dates an integer number of days, a date moved by days a date and a date moved by an interval a timestamp.",
+  "expectedDiagnostics": []
+}

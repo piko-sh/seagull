@@ -1,0 +1,26 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: Harbour boats with an Enum8 status, read as the store.BoatsStatus type Seagull generates and then as the harbour's own domain.Status through a go_type override.
+differs:
+  - "An Enum8 or Enum16 column becomes a named string type in models.go, named after its table and column (store.BoatsStatus), with a constant per label and a Valid method; ClickHouse refuses a label the enum does not list"
+  - "The status parameter is {status:String}; the server converts the label to the Enum8 on insert and comparison"
+  - "sgl.column(status, go_type: ...) types only that query's result rows, so parameters stay string and the example converts with string(domain.StatusInDock)"
+entry: {file: db/queries/boats.sql, query: BoatsNotIn}
+live: "no"
+test: integration

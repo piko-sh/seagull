@@ -1,0 +1,24 @@
+[
+  {
+    "Command": "many",
+    "Filename": "list_slugs.sql",
+    "Line": 1,
+    "Name": "ListSlugs",
+    "OutputColumns": [
+      {
+        "Name": "slug",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "slug",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListSlugs, command: many)\nSELECT slug FROM events\nUNION ALL\nSELECT slug FROM events\nUNION ALL\nSELECT NULL;",
+    "Template": "SELECT slug FROM events\\nUNION ALL\\nSELECT slug FROM events\\nUNION ALL\\nSELECT NULL;"
+  }
+]

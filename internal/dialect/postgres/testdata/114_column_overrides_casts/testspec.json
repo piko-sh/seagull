@@ -1,0 +1,4 @@
+{
+  "description": "N-193: a column override (here a go_type migration directive) reached a parameter compared with or assigned to the column only when it declared no type: $1::inet and CAST($1 AS inet) both lost it, and a CAST(...) in INSERT ... VALUES or UPDATE ... SET kept it whatever type it named. A parameter cast to the column's own type now takes the override in a comparison on either side, an IN list, BETWEEN, INSERT ... VALUES and UPDATE ... SET, as an undeclared one does (BETWEEN and the left side of a comparison now included); a cast to another type (cidr, varchar for text, text for varchar) keeps that type's Go type, and so do a LIKE pattern and a parameter compared with a call over the column. A cast keeps its type's length, so $6::varchar(4) names another type than the varchar(8) column and keeps that type's Go type, as a cast to varchar for text does",
+  "expectedDiagnosticCount": 0
+}

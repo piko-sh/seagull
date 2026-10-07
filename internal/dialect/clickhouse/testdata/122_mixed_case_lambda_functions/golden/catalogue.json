@@ -1,0 +1,109 @@
+{
+  "DefaultSchema": "default",
+  "Identifiers": {
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "default": {
+      "Functions": {
+        "Doubled": [
+          {
+            "Arguments": [
+              {
+                "Name": "x",
+                "Type": {
+                  "Category": "unknown"
+                }
+              }
+            ],
+            "BodySQL": "x -\u003e x * 2",
+            "DataAccess": "read-only",
+            "Language": "lambda",
+            "MinArguments": 1,
+            "Name": "Doubled",
+            "NullableBehaviour": "returns-null-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql"
+            },
+            "ReturnType": {
+              "Category": "unknown"
+            }
+          }
+        ],
+        "doubled": [
+          {
+            "Arguments": [
+              {
+                "Name": "x",
+                "Type": {
+                  "Category": "unknown"
+                }
+              }
+            ],
+            "BodySQL": "x -\u003e toString ( x )",
+            "DataAccess": "read-only",
+            "Language": "lambda",
+            "MinArguments": 1,
+            "Name": "doubled",
+            "NullableBehaviour": "returns-null-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 1
+            },
+            "ReturnType": {
+              "Category": "text",
+              "EngineName": "String"
+            }
+          }
+        ]
+      },
+      "Name": "default",
+      "Tables": {
+        "readings": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt64",
+                "Unsigned": true,
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "value",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt32",
+                "Unsigned": true,
+                "Width": 32
+              }
+            }
+          ],
+          "Name": "readings",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 2
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "default"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "default"
+  ]
+}

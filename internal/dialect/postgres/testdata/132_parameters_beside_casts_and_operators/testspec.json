@@ -1,0 +1,3 @@
+{
+  "description": "PostgreSQL: a parameter compared with a CAST takes the type the CAST converts to, text, timestamptz or integer, as PostgreSQL types it, rather than the type of the column inside the CAST; a parameter compared with a qualified column a CAST, a call or parentheses wrap is named after the column, not the table alias; a parameter after a distance or bitwise and, or or exclusive or operator takes the type of the column before it and its name, as PostgreSQL types an unknown operand beside an operator whose operands are of one type."
+}

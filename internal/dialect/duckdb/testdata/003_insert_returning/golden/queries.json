@@ -1,0 +1,152 @@
+[
+  {
+    "Command": "one",
+    "Filename": "items.sql",
+    "InsertColumns": [
+      "id",
+      "name",
+      "price"
+    ],
+    "InsertTarget": {
+      "Name": "items"
+    },
+    "Line": 1,
+    "Name": "InsertItemReturningID",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "price",
+        "Number": 3,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: InsertItemReturningID, command: one)\nINSERT INTO items (id, name, price) VALUES ($1, $2, $3) RETURNING id;",
+    "Template": "INSERT INTO items (id, name, price) VALUES ⟨values:(⟨p0⟩, ⟨p1⟩, ⟨p2⟩)⟩ RETURNING ⟨c0:id⟩;⟨arguments p0 p1 p2⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "items.sql",
+    "InsertColumns": [
+      "id",
+      "name",
+      "price"
+    ],
+    "InsertTarget": {
+      "Name": "items"
+    },
+    "Line": 4,
+    "Name": "InsertItemReturningAll",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "price",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        },
+        "SourceColumn": "price",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "price",
+        "Number": 3,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: InsertItemReturningAll, command: one)\nINSERT INTO items (id, name, price) VALUES ($1, $2, $3) RETURNING *;",
+    "Template": "INSERT INTO items (id, name, price) VALUES ⟨values:(⟨p0⟩, ⟨p1⟩, ⟨p2⟩)⟩ RETURNING ⟨star 0=items.id 1=items.name 2=items.price:*⟩;⟨arguments p0 p1 p2⟩"
+  }
+]

@@ -1,0 +1,18 @@
+{
+  "description": "Override contract: column overrides to defined types over basic kinds (Label string, Count int64, Ratio float64, Flag bool, Blob []byte) and json.RawMessage on a text column, json.Number on IPv4 and Nullable(IPv4), netip.Addr on IPv4, nullable columns read and written as pointers, and a SQL type override on String reaching an Array(String) column's elements; seeded rows are read back and found by each value as a parameter, and rows written by exec, a batch of lone placeholders and a batch of rows are found and listed. Every overridden column reads through sglScanOverride. Writes bind through the value helper. Rows are listed without the json.Number columns, which encoding/json cannot marshal as numbers; the written addresses are found by value instead. A SQL type override on Int64 and the one on String also reach a named Tuple's fields, which this driver reads as a map[string]any, and a Map(String, Int64)'s keys and values, which read through sglScanOverride.",
+  "typeOverrides": [
+    {"SQLTypeName": "String", "Column": "", "GoPackage": "case_runner/kinds", "GoName": "Label"},
+    {"SQLTypeName": "Int64", "Column": "", "GoPackage": "case_runner/kinds", "GoName": "Count"},
+    {"SQLTypeName": "", "Column": "probes.label", "GoPackage": "case_runner/kinds", "GoName": "Label"},
+    {"SQLTypeName": "", "Column": "probes.amount", "GoPackage": "case_runner/kinds", "GoName": "Count"},
+    {"SQLTypeName": "", "Column": "probes.ratio", "GoPackage": "case_runner/kinds", "GoName": "Ratio"},
+    {"SQLTypeName": "", "Column": "probes.flag", "GoPackage": "case_runner/kinds", "GoName": "Flag"},
+    {"SQLTypeName": "", "Column": "probes.note", "GoPackage": "encoding/json", "GoName": "RawMessage"},
+    {"SQLTypeName": "", "Column": "probes.payload", "GoPackage": "case_runner/kinds", "GoName": "Blob"},
+    {"SQLTypeName": "", "Column": "probes.optional_label", "GoPackage": "case_runner/kinds", "GoName": "Label"},
+    {"SQLTypeName": "", "Column": "probes.optional_amount", "GoPackage": "case_runner/kinds", "GoName": "Count"},
+    {"SQLTypeName": "", "Column": "probes.host", "GoPackage": "encoding/json", "GoName": "Number"},
+    {"SQLTypeName": "", "Column": "probes.optional_host", "GoPackage": "encoding/json", "GoName": "Number"},
+    {"SQLTypeName": "", "Column": "probes.address", "GoPackage": "net/netip", "GoName": "Addr"}
+  ]
+}

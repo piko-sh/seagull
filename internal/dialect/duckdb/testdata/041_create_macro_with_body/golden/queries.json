@@ -1,0 +1,62 @@
+[
+  {
+    "Command": "many",
+    "Filename": "measurements.sql",
+    "Line": 1,
+    "Name": "GetDoubledMeasurements",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "measurements",
+        "SourceTable": "measurements"
+      },
+      {
+        "Name": "doubled",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetDoubledMeasurements, command: many)\nSELECT id, double_value(value) AS doubled FROM measurements;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:double_value(value)⟩ AS doubled FROM measurements;"
+  },
+  {
+    "Command": "many",
+    "Filename": "measurements.sql",
+    "Line": 4,
+    "Name": "GetLabelledMeasurements",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "measurements",
+        "SourceTable": "measurements"
+      },
+      {
+        "Name": "labelled",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetLabelledMeasurements, command: many)\nSELECT id, add_label(value) AS labelled FROM measurements;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:add_label(value)⟩ AS labelled FROM measurements;"
+  }
+]

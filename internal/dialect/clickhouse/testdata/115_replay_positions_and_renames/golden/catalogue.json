@@ -1,0 +1,200 @@
+{
+  "DefaultSchema": "default",
+  "Identifiers": {
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "archive": {
+      "Name": "archive",
+      "Tables": {
+        "moved": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 11
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "Int64",
+                "Width": 64
+              }
+            }
+          ],
+          "Name": "moved",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 11
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "archive"
+        }
+      }
+    },
+    "default": {
+      "Name": "default",
+      "Tables": {
+        "new_name": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 8
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "Int64",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "label",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 8
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "String"
+              }
+            }
+          ],
+          "Name": "new_name",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 8
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "default"
+        },
+        "placed": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "c",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "Int64",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "z",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 3
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "Int32",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "a",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "Int32",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "m",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 4
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "Int32",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "b",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "Int32",
+                "Width": 32
+              }
+            }
+          ],
+          "Name": "placed",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 1
+          },
+          "PrimaryKey": [
+            "a"
+          ],
+          "Schema": "default"
+        }
+      },
+      "Views": {
+        "new_view": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 9
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "Int64",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "label",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 9
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "String"
+              }
+            }
+          ],
+          "Name": "new_view",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 9
+          },
+          "Schema": "default"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "default"
+  ]
+}

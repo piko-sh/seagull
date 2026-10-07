@@ -1,0 +1,860 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+version: 1
+
+engines:
+  sqlite: {title: SQLite, dialect: sqlite, module: sqlite}
+  postgres: {title: PostgreSQL, dialect: postgres, module: postgres}
+  cockroachdb: {title: CockroachDB, dialect: cockroachdb, module: cockroachdb, twin: postgres}
+  timescaledb: {title: TimescaleDB, dialect: timescaledb, module: timescaledb, twin: postgres}
+  mysql: {title: MySQL, dialect: mysql, module: mysql}
+  mariadb: {title: MariaDB, dialect: mariadb, module: mariadb, twin: mysql}
+  duckdb: {title: DuckDB, dialect: duckdb, module: duckdb}
+  clickhouse: {title: ClickHouse, dialect: clickhouse, module: clickhouse}
+
+columns:
+  - {id: sqlite, engine: sqlite, driver: database/sql, suffix: ""}
+  - {id: postgres, engine: postgres, driver: database/sql, suffix: ""}
+  - {id: postgres-pgx, engine: postgres, driver: pgx, suffix: "_pgx"}
+  - {id: cockroachdb, engine: cockroachdb, driver: database/sql, suffix: ""}
+  - {id: timescaledb, engine: timescaledb, driver: database/sql, suffix: ""}
+  - {id: mysql, engine: mysql, driver: database/sql, suffix: ""}
+  - {id: mariadb, engine: mariadb, driver: database/sql, suffix: ""}
+  - {id: duckdb, engine: duckdb, driver: database/sql, suffix: ""}
+  - {id: clickhouse, engine: clickhouse, driver: database/sql, suffix: ""}
+  - {id: clickhouse-native, engine: clickhouse, driver: clickhouse, suffix: "_native"}
+
+tracks:
+  - {id: start, title: Getting started, tone: harbour}
+  - {id: types, title: Types and nullability, tone: teal}
+  - {id: dynamic, title: Dynamic queries, tone: lilac}
+  - {id: shaping, title: Shaping results, tone: kelp}
+  - {id: writing, title: Writing data, tone: coral}
+  - {id: connections, title: Connections and transactions, tone: slate}
+  - {id: migrations, title: Migrations and seeds, tone: beak}
+  - {id: engines, title: Engine features, tone: gonys}
+  - {id: tooling, title: Tooling, tone: harbour}
+  - {id: embedding, title: Embedding Seagull, tone: lilac}
+
+concepts:
+  - number: 1
+    slug: first-query
+    title: Your first query
+    track: start
+    summary: Write a migration and three annotated queries, generate, and call the result.
+    teaches: [sgl.yaml, "sgl.query(name, one|many|execrows)", models.go and Row structs, store.New, go.doc_comments]
+    docs: [tutorials/01-first-query, "how-to/shape-generated-code#write-doc-comments-from-the-sql"]
+    cells:
+      sqlite: {status: variant}
+      postgres: {status: variant}
+      postgres-pgx: {status: variant}
+      cockroachdb: {status: variant}
+      timescaledb: {status: equivalent, twin: postgres}
+      mysql: {status: variant}
+      mariadb: {status: variant}
+      duckdb: {status: variant}
+      clickhouse: {status: variant}
+      clickhouse-native: {status: variant}
+
+  - number: 2
+    slug: commands
+    title: "Choosing a command: one, many, exec, execrows, execresult"
+    track: start
+    summary: Each command kind gives a different Go signature; pick the one that matches what the caller needs back.
+    teaches: [one, many, exec, execrows, execresult]
+    diagnostics: [Q009]
+    docs: ["reference/directives#command-kinds", how-to/choose-query-command]
+    cells:
+      sqlite: {status: variant}
+      postgres: {status: variant}
+      postgres-pgx: {status: variant}
+      cockroachdb: {status: equivalent, twin: postgres}
+      timescaledb: {status: equivalent, twin: postgres}
+      mysql: {status: variant}
+      mariadb: {status: equivalent, twin: mysql}
+      duckdb: {status: omitted}
+      clickhouse: {status: omitted}
+      clickhouse-native: {status: unsupported, reason: "The native ClickHouse driver reports no affected rows or result, so execrows and execresult are refused when generating."}
+
+  - number: 3
+    slug: parameters
+    title: Placeholders, inferred names and Params structs
+    track: start
+    summary: Seagull names parameters from what they are compared with, and groups two or more into a Params struct.
+    teaches: [inferred parameter names, "$1 as sgl.param(name)", named placeholders, parameter reuse]
+    docs: ["reference/directives#parameter-directives", how-to/parameters]
+    cells:
+      sqlite: {status: variant}
+      postgres: {status: variant}
+      postgres-pgx: {status: omitted}
+      cockroachdb: {status: equivalent, twin: postgres}
+      timescaledb: {status: equivalent, twin: postgres}
+      mysql: {status: variant}
+      mariadb: {status: equivalent, twin: mysql}
+      duckdb: {status: variant}
+      clickhouse: {status: variant}
+      clickhouse-native: {status: variant}
+
+  - number: 4
+    slug: nullability
+    title: Nullability through joins, COALESCE and aggregates
+    track: start
+    summary: A column that can be NULL becomes a pointer, and Seagull works that out through joins, COALESCE and aggregates.
+    teaches: [LEFT JOIN nullability, COALESCE, aggregates, pointer fields]
+    docs: [reference/type-mapping, how-to/null-and-missing-rows]
+    cells:
+      sqlite: {status: variant}
+      postgres: {status: variant}
+      postgres-pgx: {status: omitted}
+      cockroachdb: {status: equivalent, twin: postgres}
+      timescaledb: {status: equivalent, twin: postgres}
+      mysql: {status: variant}
+      mariadb: {status: equivalent, twin: mysql}
+      duckdb: {status: variant}
+      clickhouse: {status: variant}
+      clickhouse-native: {status: omitted}
+
+  - number: 5
+    slug: type-mapping
+    title: From SQL types to Go types
+    track: types
+    summary: How each engine's column types arrive in Go, from integers and decimals to times and UUIDs.
+    teaches: [default type mapping, decimals, times, UUIDs, binary]
+    docs: [reference/type-mapping, how-to/inspect-type-mapping]
+    cells:
+      sqlite: {status: variant}
+      postgres: {status: variant}
+      postgres-pgx: {status: variant}
+      cockroachdb: {status: omitted}
+      timescaledb: {status: equivalent, twin: postgres}
+      mysql: {status: variant}
+      mariadb: {status: equivalent, twin: mysql}
+      duckdb: {status: variant}
+      clickhouse: {status: variant}
+      clickhouse-native: {status: omitted}
+
+  - number: 6
+    slug: json
+    title: JSON columns
+    track: types
+    summary: JSON columns and JSON operators, read into the generated JSON type.
+    teaches: [JSON columns, JSON operators, the inline JSON type, go.json_tags, go.struct_tags, go.empty_slices]
+    docs: [reference/type-mapping, how-to/json-custom-types, "how-to/shape-generated-code#add-struct-tags-to-fields", "how-to/shape-generated-code#choose-the-json-tag-style", "how-to/shape-generated-code#return-an-empty-slice-for-no-rows"]
+    cells:
+      sqlite: {status: variant}
+      postgres: {status: variant}
+      postgres-pgx: {status: variant}
+      cockroachdb: {status: equivalent, twin: postgres}
+      timescaledb: {status: equivalent, twin: postgres}
+      mysql: {status: variant}
+      mariadb: {status: variant}
+      duckdb: {status: variant}
+      clickhouse: {status: variant}
+      clickhouse-native: {status: omitted}
+
+  - number: 7
+    slug: enums
+    title: Enums as generated Go types, and your own types with go_type
+    track: types
+    summary: Each enum becomes a named Go type with a constant per value; a go_type override maps it to your own Go type instead.
+    teaches: [enum columns, generated enum types, "sgl.column(go_type:)", types.overrides]
+    docs: ["reference/directives#type-override-sglcolumn", reference/type-mapping, how-to/enums-arrays-nested]
+    cells:
+      sqlite: {status: unsupported, reason: "SQLite has no enum type. Use a CHECK constraint and a go_type override.", see: 9}
+      postgres: {status: variant}
+      postgres-pgx: {status: omitted}
+      cockroachdb: {status: equivalent, twin: postgres}
+      timescaledb: {status: equivalent, twin: postgres}
+      mysql: {status: variant}
+      mariadb: {status: equivalent, twin: mysql}
+      duckdb: {status: variant}
+      clickhouse: {status: variant}
+      clickhouse-native: {status: omitted}
+
+  - number: 8
+    slug: arrays
+    title: Arrays and lists as typed slices
+    track: types
+    summary: Array and list columns arrive as typed Go slices.
+    teaches: [array columns, typed slices, elements that may be NULL, non_null_elements]
+    docs: [reference/type-mapping, how-to/arrays, "reference/type-mapping#elements-that-may-be-null"]
+    cells:
+      sqlite: {status: unsupported, reason: SQLite has no array type.}
+      postgres: {status: variant}
+      postgres-pgx: {status: variant}
+      cockroachdb: {status: equivalent, twin: postgres}
+      timescaledb: {status: equivalent, twin: postgres}
+      mysql: {status: unsupported, reason: MySQL has no array type.}
+      mariadb: {status: unsupported, reason: MariaDB has no array type.}
+      duckdb: {status: variant}
+      clickhouse: {status: variant}
+      clickhouse-native: {status: omitted}
+
+  - number: 9
+    slug: overrides
+    title: Type overrides
+    track: types
+    summary: Override a column's Go type in a query, in a migration, or for a whole SQL type in sgl.yaml.
+    teaches: ["sgl.column(type:, go_type:, nullable:)", types.overrides, type slots, "nullable:"]
+    diagnostics: [Q036, Q037, Q038, Q049]
+    docs: ["reference/directives#type-override-sglcolumn", reference/configuration, how-to/override-types]
+    cells:
+      sqlite: {status: variant}
+      postgres: {status: variant}
+      postgres-pgx: {status: omitted}
+      cockroachdb: {status: equivalent, twin: postgres}
+      timescaledb: {status: equivalent, twin: postgres}
+      mysql: {status: omitted}
+      mariadb: {status: omitted}
+      duckdb: {status: omitted}
+      clickhouse: {status: omitted}
+      clickhouse-native: {status: omitted}
+
+  - number: 10
+    slug: slices
+    title: IN lists from Go slices
+    track: dynamic
+    summary: Pass a Go slice where the SQL expects a list.
+    teaches: ["sgl.param(…, kind: slice)", empty slices, "= ANY on pgx", "Array(T) on ClickHouse"]
+    diagnostics: [Q017, Q018]
+    docs: ["reference/directives#parameter-directives", how-to/slice-parameters]
+    cells:
+      sqlite: {status: variant}
+      postgres: {status: variant}
+      postgres-pgx: {status: variant}
+      cockroachdb: {status: equivalent, twin: postgres}
+      timescaledb: {status: equivalent, twin: postgres}
+      mysql: {status: variant}
+      mariadb: {status: equivalent, twin: mysql}
+      duckdb: {status: variant}
+      clickhouse: {status: variant}
+      clickhouse-native: {status: variant}
+
+  - number: 11
+    slug: optional-filters
+    title: Optional filters
+    track: dynamic
+    summary: A filter the caller may leave out, with an optional parameter and the IS NULL idiom.
+    teaches: ["sgl.param(…, optional: true)", "($1 IS NULL OR col = $1)"]
+    docs: ["reference/directives#parameter-directives", how-to/optional-filters]
+    cells: &dynamic
+      sqlite: {status: variant}
+      postgres: {status: variant}
+      postgres-pgx: {status: omitted}
+      cockroachdb: {status: equivalent, twin: postgres}
+      timescaledb: {status: equivalent, twin: postgres}
+      mysql: {status: variant}
+      mariadb: {status: equivalent, twin: mysql}
+      duckdb: {status: variant}
+      clickhouse: {status: variant}
+      clickhouse-native: {status: omitted}
+
+  - number: 12
+    slug: sortable
+    title: Validated ORDER BY
+    track: dynamic
+    summary: Let callers choose the sort column and direction from an allow-list, never from raw text.
+    teaches: [sgl.sortable, OrderBy constants, OrderDirection]
+    diagnostics: [Q011]
+    docs: ["reference/directives#parameter-directives", how-to/sorting-pagination]
+    cells: *dynamic
+
+  - number: 13
+    slug: pagination
+    title: Pagination with defaults and limits
+    track: dynamic
+    summary: LIMIT and OFFSET parameters with a default and a maximum, combined into a full search endpoint.
+    teaches: [LIMIT and OFFSET parameters, "default:", "max:", the full dynamic pattern]
+    docs: ["reference/directives#parameter-directives", how-to/pagination]
+    cells:
+      sqlite: {status: variant}
+      postgres: {status: variant}
+      postgres-pgx: {status: omitted}
+      cockroachdb: {status: equivalent, twin: postgres}
+      timescaledb: {status: equivalent, twin: postgres}
+      mysql: {status: variant}
+      mariadb: {status: equivalent, twin: mysql}
+      duckdb: {status: variant}
+      clickhouse: {status: variant}
+      clickhouse-native: {status: omitted}
+
+  - number: 14
+    slug: runtime-builder
+    title: The runtime query builder
+    track: dynamic
+    summary: Build WHERE, ORDER BY, LIMIT and COUNT at run time from an allow-list, with every value bound.
+    teaches: ["dynamic: runtime", Where, OrderBy, Limit, Count, injection safety]
+    diagnostics: [Q022, Q023, Q024]
+    docs: ["reference/directives#dynamic-runtime-builder", how-to/runtime-queries]
+    cells:
+      sqlite: {status: variant}
+      postgres: {status: variant}
+      postgres-pgx: {status: omitted}
+      cockroachdb: {status: equivalent, twin: postgres}
+      timescaledb: {status: equivalent, twin: postgres}
+      mysql: {status: variant}
+      mariadb: {status: variant}
+      duckdb: {status: variant}
+      clickhouse: {status: variant}
+      clickhouse-native: {status: omitted}
+
+  - number: 15
+    slug: embed
+    title: Nested structs with sgl.embed
+    track: shaping
+    summary: Return a joined table as a nested struct, and as a pointer when the join is outer.
+    teaches: [sgl.embed, inner join embeds, LEFT JOIN embeds as pointers]
+    docs: ["reference/directives#header-directive-sglembed", how-to/embed-results]
+    cells: &shaping
+      sqlite: {status: variant}
+      postgres: {status: variant}
+      postgres-pgx: {status: omitted}
+      cockroachdb: {status: equivalent, twin: postgres}
+      timescaledb: {status: equivalent, twin: postgres}
+      mysql: {status: variant}
+      mariadb: {status: equivalent, twin: mysql}
+      duckdb: {status: variant}
+      clickhouse: {status: omitted}
+      clickhouse-native: {status: omitted}
+
+  - number: 16
+    slug: one-to-many
+    title: Parents with child slices
+    track: shaping
+    summary: Collapse repeated parent rows into one parent with a slice of children using group_by.
+    teaches: ["group_by:", child slices]
+    diagnostics: [Q014, Q015, Q016]
+    docs: ["reference/directives#header-directive-sglembed", how-to/one-to-many]
+    cells: *shaping
+
+  - number: 17
+    slug: streaming
+    title: Range over rows
+    track: shaping
+    summary: Stream rows one at a time with a range-over-func iterator, and stop early.
+    teaches: [stream, range-over-func iterators, stopping early]
+    docs: ["reference/directives#command-kinds", how-to/stream-rows]
+    cells: *shaping
+
+  - number: 18
+    slug: optional-one
+    title: Missing rows without errors
+    track: shaping
+    summary: Make a one query report a missing row with a bool instead of sql.ErrNoRows.
+    teaches: ["sgl.query(…, optional: true)", "ON CONFLICT DO NOTHING RETURNING"]
+    diagnostics: [Q046, Q047]
+    docs: ["reference/directives#command-kinds", how-to/optional-one]
+    cells:
+      sqlite: {status: variant}
+      postgres: {status: variant}
+      postgres-pgx: {status: omitted}
+      cockroachdb: {status: equivalent, twin: postgres}
+      timescaledb: {status: equivalent, twin: postgres}
+      mysql: {status: omitted}
+      mariadb: {status: omitted}
+      duckdb: {status: variant}
+      clickhouse: {status: omitted}
+      clickhouse-native: {status: omitted}
+
+  - number: 19
+    slug: ctes-and-windows
+    title: Types through CTEs, window functions and views
+    track: shaping
+    summary: Column types and nullability follow CTEs, recursive CTEs, window functions and views.
+    teaches: [CTEs, recursive CTEs, window functions, views, "SELECT * written out, go.keep_stars"]
+    docs: [reference/type-mapping, how-to/ctes-views-functions]
+    cells:
+      sqlite: {status: variant}
+      postgres: {status: variant}
+      postgres-pgx: {status: omitted}
+      cockroachdb: {status: equivalent, twin: postgres}
+      timescaledb: {status: equivalent, twin: postgres}
+      mysql: {status: variant}
+      mariadb: {status: equivalent, twin: mysql}
+      duckdb: {status: variant}
+      clickhouse: {status: variant}
+      clickhouse-native: {status: omitted}
+
+  - number: 20
+    slug: returning
+    title: Rows back from INSERT, UPDATE and DELETE
+    track: writing
+    summary: Use RETURNING to get the written row back in one round trip.
+    teaches: [RETURNING, one and many on writes, "row: a shared row type", "model: a table's model"]
+    docs: ["reference/directives#command-kinds", how-to/return-written-rows, "how-to/shape-generated-code#return-a-tables-model-or-a-shared-row-type"]
+    cells:
+      sqlite: {status: variant}
+      postgres: {status: variant}
+      postgres-pgx: {status: omitted}
+      cockroachdb: {status: equivalent, twin: postgres}
+      timescaledb: {status: equivalent, twin: postgres}
+      mysql: {status: unsupported, reason: "MySQL has no RETURNING; use execresult and LastInsertId.", diagnostic: Q052, see: 2}
+      mariadb: {status: variant}
+      duckdb: {status: variant}
+      clickhouse: {status: unsupported, reason: "ClickHouse has no RETURNING.", diagnostic: Q052}
+      clickhouse-native: {status: unsupported, reason: "ClickHouse has no RETURNING.", diagnostic: Q052}
+
+  - number: 21
+    slug: upserts
+    title: Insert or update
+    track: writing
+    summary: Insert a row or update the one that is already there, in each engine's own syntax.
+    teaches: [ON CONFLICT, ON DUPLICATE KEY UPDATE, EXCLUDED]
+    docs: ["reference/directives#command-kinds", how-to/upsert]
+    cells:
+      sqlite: {status: variant}
+      postgres: {status: variant}
+      postgres-pgx: {status: omitted}
+      cockroachdb: {status: equivalent, twin: postgres}
+      timescaledb: {status: equivalent, twin: postgres}
+      mysql: {status: variant}
+      mariadb: {status: equivalent, twin: mysql}
+      duckdb: {status: variant}
+      clickhouse: {status: unsupported, reason: "ClickHouse has no upsert statement; ReplacingMergeTree collapses rows instead.", see: 34}
+      clickhouse-native: {status: unsupported, reason: "ClickHouse has no upsert statement; ReplacingMergeTree collapses rows instead.", see: 34}
+
+  - number: 22
+    slug: bulk-writes
+    title: Batch and copyfrom
+    track: writing
+    summary: Write many rows in one call, chunked under each engine's bind-variable limit.
+    teaches: [batch, copyfrom, bind-variable limits]
+    diagnostics: [Q017]
+    docs: ["reference/directives#command-kinds", how-to/bulk-writes]
+    cells:
+      sqlite: {status: variant}
+      postgres: {status: variant}
+      postgres-pgx: {status: variant}
+      cockroachdb: {status: equivalent, twin: postgres}
+      timescaledb: {status: equivalent, twin: postgres}
+      mysql: {status: variant}
+      mariadb: {status: equivalent, twin: mysql}
+      duckdb: {status: variant}
+      clickhouse: {status: omitted}
+      clickhouse-native: {status: variant}
+
+  - number: 23
+    slug: transactions
+    title: Transactions
+    track: connections
+    summary: Run several queries atomically with RunInTx, or bind the queries to a transaction with WithTx.
+    teaches: [RunInTx, WithTx, rollback on error, go.interface and store.Querier]
+    docs: [reference/generator-api, how-to/transactions, "how-to/shape-generated-code#depend-on-an-interface-of-the-query-methods"]
+    cells:
+      sqlite: {status: variant}
+      postgres: {status: variant}
+      postgres-pgx: {status: variant}
+      cockroachdb: {status: variant}
+      timescaledb: {status: equivalent, twin: postgres}
+      mysql: {status: variant}
+      mariadb: {status: equivalent, twin: mysql}
+      duckdb: {status: variant}
+      clickhouse: {status: unsupported, reason: ClickHouse has no transactions.}
+      clickhouse-native: {status: unsupported, reason: ClickHouse has no transactions.}
+
+  - number: 24
+    slug: read-replicas
+    title: Read replicas
+    track: connections
+    summary: Send read-only queries to a replica and writes to the primary, decided by Seagull's read-only detection.
+    teaches: [NewWithReplica, read-only detection, "readonly:"]
+    docs: ["reference/directives#command-kinds", how-to/read-replicas]
+    cells:
+      sqlite: {status: variant}
+      postgres: {status: variant}
+      postgres-pgx: {status: unsupported, reason: The pgx emitter has no replica routing.}
+      cockroachdb: {status: equivalent, twin: postgres}
+      timescaledb: {status: equivalent, twin: postgres}
+      mysql: {status: omitted}
+      mariadb: {status: omitted}
+      duckdb: {status: omitted}
+      clickhouse: {status: omitted}
+      clickhouse-native: {status: unsupported, reason: The native ClickHouse emitter has no replica routing.}
+
+  - number: 25
+    slug: prepared-statements
+    title: Prepared statements
+    track: connections
+    summary: Prepare every query once with go.prepared and the generated Prepare.
+    teaches: [go.prepared, Prepare, PreparedDBTX]
+    docs: [reference/configuration, how-to/prepared-statements]
+    cells:
+      sqlite: {status: variant}
+      postgres: {status: variant}
+      postgres-pgx: {status: unsupported, reason: "pgx already caches prepared statements; go.prepared applies only to database/sql."}
+      cockroachdb: {status: equivalent, twin: postgres}
+      timescaledb: {status: equivalent, twin: postgres}
+      mysql: {status: omitted}
+      mariadb: {status: omitted}
+      duckdb: {status: omitted}
+      clickhouse: {status: unsupported, reason: ClickHouse prepares only INSERT batches.}
+      clickhouse-native: {status: unsupported, reason: ClickHouse prepares only INSERT batches.}
+
+  - number: 26
+    slug: tracing-queries
+    title: Query names for tracing
+    track: connections
+    summary: Name every query in traces and logs with go.query_names and a wrapping DBTX.
+    teaches: [go.query_names, WrapDBTX, instrumentation]
+    docs: [reference/configuration, how-to/trace-queries]
+    scope: [sqlite]
+    cells:
+      sqlite: {status: variant}
+
+  - number: 27
+    slug: migrations-at-startup
+    title: Migrations at start-up
+    track: migrations
+    summary: Embed the migration files in the binary and apply them when the program starts.
+    teaches: [migration backends, embedded migrations, NewMigrator]
+    docs: [reference/migration-runtime, how-to/startup-migrations]
+    cells:
+      sqlite: {status: variant}
+      postgres: {status: variant}
+      postgres-pgx: {status: omitted}
+      cockroachdb: {status: variant}
+      timescaledb: {status: equivalent, twin: postgres}
+      mysql: {status: variant}
+      mariadb: {status: equivalent, twin: mysql}
+      duckdb: {status: variant}
+      clickhouse: {status: variant}
+      clickhouse-native: {status: omitted}
+
+  - number: 28
+    slug: migration-lifecycle
+    title: The migration lifecycle
+    track: migrations
+    summary: Migrate up to a version, roll back, check status and validate checksums, with locking.
+    teaches: [UpTo, Down, Status, Validate, checksums, locks]
+    docs: [reference/migration-runtime, how-to/migration-lifecycle]
+    scope: [sqlite, postgres]
+    cells:
+      sqlite: {status: variant}
+      postgres: {status: variant}
+      postgres-pgx: {status: omitted}
+
+  - number: 29
+    slug: seeds-namespaces-hooks
+    title: Seeds, namespaces and hooks
+    track: migrations
+    summary: Seed data, keep several migration histories in one database, and run code around each migration.
+    teaches: [Seeder, WithNamespace, hooks, "sgl.migration(no_transaction:)"]
+    diagnostics: [Q043]
+    docs: [reference/migration-runtime, how-to/seeds-namespaces-hooks]
+    scope: [sqlite, postgres]
+    cells:
+      sqlite: {status: variant}
+      postgres: {status: variant}
+      postgres-pgx: {status: omitted}
+
+  - number: 30
+    slug: functions-in-migrations
+    title: Functions in migrations
+    track: engines
+    summary: Define SQL functions in migrations; whether they change data decides whether queries that call them are read-only.
+    teaches: [CREATE FUNCTION, "sgl.migration(readonly:)", data access]
+    diagnostics: [Q045]
+    docs: ["reference/directives#migration-directive-sglmigration", how-to/sql-functions]
+    cells:
+      sqlite: {status: unsupported, reason: "SQLite has no CREATE FUNCTION; register a Go function instead.", see: 48}
+      postgres: {status: variant}
+      postgres-pgx: {status: omitted}
+      cockroachdb: {status: omitted}
+      timescaledb: {status: equivalent, twin: postgres}
+      mysql: {status: variant}
+      mariadb: {status: equivalent, twin: mysql}
+      duckdb: {status: omitted, see: 38}
+      clickhouse: {status: variant}
+      clickhouse-native: {status: omitted}
+
+  - number: 31
+    slug: postgres-power-queries
+    title: PostgreSQL power queries
+    track: engines
+    summary: LATERAL joins, DISTINCT ON, full-text search and data-modifying CTEs, all typed.
+    teaches: [LATERAL, DISTINCT ON, text search, data-modifying CTEs, jsonb_each]
+    docs: [reference/dialects/postgres, how-to/postgres]
+    scope: [postgres, timescaledb]
+    cells:
+      postgres: {status: variant}
+      postgres-pgx: {status: omitted}
+      timescaledb: {status: equivalent, twin: postgres}
+
+  - number: 32
+    slug: timescale-hypertables
+    title: Hypertables and time buckets
+    track: engines
+    summary: Create a hypertable and query it with time_bucket, first, last and gap filling.
+    teaches: [create_hypertable, time_bucket, first and last, locf and gapfill]
+    docs: [reference/dialects/timescaledb, how-to/timescaledb]
+    scope: [timescaledb]
+    cells:
+      timescaledb: {status: variant}
+
+  - number: 33
+    slug: timescale-continuous-aggregates
+    title: Continuous aggregates
+    track: engines
+    summary: Define a continuous aggregate, refresh it, and query it with hyperfunctions.
+    teaches: [continuous aggregates, refresh_continuous_aggregate, stats_agg, "sgl.migration(no_transaction:)"]
+    docs: [reference/dialects/timescaledb, reference/migration-runtime, how-to/continuous-aggregates]
+    scope: [timescaledb]
+    cells:
+      timescaledb: {status: variant}
+
+  - number: 34
+    slug: clickhouse-mergetree
+    title: MergeTree engines
+    track: engines
+    summary: ReplacingMergeTree, SummingMergeTree and AggregatingMergeTree, read with FINAL and PREWHERE.
+    teaches: [ReplacingMergeTree, SummingMergeTree, AggregatingMergeTree, FINAL, PREWHERE]
+    docs: [reference/dialects/clickhouse, how-to/clickhouse]
+    scope: [clickhouse]
+    cells:
+      clickhouse: {status: variant}
+      clickhouse-native: {status: omitted}
+
+  - number: 35
+    slug: clickhouse-arrays-maps
+    title: Arrays, maps and tuples in ClickHouse
+    track: engines
+    summary: ARRAY JOIN, Map, Tuple, LowCardinality and IPv4 columns, typed in Go.
+    teaches: [ARRAY JOIN, Map, Tuple, LowCardinality, IPv4]
+    docs: [reference/dialects/clickhouse, how-to/clickhouse-complex-types]
+    scope: [clickhouse]
+    cells:
+      clickhouse: {status: variant}
+      clickhouse-native: {status: omitted}
+
+  - number: 36
+    slug: clickhouse-async-mutations
+    title: Asynchronous mutations
+    track: engines
+    summary: Declare ALTER TABLE UPDATE and DELETE as asyncexec so callers know the server queues them.
+    teaches: [asyncexec, ALTER TABLE UPDATE, mutations_sync]
+    diagnostics: [Q040, Q041]
+    docs: [reference/dialects/clickhouse, how-to/async-mutations]
+    scope: [clickhouse]
+    cells:
+      clickhouse: {status: variant}
+      clickhouse-native: {status: omitted}
+
+  - number: 37
+    slug: duckdb-nested-types
+    title: Nested types in DuckDB
+    track: engines
+    summary: STRUCT, MAP, LIST and UNION columns as Go types.
+    teaches: [STRUCT, MAP, LIST, UNION]
+    docs: [reference/dialects/duckdb, how-to/duckdb]
+    scope: [duckdb]
+    cells:
+      duckdb: {status: variant}
+
+  - number: 38
+    slug: duckdb-analytics
+    title: Analytics in DuckDB
+    track: engines
+    summary: QUALIFY, FILTER, PIVOT, macros and read_parquet, with typed results.
+    teaches: [QUALIFY, FILTER aggregates, PIVOT, macros, read_parquet]
+    docs: [reference/dialects/duckdb, how-to/duckdb-analytics]
+    scope: [duckdb]
+    cells:
+      duckdb: {status: variant}
+
+  - number: 39
+    slug: mysql-dialect-features
+    title: MySQL dialect features
+    track: engines
+    summary: INSERT IGNORE, REPLACE INTO, SET columns, GROUP_CONCAT and unsigned integers.
+    teaches: [INSERT IGNORE, REPLACE INTO, SET, GROUP_CONCAT, unsigned integers, COMMENT as doc comments]
+    docs: [reference/dialects/mysql, how-to/mysql-mariadb]
+    scope: [mysql, mariadb]
+    cells:
+      mysql: {status: variant}
+      mariadb: {status: equivalent, twin: mysql}
+
+  - number: 40
+    slug: sqlite-extensions
+    title: SQLite extensions
+    track: engines
+    summary: FTS5 and R*Tree virtual tables, json_each and generated columns.
+    teaches: [FTS5, R*Tree, json_each, generated columns]
+    diagnostics: [Q013]
+    docs: [reference/dialects/sqlite, how-to/sqlite]
+    scope: [sqlite]
+    cells:
+      sqlite: {status: variant}
+
+  - number: 41
+    slug: vet-and-diagnostics
+    title: sgl vet and diagnostics
+    track: tooling
+    summary: Check queries without generating, read a diagnostic, and look a code up with sgl explain.
+    teaches: [sgl vet, --strict, sgl explain, carets and help, generate leaves out a failing query]
+    docs: [reference/cli, reference/diagnostics, how-to/troubleshoot]
+    module: tooling
+    scope: [sqlite]
+    cells:
+      sqlite: {status: variant}
+
+  - number: 42
+    slug: ci-pipeline
+    title: Seagull in CI
+    track: tooling
+    summary: Fail the build when generated code is stale, and report diagnostics as GitHub annotations or SARIF.
+    teaches: [generate --check, generate --diff, vet --format github, vet --format sarif, migrate validate]
+    docs: [reference/cli, how-to/ci]
+    module: tooling
+    scope: [sqlite]
+    cells:
+      sqlite: {status: variant}
+
+  - number: 43
+    slug: describe-and-schema
+    title: Describe queries and diff schemas
+    track: tooling
+    summary: Print a query's Go signature, dump the schema, and diff it against a live database.
+    teaches: [sgl describe, sgl schema dump, sgl schema diff, sgl dialects, sgl config validate]
+    docs: [reference/cli, how-to/inspect-schema]
+    module: tooling
+    scope: [sqlite]
+    cells:
+      sqlite: {status: variant}
+
+  - number: 44
+    slug: fmt-and-prefixes
+    title: Formatting directives and prefixes
+    track: tooling
+    summary: Normalise directives with sgl fmt, require the canonical prefix, and adopt queries written with another tool's prefix.
+    teaches: [sgl fmt, alias prefixes, require_canonical, --rewrite-prefix]
+    diagnostics: [Q050, Q051]
+    docs: [reference/cli, reference/configuration, how-to/format-prefixes]
+    module: tooling
+    scope: [sqlite]
+    cells:
+      sqlite: {status: variant}
+
+  - number: 45
+    slug: migrate-from-the-cli
+    title: Migrations from the command line
+    track: tooling
+    summary: Create, apply, roll back and inspect migrations and seeds with sgl.
+    teaches: [sgl init, sgl migrate new, migrate up, down, to, status, validate, sgl seed]
+    docs: [reference/cli, reference/migration-runtime, how-to/migrate-cli]
+    module: tooling
+    scope: [sqlite]
+    cells:
+      sqlite: {status: variant}
+
+  - number: 46
+    slug: library-generate
+    title: Generating from Go
+    track: embedding
+    summary: Run Seagull as a library from your own generator, with a --check mode for CI.
+    teaches: [seagull.New, Generate, WriteFiles, dialects.New]
+    docs: [reference/generator-api, how-to/generate-from-go]
+    module: embedding
+    scope: [sqlite]
+    cells:
+      sqlite: {status: variant}
+
+  - number: 47
+    slug: library-vet-and-catalogue
+    title: Vet and the catalogue from Go
+    track: embedding
+    summary: Read the analysed queries and the schema catalogue to build your own checks.
+    teaches: [Vet, Catalogue, analysed queries, error sentinels]
+    docs: [reference/generator-api, how-to/vet-catalogue]
+    module: embedding
+    scope: [sqlite]
+    cells:
+      sqlite: {status: variant}
+
+  - number: 48
+    slug: custom-functions
+    title: Custom functions
+    track: embedding
+    summary: Declare a Go function registered with the driver so Seagull can type queries that call it.
+    teaches: [custom_functions, WithCustomFunctions, registering a SQLite function]
+    diagnostics: [Q005]
+    docs: [reference/configuration, reference/generator-api, how-to/custom-functions]
+    module: embedding
+    scope: [sqlite]
+    cells:
+      sqlite: {status: variant}
+
+  - number: 49
+    slug: presets
+    title: White-label presets
+    track: embedding
+    summary: Generate with your own directive prefix, header and helper names.
+    teaches: [WithPreset, FormatDirectives, legacy headers]
+    docs: [reference/generator-api, how-to/presets]
+    module: embedding
+    scope: [sqlite]
+    cells:
+      sqlite: {status: variant}
+
+  - number: 50
+    slug: schema-from-live-database
+    title: Schema from a live database
+    track: embedding
+    summary: Generate against a database's real schema instead of migration files.
+    teaches: [WithSchemaSource, schema_source_sqlite, schema_from]
+    docs: [reference/generator-api, reference/configuration, how-to/live-schema]
+    module: embedding
+    scope: [sqlite]
+    cells:
+      sqlite: {status: variant}
+
+  - number: 51
+    slug: generator-observability
+    title: Observing the generator
+    track: embedding
+    summary: Trace each stage of generation and migration with an observer and slog.
+    teaches: [observe.ObserverPort, WithObserver, WithLogger]
+    docs: [reference/generator-api, how-to/observe-generator]
+    module: embedding
+    scope: [sqlite]
+    cells:
+      sqlite: {status: variant}
+
+  - number: 52
+    slug: custom-emitter
+    title: A custom emitter
+    track: embedding
+    summary: Wrap the database/sql emitter to add a generated file of your own.
+    teaches: [emit.EmitterPort, WithEmitter]
+    docs: [how-to/write-an-emitter, how-to/custom-emitter-example]
+    module: embedding
+    scope: [sqlite]
+    cells:
+      sqlite: {status: variant}
+
+  - number: 53
+    slug: custom-sgl-binary
+    title: Your own sgl
+    track: embedding
+    summary: Build an sgl with your dialect options and emitter using cli.Main.
+    teaches: [cli.Main, WithDialect, WithEmitter, WithDriver]
+    docs: [reference/cli, reference/generator-api, how-to/custom-cli]
+    module: embedding
+    scope: [sqlite]
+    cells:
+      sqlite: {status: variant}

@@ -1,0 +1,1 @@
+{"description": "A migration calling every policy and management function TimescaleDB documents for a hypertable and for a continuous aggregate builds the catalogue without diagnostics: a continuous aggregate is a valid target of add_continuous_aggregate_policy, add_retention_policy and add_compression_policy, and of their remove forms"}

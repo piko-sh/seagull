@@ -1,0 +1,6 @@
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+*.duckdb
+*.duckdb.wal

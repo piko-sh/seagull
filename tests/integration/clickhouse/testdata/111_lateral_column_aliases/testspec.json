@@ -1,0 +1,3 @@
+{
+  "description": "ClickHouse reads a select item naming an earlier item's alias (a lateral column alias): next_id * 2, concat(loud, '!'), span / 2 and mass * 2 are typed from the items they name, with no unknown-column warning, and scan through database/sql into those types."
+}

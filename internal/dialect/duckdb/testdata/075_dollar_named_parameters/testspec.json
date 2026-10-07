@@ -1,0 +1,4 @@
+{
+  "description": "DuckDB's $name placeholder is a named parameter, as :name is: a name used twice is one parameter, the generated SQL binds it by number, and a dollar-quoted string holding $name is text.",
+  "expectedDiagnosticCount": 0
+}

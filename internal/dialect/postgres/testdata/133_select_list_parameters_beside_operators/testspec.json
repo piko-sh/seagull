@@ -1,0 +1,3 @@
+{
+  "description": "PostgreSQL: a parameter of the select list or RETURNING after an arithmetic operator, or one whose operands are of one type, with a column before it takes the column's type and name, as the same expression in a WHERE clause does and as PostgreSQL types an unknown operand: n + $1 an integer, price * $1 a numeric, mask & $1 an integer, location <-> $1 a point, n - $2 in RETURNING an integer; a cast after the parameter gives its type. A parameter before the operator ($1 + n) and one beside a concatenation, which take no partner type, stay unknown."
+}

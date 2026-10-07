@@ -1,0 +1,65 @@
+[
+  {
+    "Command": "one",
+    "Filename": "get_event.sql",
+    "Line": 1,
+    "Name": "GetEvent",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "slug",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "slug",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "payload",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "payload",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "next_id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetEvent, command: one)\nSELECT id, slug, payload, bump(id) AS next_id\nFROM events\nWHERE id = $1;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:slug⟩, ⟨c2:payload⟩, ⟨c3 aliased:bump(id)⟩ AS next_id\\nFROM events\\nWHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

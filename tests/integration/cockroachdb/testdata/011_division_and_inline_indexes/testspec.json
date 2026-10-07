@@ -1,0 +1,4 @@
+{
+  "description": "CockroachDB divides two integers exactly and gives the days between two dates as INT8; the INDEX, UNIQUE INDEX, INVERTED INDEX and FAMILY elements of the CREATE TABLE declare no columns; generate_series over timestamps gives timestamps.",
+  "expectedDiagnostics": []
+}

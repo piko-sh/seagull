@@ -1,0 +1,4 @@
+{
+  "description": "clickhouse-go (v2.48) cannot read some values whatever the column is read into, so a column holding one is refused (Q059) at its item with a suggestion, for both emitters: a Map keyed by or mapping to a 128- or 256-bit integer that cannot be NULL, at any depth (both drivers panic), a Map keyed by an IPv4 or IPv6 address (the block fails to decode), and an unnamed Tuple holding such an integer (the native driver fails, database/sql fails, panics or reads NULL). The suggested forms read: a Map to Nullable(Int128), mapKeys, a Map keyed by String and a Tuple with named elements; so do a Map to arrays of wide integers or to named tuples holding one, a Map to addresses and an unnamed Tuple holding a nullable wide integer or an address",
+  "expectedDiagnosticCount": 8
+}

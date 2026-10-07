@@ -1,0 +1,4 @@
+{
+  "description": "A USING clause or a NATURAL join merges the shared columns into one: SELECT * returns each once, leading the row as PostgreSQL places it, an unqualified reference to it is not ambiguous, a LEFT JOIN keeps the left side's non-null value, and a derived table listed first in FROM expands first.",
+  "expectedDiagnosticCount": 0
+}

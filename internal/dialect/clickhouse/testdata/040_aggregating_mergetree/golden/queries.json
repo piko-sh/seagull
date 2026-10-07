@@ -1,0 +1,37 @@
+[
+  {
+    "Command": "many",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "ReadAgg",
+    "OutputColumns": [
+      {
+        "Name": "key",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "key",
+        "SourceQualifier": "agg",
+        "SourceTable": "agg"
+      },
+      {
+        "Name": "val",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "val",
+        "SourceQualifier": "agg",
+        "SourceTable": "agg"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ReadAgg, many)\nSELECT key, val FROM agg;",
+    "Template": "SELECT ⟨c0:key⟩, ⟨c1:val⟩ FROM agg;"
+  }
+]

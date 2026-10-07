@@ -1,0 +1,48 @@
+[
+  {
+    "Command": "one",
+    "Filename": "values.sql",
+    "Line": 1,
+    "Name": "GetAmount",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "values_table",
+        "SourceTable": "values_table"
+      },
+      {
+        "Name": "amount",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "amount",
+        "SourceQualifier": "values_table",
+        "SourceTable": "values_table"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetAmount, command: one)\nSELECT id, amount FROM values_table WHERE id = ?;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:amount⟩ FROM values_table WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

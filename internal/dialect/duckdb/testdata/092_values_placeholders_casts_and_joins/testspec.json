@@ -1,0 +1,11 @@
+{
+  "description": "DuckDB: a VALUES list as a set operation's arm, a recursive anchor and a statement, its columns named col0 and col1 as DuckDB names them; a named placeholder written before $1 is numbered after it; a string literal passed to a date, timestamp or interval parameter; TRY_CAST and try() are nullable; a CAST to a fixed-size array and a type directive naming a MAP type; an alias on a parenthesised join joined ON a condition names the join, and one on a join whose last join uses USING is ignored as DuckDB ignores it, with a Q063 warning; a select-list alias is an operand in WHERE, HAVING and ORDER BY.",
+  "expectedDiagnosticCount": 1,
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "Q063",
+      "messageContains": "DuckDB ignores the alias r"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 8,
+    "EndColumn": 21,
+    "EndLine": 2,
+    "Filename": "pragmas.sql",
+    "Line": 2,
+    "Message": "failed to analyse query \"CountChanges\": syntax error near \"count_changes\": the columns PRAGMA count_changes returns are not declared; it is deprecated or for debugging, so read the setting another way",
+    "Severity": "error"
+  }
+]

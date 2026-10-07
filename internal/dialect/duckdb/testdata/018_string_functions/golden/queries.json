@@ -1,0 +1,46 @@
+[
+  {
+    "Command": "many",
+    "Filename": "labels.sql",
+    "Line": 1,
+    "Name": "GetTransformedLabels",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "labels",
+        "SourceTable": "labels"
+      },
+      {
+        "Name": "upper_val",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "lower_val",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "len",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetTransformedLabels, command: many)\nSELECT id, upper(value) AS upper_val, lower(value) AS lower_val, length(value) AS len FROM labels;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:upper(value)⟩ AS upper_val, ⟨c2 aliased:lower(value)⟩ AS lower_val, ⟨c3 aliased:length(value)⟩ AS len FROM labels;"
+  }
+]

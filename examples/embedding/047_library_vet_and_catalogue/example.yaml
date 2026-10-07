@@ -1,0 +1,26 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: A small linter vets the queries from Go, prints each one's parameters, columns, nullability and whether it only reads, adds a rule of its own, prints the catalogue's tables, and shows which error sentinels each kind of failure matches.
+differs:
+  - "INTEGER PRIMARY KEY is bigint in the analysis, as the rowid, and other INTEGER columns integer; both map to int64"
+  - a column from the outer side of the LEFT JOIN is nullable even though tags.name is NOT NULL
+  - "error diagnostics arrive through Report.Err as a *DiagnosticsError; configuration and limit problems are errors from New, Generate and Vet"
+entry: {file: db/queries/notes.sql, query: ListNotesWithTags}
+live: "no"
+test: in-process

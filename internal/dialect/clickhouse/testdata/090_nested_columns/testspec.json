@@ -1,0 +1,4 @@
+{
+  "description": "A Nested column is stored as one array column per field, as ClickHouse stores it with flatten_nested on (the default): SELECT * returns legs.colony, legs.minutes and legs.altitude, an unaliased field is named by its path, a quoted field name is a column, the Nested column itself reads as an array of tuples, and DROP COLUMN of a Nested column drops its fields.",
+  "expectedDiagnosticCount": 0
+}

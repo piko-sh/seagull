@@ -1,0 +1,65 @@
+{
+  "DefaultSchema": "main",
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "main": {
+      "Name": "main",
+      "Tables": {
+        "events": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_create_events.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "bigint",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Origin": {
+                "Filename": "001_create_events.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "payload",
+              "Origin": {
+                "Filename": "001_create_events.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            }
+          ],
+          "Name": "events",
+          "Origin": {
+            "Filename": "001_create_events.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "main"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "main",
+    "temp"
+  ]
+}

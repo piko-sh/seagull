@@ -1,0 +1,4 @@
+{
+  "description": "struct_pack(name := value) and the {'name': value} literal are a STRUCT with a field per entry, named as written and typed as its value, every field nullable as a DuckDB struct field is; a field read from one takes the field's type.",
+  "expectedDiagnosticCount": 0
+}

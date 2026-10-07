@@ -1,0 +1,45 @@
+[
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 1,
+    "Name": "CrewByBoat",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "b",
+        "SourceTable": "boats"
+      },
+      {
+        "Name": "crew",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "crew",
+        "SourceQualifier": "b",
+        "SourceTable": "boats"
+      },
+      {
+        "Name": "harbours",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CrewByBoat, command: many)\nSELECT b.id, b.crew, count(h.id) AS harbours\nFROM harbours h\nLEFT JOIN boats b ON b.harbour_id = h.id\nGROUP BY b.id;",
+    "Template": "SELECT ⟨c0:b.id⟩, ⟨c1:b.crew⟩, ⟨c2 aliased:count(h.id)⟩ AS harbours\\nFROM harbours h\\nLEFT JOIN boats b ON b.harbour_id = h.id\\nGROUP BY b.id;"
+  }
+]

@@ -1,0 +1,52 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "public": {
+      "Name": "public",
+      "Tables": {
+        "invoices": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int8",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "ref",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            }
+          ],
+          "Name": "invoices",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

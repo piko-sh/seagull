@@ -1,0 +1,95 @@
+[
+  {
+    "Command": "many",
+    "Filename": "items.sql",
+    "Line": 1,
+    "Name": "ReadOnlyWithImmutable",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "doubled",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ReadOnlyWithImmutable, command: many)\nSELECT id, safe_multiply(quantity, 2) AS doubled FROM items;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:safe_multiply(quantity, 2)⟩ AS doubled FROM items;"
+  },
+  {
+    "Command": "one",
+    "Filename": "items.sql",
+    "Line": 4,
+    "Name": "NotReadOnlyWithVolatile",
+    "OutputColumns": [
+      {
+        "Name": "updated_id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: NotReadOnlyWithVolatile, command: one)\nSELECT dangerous_update($1::integer) AS updated_id;",
+    "Template": "SELECT ⟨c0 aliased:dangerous_update(⟨p0⟩::integer)⟩ AS updated_id;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "items.sql",
+    "Line": 7,
+    "Name": "NotReadOnlyWithUnknown",
+    "OutputColumns": [
+      {
+        "Name": "result",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: NotReadOnlyWithUnknown, command: one)\nSELECT some_unknown_function($1::integer) AS result;",
+    "Template": "SELECT ⟨c0 aliased:some_unknown_function(⟨p0⟩::integer)⟩ AS result;⟨arguments p0⟩"
+  }
+]

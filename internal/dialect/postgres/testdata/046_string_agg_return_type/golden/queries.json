@@ -1,0 +1,32 @@
+[
+  {
+    "Command": "many",
+    "Filename": "agg_tags.sql",
+    "Line": 1,
+    "Name": "AggTags",
+    "OutputColumns": [
+      {
+        "Name": "group_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "group_id",
+        "SourceQualifier": "tags",
+        "SourceTable": "tags"
+      },
+      {
+        "Name": "tag_list",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AggTags, command: many)\nSELECT group_id, string_agg(name, ', ' ORDER BY name) AS tag_list\nFROM tags\nGROUP BY group_id;",
+    "Template": "SELECT ⟨c0:group_id⟩, ⟨c1 aliased:string_agg(name, ', ' ORDER BY name)⟩ AS tag_list\\nFROM tags\\nGROUP BY group_id;"
+  }
+]

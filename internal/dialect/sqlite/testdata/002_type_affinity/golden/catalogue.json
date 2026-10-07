@@ -1,0 +1,194 @@
+{
+  "DefaultSchema": "main",
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "main": {
+      "Name": "main",
+      "Tables": {
+        "typed_values": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_create_typed_table.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "bigint",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "int_val",
+              "Origin": {
+                "Filename": "001_create_typed_table.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "integer",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "bigint_val",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_create_typed_table.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "bigint",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "text_val",
+              "Origin": {
+                "Filename": "001_create_typed_table.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "varchar_val",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_create_typed_table.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text",
+                "Length": 255
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "real_val",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_create_typed_table.up.sql"
+              },
+              "SQLType": {
+                "Category": "float",
+                "EngineName": "real",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "double_val",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_create_typed_table.up.sql"
+              },
+              "SQLType": {
+                "Category": "float",
+                "EngineName": "real",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "blob_val",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_create_typed_table.up.sql"
+              },
+              "SQLType": {
+                "Category": "binary",
+                "EngineName": "blob"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "numeric_val",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_create_typed_table.up.sql"
+              },
+              "SQLType": {
+                "Category": "decimal",
+                "EngineName": "numeric",
+                "Precision": 10,
+                "Scale": 2
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "bool_val",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_create_typed_table.up.sql"
+              },
+              "SQLType": {
+                "Category": "boolean",
+                "EngineName": "boolean"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "date_val",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_create_typed_table.up.sql"
+              },
+              "SQLType": {
+                "Category": "temporal",
+                "EngineName": "date",
+                "Temporal": "date"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "datetime_val",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_create_typed_table.up.sql"
+              },
+              "SQLType": {
+                "Category": "temporal",
+                "EngineName": "datetime",
+                "Temporal": "timestamp"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "json_val",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_create_typed_table.up.sql"
+              },
+              "SQLType": {
+                "Category": "json",
+                "EngineName": "json"
+              }
+            }
+          ],
+          "Name": "typed_values",
+          "Origin": {
+            "Filename": "001_create_typed_table.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "main"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "main",
+    "temp"
+  ]
+}

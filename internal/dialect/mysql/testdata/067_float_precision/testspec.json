@@ -1,0 +1,3 @@
+{
+  "description": "FLOAT(p) is a single-precision FLOAT for p up to 24 bits and a DOUBLE for p from 25 to 53, as MySQL makes it, in a column and in a CAST; FLOAT(M, D), with a scale, stays a FLOAT. FLOAT4 and FLOAT8 are MySQL's synonyms for FLOAT and DOUBLE, and FLOAT4(p) follows FLOAT(p)."
+}

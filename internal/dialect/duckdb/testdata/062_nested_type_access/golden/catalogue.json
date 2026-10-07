@@ -1,0 +1,180 @@
+{
+  "DefaultSchema": "main",
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "main": {
+      "Name": "main",
+      "Tables": {
+        "boats": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int8",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "berth",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "struct",
+                "StructFields": [
+                  {
+                    "Name": "pontoon",
+                    "SQLType": {
+                      "Category": "text",
+                      "EngineName": "varchar",
+                      "Nullable": true
+                    }
+                  },
+                  {
+                    "Name": "number",
+                    "SQLType": {
+                      "Category": "integer",
+                      "EngineName": "int4",
+                      "Nullable": true,
+                      "Width": 32
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "ArrayDimensions": 1,
+              "GeneratedKind": "none",
+              "IsArray": true,
+              "Name": "crew",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Nullable": true
+              }
+            },
+            {
+              "ArrayDimensions": 1,
+              "GeneratedKind": "none",
+              "IsArray": true,
+              "Name": "route",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "struct",
+                "Nullable": true,
+                "StructFields": [
+                  {
+                    "Name": "lat",
+                    "SQLType": {
+                      "Category": "float",
+                      "EngineName": "float8",
+                      "Nullable": true,
+                      "Width": 64
+                    }
+                  },
+                  {
+                    "Name": "lon",
+                    "SQLType": {
+                      "Category": "float",
+                      "EngineName": "float8",
+                      "Nullable": true,
+                      "Width": 64
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "fees",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "map",
+                "ElementType": {
+                  "Category": "integer",
+                  "EngineName": "int4",
+                  "Nullable": true,
+                  "Width": 32
+                },
+                "EngineName": "map",
+                "KeyType": {
+                  "Category": "text",
+                  "EngineName": "varchar"
+                }
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "contact",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "union",
+                "EngineName": "union",
+                "UnionMembers": [
+                  {
+                    "SQLType": {
+                      "Category": "text",
+                      "EngineName": "varchar"
+                    },
+                    "Tag": "phone"
+                  },
+                  {
+                    "SQLType": {
+                      "Category": "integer",
+                      "EngineName": "int4",
+                      "Width": 32
+                    },
+                    "Tag": "vhf_channel"
+                  }
+                ]
+              }
+            }
+          ],
+          "Name": "boats",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "main"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "main"
+  ]
+}

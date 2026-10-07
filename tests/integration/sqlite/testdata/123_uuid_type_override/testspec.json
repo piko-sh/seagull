@@ -1,0 +1,12 @@
+{
+  "description": "A type override for the SQL type uuid applies to every column SQLite declares UUID, in any case: the override's string reads and binds the UUIDs' text, nullable or not, and a lookup by one finds the row.",
+  "expectedDiagnostics": [],
+  "typeOverrides": [
+    {
+      "SQLTypeName": "uuid",
+      "Column": "",
+      "GoPackage": "",
+      "GoName": "string"
+    }
+  ]
+}

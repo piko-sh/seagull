@@ -1,0 +1,117 @@
+# describe shows what sgl inferred for one query: its parameters, its columns with
+# their nullability and source, and the Go it generates. Nothing is written.
+$ sgl describe ListBooksByAuthor
+ListBooksByAuthor (many) in database "library", db/queries/books.sql:1
+
+SQL:
+    SELECT books.id, books.title, books.subtitle, books.published
+    FROM books
+    JOIN authors ON authors.id = books.author_id
+    WHERE authors.name = ?1
+    ORDER BY books.published;
+
+Parameters:
+    ?1  name  text  not null
+
+Columns:
+    id         bigint   not null  books.id
+    title      text     not null  books.title
+    subtitle   text     null      books.subtitle
+    published  integer  not null  books.published
+
+Go:
+    const listBooksByAuthorSQL = `SELECT books.id, books.title, books.subtitle, books.published
+    FROM books
+    JOIN authors ON authors.id = books.author_id
+    WHERE authors.name = ?1
+    ORDER BY books.published;`
+    
+    type ListBooksByAuthorRow struct {
+        ID        int64   `json:"id"`
+        Title     string  `json:"title"`
+        Subtitle  *string `json:"subtitle"`
+        Published int64   `json:"published"`
+    }
+    
+    func (queries *Queries) ListBooksByAuthor(ctx context.Context, name string) ([]ListBooksByAuthorRow, error)
+# exit 0
+
+# Two or more parameters become a Params struct; a nullable column becomes a pointer.
+$ sgl describe AddBook
+AddBook (exec) in database "library", db/queries/books.sql:8
+
+SQL:
+    INSERT INTO books (author_id, title, subtitle, published) VALUES (?1, ?2, ?3, ?4);
+
+Parameters:
+    ?1  author_id  integer  not null
+    ?2  title      text     not null
+    ?3  subtitle   text     null
+    ?4  published  integer  not null
+
+Columns:
+    none
+
+Go:
+    const addBookSQL = `INSERT INTO books (author_id, title, subtitle, published) VALUES (?1, ?2, ?3, ?4);`
+    
+    type AddBookParams struct {
+        AuthorID  int64
+        Title     string
+        Subtitle  *string
+        Published int64
+    }
+    
+    func (queries *Queries) AddBook(ctx context.Context, params AddBookParams) error
+# exit 0
+
+# A name that does not match suggests the nearest one.
+$ sgl describe ListBookByAuthor
+sgl: no query named "ListBookByAuthor"; did you mean "ListBooksByAuthor"?
+# exit 2
+
+# schema dump prints the schema the migrations build, as SQL here or as JSON.
+$ sgl schema dump --format sql
+-- database library
+
+CREATE TABLE main.authors (
+    id bigint NOT NULL,
+    name text NOT NULL,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE main.books (
+    id bigint NOT NULL,
+    author_id integer NOT NULL,
+    title text NOT NULL,
+    subtitle text,
+    published integer NOT NULL,
+    PRIMARY KEY (id)
+);
+
+# exit 0
+
+# drift.db had the migrations applied and was then changed by hand: books gained an
+# isbn column and lost subtitle. schema diff compares it with the migrations.
+$ sgl schema diff --dsn file:drift.db
++ column main.books.isbn is in the database but not the migrations
+- column main.books.subtitle is in the migrations but not the database
+# exit 1
+
+# dialects lists every dialect this sgl knows and what it can do.
+$ sgl dialects
+NAME         FAMILY      PARAMETERS   RETURNING               MIGRATE  INTROSPECT  DRIVER
+clickhouse   clickhouse  {name:Type}  no                      yes      no          clickhouse
+cockroachdb  postgres    $1           INSERT, UPDATE, DELETE  yes      yes         pgx
+duckdb       duckdb      $1           INSERT, UPDATE, DELETE  yes      no          none
+mariadb      mysql       ?            INSERT, DELETE          yes      no          mysql
+mysql        mysql       ?            no                      yes      no          mysql
+postgres     postgres    $1           INSERT, UPDATE, DELETE  yes      yes         pgx
+sqlite       sqlite      ?1           INSERT, UPDATE, DELETE  yes      yes         sqlite
+timescaledb  postgres    $1           INSERT, UPDATE, DELETE  yes      yes         pgx
+# exit 0
+
+# config validate checks sgl.yaml without running anything.
+$ sgl config validate
+sgl.yaml is valid (1 database(s))
+# exit 0

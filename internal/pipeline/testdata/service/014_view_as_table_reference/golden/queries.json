@@ -1,0 +1,44 @@
+[
+  {
+    "Command": "one",
+    "Filename": "get_active_user.sql",
+    "Line": 1,
+    "Name": "GetActiveUser",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "active_users",
+        "SourceTable": "active_users"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "active_users",
+        "SourceTable": "active_users"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: GetActiveUser, command: one)\nSELECT id, name FROM active_users WHERE id = $1",
+    "Template": "SELECT id, name FROM active_users WHERE id = $1"
+  }
+]

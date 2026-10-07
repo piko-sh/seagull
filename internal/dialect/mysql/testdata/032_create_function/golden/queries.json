@@ -1,0 +1,92 @@
+[
+  {
+    "Command": "one",
+    "Filename": "products.sql",
+    "Line": 1,
+    "Name": "GetDoubledPrice",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      },
+      {
+        "Name": "doubled",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 10,
+          "Scale": 2
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetDoubledPrice, command: one)\nSELECT id, double_price(price) AS doubled FROM products WHERE id = ?;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:double_price(price)⟩ AS doubled FROM products WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "products.sql",
+    "Line": 4,
+    "Name": "GetPriceWithTax",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      },
+      {
+        "Name": "with_tax",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 10,
+          "Scale": 2
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetPriceWithTax, command: one)\nSELECT id, add_tax(price, 20.00) AS with_tax FROM products WHERE id = ?;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:add_tax(price, 20.00)⟩ AS with_tax FROM products WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

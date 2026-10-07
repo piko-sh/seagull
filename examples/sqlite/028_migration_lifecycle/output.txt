@@ -1,0 +1,20 @@
+before migrating:
+  0001 sightings       pending  down file
+  0002 tidy_species    pending  no down file
+  0003 sighting_count  pending  down file
+UpTo(1) applied 1
+Up applied 2
+  sighting 1: "herring gull" at the pier
+  sighting 2: "kittiwake" at the harbour wall
+Down(1) rolled back 1
+Down(1) refused: migration 2 has no down file
+after rolling back:
+  0001 sightings       applied  down file
+  0002 tidy_species    applied  no down file
+  0003 sighting_count  pending  down file
+Validate: every applied migration matches its file
+Validate after editing 0001_sightings: checksum mismatch
+  0001 sightings       applied  down file, edited since it was applied
+  0002 tidy_species    applied  no down file
+  0003 sighting_count  pending  down file
+Up after editing: refused for the same reason

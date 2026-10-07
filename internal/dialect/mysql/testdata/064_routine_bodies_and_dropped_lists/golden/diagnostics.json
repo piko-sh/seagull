@@ -1,0 +1,42 @@
+[
+  {
+    "Code": "Q003",
+    "Column": 1,
+    "EndColumn": 24,
+    "EndLine": 8,
+    "Filename": "scores.sql",
+    "Line": 8,
+    "Message": "unknown table or view \"legacy_b\"",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q001",
+    "Column": 8,
+    "EndColumn": 10,
+    "EndLine": 8,
+    "Filename": "scores.sql",
+    "Line": 8,
+    "Message": "unknown column \"id\"",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q003",
+    "Column": 1,
+    "EndColumn": 18,
+    "EndLine": 11,
+    "Filename": "scores.sql",
+    "Line": 11,
+    "Message": "unknown table or view \"vb\"",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q001",
+    "Column": 8,
+    "EndColumn": 10,
+    "EndLine": 11,
+    "Filename": "scores.sql",
+    "Line": 11,
+    "Message": "unknown column \"id\"",
+    "Severity": "warning"
+  }
+]

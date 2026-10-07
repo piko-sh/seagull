@@ -1,0 +1,4 @@
+{
+  "description": "A column definition list keeps the modifiers its types are written with, as a table column of the same type does: a numeric(10, 2) column has its precision and scale, a varchar(40) column its length, a timestamp(3) with time zone column its fractional-second precision, and a character varying(8)[] column is an array of strings of length 8.",
+  "expectedDiagnosticCount": 0
+}

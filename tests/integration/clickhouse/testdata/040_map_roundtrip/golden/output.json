@@ -1,0 +1,21 @@
+{
+  "rows": [
+    {
+      "counts": {
+        "apples": 5,
+        "oranges": 3
+      },
+      "id": 1
+    },
+    {
+      "counts": {
+        "bread": 1
+      },
+      "id": 2
+    },
+    {
+      "counts": {},
+      "id": 3
+    }
+  ]
+}

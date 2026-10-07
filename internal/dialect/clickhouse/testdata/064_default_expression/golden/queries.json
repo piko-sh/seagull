@@ -1,0 +1,30 @@
+[
+  {
+    "Command": "exec",
+    "Filename": "q.sql",
+    "InsertColumns": [
+      "id"
+    ],
+    "InsertTarget": {
+      "Name": "t"
+    },
+    "Line": 1,
+    "Name": "InsertDefault",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(InsertDefault, exec)\nINSERT INTO t (id) VALUES ({id:UInt64});",
+    "Template": "INSERT INTO t (id) VALUES ⟨values:(⟨p0 UInt64⟩)⟩;⟨arguments p0⟩"
+  }
+]

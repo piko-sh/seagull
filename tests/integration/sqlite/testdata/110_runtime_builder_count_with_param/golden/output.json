@@ -1,0 +1,20 @@
+{
+  "ada_count": 3,
+  "ada_named_count": 2,
+  "ada_named_filtered_count": 1,
+  "ada_popular_count": 2,
+  "ada_popular_rows": [
+    {
+      "author": "ada",
+      "id": 3,
+      "title": "Looms",
+      "views": 300
+    },
+    {
+      "author": "ada",
+      "id": 2,
+      "title": "Notes",
+      "views": 200
+    }
+  ]
+}

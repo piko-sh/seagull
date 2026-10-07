@@ -1,0 +1,11 @@
+{
+  "ends_at_nil": true,
+  "length": "01:30:00",
+  "longer": [
+    {
+      "id": 1,
+      "length": "01:30:00"
+    }
+  ],
+  "starts_at": "09:30:00"
+}

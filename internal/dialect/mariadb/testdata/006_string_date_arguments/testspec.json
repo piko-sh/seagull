@@ -1,0 +1,3 @@
+{
+  "description": "MariaDB reads a string or a number passed to a date or time function as a date or time, as MySQL does: the same calls analyse without a diagnostic and are typed as MariaDB 11 types them, DATE_ADD of a string a string and UNIX_TIMESTAMP of a string a DECIMAL."
+}

@@ -1,0 +1,192 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "public": {
+      "Functions": {
+        "audited": [
+          {
+            "Arguments": [
+              {
+                "Name": "event_name",
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "text"
+                }
+              }
+            ],
+            "BodySQL": "RETURN write_event(event_name)",
+            "DataAccess": "modifies-data",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "audited",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 2
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int4",
+              "Width": 32
+            }
+          }
+        ],
+        "audited_atomic": [
+          {
+            "Arguments": [
+              {
+                "Name": "event_name",
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "text"
+                }
+              }
+            ],
+            "BodySQL": "BEGIN ATOMIC\n    SELECT write_event(event_name);\nEND",
+            "DataAccess": "modifies-data",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "audited_atomic",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 3
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int4",
+              "Width": 32
+            }
+          }
+        ],
+        "described": [
+          {
+            "Arguments": [
+              {
+                "Name": "event_name",
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "text"
+                }
+              }
+            ],
+            "BodySQL": "\nDECLARE\n    label VARCHAR(20);\nBEGIN\n    -- write_event(event_name) is only mentioned here\n    RAISE NOTICE 'INSERT %', event_name;\n    RETURN upper(event_name);\nEND;\n",
+            "DataAccess": "read-only",
+            "Language": "plpgsql",
+            "MinArguments": 1,
+            "Name": "described",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 5
+            },
+            "ReturnType": {
+              "Category": "text",
+              "EngineName": "text"
+            }
+          }
+        ],
+        "tidied": [
+          {
+            "Arguments": [
+              {
+                "Name": "event_name",
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "text"
+                }
+              }
+            ],
+            "BodySQL": "RETURN lower(trim(event_name))",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "tidied",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 4
+            },
+            "ReturnType": {
+              "Category": "text",
+              "EngineName": "text"
+            }
+          }
+        ],
+        "write_event": [
+          {
+            "Arguments": [
+              {
+                "Name": "event_name",
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "text"
+                }
+              }
+            ],
+            "BodySQL": "\nBEGIN\n    INSERT INTO events (name) VALUES (event_name);\n    RETURN 1;\nEND;\n",
+            "DataAccess": "modifies-data",
+            "Language": "plpgsql",
+            "MinArguments": 1,
+            "Name": "write_event",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 1
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int4",
+              "Width": 32
+            }
+          }
+        ]
+      },
+      "Name": "public",
+      "Tables": {
+        "events": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            }
+          ],
+          "Name": "events",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

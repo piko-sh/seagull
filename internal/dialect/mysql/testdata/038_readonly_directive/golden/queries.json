@@ -1,0 +1,238 @@
+[
+  {
+    "Command": "many",
+    "Filename": "items.sql",
+    "Line": 1,
+    "Name": "BareReadOnly",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: BareReadOnly, command: many, readonly: true)\nSELECT id, name FROM items;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩ FROM items;"
+  },
+  {
+    "Command": "many",
+    "Filename": "items.sql",
+    "Line": 4,
+    "Name": "ExplicitReadOnlyTrue",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ExplicitReadOnlyTrue, command: many, readonly: true)\nSELECT id, name FROM items;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩ FROM items;"
+  },
+  {
+    "Command": "many",
+    "Filename": "items.sql",
+    "Line": 7,
+    "Name": "ExplicitReadOnlyFalse",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      }
+    ],
+    "SQL": "-- sgl.query(name: ExplicitReadOnlyFalse, command: many, readonly: false)\nSELECT id, name FROM items;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩ FROM items;"
+  },
+  {
+    "Command": "one",
+    "Filename": "items.sql",
+    "Line": 10,
+    "Name": "OverrideVolatileToReadOnly",
+    "OutputColumns": [
+      {
+        "Name": "result",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "val",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: OverrideVolatileToReadOnly, command: one, readonly: true)\nSELECT volatile_func(?) AS result;",
+    "Template": "SELECT ⟨c0 aliased:volatile_func(⟨p0⟩)⟩ AS result;⟨arguments p0⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "items.sql",
+    "InsertColumns": [
+      "name",
+      "quantity"
+    ],
+    "InsertTarget": {
+      "Name": "items"
+    },
+    "Line": 13,
+    "Name": "InsertOverriddenToReadOnly",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "quantity",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: InsertOverriddenToReadOnly, command: exec, readonly: true)\nINSERT INTO items (name, quantity) VALUES (?, ?);",
+    "Template": "INSERT INTO items (name, quantity) VALUES ⟨values:(⟨p0⟩, ⟨p1⟩)⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "items.sql",
+    "Line": 16,
+    "Name": "MigrationOverriddenReadOnly",
+    "OutputColumns": [
+      {
+        "Name": "result",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "val",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: MigrationOverriddenReadOnly, command: one)\nSELECT overridden_readonly_func(?) AS result;",
+    "Template": "SELECT ⟨c0 aliased:overridden_readonly_func(⟨p0⟩)⟩ AS result;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "items.sql",
+    "Line": 19,
+    "Name": "MigrationOverriddenNotReadOnly",
+    "OutputColumns": [
+      {
+        "Name": "result",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "val",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: MigrationOverriddenNotReadOnly, command: one)\nSELECT overridden_not_readonly_func(?) AS result;",
+    "Template": "SELECT ⟨c0 aliased:overridden_not_readonly_func(⟨p0⟩)⟩ AS result;⟨arguments p0⟩"
+  }
+]

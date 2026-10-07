@@ -1,0 +1,110 @@
+{
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "": {
+      "Functions": {
+        "bump_if": [
+          {
+            "Arguments": [
+              {
+                "Name": "p",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int",
+                  "Width": 32
+                }
+              }
+            ],
+            "BodySQL": "DECLARE flag INT DEFAULT CASE WHEN p \u003e 0 THEN 1 ELSE 0 END;\n    IF p \u003e 100 THEN\n        SET flag = 2;\n    END IF;\n    UPDATE scores SET points = points + 1 WHERE points = p;\n    RETURN flag;",
+            "DataAccess": "modifies-data",
+            "MinArguments": 1,
+            "Name": "bump_if",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 5
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int",
+              "Width": 32
+            }
+          }
+        ],
+        "label_of": [
+          {
+            "Arguments": [
+              {
+                "Name": "p",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int",
+                  "Width": 32
+                }
+              }
+            ],
+            "BodySQL": "CONCAT('it''s ', `p`)",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "label_of",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 6
+            },
+            "ReturnType": {
+              "Category": "text",
+              "EngineName": "text"
+            }
+          }
+        ]
+      },
+      "Tables": {
+        "scores": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "points",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            }
+          ],
+          "Name": "scores",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ]
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    ""
+  ]
+}

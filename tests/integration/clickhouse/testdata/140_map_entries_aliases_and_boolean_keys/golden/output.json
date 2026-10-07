@@ -1,0 +1,95 @@
+{
+  "checks": [
+    {
+      "doubled": 20,
+      "key": "beak",
+      "label": "beak?"
+    },
+    {
+      "doubled": 360,
+      "key": "wing",
+      "label": "wing?"
+    },
+    {
+      "doubled": 0,
+      "key": "",
+      "label": "?"
+    }
+  ],
+  "entries": [
+    {
+      "entry": {
+        "keys": "beak",
+        "values": 10
+      },
+      "id": 1
+    },
+    {
+      "entry": {
+        "keys": "wing",
+        "values": 180
+      },
+      "id": 1
+    }
+  ],
+  "flags": [
+    {
+      "false": 0,
+      "true": 1
+    },
+    {
+      "true": 2
+    }
+  ],
+  "in_place": [
+    {
+      "amount": 10,
+      "attributes": {
+        "keys": "beak",
+        "values": 10
+      },
+      "id": 1,
+      "label": "beak"
+    },
+    {
+      "amount": 180,
+      "attributes": {
+        "keys": "wing",
+        "values": 180
+      },
+      "id": 1,
+      "label": "wing"
+    },
+    {
+      "amount": 0,
+      "attributes": {
+        "keys": "",
+        "values": 0
+      },
+      "id": 2,
+      "label": ""
+    }
+  ],
+  "shadowing": [
+    {
+      "again": 2,
+      "name": 2,
+      "original": "gannet"
+    },
+    {
+      "again": 3,
+      "name": 3,
+      "original": "puffin"
+    }
+  ],
+  "sums": [
+    {
+      "original": "gannet!",
+      "sum": 4
+    },
+    {
+      "original": "puffin!",
+      "sum": 6
+    }
+  ]
+}

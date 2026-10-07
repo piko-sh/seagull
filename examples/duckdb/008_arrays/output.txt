@@ -1,0 +1,11 @@
+voyage 1  Kittiwake   ports [Newlyn St Ives Mousehole], catch [120 85] kg, sightings [dolphin basking shark]
+voyage 2  Salty Chip  ports [Penzance Mousehole], catch [40] kg, sightings NULL
+voyage 3  Kittiwake   ports [Newlyn Lamorna], catch [60 30 15] kg, sightings []
+
+calling at Mousehole:
+  Kittiwake   from Newlyn, 3 stops
+  Salty Chip  from Penzance, 2 stops
+
+voyages per boat:
+  Kittiwake   [1 3]
+  Salty Chip  [2]

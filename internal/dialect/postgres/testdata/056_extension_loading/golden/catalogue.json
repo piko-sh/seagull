@@ -1,0 +1,168 @@
+{
+  "DefaultSchema": "public",
+  "Extensions": {
+    "pgcrypto": {}
+  },
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "public": {
+      "Functions": {
+        "crypt": [
+          {
+            "Arguments": [
+              {
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "text"
+                }
+              },
+              {
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "text"
+                }
+              }
+            ],
+            "DataAccess": "read-only",
+            "Name": "crypt",
+            "NullableBehaviour": "returns-null-on-null",
+            "ReturnType": {
+              "Category": "text",
+              "EngineName": "text"
+            }
+          }
+        ],
+        "digest": [
+          {
+            "Arguments": [
+              {
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "text"
+                }
+              },
+              {
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "text"
+                }
+              }
+            ],
+            "DataAccess": "read-only",
+            "Name": "digest",
+            "NullableBehaviour": "returns-null-on-null",
+            "ReturnType": {
+              "Category": "binary",
+              "EngineName": "bytea"
+            }
+          }
+        ],
+        "gen_random_uuid": [
+          {
+            "DataAccess": "read-only",
+            "Name": "gen_random_uuid",
+            "NullableBehaviour": "never-null",
+            "ReturnType": {
+              "Category": "uuid",
+              "EngineName": "uuid"
+            }
+          }
+        ],
+        "gen_salt": [
+          {
+            "Arguments": [
+              {
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "text"
+                }
+              }
+            ],
+            "DataAccess": "read-only",
+            "MinArguments": 1,
+            "Name": "gen_salt",
+            "NullableBehaviour": "returns-null-on-null",
+            "ReturnType": {
+              "Category": "text",
+              "EngineName": "text"
+            }
+          }
+        ],
+        "hmac": [
+          {
+            "Arguments": [
+              {
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "text"
+                }
+              },
+              {
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "text"
+                }
+              },
+              {
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "text"
+                }
+              }
+            ],
+            "DataAccess": "read-only",
+            "Name": "hmac",
+            "NullableBehaviour": "returns-null-on-null",
+            "ReturnType": {
+              "Category": "binary",
+              "EngineName": "bytea"
+            }
+          }
+        ]
+      },
+      "Name": "public",
+      "Tables": {
+        "tokens": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "uuid",
+                "EngineName": "uuid"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "value",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            }
+          ],
+          "Name": "tokens",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 1
+          },
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

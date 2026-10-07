@@ -1,0 +1,48 @@
+[
+  {
+    "Command": "many",
+    "Filename": "widen_param.sql",
+    "Line": 1,
+    "Name": "WidenParam",
+    "OutputColumns": [
+      {
+        "Name": "a",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int2",
+          "Width": 16
+        },
+        "SourceColumn": "a",
+        "SourceQualifier": "t1",
+        "SourceTable": "t1"
+      },
+      {
+        "Name": "b",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "b",
+        "SourceQualifier": "t2",
+        "SourceTable": "t2"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "a",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: WidenParam, command: many)\nSELECT t1.a, t2.b FROM t1, t2 WHERE t1.a = $1 AND t2.b = $1;",
+    "Template": "SELECT ⟨c0:t1.a⟩, ⟨c1:t2.b⟩ FROM t1, t2 WHERE t1.a = ⟨p0⟩ AND t2.b = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

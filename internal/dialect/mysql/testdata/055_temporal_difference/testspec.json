@@ -1,0 +1,1 @@
+{"description": "MySQL reads dates, times and datetimes as numbers when it subtracts them: the difference is a BIGINT, or a DECIMAL when an operand has fractional seconds, never a temporal value"}

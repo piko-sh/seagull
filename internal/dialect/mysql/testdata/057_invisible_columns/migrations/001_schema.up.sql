@@ -1,0 +1,6 @@
+CREATE TABLE accounts (
+    id INT NOT NULL PRIMARY KEY,
+    email VARCHAR(100) NOT NULL,
+    token VARCHAR(64) NOT NULL DEFAULT 'none' INVISIBLE,
+    region VARCHAR(10) NOT NULL DEFAULT 'eu'
+);

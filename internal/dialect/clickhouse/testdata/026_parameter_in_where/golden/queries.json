@@ -1,0 +1,69 @@
+[
+  {
+    "Command": "many",
+    "Filename": "entries.sql",
+    "Line": 1,
+    "Name": "FilterEntries",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "entries",
+        "SourceTable": "entries"
+      },
+      {
+        "Name": "category",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "category",
+        "SourceQualifier": "entries",
+        "SourceTable": "entries"
+      },
+      {
+        "Name": "score",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "Float64",
+          "Width": 64
+        },
+        "SourceColumn": "score",
+        "SourceQualifier": "entries",
+        "SourceTable": "entries"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "cat",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "min_score",
+        "Number": 2,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "Float64",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(FilterEntries, many)\nSELECT id, category, score\nFROM entries\nWHERE category = {cat:String} AND score \u003e= {min_score:Float64};",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:category⟩, ⟨c2:score⟩\\nFROM entries\\nWHERE category = ⟨p0 String⟩ AND score \u003e= ⟨p1 Float64⟩;⟨arguments p0 p1⟩"
+  }
+]

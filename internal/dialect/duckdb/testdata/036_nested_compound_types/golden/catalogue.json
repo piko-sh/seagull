@@ -1,0 +1,113 @@
+{
+  "DefaultSchema": "main",
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "main": {
+      "Name": "main",
+      "Tables": {
+        "routes": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar"
+              }
+            },
+            {
+              "ArrayDimensions": 1,
+              "GeneratedKind": "none",
+              "IsArray": true,
+              "Name": "waypoints",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "struct",
+                "Nullable": true,
+                "StructFields": [
+                  {
+                    "Name": "x",
+                    "SQLType": {
+                      "Category": "float",
+                      "EngineName": "float8",
+                      "Nullable": true,
+                      "Width": 64
+                    }
+                  },
+                  {
+                    "Name": "y",
+                    "SQLType": {
+                      "Category": "float",
+                      "EngineName": "float8",
+                      "Nullable": true,
+                      "Width": 64
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "metadata",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "map",
+                "ElementType": {
+                  "Category": "array",
+                  "ElementType": {
+                    "Category": "integer",
+                    "EngineName": "int4",
+                    "Nullable": true,
+                    "Width": 32
+                  },
+                  "EngineName": "int4[]",
+                  "Nullable": true
+                },
+                "EngineName": "map",
+                "KeyType": {
+                  "Category": "text",
+                  "EngineName": "varchar"
+                }
+              }
+            }
+          ],
+          "Name": "routes",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "main"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "main"
+  ]
+}

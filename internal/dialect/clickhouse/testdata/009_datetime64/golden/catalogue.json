@@ -1,0 +1,69 @@
+{
+  "DefaultSchema": "default",
+  "Identifiers": {
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "default": {
+      "Name": "default",
+      "Tables": {
+        "timed": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt64",
+                "Unsigned": true,
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "micro_ts",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "temporal",
+                "EngineName": "DateTime64",
+                "Precision": 6,
+                "Temporal": "timestamp",
+                "TimeZone": true
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "nano_ts",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "temporal",
+                "EngineName": "DateTime64",
+                "Precision": 9,
+                "Temporal": "timestamp",
+                "TimeZone": true
+              }
+            }
+          ],
+          "Name": "timed",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "default"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "default"
+  ]
+}

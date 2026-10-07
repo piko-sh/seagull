@@ -1,0 +1,67 @@
+{
+  "DefaultSchema": "main",
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "main": {
+      "Name": "main",
+      "Tables": {
+        "flags": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_create_flags.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "bigint",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "mask",
+              "Origin": {
+                "Filename": "001_create_flags.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "integer",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "bits",
+              "Origin": {
+                "Filename": "001_create_flags.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "integer",
+                "Width": 64
+              }
+            }
+          ],
+          "Name": "flags",
+          "Origin": {
+            "Filename": "001_create_flags.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "main"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "main",
+    "temp"
+  ]
+}

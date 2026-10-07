@@ -1,0 +1,74 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "public": {
+      "Name": "public",
+      "Tables": {
+        "users": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_create_users.up.sql"
+              },
+              "SQLType": {
+                "Category": "uuid",
+                "EngineName": "uuid"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Origin": {
+                "Filename": "001_create_users.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "email",
+              "Origin": {
+                "Filename": "001_create_users.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "created_at",
+              "Origin": {
+                "Filename": "001_create_users.up.sql"
+              },
+              "SQLType": {
+                "Category": "temporal",
+                "EngineName": "timestamptz",
+                "Temporal": "timestamp",
+                "TimeZone": true
+              }
+            }
+          ],
+          "Name": "users",
+          "Origin": {
+            "Filename": "001_create_users.up.sql"
+          },
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

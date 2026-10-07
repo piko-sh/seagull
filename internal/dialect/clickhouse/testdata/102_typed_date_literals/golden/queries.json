@@ -1,0 +1,50 @@
+[
+  {
+    "Command": "many",
+    "Filename": "trips.sql",
+    "Line": 1,
+    "Name": "TripsSince",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "trips",
+        "SourceTable": "trips"
+      },
+      {
+        "Name": "epoch_day",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "Date",
+          "Temporal": "date"
+        }
+      },
+      {
+        "Name": "epoch_time",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "days_left",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: TripsSince, command: many)\nSELECT\n    id,\n    DATE '2024-01-01' AS epoch_day,\n    TIMESTAMP '2024-01-01 00:00:00' AS epoch_time,\n    dateDiff('day', started, DATE '2024-12-31') AS days_left\nFROM trips\nWHERE started \u003e= date '2024-01-01'\n  AND departed \u003c timestamp '2025-01-01 00:00:00';",
+    "Template": "SELECT\\n    ⟨c0:id⟩,\\n    ⟨c1 aliased:DATE '2024-01-01'⟩ AS epoch_day,\\n    ⟨c2 aliased:TIMESTAMP '2024-01-01 00:00:00'⟩ AS epoch_time,\\n    ⟨c3 aliased:dateDiff('day', started, DATE '2024-12-31')⟩ AS days_left\\nFROM trips\\nWHERE started \u003e= date '2024-01-01'\\n  AND departed \u003c timestamp '2025-01-01 00:00:00';"
+  }
+]

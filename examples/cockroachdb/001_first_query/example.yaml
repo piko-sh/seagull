@@ -1,0 +1,29 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: The SQLite tasks program on CockroachDB; unique_rowid() fills the INT8 key, STRING and BOOL become string and bool, and the CockroachDB migration backend applies the schema.
+differs:
+  - "$1 placeholders"
+  - INT8 DEFAULT unique_rowid() keys are large, time-ordered int64 values, not 1, 2, 3, so the output prints titles rather than IDs
+  - STRING maps to string, BOOL to bool and TIMESTAMPTZ to time.Time
+  - the list orders by created_at, id, since unique_rowid() values are only roughly in insertion order across nodes
+  - migrations run through migrate_backend_cockroachdb.New(), which locks with a table because CockroachDB has no advisory locks
+  - transactions use SERIALIZABLE isolation by default and may fail with SQLSTATE 40001; the generated RunInTx does not retry them
+entry: {file: db/queries/tasks.sql, query: CreateTask}
+live: "no"
+test: integration

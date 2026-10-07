@@ -1,0 +1,79 @@
+[
+  {
+    "Code": "Q059",
+    "Column": 8,
+    "EndColumn": 18,
+    "EndLine": 2,
+    "Filename": "lookups.sql",
+    "Line": 2,
+    "Message": "column \"list_keyed\" cannot be read: it holds a Map keyed by an Array, which clickhouse-go cannot read: it fails to decode the block, whatever the column is read into",
+    "Severity": "error",
+    "Suggestion": "select mapKeys(m) and mapValues(m), arrays clickhouse-go reads"
+  },
+  {
+    "Code": "Q059",
+    "Column": 20,
+    "EndColumn": 30,
+    "EndLine": 2,
+    "Filename": "lookups.sql",
+    "Line": 2,
+    "Message": "column \"pair_keyed\" cannot be read: it holds a Map keyed by a Tuple, which clickhouse-go cannot read: it fails to decode the block, whatever the column is read into",
+    "Severity": "error",
+    "Suggestion": "select mapKeys(m) and mapValues(m), arrays clickhouse-go reads"
+  },
+  {
+    "Code": "Q059",
+    "Column": 32,
+    "EndColumn": 45,
+    "EndLine": 2,
+    "Filename": "lookups.sql",
+    "Line": 2,
+    "Message": "column \"unnamed_keyed\" cannot be read: it holds a Map keyed by a Tuple, which clickhouse-go cannot read: it fails to decode the block, whatever the column is read into",
+    "Severity": "error",
+    "Suggestion": "select mapKeys(m) and mapValues(m), arrays clickhouse-go reads"
+  },
+  {
+    "Code": "Q059",
+    "Column": 47,
+    "EndColumn": 56,
+    "EndLine": 2,
+    "Filename": "lookups.sql",
+    "Line": 2,
+    "Message": "column \"map_keyed\" cannot be read: it holds a Map keyed by a Map, which clickhouse-go cannot read: it fails to decode the block, whatever the column is read into",
+    "Severity": "error",
+    "Suggestion": "select mapKeys(m) and mapValues(m), arrays clickhouse-go reads"
+  },
+  {
+    "Code": "Q059",
+    "Column": 58,
+    "EndColumn": 71,
+    "EndLine": 2,
+    "Filename": "lookups.sql",
+    "Line": 2,
+    "Message": "column \"decimal_keyed\" cannot be read: it holds a Map keyed by a Decimal, which clickhouse-go cannot read: it fails to decode the block, whatever the column is read into",
+    "Severity": "error",
+    "Suggestion": "select mapKeys(m) and mapValues(m), arrays clickhouse-go reads"
+  },
+  {
+    "Code": "Q059",
+    "Column": 73,
+    "EndColumn": 93,
+    "EndLine": 2,
+    "Filename": "lookups.sql",
+    "Line": 2,
+    "Message": "column \"listed_decimal_keyed\" cannot be read: it holds a Map keyed by a Decimal, which clickhouse-go cannot read: it fails to decode the block, whatever the column is read into",
+    "Severity": "error",
+    "Suggestion": "select mapKeys(m) and mapValues(m), arrays clickhouse-go reads"
+  },
+  {
+    "Code": "Q059",
+    "Column": 95,
+    "EndColumn": 110,
+    "EndLine": 2,
+    "Filename": "lookups.sql",
+    "Line": 2,
+    "Message": "column \"held_list_keyed\" cannot be read: it holds a Map keyed by an Array, which clickhouse-go cannot read: it fails to decode the block, whatever the column is read into",
+    "Severity": "error",
+    "Suggestion": "select mapKeys(m) and mapValues(m), arrays clickhouse-go reads"
+  }
+]

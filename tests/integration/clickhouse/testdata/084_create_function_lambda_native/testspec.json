@@ -1,0 +1,4 @@
+{
+  "description": "A call to a function created as a lambda is typed from the lambda's body with the call's argument types, as ClickHouse types it: times_two(21) is UInt8 times UInt8, a UInt16, times_two over a UInt32 column a UInt64, and add_up with a Float64 a Float64. The native driver scans each into its exact Go type, and the read-only lambda keeps the query on the reader.",
+  "emitter": "native"
+}

@@ -1,0 +1,36 @@
+{
+  "add_owned": "added",
+  "add_unowned": "added",
+  "of_no_owner": 0,
+  "of_owner": [
+    {
+      "id": 1,
+      "label": "owned"
+    }
+  ],
+  "search_any_owner": [
+    {
+      "id": 1
+    },
+    {
+      "id": 2
+    }
+  ],
+  "search_owner": [
+    {
+      "id": 1
+    }
+  ],
+  "tokens": [
+    {
+      "id": 1,
+      "label": "owned",
+      "owner": "0b9f8e2c-6d1a-4f3e-9a7b-5c4d3e2f1a0b"
+    },
+    {
+      "id": 2,
+      "label": "unowned",
+      "owner": null
+    }
+  ]
+}

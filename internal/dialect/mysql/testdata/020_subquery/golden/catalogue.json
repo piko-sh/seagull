@@ -1,0 +1,76 @@
+{
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "": {
+      "Tables": {
+        "products": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Length": 200
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "category",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Length": 100
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "price",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "decimal",
+                "EngineName": "decimal",
+                "Precision": 10,
+                "Scale": 2
+              }
+            }
+          ],
+          "Name": "products",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ]
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    ""
+  ]
+}

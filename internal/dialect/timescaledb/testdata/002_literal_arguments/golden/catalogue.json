@@ -1,0 +1,113 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "public": {
+      "Name": "public",
+      "Tables": {
+        "conditions": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "time",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "temporal",
+                "EngineName": "timestamptz",
+                "Temporal": "timestamp",
+                "TimeZone": true
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "device_id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "temperature",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "float",
+                "EngineName": "float8",
+                "Width": 64
+              }
+            }
+          ],
+          "Name": "conditions",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "Schema": "public"
+        }
+      },
+      "Views": {
+        "conditions_daily": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "bucket",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "temporal",
+                "EngineName": "timestamptz",
+                "Temporal": "timestamp",
+                "TimeZone": true
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "device_id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "avg_temp",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "float",
+                "EngineName": "float8",
+                "Width": 64
+              }
+            }
+          ],
+          "Name": "conditions_daily",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 2
+          },
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

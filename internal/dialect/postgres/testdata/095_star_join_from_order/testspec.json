@@ -1,0 +1,4 @@
+{
+  "description": "SELECT * over a join expands each relation's columns in FROM order (zebras, then apples) even though the aliases z and a sort the other way, so the row struct matches the column order the database returns.",
+  "expectedDiagnosticCount": 0
+}

@@ -1,0 +1,64 @@
+{
+  "DefaultSchema": "default",
+  "Identifiers": {
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "default": {
+      "Name": "default",
+      "Tables": {
+        "events": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_events.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt64",
+                "Unsigned": true,
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "kind",
+              "Origin": {
+                "Filename": "001_events.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "String"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "score",
+              "Origin": {
+                "Filename": "001_events.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "Int32",
+                "Width": 32
+              }
+            }
+          ],
+          "Name": "events",
+          "Origin": {
+            "Filename": "001_events.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "default"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "default"
+  ]
+}

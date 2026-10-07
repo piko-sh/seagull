@@ -1,0 +1,104 @@
+[
+  {
+    "Command": "many",
+    "Filename": "feelings.sql",
+    "Line": 1,
+    "Name": "ListFeelings",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "feelings",
+        "SourceTable": "feelings"
+      },
+      {
+        "Name": "mood",
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "happy",
+            "angry",
+            "calm",
+            "sad"
+          ],
+          "Schema": "public"
+        },
+        "SourceColumn": "mood",
+        "SourceQualifier": "feelings",
+        "SourceTable": "feelings"
+      },
+      {
+        "Name": "moods",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "enum",
+            "EngineName": "mood",
+            "EnumValues": [
+              "happy",
+              "angry",
+              "calm",
+              "sad"
+            ],
+            "Nullable": true,
+            "Schema": "public"
+          },
+          "EngineName": "mood[]"
+        },
+        "SourceColumn": "moods",
+        "SourceQualifier": "feelings",
+        "SourceTable": "feelings"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListFeelings, command: many)\nSELECT * FROM feelings;",
+    "Template": "SELECT ⟨star 0=feelings.id 1=feelings.mood 2=feelings.moods:*⟩ FROM feelings;"
+  },
+  {
+    "Command": "many",
+    "Filename": "feelings.sql",
+    "Line": 4,
+    "Name": "FeelingsIn",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "feelings",
+        "SourceTable": "feelings"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "mood",
+        "Number": 1,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "happy",
+            "angry",
+            "calm",
+            "sad"
+          ],
+          "Schema": "public"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FeelingsIn, command: many)\nSELECT id FROM feelings WHERE mood = $1;",
+    "Template": "SELECT ⟨c0:id⟩ FROM feelings WHERE mood = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

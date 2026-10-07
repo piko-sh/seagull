@@ -1,0 +1,49 @@
+{
+  "arrays": {
+    "grid": [
+      [
+        1,
+        2
+      ],
+      [
+        3,
+        4
+      ]
+    ],
+    "ids": [
+      1,
+      10,
+      11
+    ]
+  },
+  "create_user": {
+    "p_id": 1
+  },
+  "fields": [
+    {
+      "b": "seven",
+      "first": 7
+    }
+  ],
+  "lowered": {
+    "l": "abc"
+  },
+  "populate": {
+    "id": 5,
+    "label": "five"
+  },
+  "total": {
+    "t": 8
+  },
+  "two_outs": {
+    "doubled": 42,
+    "label": "n"
+  },
+  "users_named": [
+    {
+      "bar": "(7,seven)",
+      "id": 10,
+      "name": "Ada"
+    }
+  ]
+}

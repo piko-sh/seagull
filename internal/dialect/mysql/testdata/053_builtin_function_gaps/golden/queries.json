@@ -1,0 +1,159 @@
+[
+  {
+    "Command": "many",
+    "Filename": "readings.sql",
+    "Line": 1,
+    "Name": "SummariseReadings",
+    "OutputColumns": [
+      {
+        "Name": "label",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 40
+        },
+        "SourceColumn": "label",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "total",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal"
+        }
+      },
+      {
+        "Name": "ratio_ceiling",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "double",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "ratio_remainder",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "double",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "largest_id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "checksum",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int unsigned",
+          "Unsigned": true,
+          "Width": 32
+        }
+      },
+      {
+        "Name": "digest",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "long_digest",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "position",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "month_name",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "taken_year",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "summarised_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        }
+      },
+      {
+        "Name": "taken_month",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "id_digits",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "label_number",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "local_taken_at",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        }
+      },
+      {
+        "Name": "ratio_variance",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "double",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: SummariseReadings, command: many)\nSELECT\n    label,\n    ROUND(SUM(price), 2) AS total,\n    CEIL(MAX(ratio)) AS ratio_ceiling,\n    MOD(MAX(ratio), 2) AS ratio_remainder,\n    ABS(MAX(id)) AS largest_id,\n    CRC32(label) AS checksum,\n    MD5(label) AS digest,\n    SHA2(label, 256) AS long_digest,\n    FIELD(label, 'cold', 'warm') AS position,\n    MONTHNAME(MAX(taken_at)) AS month_name,\n    EXTRACT(YEAR FROM MAX(taken_at)) AS taken_year,\n    UTC_TIMESTAMP(6) AS summarised_at,\n    LEFT(MAX(taken_at), 7) AS taken_month,\n    LENGTH(MAX(id)) AS id_digits,\n    REGEXP_SUBSTR(label, '[0-9]+') AS label_number,\n    CONVERT_TZ(MAX(taken_at), '+00:00', '+01:00') AS local_taken_at,\n    VAR_POP(ratio) AS ratio_variance\nFROM readings\nGROUP BY label;",
+    "Template": "SELECT\\n    ⟨c0:label⟩,\\n    ⟨c1 aliased:ROUND(SUM(price), 2)⟩ AS total,\\n    ⟨c2 aliased:CEIL(MAX(ratio))⟩ AS ratio_ceiling,\\n    ⟨c3 aliased:MOD(MAX(ratio), 2)⟩ AS ratio_remainder,\\n    ⟨c4 aliased:ABS(MAX(id))⟩ AS largest_id,\\n    ⟨c5 aliased:CRC32(label)⟩ AS checksum,\\n    ⟨c6 aliased:MD5(label)⟩ AS digest,\\n    ⟨c7 aliased:SHA2(label, 256)⟩ AS long_digest,\\n    ⟨c8 aliased:FIELD(label, 'cold', 'warm')⟩ AS position,\\n    ⟨c9 aliased:MONTHNAME(MAX(taken_at))⟩ AS month_name,\\n    ⟨c10 aliased:EXTRACT(YEAR FROM MAX(taken_at))⟩ AS taken_year,\\n    ⟨c11 aliased:UTC_TIMESTAMP(6)⟩ AS summarised_at,\\n    ⟨c12 aliased:LEFT(MAX(taken_at), 7)⟩ AS taken_month,\\n    ⟨c13 aliased:LENGTH(MAX(id))⟩ AS id_digits,\\n    ⟨c14 aliased:REGEXP_SUBSTR(label, '[0-9]+')⟩ AS label_number,\\n    ⟨c15 aliased:CONVERT_TZ(MAX(taken_at), '+00:00', '+01:00')⟩ AS local_taken_at,\\n    ⟨c16 aliased:VAR_POP(ratio)⟩ AS ratio_variance\\nFROM readings\\nGROUP BY label;"
+  }
+]

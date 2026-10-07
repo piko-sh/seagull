@@ -1,0 +1,5 @@
+{
+  "description": "ClickHouse through the native emitter, which scans each value into the Go type of its exact ClickHouse type: positiveModulo, pmod and positive_modulo are unsigned at the divisor's width, modulo, % and moduloOrZero of a signed dividend take the next width above the divisor's, and widthBucket is unsigned at twice the bucket count's width.",
+  "emitter": "native",
+  "expectedDiagnostics": []
+}

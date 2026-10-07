@@ -1,0 +1,4 @@
+{
+  "description": "Table functions and typing against CockroachDB through database/sql: a function returning a set of a table's rows, one with several output parameters, one with one output parameter under its alias, which CockroachDB names the column after, and lower('ABC') under its alias read as FROM items; CALL of a procedure with an output parameter returns its row; json_populate_record gives the row type's columns; composite fields read the composite type's fields; and ARRAY(SELECT id) and a nested array literal read as arrays.",
+  "expectedDiagnostics": []
+}

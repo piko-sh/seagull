@@ -1,0 +1,157 @@
+{
+  "DefaultSchema": "default",
+  "Identifiers": {
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "default": {
+      "Name": "default",
+      "Tables": {
+        "stock": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt64",
+                "Unsigned": true,
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "counts",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "map",
+                "ElementType": {
+                  "Category": "integer",
+                  "EngineName": "UInt32",
+                  "Unsigned": true,
+                  "Width": 32
+                },
+                "EngineName": "Map",
+                "KeyType": {
+                  "Category": "text",
+                  "EngineName": "String"
+                }
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "shelves",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "array",
+                "ElementType": {
+                  "Category": "map",
+                  "ElementType": {
+                    "Category": "integer",
+                    "EngineName": "UInt8",
+                    "Unsigned": true,
+                    "Width": 8
+                  },
+                  "EngineName": "Map",
+                  "KeyType": {
+                    "Category": "text",
+                    "EngineName": "String"
+                  }
+                },
+                "EngineName": "Array"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "tagged",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "Tuple",
+                "StructFields": [
+                  {
+                    "Name": "_1",
+                    "Positional": true,
+                    "SQLType": {
+                      "Category": "map",
+                      "ElementType": {
+                        "Category": "integer",
+                        "EngineName": "UInt8",
+                        "Unsigned": true,
+                        "Width": 8
+                      },
+                      "EngineName": "Map",
+                      "KeyType": {
+                        "Category": "text",
+                        "EngineName": "String"
+                      }
+                    }
+                  },
+                  {
+                    "Name": "_2",
+                    "Positional": true,
+                    "SQLType": {
+                      "Category": "integer",
+                      "EngineName": "UInt8",
+                      "Unsigned": true,
+                      "Width": 8
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "nested",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "map",
+                "ElementType": {
+                  "Category": "map",
+                  "ElementType": {
+                    "Category": "integer",
+                    "EngineName": "UInt8",
+                    "Unsigned": true,
+                    "Width": 8
+                  },
+                  "EngineName": "Map",
+                  "KeyType": {
+                    "Category": "text",
+                    "EngineName": "String"
+                  }
+                },
+                "EngineName": "Map",
+                "KeyType": {
+                  "Category": "text",
+                  "EngineName": "String"
+                }
+              }
+            }
+          ],
+          "Name": "stock",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "default"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "default"
+  ]
+}

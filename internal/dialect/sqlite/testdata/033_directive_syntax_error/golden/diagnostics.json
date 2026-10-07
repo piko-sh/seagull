@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q028",
+    "Column": 39,
+    "EndColumn": 46,
+    "EndLine": 1,
+    "Filename": "invalid_command.sql",
+    "Line": 1,
+    "Message": "invalid value \"invalid\" for keyword argument \"command\"; allowed: one, many, exec, execresult, execrows, batch, stream, copyfrom, asyncexec",
+    "Severity": "error"
+  }
+]

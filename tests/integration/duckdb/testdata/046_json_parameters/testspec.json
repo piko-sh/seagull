@@ -1,0 +1,3 @@
+{
+  "description": "JSON parameter wire form: the generated JSON type is written by exec and batch and read back, and the stored document is described with the engine's own functions, compared with the same text as a literal and found by the document as a parameter; the document holds spacing, key order, a trailing zero, HTML characters and two- and four-byte UTF-8. A JSON[] list and a STRUCT holding a JSON field are written too. A list of JSON values binds through sglDriverComposite, which converts each element through its driver.Valuer to text. A document inside a list or a struct reads back through the driver-composite scan adapter, which encodes the driver's decoded value again (sorted keys, 2.5, HTML characters escaped): a known limitation."
+}

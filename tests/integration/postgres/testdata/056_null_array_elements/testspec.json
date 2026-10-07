@@ -1,0 +1,4 @@
+{
+  "description": "A NULL array element round-trips through database/sql, which reads an array as JSON: the elements of an array column, of an array_agg and of an ARRAY constructor are pointers by default, since PostgreSQL can hold NULL in any array, and read NULL as nil, in a query's row and in the table's model alike; a column whose elements a sgl.column directive declares non-null reads into plain elements and refuses a NULL element with an error.",
+  "expectedDiagnostics": []
+}

@@ -1,0 +1,5 @@
+CREATE TABLE fleets (
+    id     INTEGER PRIMARY KEY,
+    fees   MAP(VARCHAR, INTEGER) NOT NULL,
+    extras MAP(VARCHAR, VARCHAR)
+);

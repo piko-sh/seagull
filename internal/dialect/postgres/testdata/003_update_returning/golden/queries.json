@@ -1,0 +1,56 @@
+[
+  {
+    "Command": "one",
+    "Filename": "publish_post.sql",
+    "Line": 1,
+    "Name": "PublishPost",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "posts",
+        "SourceTable": "posts"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "posts",
+        "SourceTable": "posts"
+      },
+      {
+        "Name": "published",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        },
+        "SourceColumn": "published",
+        "SourceQualifier": "posts",
+        "SourceTable": "posts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: PublishPost, command: one)\nUPDATE posts SET published = TRUE WHERE id = $1 RETURNING id, title, published;",
+    "Template": "UPDATE posts SET published = TRUE WHERE id = ⟨p0⟩ RETURNING ⟨c0:id⟩, ⟨c1:title⟩, ⟨c2:published⟩;⟨arguments p0⟩"
+  }
+]

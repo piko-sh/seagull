@@ -1,0 +1,85 @@
+[
+  {
+    "Command": "one",
+    "Filename": "products.sql",
+    "Line": 1,
+    "Name": "GetProduct",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      },
+      {
+        "Name": "tags",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "String"
+          },
+          "EngineName": "Array"
+        },
+        "SourceColumn": "tags",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      },
+      {
+        "Name": "scores",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "float",
+            "EngineName": "Float64",
+            "Width": 64
+          },
+          "EngineName": "Array"
+        },
+        "SourceColumn": "scores",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      },
+      {
+        "Name": "optional_codes",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "UInt32",
+            "Nullable": true,
+            "Unsigned": true,
+            "Width": 32
+          },
+          "EngineName": "Array"
+        },
+        "SourceColumn": "optional_codes",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(GetProduct, one)\nSELECT id, tags, scores, optional_codes FROM products WHERE id = {id:UInt64};",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:tags⟩, ⟨c2:scores⟩, ⟨c3:optional_codes⟩ FROM products WHERE id = ⟨p0 UInt64⟩;⟨arguments p0⟩"
+  }
+]

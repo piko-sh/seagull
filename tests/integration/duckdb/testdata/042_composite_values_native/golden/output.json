@@ -1,0 +1,198 @@
+{
+  "arrival_maps": [
+    {
+      "arrived_by_day": {
+        "2024-01-01T00:00:00Z": "2024-01-01T08:00:00Z"
+      },
+      "id": "1",
+      "id_by_arrival": {
+        "2024-01-01T08:00:00Z": "1"
+      }
+    },
+    {
+      "arrived_by_day": {
+        "2024-01-01T00:00:00Z": "2024-01-02T09:00:00Z"
+      },
+      "id": "2",
+      "id_by_arrival": {
+        "2024-01-02T09:00:00Z": "2"
+      }
+    },
+    {
+      "arrived_by_day": {
+        "2024-01-03T00:00:00Z": "2024-01-03T10:00:00Z"
+      },
+      "id": "3",
+      "id_by_arrival": {
+        "2024-01-03T10:00:00Z": "3"
+      }
+    }
+  ],
+  "arrival_summary": {
+    "latest": [
+      "2024-01-03T10:00:00Z",
+      "2024-01-02T09:00:00Z"
+    ],
+    "per_day": {
+      "2024-01-01T00:00:00Z": "2",
+      "2024-01-03T00:00:00Z": "1"
+    },
+    "quartiles": [
+      "2024-01-02T09:00:00Z",
+      "2024-01-03T10:00:00Z"
+    ]
+  },
+  "go_types": [
+    "[]*time.Time",
+    "*db.VoyagesBerth",
+    "map[time.Time]*int32",
+    "map[float64]*string",
+    "map[bool]*int32",
+    "[]*db.VoyagesLegsItem",
+    "[]*apd.Decimal",
+    "[]*big.Int",
+    "[]*time.Time",
+    "map[time.Time]*uint64",
+    "map[time.Time]*time.Time"
+  ],
+  "voyage_stops": [
+    {
+      "id": "1",
+      "stops": [
+        "2024-01-01T10:00:00.5Z",
+        null
+      ]
+    },
+    {
+      "id": "2",
+      "stops": []
+    }
+  ],
+  "voyages": [
+    {
+      "berth": {
+        "arrived": "2024-01-01T10:00:00Z",
+        "day": "2024-01-02T00:00:00Z"
+      },
+      "blobs": [
+        "0x00016162"
+      ],
+      "by_day": {
+        "2024-01-01T00:00:00Z": "1",
+        "2024-01-02T00:00:00Z": null
+      },
+      "by_flag": {
+        "false": "0",
+        "true": "1"
+      },
+      "by_weight": {
+        "0.1": "y",
+        "1.5": "x"
+      },
+      "counts": [
+        "9007199254740993",
+        "-1"
+      ],
+      "days": [
+        "2024-01-01T00:00:00Z",
+        "2024-02-29T00:00:00Z"
+      ],
+      "fees": [
+        "1.50",
+        "-0.05"
+      ],
+      "fine": [
+        "2024-01-01T10:00:00.123456789Z"
+      ],
+      "huge": [
+        "170141183460469231731687303715884105727"
+      ],
+      "id": "1",
+      "instants": [
+        "2024-07-01T10:00:00Z"
+      ],
+      "legs": [
+        {
+          "schedule": {
+            "2024-01-01T00:00:00Z": "2024-01-01T11:00:00Z"
+          },
+          "seen": [
+            "2024-01-01T10:00:00Z"
+          ]
+        }
+      ],
+      "moods": [
+        "calm",
+        "stormy"
+      ],
+      "readings": [
+        "NaN",
+        "+Inf",
+        "1e+300"
+      ],
+      "spans": [
+        "1 day 01:30:00",
+        "1 year 2 months",
+        "-00:00:01.5"
+      ],
+      "stops": [
+        "2024-01-01T10:00:00.5Z",
+        null
+      ],
+      "times": [
+        "0001-01-01T10:00:00.25Z"
+      ]
+    },
+    {
+      "berth": null,
+      "blobs": null,
+      "by_day": null,
+      "by_flag": null,
+      "by_weight": null,
+      "counts": null,
+      "days": null,
+      "fees": null,
+      "fine": null,
+      "huge": null,
+      "id": "2",
+      "instants": null,
+      "legs": null,
+      "moods": null,
+      "readings": null,
+      "spans": null,
+      "stops": [],
+      "times": null
+    },
+    {
+      "berth": {
+        "arrived": null,
+        "day": "2024-03-01T00:00:00Z"
+      },
+      "blobs": null,
+      "by_day": null,
+      "by_flag": null,
+      "by_weight": null,
+      "counts": null,
+      "days": null,
+      "fees": null,
+      "fine": null,
+      "huge": null,
+      "id": "3",
+      "instants": null,
+      "legs": [
+        null,
+        {
+          "schedule": null,
+          "seen": null
+        }
+      ],
+      "moods": null,
+      "readings": null,
+      "spans": null,
+      "stops": [
+        "2024-03-01T00:00:00Z"
+      ],
+      "times": null
+    }
+  ]
+}

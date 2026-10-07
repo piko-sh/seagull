@@ -1,0 +1,6 @@
+opened accounts for Pip and Gull: committed
+  balances: Pip 5000 Gull 2000
+transferred 1500 from Pip to Gull: committed
+  balances: Pip 3500 Gull 3500
+transferred 9000 from Gull to Pip: rolled back (SQLSTATE 23514)
+  balances: Pip 3500 Gull 3500

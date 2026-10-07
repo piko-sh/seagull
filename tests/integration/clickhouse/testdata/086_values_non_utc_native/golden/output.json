@@ -1,0 +1,121 @@
+{
+  "in_empty": null,
+  "in_many": [
+    {
+      "id": 1
+    },
+    {
+      "id": 2
+    }
+  ],
+  "in_nil": null,
+  "in_one": [
+    {
+      "id": 2
+    }
+  ],
+  "not_in_empty": [
+    {
+      "id": 1
+    },
+    {
+      "id": 2
+    }
+  ],
+  "not_in_many": null,
+  "not_in_nil": [
+    {
+      "id": 1
+    },
+    {
+      "id": 2
+    }
+  ],
+  "not_in_one": [
+    {
+      "id": 1
+    }
+  ],
+  "notes": [
+    {
+      "body": "note: first",
+      "id": 1
+    },
+    {
+      "body": "note: it's",
+      "id": 2
+    },
+    {
+      "body": "note: back\\slash",
+      "id": 3
+    }
+  ],
+  "on_day": [
+    {
+      "id": 1
+    }
+  ],
+  "reading_1": {
+    "day": "2024-03-05",
+    "day32": "1950-07-09",
+    "frame_count": 2,
+    "gateway_count": 2,
+    "id": 1,
+    "note": "a\\b\tc\nd\re\u0000f'g",
+    "position": "(1.5,-2.25)",
+    "sensor_count": 2,
+    "tag_count": 3,
+    "taken_milli": 1709578815250,
+    "taken_unix": 1709578815,
+    "total_count": 2
+  },
+  "reading_2": {
+    "day": "2024-03-06",
+    "day32": "2024-03-06",
+    "frame_count": 0,
+    "gateway_count": 0,
+    "id": 2,
+    "note": "plain",
+    "position": "(0,0)",
+    "sensor_count": 0,
+    "tag_count": 0,
+    "taken_milli": 1709726400000,
+    "taken_unix": 1709726400,
+    "total_count": 0
+  },
+  "taken_at_milli": [
+    {
+      "id": 1
+    }
+  ],
+  "taken_between": [
+    {
+      "id": 1
+    }
+  ],
+  "with_frames": [
+    {
+      "id": 1
+    }
+  ],
+  "with_gateways": [
+    {
+      "id": 1
+    }
+  ],
+  "with_note": [
+    {
+      "id": 1
+    }
+  ],
+  "with_sensor": [
+    {
+      "id": 1
+    }
+  ],
+  "with_tags": [
+    {
+      "id": 1
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+[
+  {
+    "Command": "many",
+    "Filename": "find_similar.sql",
+    "Line": 1,
+    "Name": "FindSimilar",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "vectors",
+        "SourceTable": "vectors"
+      },
+      {
+        "Name": "distance",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "binary",
+          "EngineName": "blob"
+        }
+      },
+      {
+        "Context": "limit",
+        "Kind": "none",
+        "Name": "limit",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FindSimilar, command: many)\nSELECT id, vec_distance_L2(embedding, ?) AS distance FROM vectors ORDER BY distance LIMIT ?",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:vec_distance_L2(embedding, ⟨p0⟩)⟩ AS distance FROM vectors ORDER BY distance LIMIT ⟨p1⟩⟨arguments p0 p1⟩"
+  }
+]

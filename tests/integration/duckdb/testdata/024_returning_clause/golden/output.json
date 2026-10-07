@@ -1,0 +1,16 @@
+{
+  "delete_returning": {
+    "id": 1,
+    "name": "Widget"
+  },
+  "insert_returning": {
+    "id": 1,
+    "name": "Widget",
+    "price": 1999
+  },
+  "update_returning": {
+    "id": 1,
+    "name": "Widget",
+    "price": 2499
+  }
+}

@@ -1,0 +1,264 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "inventory": {
+      "Name": "inventory",
+      "Tables": {
+        "items": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int8",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "price",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "decimal",
+                "EngineName": "numeric"
+              }
+            }
+          ],
+          "Name": "items",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 1
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "inventory"
+        }
+      }
+    },
+    "public": {
+      "Functions": {
+        "greet": [
+          {
+            "Arguments": [
+              {
+                "Name": "who",
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "text"
+                }
+              },
+              {
+                "IsOptional": true,
+                "Name": "punctuation",
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "text"
+                }
+              }
+            ],
+            "BodySQL": " SELECT 'hi ' || who || punctuation ",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "greet",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 4
+            },
+            "ReturnType": {
+              "Category": "text",
+              "EngineName": "text"
+            }
+          }
+        ]
+      },
+      "Name": "public",
+      "Tables": {
+        "marks": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 3
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int8",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "row",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 3
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            }
+          ],
+          "Name": "marks",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 3
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "public"
+        },
+        "places": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int8",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "location",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "geometric",
+                "EngineName": "point"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "label",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "body",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "binary",
+                "EngineName": "bytea"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "doc",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "json",
+                "EngineName": "jsonb"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "created",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "temporal",
+                "EngineName": "timestamptz",
+                "Temporal": "timestamp",
+                "TimeZone": true
+              }
+            },
+            {
+              "ArrayDimensions": 1,
+              "GeneratedKind": "none",
+              "IsArray": true,
+              "Name": "tags",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text",
+                "Nullable": true
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "query",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "tsquery"
+              }
+            }
+          ],
+          "Name": "places",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 2
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

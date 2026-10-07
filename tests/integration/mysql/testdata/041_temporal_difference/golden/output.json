@@ -1,0 +1,26 @@
+{
+  "differences": [
+    {
+      "days_number": 10,
+      "id": 1,
+      "shipped_number": "2023000.250"
+    },
+    {
+      "days_number": 73,
+      "id": 2,
+      "shipped_number": null
+    }
+  ],
+  "shifted": [
+    {
+      "day_before": "2023-12-31T00:00:00Z",
+      "follow_up": "2024-01-02T10:00:00Z",
+      "id": 1
+    },
+    {
+      "day_before": "2024-02-27T00:00:00Z",
+      "follow_up": "2024-02-29T23:00:00Z",
+      "id": 2
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "public": {
+      "Enums": {
+        "tag": {
+          "Name": "tag",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "Schema": "public",
+          "Values": [
+            "featured",
+            "sale",
+            "new"
+          ]
+        }
+      },
+      "Name": "public",
+      "Tables": {
+        "products": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "ArrayDimensions": 1,
+              "GeneratedKind": "none",
+              "IsArray": true,
+              "Name": "tags",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "enum",
+                "EngineName": "tag",
+                "EnumValues": [
+                  "featured",
+                  "sale",
+                  "new"
+                ],
+                "Nullable": true,
+                "Schema": "public"
+              }
+            }
+          ],
+          "Name": "products",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 1
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

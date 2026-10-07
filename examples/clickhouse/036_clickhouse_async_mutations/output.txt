@@ -1,0 +1,8 @@
+issued:
+  #1 Kittiwake  expires 2026-03-31, renewals: 0
+  #2 Salty Chip expires 2026-04-30, renewals: 0
+  #3 Gull Wing  expires 2026-09-30, renewals: 0
+  #4 Driftwood  expires 2026-12-31, renewals: 0
+after renewing #1, purging those expired by 1 June and cancelling #4:
+  #1 Kittiwake  expires 2027-03-31, renewals: 1
+  #3 Gull Wing  expires 2026-09-30, renewals: 0

@@ -1,0 +1,53 @@
+[
+  {
+    "Command": "one",
+    "Filename": "events.sql",
+    "Line": 1,
+    "Name": "GetEvent",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "events",
+        "SourceSchema": "analytics",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "ts",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "ts",
+        "SourceQualifier": "events",
+        "SourceSchema": "analytics",
+        "SourceTable": "events"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "eid",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(GetEvent, one)\nSELECT id, ts FROM analytics.events WHERE id = {eid:UInt64};",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:ts⟩ FROM analytics.events WHERE id = ⟨p0 UInt64⟩;⟨arguments p0⟩"
+  }
+]

@@ -1,0 +1,4 @@
+{
+  "description": "The native clickhouse-go driver reads an IP address inside an Array, a Map or a named Tuple as a net.IP, and a 128- or 256-bit integer that cannot be NULL inside a named Tuple as a big.Int value, which it cannot store into the generated netip.Addr and *big.Int fields: an Array or Map column holding them is read through the converting scan adapter, which the driver hands its value, and a named Tuple column holding them, or a Map of named tuples, is read into a map[string]any the driver fills and converted after the scan, since the driver reads a tuple column without consulting a scanner. Every reading method (many, one, stream) converts.",
+  "emitter": "native"
+}

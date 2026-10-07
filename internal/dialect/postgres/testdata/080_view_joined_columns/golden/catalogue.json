@@ -1,0 +1,188 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "public": {
+      "Name": "public",
+      "Tables": {
+        "account_versions": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "uuid",
+                "EngineName": "uuid"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "account_id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "uuid",
+                "EngineName": "uuid"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "status",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "email",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            }
+          ],
+          "Name": "account_versions",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 1
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "public"
+        },
+        "accounts": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "uuid",
+                "EngineName": "uuid"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "created_at",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "temporal",
+                "EngineName": "timestamptz",
+                "Temporal": "timestamp",
+                "TimeZone": true
+              }
+            }
+          ],
+          "Name": "accounts",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "public"
+        }
+      },
+      "Views": {
+        "accounts_with_latest": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "account_id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "uuid",
+                "EngineName": "uuid"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "account_created_at",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "temporal",
+                "EngineName": "timestamptz",
+                "Temporal": "timestamp",
+                "TimeZone": true
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "version_id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "uuid",
+                "EngineName": "uuid"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "version_status",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "version_email",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            }
+          ],
+          "Name": "accounts_with_latest",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 2
+          },
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

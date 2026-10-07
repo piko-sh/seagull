@@ -1,0 +1,1 @@
+CREATE TABLE tokens (id INTEGER PRIMARY KEY, owner CHAR(36), label TEXT NOT NULL);

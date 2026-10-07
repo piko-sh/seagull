@@ -1,0 +1,140 @@
+[
+  {
+    "Command": "many",
+    "Filename": "orders_force_index.sql",
+    "Line": 1,
+    "Name": "OrdersForceIndex",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "customer_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "customer_id",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "total",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 10,
+          "Scale": 2
+        },
+        "SourceColumn": "total",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "status",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 20
+        },
+        "SourceColumn": "status",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "status",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 20
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: OrdersForceIndex, command: many)\nSELECT id, customer_id, total, status\nFROM orders FORCE INDEX (idx_orders_status)\nWHERE status = ?;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:customer_id⟩, ⟨c2:total⟩, ⟨c3:status⟩\\nFROM orders FORCE INDEX (idx_orders_status)\\nWHERE status = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "orders_with_index_hint.sql",
+    "Line": 1,
+    "Name": "OrdersWithIndexHint",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "customer_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "customer_id",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "total",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 10,
+          "Scale": 2
+        },
+        "SourceColumn": "total",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "status",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 20
+        },
+        "SourceColumn": "status",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "customer_id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: OrdersWithIndexHint, command: many)\nSELECT id, customer_id, total, status\nFROM orders USE INDEX (idx_orders_customer)\nWHERE customer_id = ?;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:customer_id⟩, ⟨c2:total⟩, ⟨c3:status⟩\\nFROM orders USE INDEX (idx_orders_customer)\\nWHERE customer_id = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

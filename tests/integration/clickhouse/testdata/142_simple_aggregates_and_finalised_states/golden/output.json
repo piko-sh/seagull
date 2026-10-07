@@ -1,0 +1,54 @@
+{
+  "checks": [
+    {
+      "has_longest": true,
+      "hits_plus_one": 6,
+      "last_page": "home!",
+      "pages": 1,
+      "visitors_plus_total": 8
+    },
+    {
+      "has_longest": false,
+      "hits_plus_one": 1,
+      "last_page": "away!",
+      "pages": 0,
+      "visitors_plus_total": 2
+    }
+  ],
+  "finalised": [
+    {
+      "day": "2026-10-09T00:00:00Z",
+      "last_page": "home",
+      "total": 7,
+      "visitors": 1
+    },
+    {
+      "day": "2026-10-10T00:00:00Z",
+      "last_page": "away",
+      "total": 1,
+      "visitors": 1
+    }
+  ],
+  "merged": {
+    "hits": 5,
+    "total": 8,
+    "visitors": 2
+  },
+  "merged_sum": 15,
+  "simple": [
+    {
+      "day": "2026-10-09T00:00:00Z",
+      "hits": 5,
+      "longest": "gull",
+      "pages": [
+        "harbour"
+      ]
+    },
+    {
+      "day": "2026-10-10T00:00:00Z",
+      "hits": 0,
+      "longest": null,
+      "pages": []
+    }
+  ]
+}

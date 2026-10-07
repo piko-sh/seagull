@@ -1,0 +1,268 @@
+[
+  {
+    "Command": "exec",
+    "Filename": "delete.sql",
+    "Line": 1,
+    "Name": "DeleteAccount",
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: DeleteAccount, command: exec)\nDELETE FROM accounts WHERE id = ?;",
+    "Template": "DELETE FROM accounts WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "for_share.sql",
+    "Line": 1,
+    "Name": "ShareLockAccount",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "balance",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 12,
+          "Scale": 2
+        },
+        "SourceColumn": "balance",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: ShareLockAccount, command: one)\nSELECT id, name, balance FROM accounts WHERE id = ? FOR SHARE;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:balance⟩ FROM accounts WHERE id = ⟨p0⟩ FOR SHARE;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "for_update.sql",
+    "Line": 1,
+    "Name": "LockAccount",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "balance",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 12,
+          "Scale": 2
+        },
+        "SourceColumn": "balance",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: LockAccount, command: one)\nSELECT id, name, balance FROM accounts WHERE id = ? FOR UPDATE;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:balance⟩ FROM accounts WHERE id = ⟨p0⟩ FOR UPDATE;⟨arguments p0⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "insert.sql",
+    "InsertColumns": [
+      "name",
+      "balance"
+    ],
+    "InsertTarget": {
+      "Name": "accounts"
+    },
+    "Line": 1,
+    "Name": "CreateAccount",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "balance",
+        "Number": 2,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 12,
+          "Scale": 2
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: CreateAccount, command: exec)\nINSERT INTO accounts (name, balance) VALUES (?, ?);",
+    "Template": "INSERT INTO accounts (name, balance) VALUES ⟨values:(⟨p0⟩, ⟨p1⟩)⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "read_only_select.sql",
+    "Line": 1,
+    "Name": "GetAccount",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "balance",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 12,
+          "Scale": 2
+        },
+        "SourceColumn": "balance",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetAccount, command: one)\nSELECT id, name, balance FROM accounts WHERE id = ?;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:balance⟩ FROM accounts WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "update.sql",
+    "Line": 1,
+    "Name": "UpdateBalance",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "balance",
+        "Number": 1,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 12,
+          "Scale": 2
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: UpdateBalance, command: exec)\nUPDATE accounts SET balance = ? WHERE id = ?;",
+    "Template": "UPDATE accounts SET balance = ⟨p0⟩ WHERE id = ⟨p1⟩;⟨arguments p0 p1⟩"
+  }
+]

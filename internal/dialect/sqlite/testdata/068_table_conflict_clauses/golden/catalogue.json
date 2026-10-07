@@ -1,0 +1,138 @@
+{
+  "DefaultSchema": "main",
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "main": {
+      "Name": "main",
+      "Tables": {
+        "databases": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "account_id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "region",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "arn",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            }
+          ],
+          "Constraints": [
+            {
+              "Columns": [
+                "account_id",
+                "region",
+                "arn"
+              ],
+              "Kind": "unique",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            }
+          ],
+          "Name": "databases",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "Schema": "main"
+        },
+        "engines": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "engine",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "version",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            }
+          ],
+          "Constraints": [
+            {
+              "Columns": [
+                "engine",
+                "version"
+              ],
+              "Kind": "unique",
+              "Name": "engine_version",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              }
+            }
+          ],
+          "Name": "engines",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 1
+          },
+          "PrimaryKey": [
+            "engine"
+          ],
+          "Schema": "main"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "main",
+    "temp"
+  ]
+}

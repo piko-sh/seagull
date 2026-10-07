@@ -1,0 +1,4 @@
+{
+  "description": "A quoted mixed-case function name and the unquoted name of the same letters are two functions, as PostgreSQL keeps them: \"Label\"() and label() each keep their own return type, \"Scale\"($1) and scale($1) type their placeholder from their own argument, \"Series\"() and series() give their own columns, a call of \"Purge\"() writes while one of purge() only reads, and a body calling purge() stays read-only. An unquoted LABEL() folds to label().",
+  "expectedDiagnosticCount": 0
+}

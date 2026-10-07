@@ -1,0 +1,3 @@
+{
+  "description": "PostgreSQL: a schema dumped by pg_dump 17.6 or later starts and ends with the psql meta-commands \\restrict and \\unrestrict, which psql runs itself; they belong to no statement, so the dump replays without a Q010, and a meta-command after a statement on its line is skipped too."
+}

@@ -1,0 +1,63 @@
+{
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "": {
+      "Tables": {
+        "settings": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "key_name",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Length": 100
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "value",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "updated_at",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "temporal",
+                "EngineName": "datetime",
+                "Temporal": "timestamp"
+              }
+            }
+          ],
+          "Name": "settings",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "key_name"
+          ]
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    ""
+  ]
+}

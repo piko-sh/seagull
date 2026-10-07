@@ -1,0 +1,35 @@
+[
+  {
+    "Command": "many",
+    "Filename": "reconcile_balances.sql",
+    "Line": 1,
+    "Name": "ReconcileBalances",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "balance",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        },
+        "SourceColumn": "balance",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      }
+    ],
+    "SQL": "-- sgl.query(name: ReconcileBalances, command: many)\nWITH account_totals AS (\n    SELECT account_id, SUM(amount) AS total\n    FROM transactions\n    GROUP BY account_id\n)\nUPDATE accounts SET balance = at.total\nFROM account_totals at\nWHERE accounts.id = at.account_id\nRETURNING accounts.id, accounts.balance;",
+    "Template": "WITH account_totals AS (\\n    SELECT account_id, SUM(amount) AS total\\n    FROM transactions\\n    GROUP BY account_id\\n)\\nUPDATE accounts SET balance = at.total\\nFROM account_totals at\\nWHERE accounts.id = at.account_id\\nRETURNING ⟨c0:accounts.id⟩, ⟨c1:accounts.balance⟩;"
+  }
+]

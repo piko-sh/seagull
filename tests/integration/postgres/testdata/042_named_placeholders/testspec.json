@@ -1,0 +1,3 @@
+{
+  "description": "Named :name placeholders on Postgres: they are numbered as $N (not ?N), a repeated name binds one argument, and a renamed placeholder keeps its binding"
+}

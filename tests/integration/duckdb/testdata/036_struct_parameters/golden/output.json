@@ -1,0 +1,26 @@
+{
+  "at_berth_count": 1,
+  "at_berth_id": 2,
+  "first_berth": {
+    "number": 12,
+    "pontoon": "A"
+  },
+  "first_extra": {
+    "fees": {
+      "July": 300
+    },
+    "note": "winter mooring"
+  },
+  "first_route": [
+    {
+      "lat": 50.15,
+      "lon": -5.07
+    },
+    {
+      "lat": 50.1,
+      "lon": -5.55
+    }
+  ],
+  "second_extra_null": true,
+  "second_route_size": 0
+}

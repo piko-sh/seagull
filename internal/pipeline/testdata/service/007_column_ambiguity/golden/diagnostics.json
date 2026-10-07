@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q002",
+    "Column": 1,
+    "EndColumn": 66,
+    "EndLine": 2,
+    "Filename": "get_ambiguous.sql",
+    "Line": 1,
+    "Message": "ambiguous column reference \"name\"",
+    "Severity": "warning"
+  }
+]

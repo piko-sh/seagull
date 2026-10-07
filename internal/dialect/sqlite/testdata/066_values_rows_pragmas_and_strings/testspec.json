@@ -1,0 +1,16 @@
+{
+  "description": "SQLite: a VALUES list as a set operation's arm, a common table expression and a recursive anchor; row values compared, listed and assigned element by element; a division or remainder by a column, or by a remainder below one, may be NULL while one by 2 may not; PRAGMA statements return the columns SQLite gives them, and a setter that returns nothing has none; a select-list alias is an operand in WHERE; a double-quoted name that names no column is the string SQLite reads it as, with a Q063 warning each; JSONB columns read as JSON documents and STRING as text; the JSON functions take a blob document.",
+  "expectedDiagnosticCount": 2,
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "Q063",
+      "messageContains": "SQLite reads \"%\" as the string '%'"
+    },
+    {
+      "severity": "warning",
+      "code": "Q063",
+      "messageContains": "SQLite reads \"%\" as the string '%'"
+    }
+  ]
+}

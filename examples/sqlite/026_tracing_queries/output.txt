@@ -1,0 +1,8 @@
+db  AddShift
+db  AddShift
+tx  CoverShift
+tx  AddShift
+db  ListShifts
+1 Monday    Bryn     covered=1
+2 Tuesday   Morwenna covered=0
+3 Wednesday Bryn     covered=0

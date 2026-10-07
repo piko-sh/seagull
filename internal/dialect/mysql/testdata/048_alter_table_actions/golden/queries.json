@@ -1,0 +1,93 @@
+[
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 1,
+    "Name": "ListBoats",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 200
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      },
+      {
+        "Name": "length_m",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 6,
+          "Scale": 2
+        },
+        "SourceColumn": "length_m",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      },
+      {
+        "Name": "crew",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "crew",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListBoats, command: many)\nSELECT id, name, length_m, crew FROM boats;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:length_m⟩, ⟨c3:crew⟩ FROM boats;"
+  },
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 4,
+    "Name": "ListBoatNames",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "boat_names",
+        "SourceTable": "boat_names"
+      },
+      {
+        "Name": "name",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 200
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "boat_names",
+        "SourceTable": "boat_names"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListBoatNames, command: many)\nSELECT id, name FROM boat_names;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩ FROM boat_names;"
+  }
+]

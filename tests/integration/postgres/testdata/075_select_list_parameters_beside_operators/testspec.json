@@ -1,0 +1,4 @@
+{
+  "description": "A parameter of the select list or RETURNING after an arithmetic operator, or one whose operands are of one type, with a column before it takes the column's type, as in a WHERE clause and as PostgreSQL types it through database/sql: n + $1 and mask & $1 take an int32, i.price * $1 an apd.Decimal and n - $2 in RETURNING an int32, and the server computes each with the value.",
+  "expectedDiagnostics": []
+}

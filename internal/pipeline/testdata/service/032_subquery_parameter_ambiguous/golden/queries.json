@@ -1,0 +1,45 @@
+[
+  {
+    "Command": "many",
+    "Filename": "find_orphan.sql",
+    "Line": 1,
+    "Name": "FindOrphans",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "total",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "total",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "email",
+        "Number": 1,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: FindOrphans, command: many)\nSELECT id, total\nFROM orders\nWHERE id IN (SELECT id FROM customers WHERE email = $1);",
+    "Template": "SELECT id, total\\nFROM orders\\nWHERE id IN (SELECT id FROM customers WHERE email = $1);"
+  }
+]

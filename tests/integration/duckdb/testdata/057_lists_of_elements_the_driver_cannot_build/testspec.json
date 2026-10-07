@@ -1,0 +1,4 @@
+{
+  "description": "List parameters whose elements duckdb-go cannot build from the parameter's type bind: the driver builds a LIST or ARRAY parameter from the type the statement gives it and fails ('unsupported data type') on an ENUM, DECIMAL, BLOB, UUID or INTERVAL element, and binds a Go []uint8 as a BLOB, so such lists go through sglDriverInferredList, which converts the elements and hands the list over through a driver.Valuer, bound by the types of its Go elements and cast by DuckDB to the parameter's type: enum lists, nested and fixed-size ones, decimal, blob, uuid, interval and UTINYINT lists, a nullable list given nil, a batch, and a cast list parameter in a WHERE clause; a struct and a map holding a DECIMAL, which the driver cannot bind as parameters (refused with Q059), written from parameters in the SQL instead.",
+  "expectedDiagnostics": []
+}

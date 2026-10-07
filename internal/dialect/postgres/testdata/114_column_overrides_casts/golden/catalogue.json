@@ -1,0 +1,87 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "public": {
+      "Name": "public",
+      "Tables": {
+        "hosts": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_hosts.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "GoTypeOverride": {
+                "Name": "Addr",
+                "Package": "net/netip"
+              },
+              "Name": "addr",
+              "Origin": {
+                "Filename": "001_hosts.up.sql"
+              },
+              "SQLType": {
+                "Category": "network",
+                "EngineName": "inet",
+                "Network": "prefix"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "GoTypeOverride": {
+                "Name": "HTML",
+                "Package": "html/template"
+              },
+              "Name": "label",
+              "Origin": {
+                "Filename": "001_hosts.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "GoTypeOverride": {
+                "Name": "URL",
+                "Package": "html/template"
+              },
+              "Name": "code",
+              "Origin": {
+                "Filename": "001_hosts.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Length": 8
+              }
+            }
+          ],
+          "Name": "hosts",
+          "Origin": {
+            "Filename": "001_hosts.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

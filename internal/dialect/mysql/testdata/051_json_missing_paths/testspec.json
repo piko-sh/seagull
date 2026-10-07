@@ -1,0 +1,3 @@
+{
+  "description": "JSON functions MySQL answers with NULL when the document lacks the path, or is not an object, are nullable even over a NOT NULL document; a string reads as a JSON document; SIGNED and UNSIGNED conversion targets type as BIGINT and BIGINT UNSIGNED."
+}

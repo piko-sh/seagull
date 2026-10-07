@@ -1,0 +1,223 @@
+[
+  {
+    "Command": "one",
+    "Filename": "reads.sql",
+    "Line": 1,
+    "Name": "HistoricalBalance",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "balance",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        },
+        "SourceColumn": "balance",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: HistoricalBalance, command: one)\nSELECT id, name, balance FROM accounts AS OF SYSTEM TIME '-10s' WHERE id = $1;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:balance⟩ FROM accounts AS OF SYSTEM TIME '-10s' WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "reads.sql",
+    "Line": 4,
+    "Name": "FollowerOwners",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "a",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "label",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "label",
+        "SourceQualifier": "o",
+        "SourceTable": "owners"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "limit",
+        "Kind": "none",
+        "Name": "limit",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FollowerOwners, command: many)\nSELECT a.id, o.label FROM accounts AS a JOIN owners AS o ON o.id = a.owner_id AS OF SYSTEM TIME follower_read_timestamp() ORDER BY a.id LIMIT $1::INT;",
+    "Template": "SELECT ⟨c0:a.id⟩, ⟨c1:o.label⟩ FROM accounts AS a JOIN owners AS o ON o.id = a.owner_id AS OF SYSTEM TIME follower_read_timestamp() ORDER BY a.id LIMIT ⟨p0⟩::INT;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "reads.sql",
+    "Line": 7,
+    "Name": "Renamed",
+    "OutputColumns": [
+      {
+        "Name": "key",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "key",
+        "SourceQualifier": "r"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "r"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "key",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Renamed, command: many)\nSELECT r.key, r.title FROM accounts AS r (key, title) WHERE r.key = $1;",
+    "Template": "SELECT ⟨c0:r.key⟩, ⟨c1:r.title⟩ FROM accounts AS r (key, title) WHERE r.key = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "reads.sql",
+    "Line": 10,
+    "Name": "WithNone",
+    "OutputColumns": [
+      {
+        "Name": "column1",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "column2",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: WithNone, command: many)\nVALUES (0, 'none') UNION ALL SELECT id, label FROM owners;",
+    "Template": "VALUES (0, 'none') UNION ALL SELECT id, label FROM owners;"
+  },
+  {
+    "Command": "many",
+    "Filename": "reads.sql",
+    "Line": 13,
+    "Name": "Lengths",
+    "OutputColumns": [
+      {
+        "Name": "characters",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "today",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Lengths, command: many)\nSELECT character_length(name) AS characters, date(now()) AS today FROM accounts;",
+    "Template": "SELECT ⟨c0 aliased:character_length(name)⟩ AS characters, ⟨c1 aliased:date(now())⟩ AS today FROM accounts;"
+  },
+  {
+    "Command": "many",
+    "Filename": "reads.sql",
+    "Line": 16,
+    "Name": "Missing",
+    "OutputColumns": [
+      {
+        "Name": "tomorrow",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      },
+      {
+        "Name": "transaction_id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: Missing, command: many)\nSELECT date_add(now(), INTERVAL '1 day') AS tomorrow, txid_current() AS transaction_id FROM accounts;",
+    "Template": "SELECT ⟨c0 aliased:date_add(now(), INTERVAL '1 day')⟩ AS tomorrow, ⟨c1 aliased:txid_current()⟩ AS transaction_id FROM accounts;"
+  }
+]

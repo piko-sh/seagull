@@ -1,0 +1,42 @@
+{
+  "days_to_due": [
+    {
+      "days": 10,
+      "id": 1
+    },
+    {
+      "days": 2,
+      "id": 2
+    }
+  ],
+  "deadlines": [
+    {
+      "day_before": "2023-12-31T10:00:00Z",
+      "doubled": "4 days 06:00:00",
+      "id": 1,
+      "last_day": "2024-01-10T00:00:00Z",
+      "ready_at": "2024-01-03T03:00:00Z",
+      "reminder_on": "2024-01-08T00:00:00Z"
+    },
+    {
+      "day_before": "2024-02-27T23:00:00Z",
+      "doubled": "01:30:00",
+      "id": 2,
+      "last_day": "2024-02-29T00:00:00Z",
+      "ready_at": "2024-02-28T00:45:00Z",
+      "reminder_on": "2024-03-06T00:00:00Z"
+    }
+  ],
+  "shipping_times": [
+    {
+      "id": 1,
+      "since_midnight": "10:00:00",
+      "took": "2 days 02:30:00"
+    },
+    {
+      "id": 2,
+      "since_midnight": "23:00:00",
+      "took": null
+    }
+  ]
+}

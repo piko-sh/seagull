@@ -1,0 +1,86 @@
+[
+  {
+    "Command": "one",
+    "Filename": "upsert_counter.sql",
+    "InsertColumns": [
+      "key",
+      "count",
+      "label"
+    ],
+    "InsertTarget": {
+      "Name": "counters"
+    },
+    "Line": 1,
+    "Name": "UpsertCounter",
+    "OutputColumns": [
+      {
+        "Name": "key",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "key",
+        "SourceQualifier": "counters",
+        "SourceTable": "counters"
+      },
+      {
+        "Name": "count",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "count",
+        "SourceQualifier": "counters",
+        "SourceTable": "counters"
+      },
+      {
+        "Name": "label",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "label",
+        "SourceQualifier": "counters",
+        "SourceTable": "counters"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "key",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "count",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "label",
+        "Nullable": true,
+        "Number": 3,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: UpsertCounter, command: one)\nINSERT INTO counters (key, count, label) VALUES ($1, $2, $3)\nON CONFLICT (key) DO UPDATE SET count = counters.count + EXCLUDED.count, label = $3\nRETURNING key, count, label;",
+    "Template": "INSERT INTO counters (key, count, label) VALUES ⟨values:(⟨p0⟩, ⟨p1⟩, ⟨p2⟩)⟩\\nON CONFLICT (key) DO UPDATE SET count = counters.count + EXCLUDED.count, label = ⟨p2⟩\\nRETURNING ⟨c0:key⟩, ⟨c1:count⟩, ⟨c2:label⟩;⟨arguments p0 p1 p2⟩"
+  }
+]

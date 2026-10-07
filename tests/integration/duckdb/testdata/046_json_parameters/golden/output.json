@@ -1,0 +1,106 @@
+{
+  "cells": {
+    "batch": "ok",
+    "composite exec": "ok",
+    "composite literal": "ok",
+    "composite storage": "ok",
+    "exec": "ok",
+    "exec null": "ok",
+    "literal": "ok",
+    "parameter": "ok",
+    "read 1": "exact",
+    "read 11": "exact",
+    "read 12": "exact",
+    "read 21": "null",
+    "read composite 1 element": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "read composite 1 field": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "read composite 11 element": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "read composite 11 field": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "storage": "ok"
+  },
+  "found": {
+    "composite literal": [
+      {
+        "id": 1
+      },
+      {
+        "id": 11
+      }
+    ],
+    "composite storage": [
+      {
+        "extracted": "\u003cé \u0026 😀\u003e",
+        "field_stored": "{\"b\": [1, 2.50], \"a\": \"\u003cé \u0026 😀\u003e\"}",
+        "id": 1,
+        "storage": "JSON",
+        "stored": "{\"b\": [1, 2.50], \"a\": \"\u003cé \u0026 😀\u003e\"}"
+      },
+      {
+        "extracted": "\u003cé \u0026 😀\u003e",
+        "field_stored": "{\"b\": [1, 2.50], \"a\": \"\u003cé \u0026 😀\u003e\"}",
+        "id": 11,
+        "storage": "JSON",
+        "stored": "{\"b\": [1, 2.50], \"a\": \"\u003cé \u0026 😀\u003e\"}"
+      }
+    ],
+    "literal": [
+      {
+        "id": 1
+      },
+      {
+        "id": 11
+      },
+      {
+        "id": 12
+      }
+    ],
+    "parameter": [
+      {
+        "id": 1
+      },
+      {
+        "id": 11
+      },
+      {
+        "id": 12
+      }
+    ],
+    "storage": [
+      {
+        "extracted": "\u003cé \u0026 😀\u003e",
+        "id": 1,
+        "kind": "OBJECT",
+        "storage": "JSON",
+        "stored": "{\"b\": [1, 2.50], \"a\": \"\u003cé \u0026 😀\u003e\"}"
+      },
+      {
+        "extracted": "\u003cé \u0026 😀\u003e",
+        "id": 11,
+        "kind": "OBJECT",
+        "storage": "JSON",
+        "stored": "{\"b\": [1, 2.50], \"a\": \"\u003cé \u0026 😀\u003e\"}"
+      },
+      {
+        "extracted": "\u003cé \u0026 😀\u003e",
+        "id": 12,
+        "kind": "OBJECT",
+        "storage": "JSON",
+        "stored": "{\"b\": [1, 2.50], \"a\": \"\u003cé \u0026 😀\u003e\"}"
+      },
+      {
+        "extracted": null,
+        "id": 13,
+        "kind": null,
+        "storage": "JSON",
+        "stored": null
+      },
+      {
+        "extracted": null,
+        "id": 21,
+        "kind": null,
+        "storage": "JSON",
+        "stored": null
+      }
+    ]
+  }
+}

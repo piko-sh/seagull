@@ -1,0 +1,105 @@
+[
+  {
+    "Command": "many",
+    "Filename": "baskets.sql",
+    "Line": 1,
+    "Name": "ReadBasketPaths",
+    "OutputColumns": [
+      {
+        "Name": "fish",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "json"
+        }
+      },
+      {
+        "Name": "fish_text",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "top_keys",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "json"
+        }
+      },
+      {
+        "Name": "crate_keys",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "json"
+        }
+      },
+      {
+        "Name": "size",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "crate_size",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "has_cod",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "tinyint"
+        }
+      },
+      {
+        "Name": "has_note",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "tinyint"
+        }
+      },
+      {
+        "Name": "weight",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint unsigned",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "signed_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "baskets",
+        "SourceTable": "baskets"
+      },
+      {
+        "Name": "document",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ReadBasketPaths, command: many)\nSELECT\n    JSON_EXTRACT(basket, '$.fish') AS fish,\n    JSON_UNQUOTE(JSON_EXTRACT(basket, '$.fish')) AS fish_text,\n    JSON_KEYS(basket) AS top_keys,\n    JSON_KEYS(basket, '$.crate') AS crate_keys,\n    JSON_LENGTH(basket) AS size,\n    JSON_LENGTH(basket, '$.crate') AS crate_size,\n    JSON_CONTAINS(basket, '\"cod\"', '$.fish') AS has_cod,\n    JSON_CONTAINS(basket, note) AS has_note,\n    JSON_VALUE(basket, '$.weight' RETURNING UNSIGNED) AS weight,\n    CAST(id AS SIGNED) AS signed_id,\n    JSON_UNQUOTE(basket) AS document\nFROM baskets\nWHERE JSON_KEYS(note) IS NOT NULL;",
+    "Template": "SELECT\\n    ⟨c0 aliased:JSON_EXTRACT(basket, '$.fish')⟩ AS fish,\\n    ⟨c1 aliased:JSON_UNQUOTE(JSON_EXTRACT(basket, '$.fish'))⟩ AS fish_text,\\n    ⟨c2 aliased:JSON_KEYS(basket)⟩ AS top_keys,\\n    ⟨c3 aliased:JSON_KEYS(basket, '$.crate')⟩ AS crate_keys,\\n    ⟨c4 aliased:JSON_LENGTH(basket)⟩ AS size,\\n    ⟨c5 aliased:JSON_LENGTH(basket, '$.crate')⟩ AS crate_size,\\n    ⟨c6 aliased:JSON_CONTAINS(basket, '\"cod\"', '$.fish')⟩ AS has_cod,\\n    ⟨c7 aliased:JSON_CONTAINS(basket, note)⟩ AS has_note,\\n    ⟨c8 aliased:JSON_VALUE(basket, '$.weight' RETURNING UNSIGNED)⟩ AS weight,\\n    ⟨c9 aliased:CAST(id AS SIGNED)⟩ AS signed_id,\\n    ⟨c10 aliased:JSON_UNQUOTE(basket)⟩ AS document\\nFROM baskets\\nWHERE JSON_KEYS(note) IS NOT NULL;"
+  }
+]

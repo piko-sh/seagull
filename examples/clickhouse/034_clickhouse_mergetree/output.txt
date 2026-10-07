@@ -1,0 +1,17 @@
+berths, latest version of each boat:
+  Gull Wing  north quay    v1
+  Kittiwake  outer harbour v3
+  Salty Chip slipway       v1
+daily catch, summed by day and species:
+  2026-08-01 crab       30 kg
+  2026-08-01 mackerel  200 kg
+  2026-08-02 crab       25 kg
+  2026-08-02 mackerel   95 kg
+  2026-08-02 pollock    45 kg
+species stats, merged from both days' states:
+  crab       55 kg in all, heaviest landing 30 kg
+  mackerel  295 kg in all, heaviest landing 120 kg
+  pollock    45 kg in all, heaviest landing 45 kg
+mackerel landings of 90 kg or more:
+  #1 Kittiwake  120 kg
+  #4 Kittiwake  95 kg

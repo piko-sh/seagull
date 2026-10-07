@@ -1,0 +1,47 @@
+[
+  {
+    "Command": "many",
+    "Filename": "list.sql",
+    "Line": 1,
+    "Name": "ListUsers",
+    "OutputColumns": [
+      {
+        "Name": "user_id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "user_id",
+        "SourceQualifier": "list_users"
+      },
+      {
+        "Name": "user_email",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "user_email",
+        "SourceQualifier": "list_users"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListUsers, command: many)\nSELECT user_id, user_email\nFROM app.list_users($1::integer);",
+    "Template": "SELECT ⟨c0:user_id⟩, ⟨c1:user_email⟩\\nFROM app.list_users(⟨p0⟩::integer);⟨arguments p0⟩"
+  }
+]

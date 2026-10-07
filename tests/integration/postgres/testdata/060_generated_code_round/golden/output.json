@@ -1,0 +1,156 @@
+{
+  "books_with_authors": [
+    {
+      "Authors": {
+        "aliases": [
+          "Mary",
+          null
+        ],
+        "id": 1,
+        "name": "Agatha"
+      },
+      "id": 1,
+      "title": "The Murder at the Vicarage"
+    },
+    {
+      "Authors": {
+        "aliases": [
+          "Mary",
+          null
+        ],
+        "id": 1,
+        "name": "Agatha"
+      },
+      "id": 2,
+      "title": "Sequel"
+    }
+  ],
+  "books_with_authors_after_migration": [
+    {
+      "Authors": {
+        "aliases": [
+          "Mary",
+          null
+        ],
+        "id": 1,
+        "name": "Agatha"
+      },
+      "id": 1,
+      "title": "The Murder at the Vicarage"
+    },
+    {
+      "Authors": {
+        "aliases": [
+          "Mary",
+          null
+        ],
+        "id": 1,
+        "name": "Agatha"
+      },
+      "id": 2,
+      "title": "Nemesis"
+    }
+  ],
+  "insert_shows": "inserted",
+  "retitled_after_migration": {
+    "author_id": 1,
+    "id": 2,
+    "labels": [],
+    "title": "Sleeping Murder"
+  },
+  "retitled_before_migration": {
+    "author_id": 1,
+    "id": 2,
+    "labels": [],
+    "title": "Nemesis"
+  },
+  "show_with_tags": {
+    "data": {
+      "seasons": 6,
+      "title": "Marple"
+    },
+    "id": 1,
+    "tags": [
+      "crime",
+      "village"
+    ]
+  },
+  "show_without_tags": {
+    "data": {
+      "seasons": 13,
+      "title": "Poirot"
+    },
+    "id": 2,
+    "tags": null
+  },
+  "shows_after_migration": [
+    {
+      "colours": [
+        "red"
+      ],
+      "data": {
+        "seasons": 6,
+        "title": "Marple"
+      },
+      "id": 1,
+      "tags": [
+        "crime",
+        "village"
+      ]
+    },
+    {
+      "colours": [
+        "green",
+        "blue"
+      ],
+      "data": {
+        "seasons": 13,
+        "title": "Poirot"
+      },
+      "id": 2,
+      "tags": null
+    }
+  ],
+  "shows_before_migration": [
+    {
+      "colours": [
+        "red"
+      ],
+      "data": {
+        "seasons": 6,
+        "title": "Marple"
+      },
+      "id": 1,
+      "tags": [
+        "crime",
+        "village"
+      ]
+    },
+    {
+      "colours": [
+        "green",
+        "blue"
+      ],
+      "data": {
+        "seasons": 13,
+        "title": "Poirot"
+      },
+      "id": 2,
+      "tags": null
+    }
+  ],
+  "shows_in_any_colour": [
+    {
+      "id": 1
+    },
+    {
+      "id": 2
+    }
+  ],
+  "shows_in_blue": [
+    {
+      "id": 2
+    }
+  ],
+  "upsert_books_repeating_a_key": "upserted"
+}

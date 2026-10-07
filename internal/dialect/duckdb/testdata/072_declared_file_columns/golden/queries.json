@@ -1,0 +1,88 @@
+[
+  {
+    "Command": "many",
+    "Filename": "catches.sql",
+    "Line": 1,
+    "Name": "Catches",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "read_parquet"
+      },
+      {
+        "Name": "species",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "species",
+        "SourceQualifier": "read_parquet"
+      },
+      {
+        "Name": "weight",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        },
+        "SourceColumn": "weight",
+        "SourceQualifier": "read_parquet"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Catches, command: many)\n-- sgl.column(id, type: integer, nullable: false)\n-- sgl.column(species, type: varchar)\n-- sgl.column(weight)\nSELECT * FROM read_parquet('catches.parquet');",
+    "Template": "SELECT ⟨star written 0=read_parquet.id 1=read_parquet.species 2=read_parquet.weight:*⟩ FROM read_parquet('catches.parquet');"
+  },
+  {
+    "Command": "many",
+    "Filename": "catches.sql",
+    "Line": 7,
+    "Name": "HeavyCatches",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "c"
+      },
+      {
+        "Name": "weight",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        },
+        "SourceColumn": "weight",
+        "SourceQualifier": "c"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "weight",
+        "Nullable": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: HeavyCatches, command: many)\n-- sgl.column(id, type: integer, nullable: false)\n-- sgl.column(weight, type: double)\nSELECT c.id, weight FROM read_parquet('catches.parquet') c WHERE c.weight \u003e $1;",
+    "Template": "SELECT ⟨c0:c.id⟩, ⟨c1:weight⟩ FROM read_parquet('catches.parquet') c WHERE c.weight \u003e ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

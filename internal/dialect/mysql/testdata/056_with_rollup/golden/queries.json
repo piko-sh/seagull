@@ -1,0 +1,115 @@
+[
+  {
+    "Command": "many",
+    "Filename": "sales.sql",
+    "Line": 1,
+    "Name": "RevenueRollup",
+    "OutputColumns": [
+      {
+        "Name": "region",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 20
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "city",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 20
+        },
+        "SourceColumn": "city",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "level",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "revenue",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal"
+        }
+      },
+      {
+        "Name": "sales",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: RevenueRollup, command: many)\nSELECT region, city, GROUPING(region, city) AS level, SUM(amount) AS revenue, COUNT(*) AS sales\nFROM sales\nGROUP BY region, city WITH ROLLUP;",
+    "Template": "SELECT ⟨c0:region⟩, ⟨c1:city⟩, ⟨c2 aliased:GROUPING(region, city)⟩ AS level, ⟨c3 aliased:SUM(amount)⟩ AS revenue, ⟨c4 aliased:COUNT(*)⟩ AS sales\\nFROM sales\\nGROUP BY region, city WITH ROLLUP;"
+  },
+  {
+    "Command": "many",
+    "Filename": "sales.sql",
+    "Line": 6,
+    "Name": "MonthlyRollup",
+    "OutputColumns": [
+      {
+        "Name": "month",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "revenue",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: MonthlyRollup, command: many)\nSELECT DATE_FORMAT(sold_on, '%Y-%m') AS month, SUM(amount) AS revenue\nFROM sales\nGROUP BY month WITH ROLLUP;",
+    "Template": "SELECT ⟨c0 aliased:DATE_FORMAT(sold_on, '%Y-%m')⟩ AS month, ⟨c1 aliased:SUM(amount)⟩ AS revenue\\nFROM sales\\nGROUP BY month WITH ROLLUP;"
+  },
+  {
+    "Command": "many",
+    "Filename": "sales.sql",
+    "Line": 11,
+    "Name": "PositionalRollup",
+    "OutputColumns": [
+      {
+        "Name": "area",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "sales",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: PositionalRollup, command: many)\nSELECT UPPER(region) AS area, COUNT(*) AS sales\nFROM sales\nGROUP BY 1 WITH ROLLUP;",
+    "Template": "SELECT ⟨c0 aliased:UPPER(region)⟩ AS area, ⟨c1 aliased:COUNT(*)⟩ AS sales\\nFROM sales\\nGROUP BY 1 WITH ROLLUP;"
+  }
+]

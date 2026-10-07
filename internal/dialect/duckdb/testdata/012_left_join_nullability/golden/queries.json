@@ -1,0 +1,35 @@
+[
+  {
+    "Command": "many",
+    "Filename": "orders.sql",
+    "Line": 1,
+    "Name": "GetOrdersWithCustomerName",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "o",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "name",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "c",
+        "SourceTable": "customers"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetOrdersWithCustomerName, command: many)\nSELECT o.id, c.name FROM orders o LEFT JOIN customers c ON o.customer_id = c.id;",
+    "Template": "SELECT ⟨c0:o.id⟩, ⟨c1:c.name⟩ FROM orders o LEFT JOIN customers c ON o.customer_id = c.id;"
+  }
+]

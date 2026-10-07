@@ -1,0 +1,1 @@
+{"description": "A table function whose columns are known only when it runs, such as read_parquet, takes the columns the query declares with sgl.column: SELECT * expands to them in declaration order, qualified and bare names resolve, and parameters compared with them are typed"}

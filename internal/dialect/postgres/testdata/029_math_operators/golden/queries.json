@@ -1,0 +1,86 @@
+[
+  {
+    "Command": "many",
+    "Filename": "filter_measurements.sql",
+    "Line": 1,
+    "Name": "FilterMeasurements",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "measurements",
+        "SourceTable": "measurements"
+      },
+      {
+        "Name": "value",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        },
+        "SourceColumn": "value",
+        "SourceQualifier": "measurements",
+        "SourceTable": "measurements"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "value",
+        "Number": 1,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "value_2",
+        "Number": 2,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "value_3",
+        "Number": 3,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "value_4",
+        "Number": 4,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FilterMeasurements, command: many)\nSELECT id, value FROM measurements WHERE value \u003e= $1 AND value \u003c= $2 AND (value * $3) \u003e $4;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:value⟩ FROM measurements WHERE value \u003e= ⟨p0⟩ AND value \u003c= ⟨p1⟩ AND (value * ⟨p2⟩) \u003e ⟨p3⟩;⟨arguments p0 p1 p2 p3⟩"
+  }
+]

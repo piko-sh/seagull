@@ -1,0 +1,35 @@
+[
+  {
+    "Command": "many",
+    "Filename": "list_orders.sql",
+    "Line": 1,
+    "Name": "ListOrders",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "order_number",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "order_number",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListOrders, command: many)\nSELECT id, order_number FROM orders;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:order_number⟩ FROM orders;"
+  }
+]

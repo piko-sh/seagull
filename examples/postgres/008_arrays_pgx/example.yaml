@@ -1,0 +1,27 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: The fishing voyages through pgx, which reads TEXT[], BIGINT[] and array_agg results as native PostgreSQL arrays into the same typed slices.
+differs:
+  - "pgx encodes and decodes arrays itself, so the SQL keeps its array columns as written, with no to_json() wrapper"
+  - "The Row and Params types are the same as database/sql's: rows read []*string and []*int64, as PostgreSQL can hold NULL in any array, and parameters take them too; non_null_elements: true opts out where the data never holds a NULL element, as the migration declares for ports, which reads and binds as []string"
+  - "A NULL array scans to a nil slice and an empty array to an empty one"
+  - "$1::text = ANY(ports) casts its parameter, which types it for Seagull and for CockroachDB"
+entry: {file: db/queries/voyages.sql, query: ListVoyages}
+live: "no"
+test: integration

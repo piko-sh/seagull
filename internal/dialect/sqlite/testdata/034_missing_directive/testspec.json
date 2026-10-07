@@ -1,0 +1,8 @@
+{
+  "description": "Two queries with missing required directives: one missing sgl.name, the other missing sgl.command. Both produce Q008 errors.",
+  "expectedDiagnosticCount": 2,
+  "diagnostics": [
+    { "severity": "error", "code": "Q031", "messageContains": "missing required name on sgl", "filename": "missing_name.sql" },
+    { "severity": "error", "code": "Q031", "messageContains": "missing required command on sgl", "filename": "missing_command.sql" }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "public": {
+      "Name": "public",
+      "Tables": {
+        "narrow": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "val",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int2",
+                "Width": 16
+              }
+            }
+          ],
+          "Name": "narrow",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "Schema": "public"
+        },
+        "wide": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "val",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int8",
+                "Width": 64
+              }
+            }
+          ],
+          "Name": "wide",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 1
+          },
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

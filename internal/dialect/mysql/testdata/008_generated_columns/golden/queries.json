@@ -1,0 +1,128 @@
+[
+  {
+    "Command": "exec",
+    "Filename": "create_rectangle.sql",
+    "InsertColumns": [
+      "width",
+      "height"
+    ],
+    "InsertTarget": {
+      "Name": "rectangles"
+    },
+    "Line": 1,
+    "Name": "CreateRectangle",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "width",
+        "Number": 1,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 10,
+          "Scale": 2
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "height",
+        "Number": 2,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 10,
+          "Scale": 2
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: CreateRectangle, command: exec)\nINSERT INTO rectangles (width, height) VALUES (?, ?);",
+    "Template": "INSERT INTO rectangles (width, height) VALUES ⟨values:(⟨p0⟩, ⟨p1⟩)⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "get_rectangle.sql",
+    "Line": 1,
+    "Name": "GetRectangle",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "rectangles",
+        "SourceTable": "rectangles"
+      },
+      {
+        "Name": "width",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 10,
+          "Scale": 2
+        },
+        "SourceColumn": "width",
+        "SourceQualifier": "rectangles",
+        "SourceTable": "rectangles"
+      },
+      {
+        "Name": "height",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 10,
+          "Scale": 2
+        },
+        "SourceColumn": "height",
+        "SourceQualifier": "rectangles",
+        "SourceTable": "rectangles"
+      },
+      {
+        "Name": "area",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 20,
+          "Scale": 4
+        },
+        "SourceColumn": "area",
+        "SourceQualifier": "rectangles",
+        "SourceTable": "rectangles"
+      },
+      {
+        "Name": "perimeter",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 20,
+          "Scale": 4
+        },
+        "SourceColumn": "perimeter",
+        "SourceQualifier": "rectangles",
+        "SourceTable": "rectangles"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetRectangle, command: one)\nSELECT id, width, height, area, perimeter FROM rectangles WHERE id = ?;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:width⟩, ⟨c2:height⟩, ⟨c3:area⟩, ⟨c4:perimeter⟩ FROM rectangles WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

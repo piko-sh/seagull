@@ -1,0 +1,2 @@
+CREATE TABLE owners (id INT8 PRIMARY KEY, label STRING NOT NULL);
+CREATE TABLE accounts (id INT8 PRIMARY KEY, name STRING NOT NULL, balance INT8, owner_id INT8 NOT NULL REFERENCES owners (id));

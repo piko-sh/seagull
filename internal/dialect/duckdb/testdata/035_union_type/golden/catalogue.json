@@ -1,0 +1,88 @@
+{
+  "DefaultSchema": "main",
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "main": {
+      "Name": "main",
+      "Tables": {
+        "events": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "payload",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "union",
+                "EngineName": "union",
+                "UnionMembers": [
+                  {
+                    "SQLType": {
+                      "Category": "text",
+                      "EngineName": "varchar"
+                    },
+                    "Tag": "text_value"
+                  },
+                  {
+                    "SQLType": {
+                      "Category": "integer",
+                      "EngineName": "int4",
+                      "Width": 32
+                    },
+                    "Tag": "int_value"
+                  },
+                  {
+                    "SQLType": {
+                      "Category": "boolean",
+                      "EngineName": "bool"
+                    },
+                    "Tag": "bool_value"
+                  }
+                ]
+              }
+            }
+          ],
+          "Name": "events",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "main"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "main"
+  ]
+}

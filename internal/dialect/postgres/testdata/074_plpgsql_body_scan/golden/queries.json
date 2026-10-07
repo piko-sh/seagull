@@ -1,0 +1,66 @@
+[
+  {
+    "Command": "one",
+    "Filename": "events.sql",
+    "Line": 1,
+    "Name": "GetEventCount",
+    "OutputColumns": [
+      {
+        "Name": "total",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetEventCount, command: one)\nSELECT count_events() AS total;",
+    "Template": "SELECT ⟨c0 aliased:count_events()⟩ AS total;"
+  },
+  {
+    "Command": "many",
+    "Filename": "events.sql",
+    "Line": 4,
+    "Name": "ListEvents",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "occurred_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "occurred_at",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListEvents, command: many)\nSELECT id, name, occurred_at FROM events;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:occurred_at⟩ FROM events;"
+  }
+]

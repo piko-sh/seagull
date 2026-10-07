@@ -1,0 +1,4 @@
+{
+  "description": "TimescaleDB's documented literal forms generate without warnings and read back typed: time_bucket('1 hour', time) and time_bucket('15 minutes', time, origin) bucket a hypertable into timestamps with time zones, a continuous aggregate built with time_bucket('1 day', time) reads its bucket as one, and approx_percentile(0.5, percentile_agg(...)) and approx_percentile(0.5, uddsketch(100, 0.01, ...)) read a double precision.",
+  "expectedDiagnostics": []
+}

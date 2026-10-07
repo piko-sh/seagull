@@ -1,0 +1,247 @@
+[
+  {
+    "Command": "many",
+    "Filename": "replay.sql",
+    "Line": 1,
+    "Name": "ListT",
+    "OutputColumns": [
+      {
+        "Name": "d",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "d",
+        "SourceQualifier": "t",
+        "SourceTable": "t"
+      },
+      {
+        "Name": "c",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 10
+        },
+        "SourceColumn": "c",
+        "SourceQualifier": "t",
+        "SourceTable": "t"
+      },
+      {
+        "Name": "z",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "z",
+        "SourceQualifier": "t",
+        "SourceTable": "t"
+      },
+      {
+        "Name": "a",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "a",
+        "SourceQualifier": "t",
+        "SourceTable": "t"
+      },
+      {
+        "Name": "m",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "m",
+        "SourceQualifier": "t",
+        "SourceTable": "t"
+      },
+      {
+        "Name": "b2",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "b2",
+        "SourceQualifier": "t",
+        "SourceTable": "t"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListT, command: many)\nSELECT * FROM t;",
+    "Template": "SELECT ⟨star 0=t.d 1=t.c 2=t.z 3=t.a 4=t.m 5=t.b2:*⟩ FROM t;"
+  },
+  {
+    "Command": "many",
+    "Filename": "replay.sql",
+    "Line": 4,
+    "Name": "ListUserCopies",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "c",
+        "SourceTable": "users_copy"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 10
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "c",
+        "SourceTable": "users_copy"
+      },
+      {
+        "Name": "bio",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "bio",
+        "SourceQualifier": "c",
+        "SourceTable": "users_copy"
+      },
+      {
+        "Name": "other_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "p",
+        "SourceTable": "users_copy_parenthesised"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListUserCopies, command: many)\nSELECT c.id, c.name, c.bio, p.id AS other_id FROM users_copy c JOIN users_copy_parenthesised p ON p.id = c.id;",
+    "Template": "SELECT ⟨c0:c.id⟩, ⟨c1:c.name⟩, ⟨c2:c.bio⟩, ⟨c3 aliased:p.id⟩ AS other_id FROM users_copy c JOIN users_copy_parenthesised p ON p.id = c.id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "replay.sql",
+    "Line": 7,
+    "Name": "ListPairs",
+    "OutputColumns": [
+      {
+        "Name": "left_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "left_id",
+        "SourceQualifier": "p",
+        "SourceTable": "pairs"
+      },
+      {
+        "Name": "right_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "right_id",
+        "SourceQualifier": "p",
+        "SourceTable": "pairs"
+      },
+      {
+        "Name": "later_left_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "left_id",
+        "SourceQualifier": "l",
+        "SourceTable": "later_pairs"
+      },
+      {
+        "Name": "later_right_id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "right_id",
+        "SourceQualifier": "l",
+        "SourceTable": "later_pairs"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListPairs, command: many)\nSELECT p.left_id, p.right_id, l.left_id AS later_left_id, l.right_id AS later_right_id FROM pairs p JOIN later_pairs l ON l.note = p.note;",
+    "Template": "SELECT ⟨c0:p.left_id⟩, ⟨c1:p.right_id⟩, ⟨c2 aliased:l.left_id⟩ AS later_left_id, ⟨c3 aliased:l.right_id⟩ AS later_right_id FROM pairs p JOIN later_pairs l ON l.note = p.note;"
+  },
+  {
+    "Command": "many",
+    "Filename": "replay.sql",
+    "Line": 10,
+    "Name": "ListRenamed",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "n",
+        "SourceTable": "new_name"
+      },
+      {
+        "Name": "label",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "label",
+        "SourceQualifier": "v",
+        "SourceTable": "new_view"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListRenamed, command: many)\nSELECT n.id, v.label FROM new_name n JOIN new_view v ON v.id = n.id;",
+    "Template": "SELECT ⟨c0:n.id⟩, ⟨c1:v.label⟩ FROM new_name n JOIN new_view v ON v.id = n.id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "replay.sql",
+    "Line": 13,
+    "Name": "ListMoved",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "moved",
+        "SourceSchema": "archive",
+        "SourceTable": "moved"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListMoved, command: many)\nSELECT id FROM archive.moved;",
+    "Template": "SELECT ⟨c0:id⟩ FROM archive.moved;"
+  }
+]

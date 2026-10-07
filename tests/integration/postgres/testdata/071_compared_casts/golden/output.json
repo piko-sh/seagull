@@ -1,0 +1,28 @@
+{
+  "born_on": [
+    {
+      "id": 1
+    }
+  ],
+  "born_on_plain": [
+    {
+      "id": 1
+    },
+    {
+      "id": 2
+    }
+  ],
+  "flags_with": [
+    {
+      "id": 2
+    },
+    {
+      "id": 3
+    }
+  ],
+  "listings_below": [
+    {
+      "id": 1
+    }
+  ]
+}

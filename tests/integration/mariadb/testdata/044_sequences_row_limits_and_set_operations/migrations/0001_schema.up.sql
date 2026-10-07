@@ -1,0 +1,8 @@
+CREATE SEQUENCE invoice_numbers START WITH 1000 INCREMENT BY 1;
+
+CREATE TABLE invoices (
+    id BIGINT NOT NULL DEFAULT NEXT VALUE FOR invoice_numbers PRIMARY KEY,
+    shop VARCHAR(20) NOT NULL,
+    items INT NOT NULL,
+    issued VARCHAR(20) NOT NULL
+);

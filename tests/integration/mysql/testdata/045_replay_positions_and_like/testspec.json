@@ -1,0 +1,4 @@
+{
+  "description": "DDL replays as MySQL applies it, so SELECT * scans every table and view: FIRST and AFTER place the column an ADD COLUMN, MODIFY or CHANGE adds or moves; CREATE TABLE ... LIKE, in both spellings, copies a table; RENAME TABLE renames a table and a view; a table-level or later primary key makes its columns NOT NULL; and a repeated CREATE TABLE IF NOT EXISTS changes nothing.",
+  "expectedDiagnostics": []
+}

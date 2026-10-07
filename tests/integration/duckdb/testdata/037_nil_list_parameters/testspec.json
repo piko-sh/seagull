@@ -1,0 +1,3 @@
+{
+  "description": "DuckDB list parameters: a nil Go slice bound to a nullable list binds NULL, as on every other engine, while an empty slice binds an empty list"
+}

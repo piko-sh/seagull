@@ -1,0 +1,171 @@
+[
+  {
+    "Command": "many",
+    "Filename": "tasks.sql",
+    "Line": 1,
+    "Name": "TagPositions",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "tasks",
+        "SourceTable": "tasks"
+      },
+      {
+        "Name": "tag_count",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "first_index",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "last_index",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "urgent_at",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "cardinality",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: TagPositions, command: many)\nSELECT id, array_length(tags, 1) AS tag_count, array_lower(tags, 1) AS first_index,\n       array_upper(tags, 1) AS last_index, array_position(tags, 'urgent') AS urgent_at,\n       cardinality(tags) AS cardinality\nFROM tasks;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:array_length(tags, 1)⟩ AS tag_count, ⟨c2 aliased:array_lower(tags, 1)⟩ AS first_index,\\n       ⟨c3 aliased:array_upper(tags, 1)⟩ AS last_index, ⟨c4 aliased:array_position(tags, 'urgent')⟩ AS urgent_at,\\n       ⟨c5 aliased:cardinality(tags)⟩ AS cardinality\\nFROM tasks;"
+  },
+  {
+    "Command": "many",
+    "Filename": "tasks.sql",
+    "Line": 7,
+    "Name": "TimeSpent",
+    "OutputColumns": [
+      {
+        "Name": "project",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "project",
+        "SourceQualifier": "tasks",
+        "SourceTable": "tasks"
+      },
+      {
+        "Name": "total",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "interval",
+          "Temporal": "interval"
+        }
+      },
+      {
+        "Name": "average",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "interval",
+          "Temporal": "interval"
+        }
+      },
+      {
+        "Name": "median_spent",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "interval",
+          "Temporal": "interval"
+        }
+      },
+      {
+        "Name": "spent_percentiles",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "temporal",
+            "EngineName": "interval",
+            "Nullable": true,
+            "Temporal": "interval"
+          },
+          "EngineName": "interval[]"
+        }
+      },
+      {
+        "Name": "median_estimate",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "picked_spent",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "interval",
+          "Temporal": "interval"
+        }
+      },
+      {
+        "Name": "estimate_quartiles",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int4",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "int4[]"
+        }
+      },
+      {
+        "Name": "usual_estimate",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: TimeSpent, command: many)\nSELECT project, sum(spent) AS total, avg(spent) AS average,\n       percentile_cont(0.5) WITHIN GROUP (ORDER BY spent) AS median_spent,\n       percentile_cont(ARRAY[0.5, 0.9]) WITHIN GROUP (ORDER BY spent) AS spent_percentiles,\n       percentile_cont(0.5) WITHIN GROUP (ORDER BY estimate_hours) AS median_estimate,\n       percentile_disc(0.5) WITHIN GROUP (ORDER BY spent DESC) AS picked_spent,\n       percentile_disc(ARRAY[0.25, 0.75]) WITHIN GROUP (ORDER BY estimate_hours) AS estimate_quartiles,\n       mode() WITHIN GROUP (ORDER BY estimate_hours) AS usual_estimate\nFROM tasks\nGROUP BY project;",
+    "Template": "SELECT ⟨c0:project⟩, ⟨c1 aliased:sum(spent)⟩ AS total, ⟨c2 aliased:avg(spent)⟩ AS average,\\n       ⟨c3 aliased:percentile_cont(0.5) WITHIN GROUP (ORDER BY spent)⟩ AS median_spent,\\n       ⟨c4 aliased:percentile_cont(ARRAY[0.5, 0.9]) WITHIN GROUP (ORDER BY spent)⟩ AS spent_percentiles,\\n       ⟨c5 aliased:percentile_cont(0.5) WITHIN GROUP (ORDER BY estimate_hours)⟩ AS median_estimate,\\n       ⟨c6 aliased:percentile_disc(0.5) WITHIN GROUP (ORDER BY spent DESC)⟩ AS picked_spent,\\n       ⟨c7 aliased:percentile_disc(ARRAY[0.25, 0.75]) WITHIN GROUP (ORDER BY estimate_hours)⟩ AS estimate_quartiles,\\n       ⟨c8 aliased:mode() WITHIN GROUP (ORDER BY estimate_hours)⟩ AS usual_estimate\\nFROM tasks\\nGROUP BY project;"
+  }
+]

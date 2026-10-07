@@ -1,0 +1,187 @@
+[
+  {
+    "Command": "many",
+    "Filename": "accounts.sql",
+    "Line": 1,
+    "Name": "ListAccounts",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "email",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "region",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 10
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListAccounts, command: many)\nSELECT * FROM accounts ORDER BY id;",
+    "Template": "SELECT ⟨star 0=accounts.id 1=accounts.email 2=accounts.region:*⟩ FROM accounts ORDER BY id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "accounts.sql",
+    "Line": 4,
+    "Name": "ListQualifiedAccounts",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "a",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "email",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "a",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "region",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 10
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "a",
+        "SourceTable": "accounts"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListQualifiedAccounts, command: many)\nSELECT a.* FROM accounts AS a ORDER BY a.id;",
+    "Template": "SELECT ⟨star 0=a.id 1=a.email 2=a.region:a.*⟩ FROM accounts AS a ORDER BY a.id;"
+  },
+  {
+    "Command": "one",
+    "Filename": "accounts.sql",
+    "Line": 7,
+    "Name": "GetToken",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "token",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 64
+        },
+        "SourceColumn": "token",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetToken, command: one)\nSELECT id, token FROM accounts WHERE id = ?;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:token⟩ FROM accounts WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "accounts.sql",
+    "InsertColumns": [
+      "id",
+      "email",
+      "token"
+    ],
+    "InsertTarget": {
+      "Name": "accounts"
+    },
+    "Line": 10,
+    "Name": "AddAccount",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "email",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "token",
+        "Number": 3,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: AddAccount, command: exec)\nINSERT INTO accounts (id, email, token) VALUES (?, ?, ?);",
+    "Template": "INSERT INTO accounts (id, email, token) VALUES ⟨values:(⟨p0⟩, ⟨p1⟩, ⟨p2⟩)⟩;⟨arguments p0 p1 p2⟩"
+  }
+]

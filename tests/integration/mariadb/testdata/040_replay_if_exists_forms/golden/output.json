@@ -1,0 +1,24 @@
+{
+  "items": [
+    {
+      "id": 1,
+      "name": "kettle",
+      "note": "spare",
+      "price": null
+    },
+    {
+      "id": 2,
+      "name": "teapot",
+      "note": null,
+      "price": 30
+    }
+  ],
+  "items_copy": [
+    {
+      "id": 3,
+      "name": "mug",
+      "note": "copied",
+      "price": 5
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+{"description": "Macro calls take their data access from the macro body, and table macros' columns are typed from the tables they read"}

@@ -1,0 +1,51 @@
+[
+  {
+    "Command": "one",
+    "Filename": "get_total.sql",
+    "Line": 1,
+    "Name": "GetProductTotal",
+    "OutputColumns": [
+      {
+        "Name": "total",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        }
+      },
+      {
+        "Name": "adjusted_price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "half_quantity",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: GetProductTotal, command: one)\nSELECT\n  price * quantity as total,\n  price + discount as adjusted_price,\n  quantity / 2 as half_quantity\nFROM products WHERE id = $1",
+    "Template": "SELECT\\n  price * quantity as total,\\n  price + discount as adjusted_price,\\n  quantity / 2 as half_quantity\\nFROM products WHERE id = $1"
+  }
+]

@@ -1,0 +1,69 @@
+[
+  {
+    "Command": "one",
+    "Filename": "sessions.sql",
+    "Line": 1,
+    "Name": "GetSessionDetails",
+    "OutputColumns": [
+      {
+        "Name": "session_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "session_id",
+        "SourceQualifier": "sessions_with_latest_version",
+        "SourceTable": "sessions_with_latest_version"
+      },
+      {
+        "Name": "session_account_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "session_account_id",
+        "SourceQualifier": "sessions_with_latest_version",
+        "SourceTable": "sessions_with_latest_version"
+      },
+      {
+        "Name": "version_status",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "version_status",
+        "SourceQualifier": "sessions_with_latest_version",
+        "SourceTable": "sessions_with_latest_version"
+      },
+      {
+        "Name": "version_two_factor_secret",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "version_two_factor_secret",
+        "SourceQualifier": "sessions_with_latest_version",
+        "SourceTable": "sessions_with_latest_version"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "param",
+        "Name": "session_id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetSessionDetails, command: one)\n-- $1 as sgl.param(session_id)\nSELECT\n    session_id,\n    session_account_id,\n    version_status,\n    version_two_factor_secret\nFROM sessions_with_latest_version\nWHERE session_id = $1;",
+    "Template": "SELECT\\n    ⟨c0:session_id⟩,\\n    ⟨c1:session_account_id⟩,\\n    ⟨c2:version_status⟩,\\n    ⟨c3:version_two_factor_secret⟩\\nFROM sessions_with_latest_version\\nWHERE session_id = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

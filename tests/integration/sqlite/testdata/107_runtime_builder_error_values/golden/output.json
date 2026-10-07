@@ -1,0 +1,31 @@
+{
+  "count_unknown_column": {
+    "matches": true,
+    "message": "sgl: unknown column in runtime query filter"
+  },
+  "first_error_wins": {
+    "matches": true,
+    "message": "sgl: unknown operator in runtime query filter"
+  },
+  "unknown_column": {
+    "matches": true,
+    "message": "sgl: unknown column in runtime query filter"
+  },
+  "unknown_direction": {
+    "matches": true,
+    "message": "sgl: unknown sort direction in runtime query order"
+  },
+  "unknown_operator": {
+    "matches": true,
+    "message": "sgl: unknown operator in runtime query filter"
+  },
+  "valid": [
+    {
+      "id": 2,
+      "title": "Second",
+      "views": 200
+    }
+  ],
+  "values_are_distinct": true,
+  "wrapped_matches": true
+}

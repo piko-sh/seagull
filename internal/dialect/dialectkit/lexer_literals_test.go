@@ -1,0 +1,61 @@
+// Copyright 2026 PolitePixels Limited
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// This project stands against fascism, authoritarianism, and all forms of
+// oppression. We built this to empower people, not to enable those who would
+// strip others of their rights and dignity.
+
+package dialectkit_test
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	"seagull.sh/seagull/internal/dialect/dialectkit"
+)
+
+func TestScanDoubledDelimiter(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name      string
+		input     string
+		delimiter byte
+		wantValue string
+		wantEnd   int
+		wantOK    bool
+	}{
+		{name: "simple string", input: "'hello'", delimiter: '\'', wantValue: "hello", wantEnd: 7, wantOK: true},
+		{name: "doubled quote", input: "'it''s'", delimiter: '\'', wantValue: "it's", wantEnd: 7, wantOK: true},
+		{name: "empty literal", input: "''", delimiter: '\'', wantValue: "", wantEnd: 2, wantOK: true},
+		{name: "double quoted identifier", input: "\"col\"", delimiter: '"', wantValue: "col", wantEnd: 5, wantOK: true},
+		{name: "doubled in identifier", input: "\"a\"\"b\"", delimiter: '"', wantValue: "a\"b", wantEnd: 6, wantOK: true},
+		{name: "trailing text after close", input: "'x' y", delimiter: '\'', wantValue: "x", wantEnd: 3, wantOK: true},
+		{name: "unterminated", input: "'oops", delimiter: '\'', wantValue: "", wantEnd: 5, wantOK: false},
+	}
+
+	for _, testCase := range cases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+			value, end, ok := dialectkit.ScanDoubledDelimiter(testCase.input, 0, testCase.delimiter)
+			require.Equal(t, testCase.wantOK, ok)
+			if !testCase.wantOK {
+				return
+			}
+			require.Equal(t, testCase.wantValue, value)
+			require.Equal(t, testCase.wantEnd, end)
+		})
+	}
+}

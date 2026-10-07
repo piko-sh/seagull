@@ -1,0 +1,54 @@
+[
+  {
+    "Command": "many",
+    "Filename": "search_by_text.sql",
+    "Line": 1,
+    "Name": "SearchByText",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "email",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: SearchByText, command: many)\nSELECT id, name, email FROM users WHERE name = $1 OR email = $1",
+    "Template": "SELECT id, name, email FROM users WHERE name = $1 OR email = $1"
+  }
+]

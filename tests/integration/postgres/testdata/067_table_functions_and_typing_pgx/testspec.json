@@ -1,0 +1,13 @@
+{
+  "description": "Table functions and typing against PostgreSQL through pgx: functions a migration creates read as FROM items, a set of a table's rows, one row of a table's type (a row of NULLs where none matches), several output parameters, one named by its only output parameter, a scalar function under its alias, built-ins and CURRENT_DATE, a LATERAL length and a composite result; CALL of a procedure with an output parameter returns its row and one without runs as exec; jsonb_populate_record and json_populate_recordset give the row type's columns; an unnest of two arrays WITH ORDINALITY reads typed columns; a nested array literal, ARRAY(SELECT id) and ARRAY(SELECT jsonb_build_object(...)) read as arrays; composite fields read the composite type's fields; named placeholders around $1 bind apart; a tsvector column reads as text; and a column override whose type marshals itself to bytes stores those bytes in a bytea column.",
+  "emitter": "pgx",
+  "expectedDiagnostics": [],
+  "typeOverrides": [
+    {
+      "SQLTypeName": "",
+      "Column": "tokens.id",
+      "GoPackage": "case_runner/kinds",
+      "GoName": "Token"
+    }
+  ]
+}

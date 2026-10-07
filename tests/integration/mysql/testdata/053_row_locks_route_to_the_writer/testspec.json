@@ -1,0 +1,4 @@
+{
+  "description": "A row lock anywhere in a query routes it to the writer: behind NewWithReplica, whose reader here is a session in read-only transactions, FOR UPDATE at the end of the query and in a CTE body, FOR SHARE in a derived table, FOR UPDATE SKIP LOCKED in an IN subquery, LOCK IN SHARE MODE at the end of the query and in an EXISTS subquery and FOR UPDATE in a scalar subquery all run on the writer and read their rows, so no locking statement reaches the reader, while the plain read runs there; the reader refuses FOR UPDATE itself. Through database/sql.",
+  "expectedDiagnostics": []
+}

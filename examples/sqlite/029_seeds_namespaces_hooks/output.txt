@@ -1,0 +1,11 @@
+history tables: chippy_migrations and chippy_seeds
+migrating: 2 pending, versions [1 2]
+  applied 0001 menu
+  applied 0002 write_ahead_log
+journal mode: wal
+sgl_migrations (default namespace): 0 of 2 migrations applied
+seeds applied: 1
+seeds applied: 0
+  cod and chips     950p
+  haddock and chips 1020p
+  mushy peas        250p

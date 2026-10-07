@@ -1,0 +1,1 @@
+{"description": "A table created without a primary key has CockroachDB's hidden rowid column: SELECT * leaves it out, a query can name it, and an INSERT need not give it; a table with a primary key has none"}

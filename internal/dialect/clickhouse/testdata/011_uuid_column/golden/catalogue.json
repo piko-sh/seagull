@@ -1,0 +1,63 @@
+{
+  "DefaultSchema": "default",
+  "Identifiers": {
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "default": {
+      "Name": "default",
+      "Tables": {
+        "sessions": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "uuid",
+                "EngineName": "UUID"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "user_id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "uuid",
+                "EngineName": "UUID"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "created",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "temporal",
+                "EngineName": "DateTime",
+                "Temporal": "timestamp",
+                "TimeZone": true
+              }
+            }
+          ],
+          "Name": "sessions",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "default"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "default"
+  ]
+}

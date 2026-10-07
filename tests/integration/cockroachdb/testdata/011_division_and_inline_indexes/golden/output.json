@@ -1,0 +1,59 @@
+{
+  "days_to_ship": [
+    {
+      "days": 4,
+      "id": 1,
+      "promised_on": "2024-01-04T00:00:00Z"
+    },
+    {
+      "days": null,
+      "id": 2,
+      "promised_on": "2024-03-02T00:00:00Z"
+    }
+  ],
+  "half_days": [
+    {
+      "moment": "2024-01-01T00:00:00Z"
+    },
+    {
+      "moment": "2024-01-01T12:00:00Z"
+    },
+    {
+      "moment": "2024-01-02T00:00:00Z"
+    }
+  ],
+  "list_orders": [
+    {
+      "doc": {
+        "k": 1
+      },
+      "email": "a@example.com",
+      "id": 1,
+      "ordered_on": "2024-01-01T00:00:00Z",
+      "parts": 3,
+      "quantity": 10,
+      "shipped_on": "2024-01-05T00:00:00Z"
+    },
+    {
+      "doc": null,
+      "email": "b@example.com",
+      "id": 2,
+      "ordered_on": "2024-02-28T00:00:00Z",
+      "parts": 3,
+      "quantity": 9,
+      "shipped_on": null
+    }
+  ],
+  "quantity_per_part": [
+    {
+      "id": 1,
+      "per_part": "3.3333333333333333333",
+      "whole_parts": 3
+    },
+    {
+      "id": 2,
+      "per_part": "3.0000000000000000000",
+      "whole_parts": 3
+    }
+  ]
+}

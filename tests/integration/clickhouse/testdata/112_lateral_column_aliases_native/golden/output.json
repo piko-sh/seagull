@@ -1,0 +1,38 @@
+{
+  "lateral": [
+    {
+      "double_mass": "2.5",
+      "doubled": 4,
+      "half_span": 0.7,
+      "loud": "HERRING",
+      "mass": "1.25",
+      "next_id": 2,
+      "shout": "HERRING!",
+      "span": 1.4
+    },
+    {
+      "double_mass": "0.8",
+      "doubled": 6,
+      "half_span": null,
+      "loud": "KITTIWAKE",
+      "mass": "0.4",
+      "next_id": 3,
+      "shout": "KITTIWAKE!",
+      "span": null
+    }
+  ],
+  "sums": [
+    {
+      "double_mass": "2.5",
+      "half_span": 0.7,
+      "shout": "HERRING!?",
+      "sum": 6
+    },
+    {
+      "double_mass": "0.8",
+      "half_span": null,
+      "shout": "KITTIWAKE!?",
+      "sum": 9
+    }
+  ]
+}

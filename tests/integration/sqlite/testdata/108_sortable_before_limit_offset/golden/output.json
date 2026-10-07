@@ -1,0 +1,77 @@
+{
+  "categories_by_price": [
+    {
+      "id": 4,
+      "name": "Date",
+      "price": 200
+    },
+    {
+      "id": 5,
+      "name": "Eggplant",
+      "price": 150
+    },
+    {
+      "id": 6,
+      "name": "Fig",
+      "price": 120
+    }
+  ],
+  "cheapest": {
+    "id": 2,
+    "name": "Banana",
+    "price": 50
+  },
+  "cheapest_page_from_60": [
+    {
+      "id": 1,
+      "name": "Apple",
+      "price": 100
+    },
+    {
+      "id": 6,
+      "name": "Fig",
+      "price": 120
+    }
+  ],
+  "names_descending": [
+    {
+      "id": 6,
+      "name": "Fig",
+      "price": 120
+    },
+    {
+      "id": 5,
+      "name": "Eggplant",
+      "price": 150
+    },
+    {
+      "id": 4,
+      "name": "Date",
+      "price": 200
+    }
+  ],
+  "streamed_dearest_two": [
+    {
+      "id": 4,
+      "name": "Date",
+      "price": 200
+    },
+    {
+      "id": 5,
+      "name": "Eggplant",
+      "price": 150
+    }
+  ],
+  "unordered_first_two": [
+    {
+      "id": 1,
+      "name": "Apple",
+      "price": 100
+    },
+    {
+      "id": 2,
+      "name": "Banana",
+      "price": 50
+    }
+  ]
+}

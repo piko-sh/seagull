@@ -1,0 +1,4 @@
+{
+  "description": "Native ClickHouse reads Dynamic values, the paths of a JSON column and an Array(Dynamic) into any through the converting scan adapter.",
+  "emitter": "native"
+}

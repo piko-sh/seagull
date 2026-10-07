@@ -1,0 +1,1 @@
+{"description": "MariaDB's own column types read as MariaDB sends them: UUID as a UUID, INET4 and INET6 as their text, which IS_IPV4 and IS_IPV6 take, and VECTOR(n) as its packed bytes; a VECTOR INDEX element of a CREATE TABLE declares no column, so SELECT * reads the table's columns alone; and the address tests are INT and 0 for NULL"}

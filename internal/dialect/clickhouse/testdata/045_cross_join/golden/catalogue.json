@@ -1,0 +1,64 @@
+{
+  "DefaultSchema": "default",
+  "Identifiers": {
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "default": {
+      "Name": "default",
+      "Tables": {
+        "colors": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "c",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "String"
+              }
+            }
+          ],
+          "Name": "colors",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "c"
+          ],
+          "Schema": "default"
+        },
+        "sizes": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "s",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "String"
+              }
+            }
+          ],
+          "Name": "sizes",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 1
+          },
+          "PrimaryKey": [
+            "s"
+          ],
+          "Schema": "default"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "default"
+  ]
+}

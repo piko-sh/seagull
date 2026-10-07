@@ -1,0 +1,233 @@
+[
+  {
+    "Code": "Q059",
+    "Column": 12,
+    "EndColumn": 25,
+    "EndLine": 2,
+    "Filename": "nests.sql",
+    "Line": 2,
+    "Message": "column \"pairs_in_pair\" cannot be read: it holds a Tuple with unnamed elements inside another Tuple, such as Tuple(UInt8, Tuple(String, UInt16)) or (a, (b, c)), which clickhouse-go cannot read: the native driver fails and database/sql returns NULL or loses the inner tuple's elements",
+    "Severity": "error",
+    "Suggestion": "name the inner tuple's elements, as CAST(x AS Tuple(UInt8, Tuple(s String, n UInt16))) does, or select the inner tuple's elements as columns of their own, such as x.2.1 and x.2.2"
+  },
+  {
+    "Code": "Q059",
+    "Column": 27,
+    "EndColumn": 41,
+    "EndLine": 2,
+    "Filename": "nests.sql",
+    "Line": 2,
+    "Message": "column \"pair_in_fields\" cannot be read: it holds a Tuple with unnamed elements inside another Tuple, such as Tuple(UInt8, Tuple(String, UInt16)) or (a, (b, c)), which clickhouse-go cannot read: the native driver fails and database/sql returns NULL or loses the inner tuple's elements",
+    "Severity": "error",
+    "Suggestion": "name the inner tuple's elements, as CAST(x AS Tuple(UInt8, Tuple(s String, n UInt16))) does, or select the inner tuple's elements as columns of their own, such as x.2.1 and x.2.2"
+  },
+  {
+    "Code": "Q059",
+    "Column": 43,
+    "EndColumn": 49,
+    "EndLine": 2,
+    "Filename": "nests.sql",
+    "Line": 2,
+    "Message": "column \"listed\" cannot be read: it holds a Tuple with unnamed elements inside another Tuple, such as Tuple(UInt8, Tuple(String, UInt16)) or (a, (b, c)), which clickhouse-go cannot read: the native driver fails and database/sql returns NULL or loses the inner tuple's elements",
+    "Severity": "error",
+    "Suggestion": "name the inner tuple's elements, as CAST(x AS Tuple(UInt8, Tuple(s String, n UInt16))) does, or select the inner tuple's elements as columns of their own, such as x.2.1 and x.2.2"
+  },
+  {
+    "Code": "Q059",
+    "Column": 51,
+    "EndColumn": 56,
+    "EndLine": 2,
+    "Filename": "nests.sql",
+    "Line": 2,
+    "Message": "column \"keyed\" cannot be read: it holds a Tuple with unnamed elements inside another Tuple, such as Tuple(UInt8, Tuple(String, UInt16)) or (a, (b, c)), which clickhouse-go cannot read: the native driver fails and database/sql returns NULL or loses the inner tuple's elements",
+    "Severity": "error",
+    "Suggestion": "name the inner tuple's elements, as CAST(x AS Tuple(UInt8, Tuple(s String, n UInt16))) does, or select the inner tuple's elements as columns of their own, such as x.2.1 and x.2.2"
+  },
+  {
+    "Code": "Q059",
+    "Column": 58,
+    "EndColumn": 75,
+    "EndLine": 2,
+    "Filename": "nests.sql",
+    "Line": 2,
+    "Message": "column \"pair_list_in_pair\" cannot be read: it holds a Tuple with unnamed elements inside another Tuple, such as Tuple(UInt8, Tuple(String, UInt16)) or (a, (b, c)), which clickhouse-go cannot read: the native driver fails and database/sql returns NULL or loses the inner tuple's elements",
+    "Severity": "error",
+    "Suggestion": "name the inner tuple's elements, as CAST(x AS Tuple(UInt8, Tuple(s String, n UInt16))) does, or select the inner tuple's elements as columns of their own, such as x.2.1 and x.2.2"
+  },
+  {
+    "Code": "Q059",
+    "Column": 77,
+    "EndColumn": 99,
+    "EndLine": 2,
+    "Filename": "nests.sql",
+    "Line": 2,
+    "Message": "column \"pair_in_fields_in_pair\" cannot be read: it holds a Tuple with unnamed elements inside another Tuple, such as Tuple(UInt8, Tuple(String, UInt16)) or (a, (b, c)), which clickhouse-go cannot read: the native driver fails and database/sql returns NULL or loses the inner tuple's elements",
+    "Severity": "error",
+    "Suggestion": "name the inner tuple's elements, as CAST(x AS Tuple(UInt8, Tuple(s String, n UInt16))) does, or select the inner tuple's elements as columns of their own, such as x.2.1 and x.2.2"
+  },
+  {
+    "Code": "Q059",
+    "Column": 101,
+    "EndColumn": 125,
+    "EndLine": 2,
+    "Filename": "nests.sql",
+    "Line": 2,
+    "Message": "column \"pair_in_fields_in_fields\" cannot be read: it holds a Tuple with unnamed elements inside another Tuple, such as Tuple(UInt8, Tuple(String, UInt16)) or (a, (b, c)), which clickhouse-go cannot read: the native driver fails and database/sql returns NULL or loses the inner tuple's elements",
+    "Severity": "error",
+    "Suggestion": "name the inner tuple's elements, as CAST(x AS Tuple(UInt8, Tuple(s String, n UInt16))) does, or select the inner tuple's elements as columns of their own, such as x.2.1 and x.2.2"
+  },
+  {
+    "Code": "Q059",
+    "Column": 127,
+    "EndColumn": 140,
+    "EndLine": 2,
+    "Filename": "nests.sql",
+    "Line": 2,
+    "Message": "column \"listed_fields\" cannot be read: it holds a Tuple with unnamed elements inside another Tuple, such as Tuple(UInt8, Tuple(String, UInt16)) or (a, (b, c)), which clickhouse-go cannot read: the native driver fails and database/sql returns NULL or loses the inner tuple's elements",
+    "Severity": "error",
+    "Suggestion": "name the inner tuple's elements, as CAST(x AS Tuple(UInt8, Tuple(s String, n UInt16))) does, or select the inner tuple's elements as columns of their own, such as x.2.1 and x.2.2"
+  },
+  {
+    "Code": "Q059",
+    "Column": 142,
+    "EndColumn": 154,
+    "EndLine": 2,
+    "Filename": "nests.sql",
+    "Line": 2,
+    "Message": "column \"keyed_fields\" cannot be read: it holds a Tuple with unnamed elements inside another Tuple, such as Tuple(UInt8, Tuple(String, UInt16)) or (a, (b, c)), which clickhouse-go cannot read: the native driver fails and database/sql returns NULL or loses the inner tuple's elements",
+    "Severity": "error",
+    "Suggestion": "name the inner tuple's elements, as CAST(x AS Tuple(UInt8, Tuple(s String, n UInt16))) does, or select the inner tuple's elements as columns of their own, such as x.2.1 and x.2.2"
+  },
+  {
+    "Code": "Q059",
+    "Column": 8,
+    "EndColumn": 26,
+    "EndLine": 5,
+    "Filename": "nests.sql",
+    "Line": 5,
+    "Message": "column \"parenthesised\" cannot be read: it holds a Tuple with unnamed elements inside another Tuple, such as Tuple(UInt8, Tuple(String, UInt16)) or (a, (b, c)), which clickhouse-go cannot read: the native driver fails and database/sql returns NULL or loses the inner tuple's elements",
+    "Severity": "error",
+    "Suggestion": "name the inner tuple's elements, as CAST(x AS Tuple(UInt8, Tuple(s String, n UInt16))) does, or select the inner tuple's elements as columns of their own, such as x.2.1 and x.2.2"
+  },
+  {
+    "Code": "Q059",
+    "Column": 45,
+    "EndColumn": 73,
+    "EndLine": 5,
+    "Filename": "nests.sql",
+    "Line": 5,
+    "Message": "column \"called\" cannot be read: it holds a Tuple with unnamed elements inside another Tuple, such as Tuple(UInt8, Tuple(String, UInt16)) or (a, (b, c)), which clickhouse-go cannot read: the native driver fails and database/sql returns NULL or loses the inner tuple's elements",
+    "Severity": "error",
+    "Suggestion": "name the inner tuple's elements, as CAST(x AS Tuple(UInt8, Tuple(s String, n UInt16))) does, or select the inner tuple's elements as columns of their own, such as x.2.1 and x.2.2"
+  },
+  {
+    "Code": "Q059",
+    "Column": 85,
+    "EndColumn": 105,
+    "EndLine": 5,
+    "Filename": "nests.sql",
+    "Line": 5,
+    "Message": "column \"listed\" cannot be read: it holds a Tuple with unnamed elements inside another Tuple, such as Tuple(UInt8, Tuple(String, UInt16)) or (a, (b, c)), which clickhouse-go cannot read: the native driver fails and database/sql returns NULL or loses the inner tuple's elements",
+    "Severity": "error",
+    "Suggestion": "name the inner tuple's elements, as CAST(x AS Tuple(UInt8, Tuple(s String, n UInt16))) does, or select the inner tuple's elements as columns of their own, such as x.2.1 and x.2.2"
+  },
+  {
+    "Code": "Q059",
+    "Column": 8,
+    "EndColumn": 9,
+    "EndLine": 8,
+    "Filename": "nests.sql",
+    "Line": 8,
+    "Message": "column \"pairs_in_pair\" cannot be read: it holds a Tuple with unnamed elements inside another Tuple, such as Tuple(UInt8, Tuple(String, UInt16)) or (a, (b, c)), which clickhouse-go cannot read: the native driver fails and database/sql returns NULL or loses the inner tuple's elements",
+    "Severity": "error",
+    "Suggestion": "name the inner tuple's elements, as CAST(x AS Tuple(UInt8, Tuple(s String, n UInt16))) does, or select the inner tuple's elements as columns of their own, such as x.2.1 and x.2.2"
+  },
+  {
+    "Code": "Q059",
+    "Column": 8,
+    "EndColumn": 9,
+    "EndLine": 8,
+    "Filename": "nests.sql",
+    "Line": 8,
+    "Message": "column \"pair_in_fields\" cannot be read: it holds a Tuple with unnamed elements inside another Tuple, such as Tuple(UInt8, Tuple(String, UInt16)) or (a, (b, c)), which clickhouse-go cannot read: the native driver fails and database/sql returns NULL or loses the inner tuple's elements",
+    "Severity": "error",
+    "Suggestion": "name the inner tuple's elements, as CAST(x AS Tuple(UInt8, Tuple(s String, n UInt16))) does, or select the inner tuple's elements as columns of their own, such as x.2.1 and x.2.2"
+  },
+  {
+    "Code": "Q059",
+    "Column": 8,
+    "EndColumn": 9,
+    "EndLine": 8,
+    "Filename": "nests.sql",
+    "Line": 8,
+    "Message": "column \"listed\" cannot be read: it holds a Tuple with unnamed elements inside another Tuple, such as Tuple(UInt8, Tuple(String, UInt16)) or (a, (b, c)), which clickhouse-go cannot read: the native driver fails and database/sql returns NULL or loses the inner tuple's elements",
+    "Severity": "error",
+    "Suggestion": "name the inner tuple's elements, as CAST(x AS Tuple(UInt8, Tuple(s String, n UInt16))) does, or select the inner tuple's elements as columns of their own, such as x.2.1 and x.2.2"
+  },
+  {
+    "Code": "Q059",
+    "Column": 8,
+    "EndColumn": 9,
+    "EndLine": 8,
+    "Filename": "nests.sql",
+    "Line": 8,
+    "Message": "column \"keyed\" cannot be read: it holds a Tuple with unnamed elements inside another Tuple, such as Tuple(UInt8, Tuple(String, UInt16)) or (a, (b, c)), which clickhouse-go cannot read: the native driver fails and database/sql returns NULL or loses the inner tuple's elements",
+    "Severity": "error",
+    "Suggestion": "name the inner tuple's elements, as CAST(x AS Tuple(UInt8, Tuple(s String, n UInt16))) does, or select the inner tuple's elements as columns of their own, such as x.2.1 and x.2.2"
+  },
+  {
+    "Code": "Q059",
+    "Column": 8,
+    "EndColumn": 9,
+    "EndLine": 8,
+    "Filename": "nests.sql",
+    "Line": 8,
+    "Message": "column \"pair_list_in_pair\" cannot be read: it holds a Tuple with unnamed elements inside another Tuple, such as Tuple(UInt8, Tuple(String, UInt16)) or (a, (b, c)), which clickhouse-go cannot read: the native driver fails and database/sql returns NULL or loses the inner tuple's elements",
+    "Severity": "error",
+    "Suggestion": "name the inner tuple's elements, as CAST(x AS Tuple(UInt8, Tuple(s String, n UInt16))) does, or select the inner tuple's elements as columns of their own, such as x.2.1 and x.2.2"
+  },
+  {
+    "Code": "Q059",
+    "Column": 8,
+    "EndColumn": 9,
+    "EndLine": 8,
+    "Filename": "nests.sql",
+    "Line": 8,
+    "Message": "column \"pair_in_fields_in_pair\" cannot be read: it holds a Tuple with unnamed elements inside another Tuple, such as Tuple(UInt8, Tuple(String, UInt16)) or (a, (b, c)), which clickhouse-go cannot read: the native driver fails and database/sql returns NULL or loses the inner tuple's elements",
+    "Severity": "error",
+    "Suggestion": "name the inner tuple's elements, as CAST(x AS Tuple(UInt8, Tuple(s String, n UInt16))) does, or select the inner tuple's elements as columns of their own, such as x.2.1 and x.2.2"
+  },
+  {
+    "Code": "Q059",
+    "Column": 8,
+    "EndColumn": 9,
+    "EndLine": 8,
+    "Filename": "nests.sql",
+    "Line": 8,
+    "Message": "column \"pair_in_fields_in_fields\" cannot be read: it holds a Tuple with unnamed elements inside another Tuple, such as Tuple(UInt8, Tuple(String, UInt16)) or (a, (b, c)), which clickhouse-go cannot read: the native driver fails and database/sql returns NULL or loses the inner tuple's elements",
+    "Severity": "error",
+    "Suggestion": "name the inner tuple's elements, as CAST(x AS Tuple(UInt8, Tuple(s String, n UInt16))) does, or select the inner tuple's elements as columns of their own, such as x.2.1 and x.2.2"
+  },
+  {
+    "Code": "Q059",
+    "Column": 8,
+    "EndColumn": 9,
+    "EndLine": 8,
+    "Filename": "nests.sql",
+    "Line": 8,
+    "Message": "column \"listed_fields\" cannot be read: it holds a Tuple with unnamed elements inside another Tuple, such as Tuple(UInt8, Tuple(String, UInt16)) or (a, (b, c)), which clickhouse-go cannot read: the native driver fails and database/sql returns NULL or loses the inner tuple's elements",
+    "Severity": "error",
+    "Suggestion": "name the inner tuple's elements, as CAST(x AS Tuple(UInt8, Tuple(s String, n UInt16))) does, or select the inner tuple's elements as columns of their own, such as x.2.1 and x.2.2"
+  },
+  {
+    "Code": "Q059",
+    "Column": 8,
+    "EndColumn": 9,
+    "EndLine": 8,
+    "Filename": "nests.sql",
+    "Line": 8,
+    "Message": "column \"keyed_fields\" cannot be read: it holds a Tuple with unnamed elements inside another Tuple, such as Tuple(UInt8, Tuple(String, UInt16)) or (a, (b, c)), which clickhouse-go cannot read: the native driver fails and database/sql returns NULL or loses the inner tuple's elements",
+    "Severity": "error",
+    "Suggestion": "name the inner tuple's elements, as CAST(x AS Tuple(UInt8, Tuple(s String, n UInt16))) does, or select the inner tuple's elements as columns of their own, such as x.2.1 and x.2.2"
+  }
+]

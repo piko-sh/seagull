@@ -1,0 +1,1 @@
+{"description": "Nested compound types: a list of STRUCT and a MAP whose values are lists, each keeping its [] suffix inside the compound type"}

@@ -1,0 +1,36 @@
+{
+  "add_token": "added",
+  "add_tokens": "added",
+  "noted_no_note": 0,
+  "noted_note": [
+    {
+      "id": 1
+    }
+  ],
+  "of_no_owner": 0,
+  "of_owner": [
+    {
+      "id": 1
+    }
+  ],
+  "tokens": [
+    {
+      "amount": "2.5",
+      "id": 1,
+      "note": "kept",
+      "owner": "0b9f8e2c-6d1a-4f3e-9a7b-5c4d3e2f1a0b"
+    },
+    {
+      "amount": null,
+      "id": 2,
+      "note": null,
+      "owner": null
+    }
+  ],
+  "worth_amount": [
+    {
+      "id": 1
+    }
+  ],
+  "worth_no_amount": 0
+}

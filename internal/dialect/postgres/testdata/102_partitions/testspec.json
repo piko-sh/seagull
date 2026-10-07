@@ -1,0 +1,4 @@
+{
+  "description": "A partition is a table holding its parent's columns, primary key and constraints: CREATE TABLE ... PARTITION OF and ATTACH PARTITION make one, its element list may make a column NOT NULL, later changes to the parent's columns (ADD COLUMN) reach it, DDL naming it (constraints, defaults, indexes, comments, RENAME TO, DROP) replays on it, and DETACH PARTITION leaves it a table of its own. A query may name a partition; generated code models only the parent.",
+  "expectedDiagnosticCount": 0
+}

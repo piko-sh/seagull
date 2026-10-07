@@ -1,0 +1,39 @@
+{
+  "add_device": "ok",
+  "addresses": [
+    {
+      "id": 2,
+      "ip_text": "2001:db8::10",
+      "v4": 1,
+      "v6": 1,
+      "vector_text": "[0.5,1,1.5]"
+    }
+  ],
+  "list_devices": [
+    {
+      "embedding": "AACAPwAAAEAAAEBA",
+      "id": 1,
+      "last_ip4": null,
+      "last_ip6": "::1",
+      "owner": null,
+      "public_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+    },
+    {
+      "embedding": "AAAAPwAAgD8AAMA/",
+      "id": 2,
+      "last_ip4": "192.0.2.10",
+      "last_ip6": "2001:db8::10",
+      "owner": "0b3c9b1e-6a4e-4b8a-9c39-6f1a2b3c4d5e",
+      "public_id": "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d"
+    }
+  ],
+  "seeded_addresses": [
+    {
+      "id": 1,
+      "ip_text": "::1",
+      "v4": 0,
+      "v6": 1,
+      "vector_text": "[1,2,3]"
+    }
+  ]
+}

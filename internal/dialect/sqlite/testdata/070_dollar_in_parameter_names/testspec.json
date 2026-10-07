@@ -1,0 +1,4 @@
+{
+  "description": "SQLite continues a name through '$' after its first character, in a column name and in a placeholder's name alike, so :low$usd, $high$usd and @skip$ are each one parameter, typed from the column they are compared with.",
+  "expectedDiagnosticCount": 0
+}

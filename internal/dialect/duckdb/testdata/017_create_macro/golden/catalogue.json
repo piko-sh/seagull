@@ -1,0 +1,96 @@
+{
+  "DefaultSchema": "main",
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "main": {
+      "Functions": {
+        "discount": [
+          {
+            "Arguments": [
+              {
+                "Name": "amount",
+                "Type": {
+                  "Category": "unknown"
+                }
+              },
+              {
+                "Name": "pct",
+                "Type": {
+                  "Category": "unknown"
+                }
+              }
+            ],
+            "BodySQL": "amount * (1.0 - pct / 100.0)",
+            "DataAccess": "read-only",
+            "MinArguments": 2,
+            "Name": "discount",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 1
+            },
+            "ReturnType": {
+              "Category": "unknown"
+            }
+          }
+        ]
+      },
+      "Name": "main",
+      "Tables": {
+        "products": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "price",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "float",
+                "EngineName": "float8",
+                "Width": 64
+              }
+            }
+          ],
+          "Name": "products",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "main"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "main"
+  ]
+}

@@ -1,0 +1,3 @@
+{
+  "description": "CockroachDB database/sql runtime cases: a slice in IN and NOT IN, nil, empty, of one and of many (an empty NOT IN keeps every row); a slice of a named enum and a nullable enum parameter and column; a batch whose row holds expressions with an ON CONFLICT reading EXCLUDED; a copyfrom into a schema-qualified table as a multi-row INSERT"
+}

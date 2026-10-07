@@ -1,0 +1,125 @@
+[
+  {
+    "Command": "many",
+    "Filename": "orders.sql",
+    "Line": 1,
+    "Name": "OrderLine",
+    "OutputColumns": [
+      {
+        "Name": "sku",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 40
+        },
+        "SourceColumn": "sku",
+        "SourceQualifier": "x"
+      },
+      {
+        "Name": "price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        },
+        "SourceColumn": "price",
+        "SourceQualifier": "x"
+      },
+      {
+        "Name": "placed_at",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Precision": 3,
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "placed_at",
+        "SourceQualifier": "x"
+      },
+      {
+        "Name": "codes",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "varchar",
+            "Length": 8,
+            "Nullable": true
+          },
+          "EngineName": "varchar[]"
+        },
+        "SourceColumn": "codes",
+        "SourceQualifier": "x"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: OrderLine, command: many)\nSELECT x.sku, x.price, x.placed_at, x.codes\nFROM orders, jsonb_to_record(orders.line) AS x (sku varchar(40), price numeric(10, 2), placed_at timestamp(3) with time zone, codes character varying(8)[])\nWHERE orders.id = $1;",
+    "Template": "SELECT ⟨c0:x.sku⟩, ⟨c1:x.price⟩, ⟨c2:x.placed_at⟩, ⟨c3:x.codes⟩\\nFROM orders, jsonb_to_record(orders.line) AS x (sku varchar(40), price numeric(10, 2), placed_at timestamp(3) with time zone, codes character varying(8)[])\\nWHERE orders.id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "orders.sql",
+    "Line": 6,
+    "Name": "OrderLinesFromRows",
+    "OutputColumns": [
+      {
+        "Name": "sku",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 40
+        },
+        "SourceColumn": "sku",
+        "SourceQualifier": "r"
+      },
+      {
+        "Name": "price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 12,
+          "Scale": 4
+        },
+        "SourceColumn": "price",
+        "SourceQualifier": "r"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: OrderLinesFromRows, command: many)\nSELECT r.sku, r.price\nFROM orders, ROWS FROM (jsonb_to_record(orders.line) AS (sku varchar(40), price numeric(12, 4))) AS r\nWHERE orders.id = $1;",
+    "Template": "SELECT ⟨c0:r.sku⟩, ⟨c1:r.price⟩\\nFROM orders, ROWS FROM (jsonb_to_record(orders.line) AS (sku varchar(40), price numeric(12, 4))) AS r\\nWHERE orders.id = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

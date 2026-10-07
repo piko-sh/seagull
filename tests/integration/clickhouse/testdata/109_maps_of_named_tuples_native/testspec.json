@@ -1,0 +1,4 @@
+{
+  "description": "Native ClickHouse Map columns of named tuples: clickhouse-go reads a Map(K, Tuple(a T, ...)) only as map[K]map[string]any, so the generated code reads it, and an Array of them, a Map of arrays or maps of them, a Date-keyed one, an Array of named tuples holding one, an element of a named tuple holding one, a built one and named tuples holding every kind of value (Nullable, arrays, dates, decimals, UUID, FixedString, Int128, IPv4, IPv6, Bool, DateTime64, nested named tuples) through the converting scan adapter into its maps and structs",
+  "emitter": "native"
+}

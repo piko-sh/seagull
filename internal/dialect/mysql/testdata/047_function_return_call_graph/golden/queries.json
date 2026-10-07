@@ -1,0 +1,67 @@
+[
+  {
+    "Command": "one",
+    "Filename": "audit.sql",
+    "Line": 1,
+    "Name": "Audit",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "note",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: Audit, command: one)\nSELECT audited(?) AS id;",
+    "Template": "SELECT ⟨c0 aliased:audited(⟨p0⟩)⟩ AS id;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "audit.sql",
+    "Line": 4,
+    "Name": "Tidy",
+    "OutputColumns": [
+      {
+        "Name": "note",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "note",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Tidy, command: one)\nSELECT tidied(?) AS note;",
+    "Template": "SELECT ⟨c0 aliased:tidied(⟨p0⟩)⟩ AS note;⟨arguments p0⟩"
+  }
+]

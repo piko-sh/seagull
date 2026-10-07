@@ -1,0 +1,1 @@
+{"description": "Outer joins follow join_use_nulls: with the server default an unmatched row holds default values, so only Nullable columns may be NULL, while SETTINGS join_use_nulls = 1 makes the joined side nullable."}

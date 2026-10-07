@@ -1,0 +1,3 @@
+{
+  "description": "database/sql runtime cases: a slice in IN and NOT IN, nil, empty, of one and of many (an empty NOT IN keeps every row); a slice of a named enum and a nullable enum parameter and column; an enum array parameter, nil, empty and of many, alone and in a batch row, which the generated code binds as Go's own []string, so pgx's stdlib sends a text array the server parses as the enum's array type with no type loaded on the connection, and an enum array column read as JSON; a batch whose row holds expressions with an ON CONFLICT reading EXCLUDED; a copyfrom into a schema-qualified table as a multi-row INSERT"
+}

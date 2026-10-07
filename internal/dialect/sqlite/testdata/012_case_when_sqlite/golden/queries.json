@@ -1,0 +1,40 @@
+[
+  {
+    "Command": "many",
+    "Filename": "get_labels.sql",
+    "Line": 1,
+    "Name": "GetOrderLabels",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "size_with_else",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "active_amount",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetOrderLabels, command: many)\nSELECT\n  id,\n  CASE WHEN amount \u003e 100 THEN 'large' WHEN amount \u003e 50 THEN 'medium' ELSE 'small' END as size_with_else,\n  CASE WHEN status = 'active' THEN amount END as active_amount\nFROM orders",
+    "Template": "SELECT\\n  ⟨c0:id⟩,\\n  ⟨c1 aliased:CASE WHEN amount \u003e 100 THEN 'large' WHEN amount \u003e 50 THEN 'medium' ELSE 'small' END⟩ as size_with_else,\\n  ⟨c2 aliased:CASE WHEN status = 'active' THEN amount END⟩ as active_amount\\nFROM orders"
+  }
+]

@@ -1,0 +1,51 @@
+{
+  "days": [
+    {
+      "day": "2023-11-14",
+      "from_julian": 1677283200,
+      "from_label": "2024-02-29",
+      "id": 1,
+      "julian_day": 2460263.425925926,
+      "moment": "2023-11-14 22:13:20",
+      "month": "2023-11"
+    },
+    {
+      "day": "1970-01-01",
+      "from_julian": 0,
+      "from_label": null,
+      "id": 2,
+      "julian_day": 2440587.5,
+      "moment": "1970-01-01 00:00:00",
+      "month": "1970-01"
+    },
+    {
+      "day": "1970-01-02",
+      "from_julian": 946728000,
+      "from_label": "2000-01-01",
+      "id": 3,
+      "julian_day": 2440588.5,
+      "moment": "1970-01-02 00:00:00",
+      "month": "1970-01"
+    }
+  ],
+  "flags": [
+    {
+      "count_word": "one",
+      "id": 1,
+      "shown": "2024-02-29",
+      "state": "on"
+    },
+    {
+      "count_word": "many",
+      "id": 2,
+      "shown": null,
+      "state": "off"
+    },
+    {
+      "count_word": "two",
+      "id": 3,
+      "shown": "2000-01-01 12:00:00",
+      "state": "on"
+    }
+  ]
+}

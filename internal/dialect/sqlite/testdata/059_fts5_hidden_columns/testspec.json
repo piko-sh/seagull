@@ -1,0 +1,4 @@
+{
+  "description": "FTS5 tables have hidden columns the dialect declares: rank and the column named after the table can be named, so a MATCH or = against the table-named column types its parameter as text without Q001, but SELECT * returns only the declared columns; the virtual table keeps its rowid.",
+  "expectedDiagnosticCount": 0
+}

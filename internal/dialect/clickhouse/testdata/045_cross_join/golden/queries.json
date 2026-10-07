@@ -1,0 +1,33 @@
+[
+  {
+    "Command": "many",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "ColorSizes",
+    "OutputColumns": [
+      {
+        "Name": "c",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "c",
+        "SourceQualifier": "colors",
+        "SourceTable": "colors"
+      },
+      {
+        "Name": "s",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "s",
+        "SourceQualifier": "sizes",
+        "SourceTable": "sizes"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ColorSizes, many)\nSELECT c, s FROM colors CROSS JOIN sizes;",
+    "Template": "SELECT ⟨c0:c⟩, ⟨c1:s⟩ FROM colors CROSS JOIN sizes;"
+  }
+]

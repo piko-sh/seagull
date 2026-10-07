@@ -1,0 +1,36 @@
+[
+  {
+    "Command": "many",
+    "Filename": "values.sql",
+    "Line": 1,
+    "Name": "GetStaticRows",
+    "OutputColumns": [
+      {
+        "Name": "column1",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "column2",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "column3",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetStaticRows, command: many)\nVALUES (1, 'alice', 10.5), (2, 'bob', 20.0), (3, 'charlie', 30.75);",
+    "Template": "VALUES (1, 'alice', 10.5), (2, 'bob', 20.0), (3, 'charlie', 30.75);"
+  }
+]

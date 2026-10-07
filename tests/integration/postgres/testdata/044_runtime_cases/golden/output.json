@@ -1,0 +1,127 @@
+{
+  "batched_item_20": {
+    "id": 20,
+    "kind": "zeta",
+    "mood": null,
+    "moods": [
+      "stormy",
+      "calm"
+    ],
+    "rank": 0
+  },
+  "batched_item_21": {
+    "id": 21,
+    "kind": "eta",
+    "mood": null,
+    "moods": null,
+    "rank": 0
+  },
+  "entries": [
+    {
+      "action": "create",
+      "actor": "ann",
+      "id": 1
+    },
+    {
+      "action": "update",
+      "actor": "bob",
+      "id": 2
+    }
+  ],
+  "in_empty": null,
+  "in_many": [
+    {
+      "id": 1
+    },
+    {
+      "id": 3
+    }
+  ],
+  "in_nil": null,
+  "in_one": [
+    {
+      "id": 2
+    }
+  ],
+  "item_1": {
+    "id": 1,
+    "kind": "alpha",
+    "mood": "calm",
+    "moods": [
+      "calm",
+      "fair"
+    ],
+    "rank": 2
+  },
+  "item_2": {
+    "id": 2,
+    "kind": "beta two",
+    "mood": "stormy",
+    "moods": [],
+    "rank": 11
+  },
+  "item_3": {
+    "id": 3,
+    "kind": "gamma",
+    "mood": null,
+    "moods": null,
+    "rank": 4
+  },
+  "moods_in": [
+    {
+      "id": 1
+    }
+  ],
+  "moods_in_nil": null,
+  "moods_not_in": [
+    {
+      "id": 2
+    }
+  ],
+  "moods_not_in_nil": [
+    {
+      "id": 1
+    },
+    {
+      "id": 2
+    },
+    {
+      "id": 3
+    }
+  ],
+  "not_in_empty": [
+    {
+      "id": 1
+    },
+    {
+      "id": 2
+    },
+    {
+      "id": 3
+    }
+  ],
+  "not_in_many": [
+    {
+      "id": 2
+    }
+  ],
+  "not_in_nil": [
+    {
+      "id": 1
+    },
+    {
+      "id": 2
+    },
+    {
+      "id": 3
+    }
+  ],
+  "not_in_one": [
+    {
+      "id": 1
+    },
+    {
+      "id": 3
+    }
+  ]
+}

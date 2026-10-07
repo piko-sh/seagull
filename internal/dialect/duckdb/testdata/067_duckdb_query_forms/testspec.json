@@ -1,0 +1,1 @@
+{"description": "DuckDB query forms: FROM-first, GROUP BY ALL, QUALIFY, ASOF and SEMI joins, UNION BY NAME, NOT IN lists, list comprehensions, struct literals and IS NOT DISTINCT FROM keep every column and parameter"}

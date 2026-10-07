@@ -1,0 +1,4 @@
+{
+  "description": "A select item may name an earlier item of the same select list by its alias, a lateral column alias, as DuckDB 1.5.5 reads it: next_id * 2 is typed from next_id, loud || '!' from loud and span / 2 from the nullable span, with no unknown-column warning; a column of the table wins over an alias of its name, so id + 1 after name AS id reads the table's id",
+  "expectedDiagnosticCount": 0
+}

@@ -1,0 +1,96 @@
+{
+  "children": [
+    {
+      "extra": "young",
+      "id": 7,
+      "label": "child",
+      "version": 3
+    }
+  ],
+  "copied": [
+    {
+      "code": "c",
+      "id": 8,
+      "name": "mug",
+      "note": "copied",
+      "price": null
+    }
+  ],
+  "diary": [
+    {
+      "id": 1,
+      "mood": "calm"
+    },
+    {
+      "id": 2,
+      "mood": "happy"
+    }
+  ],
+  "items": [
+    {
+      "id": 1,
+      "name": "kettle",
+      "price": 30
+    },
+    {
+      "id": 2,
+      "name": "teapot",
+      "price": null
+    }
+  ],
+  "later_pairs": [
+    {
+      "left_id": 5,
+      "note": null,
+      "right_id": 6
+    }
+  ],
+  "named_view": [
+    {
+      "item_id": 1,
+      "item_name": "kettle",
+      "price": 30
+    },
+    {
+      "item_id": 2,
+      "item_name": "teapot",
+      "price": null
+    }
+  ],
+  "pairs": [
+    {
+      "left_id": 1,
+      "note": "first",
+      "right_id": 2
+    },
+    {
+      "left_id": 3,
+      "note": null,
+      "right_id": 4
+    }
+  ],
+  "snapshot": [
+    {
+      "id": 1,
+      "name": "kettle",
+      "price": 30
+    },
+    {
+      "id": 2,
+      "name": "teapot",
+      "price": null
+    }
+  ],
+  "star_view": [
+    {
+      "id": 1,
+      "name": "kettle",
+      "price": 30
+    },
+    {
+      "id": 2,
+      "name": "teapot",
+      "price": null
+    }
+  ]
+}

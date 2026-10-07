@@ -1,0 +1,236 @@
+[
+  {
+    "Command": "many",
+    "Filename": "measurements.sql",
+    "Line": 1,
+    "Name": "ListMeasurements",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "measurements",
+        "SourceTable": "measurements"
+      },
+      {
+        "Name": "taken_on",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        },
+        "SourceColumn": "taken_on",
+        "SourceQualifier": "measurements",
+        "SourceTable": "measurements"
+      },
+      {
+        "Name": "reading",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        },
+        "SourceColumn": "reading",
+        "SourceQualifier": "measurements",
+        "SourceTable": "measurements"
+      },
+      {
+        "Name": "note",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "note",
+        "SourceQualifier": "measurements",
+        "SourceTable": "measurements"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "taken_on",
+        "Number": 1,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListMeasurements, command: many)\nSELECT id, taken_on, reading, note FROM measurements WHERE taken_on \u003e= $1;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:taken_on⟩, ⟨c2:reading⟩, ⟨c3:note⟩ FROM measurements WHERE taken_on \u003e= ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "measurements.sql",
+    "Line": 4,
+    "Name": "ListArchived",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "measurements_2027",
+        "SourceTable": "measurements_2027"
+      },
+      {
+        "Name": "taken_on",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        },
+        "SourceColumn": "taken_on",
+        "SourceQualifier": "measurements_2027",
+        "SourceTable": "measurements_2027"
+      },
+      {
+        "Name": "reading",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        },
+        "SourceColumn": "reading",
+        "SourceQualifier": "measurements_2027",
+        "SourceTable": "measurements_2027"
+      },
+      {
+        "Name": "note",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "note",
+        "SourceQualifier": "measurements_2027",
+        "SourceTable": "measurements_2027"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListArchived, command: many)\nSELECT * FROM measurements_2027;",
+    "Template": "SELECT ⟨star 0=measurements_2027.id 1=measurements_2027.taken_on 2=measurements_2027.reading 3=measurements_2027.note:*⟩ FROM measurements_2027;"
+  },
+  {
+    "Command": "many",
+    "Filename": "measurements.sql",
+    "Line": 7,
+    "Name": "ListPartition",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "measurements_2028",
+        "SourceTable": "measurements_2028"
+      },
+      {
+        "Name": "taken_on",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        },
+        "SourceColumn": "taken_on",
+        "SourceQualifier": "measurements_2028",
+        "SourceTable": "measurements_2028"
+      },
+      {
+        "Name": "reading",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        },
+        "SourceColumn": "reading",
+        "SourceQualifier": "measurements_2028",
+        "SourceTable": "measurements_2028"
+      },
+      {
+        "Name": "note",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "note",
+        "SourceQualifier": "measurements_2028",
+        "SourceTable": "measurements_2028"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListPartition, command: many)\nSELECT * FROM measurements_2028;",
+    "Template": "SELECT ⟨star 0=measurements_2028.id 1=measurements_2028.taken_on 2=measurements_2028.reading 3=measurements_2028.note:*⟩ FROM measurements_2028;"
+  },
+  {
+    "Command": "many",
+    "Filename": "measurements.sql",
+    "Line": 10,
+    "Name": "ListNamedPartitionColumns",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "p",
+        "SourceTable": "measurements_2028"
+      },
+      {
+        "Name": "reading",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        },
+        "SourceColumn": "reading",
+        "SourceQualifier": "p",
+        "SourceTable": "measurements_2028"
+      },
+      {
+        "Name": "note",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "note",
+        "SourceQualifier": "p",
+        "SourceTable": "measurements_2028"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListNamedPartitionColumns, command: many)\nSELECT p.id, p.reading, p.note FROM measurements_2028 AS p WHERE p.id = $1;",
+    "Template": "SELECT ⟨c0:p.id⟩, ⟨c1:p.reading⟩, ⟨c2:p.note⟩ FROM measurements_2028 AS p WHERE p.id = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

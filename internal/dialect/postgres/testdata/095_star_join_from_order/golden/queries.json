@@ -1,0 +1,67 @@
+[
+  {
+    "Command": "many",
+    "Filename": "zebra_apples.sql",
+    "Line": 1,
+    "Name": "ZebraApples",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "z",
+        "SourceTable": "zebras"
+      },
+      {
+        "Name": "stripe_count",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "stripe_count",
+        "SourceQualifier": "z",
+        "SourceTable": "zebras"
+      },
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "a",
+        "SourceTable": "apples"
+      },
+      {
+        "Name": "zebra_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "zebra_id",
+        "SourceQualifier": "a",
+        "SourceTable": "apples"
+      },
+      {
+        "Name": "variety",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "variety",
+        "SourceQualifier": "a",
+        "SourceTable": "apples"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ZebraApples, command: many)\nSELECT *\nFROM zebras z\nJOIN apples a ON a.zebra_id = z.id;",
+    "Template": "SELECT ⟨star 0=z.id 1=z.stripe_count 2=a.id 3=a.zebra_id 4=a.variety:*⟩\\nFROM zebras z\\nJOIN apples a ON a.zebra_id = z.id;"
+  }
+]

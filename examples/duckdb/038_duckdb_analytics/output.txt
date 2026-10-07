@@ -1,0 +1,27 @@
+biggest landing per harbour (QUALIFY):
+  Brixham  Driftwood   220kg of mackerel on 2026-05-01
+  Newlyn   Kittiwake   300kg of mackerel on 2026-05-02
+kg by species (FILTER):
+  Brixham  cod 150, hake 40, mackerel 220
+  Newlyn   cod 180, hake 80, mackerel 300
+kg by species (PIVOT):
+  Brixham  cod 150, hake 40, mackerel 220
+  Newlyn   cod 180, hake 80, mackerel 300
+tonnes per boat (macro):
+  Driftwood  0.220 t
+  Gull Wing  0.190 t
+  Kittiwake  0.420 t
+  Salty Chip 0.140 t
+Newlyn's catch (table macro):
+  cod      180kg
+  hake     80kg
+  mackerel 300kg
+auction prices (read_parquet):
+  cod      900p a kg
+  hake     650p a kg
+  mackerel 350p a kg
+value per boat (landings joined to the Parquet file):
+  Driftwood  £770.00
+  Gull Wing  £1610.00
+  Kittiwake  £2130.00
+  Salty Chip £1060.00

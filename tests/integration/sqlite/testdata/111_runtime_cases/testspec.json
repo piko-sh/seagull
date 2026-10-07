@@ -1,0 +1,3 @@
+{
+  "description": "SQLite runtime cases: a slice in IN and NOT IN, nil, empty, of one and of many (an empty NOT IN keeps every row); a batch whose row holds expressions with an ON CONFLICT reading excluded, renumbered ?N per row; a copyfrom into a schema-qualified table (main.entries) with shuffled columns as a multi-row INSERT"
+}

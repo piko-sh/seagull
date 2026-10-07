@@ -1,0 +1,3 @@
+{
+  "description": "Map columns of named tuples through database/sql: the clickhouse-go profile reads every named tuple as map[string]any, so a Map(K, Tuple(a T, ...)), an Array of them, a Map of arrays or maps of them, a Date-keyed one, an Array of named tuples holding one, a named tuple holding one, an element of one, a built one and named tuples holding every kind of value read as they are"
+}

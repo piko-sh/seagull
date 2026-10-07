@@ -1,0 +1,147 @@
+[
+  {
+    "Command": "many",
+    "Filename": "paginated_logs.sql",
+    "Line": 1,
+    "Name": "PaginatedLogs",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "logs",
+        "SourceTable": "logs"
+      },
+      {
+        "Name": "message",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "message",
+        "SourceQualifier": "logs",
+        "SourceTable": "logs"
+      },
+      {
+        "Name": "level",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 20
+        },
+        "SourceColumn": "level",
+        "SourceQualifier": "logs",
+        "SourceTable": "logs"
+      },
+      {
+        "Name": "created_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "created_at",
+        "SourceQualifier": "logs",
+        "SourceTable": "logs"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "offset",
+        "Kind": "none",
+        "Name": "offset",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "limit",
+        "Kind": "none",
+        "Name": "limit",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: PaginatedLogs, command: many)\nSELECT id, message, level, created_at FROM logs ORDER BY created_at DESC LIMIT ?, ?;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:message⟩, ⟨c2:level⟩, ⟨c3:created_at⟩ FROM logs ORDER BY created_at DESC LIMIT ⟨p0⟩, ⟨p1⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "recent_logs.sql",
+    "Line": 1,
+    "Name": "RecentLogs",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "logs",
+        "SourceTable": "logs"
+      },
+      {
+        "Name": "message",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "message",
+        "SourceQualifier": "logs",
+        "SourceTable": "logs"
+      },
+      {
+        "Name": "level",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 20
+        },
+        "SourceColumn": "level",
+        "SourceQualifier": "logs",
+        "SourceTable": "logs"
+      },
+      {
+        "Name": "created_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "created_at",
+        "SourceQualifier": "logs",
+        "SourceTable": "logs"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "limit",
+        "Kind": "none",
+        "Name": "limit",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: RecentLogs, command: many)\nSELECT id, message, level, created_at FROM logs ORDER BY created_at DESC LIMIT ?;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:message⟩, ⟨c2:level⟩, ⟨c3:created_at⟩ FROM logs ORDER BY created_at DESC LIMIT ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

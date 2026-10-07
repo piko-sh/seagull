@@ -1,0 +1,4 @@
+{
+  "description": "Relations derived from DDL against CockroachDB: a table created without a primary key is keyed by its hidden rowid, which SELECT * leaves out and a query can name (rowid_1 when the table declares a rowid column), and ADD PRIMARY KEY and ALTER PRIMARY KEY drop it; a sequence can be read as a relation. The introspection parity check finds the hidden keys, the primary keys and the dropped rowids as the replay does.",
+  "expectedDiagnostics": []
+}

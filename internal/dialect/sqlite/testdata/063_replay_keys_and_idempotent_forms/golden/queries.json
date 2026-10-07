@@ -1,0 +1,146 @@
+[
+  {
+    "Command": "many",
+    "Filename": "keys.sql",
+    "Line": 1,
+    "Name": "ListKeys",
+    "OutputColumns": [
+      {
+        "Name": "code",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "code",
+        "SourceQualifier": "p",
+        "SourceTable": "plain"
+      },
+      {
+        "Name": "declared_code",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "code",
+        "SourceQualifier": "d",
+        "SourceTable": "declared"
+      },
+      {
+        "Name": "left_id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "left_id",
+        "SourceQualifier": "pa",
+        "SourceTable": "pairs"
+      },
+      {
+        "Name": "rowless_left_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "left_id",
+        "SourceQualifier": "r",
+        "SourceTable": "rowless"
+      },
+      {
+        "Name": "strict_code",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "code",
+        "SourceQualifier": "s",
+        "SourceTable": "strict_keys"
+      },
+      {
+        "Name": "aliased_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "a",
+        "SourceTable": "aliased"
+      },
+      {
+        "Name": "table_aliased_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "t",
+        "SourceTable": "table_aliased"
+      },
+      {
+        "Name": "descending_id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "de",
+        "SourceTable": "descending"
+      },
+      {
+        "Name": "short_int_id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "si",
+        "SourceTable": "short_int"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListKeys, command: many)\nSELECT p.code, d.code AS declared_code, pa.left_id, r.left_id AS rowless_left_id, s.code AS strict_code,\n       a.id AS aliased_id, t.id AS table_aliased_id, de.id AS descending_id, si.id AS short_int_id\nFROM plain p, declared d, pairs pa, rowless r, strict_keys s, aliased a, table_aliased t, descending de, short_int si;",
+    "Template": "SELECT ⟨c0:p.code⟩, ⟨c1 aliased:d.code⟩ AS declared_code, ⟨c2:pa.left_id⟩, ⟨c3 aliased:r.left_id⟩ AS rowless_left_id, ⟨c4 aliased:s.code⟩ AS strict_code,\\n       ⟨c5 aliased:a.id⟩ AS aliased_id, ⟨c6 aliased:t.id⟩ AS table_aliased_id, ⟨c7 aliased:de.id⟩ AS descending_id, ⟨c8 aliased:si.id⟩ AS short_int_id\\nFROM plain p, declared d, pairs pa, rowless r, strict_keys s, aliased a, table_aliased t, descending de, short_int si;"
+  },
+  {
+    "Command": "many",
+    "Filename": "keys.sql",
+    "Line": 6,
+    "Name": "ListPlainView",
+    "OutputColumns": [
+      {
+        "Name": "plain_code",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "plain_code",
+        "SourceQualifier": "plain_view",
+        "SourceTable": "plain_view"
+      },
+      {
+        "Name": "plain_note",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "plain_note",
+        "SourceQualifier": "plain_view",
+        "SourceTable": "plain_view"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListPlainView, command: many)\nSELECT * FROM plain_view;",
+    "Template": "SELECT ⟨star 0=plain_view.plain_code 1=plain_view.plain_note:*⟩ FROM plain_view;"
+  }
+]

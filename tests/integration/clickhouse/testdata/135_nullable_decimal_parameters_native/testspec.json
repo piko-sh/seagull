@@ -1,0 +1,4 @@
+{
+  "description": "A nullable decimal parameter, a *decimal.Decimal, binds NULL when nil and the decimal otherwise through the native driver, in every position: an INSERT, a batch, a copyfrom, a comparison, optional filters, a runtime builder's own parameter and COALESCE's fallback; a slice of decimals and a runtime builder's Where value bind too, and nullable decimals read back as NULL or their value.",
+  "emitter": "native"
+}

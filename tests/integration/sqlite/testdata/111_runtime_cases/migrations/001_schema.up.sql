@@ -1,0 +1,11 @@
+CREATE TABLE items (
+    id INTEGER PRIMARY KEY,
+    kind TEXT NOT NULL,
+    score INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE entries (
+    id INTEGER PRIMARY KEY,
+    action TEXT NOT NULL,
+    actor TEXT NOT NULL
+);

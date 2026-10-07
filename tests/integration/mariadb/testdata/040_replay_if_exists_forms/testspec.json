@@ -1,0 +1,4 @@
+{
+  "description": "DDL replays as MariaDB applies it, so SELECT * scans every table: ADD COLUMN IF NOT EXISTS of a column the table has, and DROP, MODIFY or CHANGE COLUMN IF EXISTS of one it lacks, change nothing; ALTER TABLE IF EXISTS of a missing table is no error; MODIFY ... FIRST and ADD ... AFTER place columns; and CREATE TABLE ... LIKE copies a table.",
+  "expectedDiagnostics": []
+}

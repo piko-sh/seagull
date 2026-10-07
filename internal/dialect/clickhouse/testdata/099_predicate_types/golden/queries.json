@@ -1,0 +1,160 @@
+[
+  {
+    "Command": "many",
+    "Filename": "gulls.sql",
+    "Line": 1,
+    "Name": "GullPredicates",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "gulls",
+        "SourceTable": "gulls"
+      },
+      {
+        "Name": "long_wing",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "wide",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "unmeasured",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "measured",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "listed",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "listed_span",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "listed_wing",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "typical",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "long_and_ringed",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "Bool"
+        }
+      },
+      {
+        "Name": "marked",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "Bool"
+        }
+      },
+      {
+        "Name": "large",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "short_wing",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "untagged",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "Bool"
+        }
+      },
+      {
+        "Name": "present",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "herring_gull",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(GullPredicates, many)\nSELECT id, wing \u003e 40 AS long_wing, span \u003e 100 AS wide, span IS NULL AS unmeasured, span IS NOT NULL AS measured,\n    wing IN (40, 42) AS listed, span IN (90, NULL) AS listed_span, wing IN (40, NULL) AS listed_wing,\n    span BETWEEN 90 AND 110 AS typical, wing \u003e 40 AND ringed AS long_and_ringed, tagged OR ringed AS marked,\n    wing \u003e 40 OR span \u003e 100 AS large, NOT (wing \u003e 40) AS short_wing, NOT tagged AS untagged, EXISTS (SELECT 1) AS present,\n    name LIKE 'Her%' AS herring_gull\nFROM gulls ORDER BY id;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:wing \u003e 40⟩ AS long_wing, ⟨c2 aliased:span \u003e 100⟩ AS wide, ⟨c3 aliased:span IS NULL⟩ AS unmeasured, ⟨c4 aliased:span IS NOT NULL⟩ AS measured,\\n    ⟨c5 aliased:wing IN (40, 42)⟩ AS listed, ⟨c6 aliased:span IN (90, NULL)⟩ AS listed_span, ⟨c7 aliased:wing IN (40, NULL)⟩ AS listed_wing,\\n    ⟨c8 aliased:span BETWEEN 90 AND 110⟩ AS typical, ⟨c9 aliased:wing \u003e 40 AND ringed⟩ AS long_and_ringed, ⟨c10 aliased:tagged OR ringed⟩ AS marked,\\n    ⟨c11 aliased:wing \u003e 40 OR span \u003e 100⟩ AS large, ⟨c12 aliased:NOT (wing \u003e 40)⟩ AS short_wing, ⟨c13 aliased:NOT tagged⟩ AS untagged, ⟨c14 aliased:EXISTS (SELECT 1)⟩ AS present,\\n    ⟨c15 aliased:name LIKE 'Her%'⟩ AS herring_gull\\nFROM gulls ORDER BY id;"
+  }
+]

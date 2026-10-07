@@ -1,0 +1,3 @@
+{
+  "description": "Sortable queries whose SQL ends in LIMIT/OFFSET or a semicolon: the generated ORDER BY is spliced before the trailing clause for many, one, stream and slice-expanded queries, so SQLite parses and orders them"
+}

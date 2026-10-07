@@ -1,0 +1,9 @@
+{
+  "description": "Query references a table not present in the catalogue. Produces Q003 for the unknown table and Q001 for each output column it cannot resolve; each such column stays in the row as a nullable column of unknown type, so the generated scan still has a destination for every column the SQL returns and no Q009 follows. The parameter needs no diagnostic of its own: the analyser's catalogue fallback finds users.id as the unique match for the bare column id and types the parameter from it, and the user already sees Q003 telling them the table is wrong.",
+  "expectedDiagnosticCount": 3,
+  "diagnostics": [
+    { "severity": "warning", "code": "Q003", "messageContains": "nonexistent" },
+    { "severity": "warning", "code": "Q001", "messageContains": "id" },
+    { "severity": "warning", "code": "Q001", "messageContains": "name" }
+  ]
+}

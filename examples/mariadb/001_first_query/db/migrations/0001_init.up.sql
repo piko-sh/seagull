@@ -1,0 +1,6 @@
+CREATE TABLE tasks (
+    id         BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    title      VARCHAR(200) NOT NULL,
+    completed  INT          NOT NULL DEFAULT 0,
+    created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

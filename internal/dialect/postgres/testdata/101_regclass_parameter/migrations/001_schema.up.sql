@@ -1,0 +1,4 @@
+CREATE TABLE readings (
+    id BIGSERIAL PRIMARY KEY,
+    value DOUBLE PRECISION NOT NULL
+);

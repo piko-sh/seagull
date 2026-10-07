@@ -1,0 +1,39 @@
+[
+  {
+    "Command": "one",
+    "Filename": "user_stats.sql",
+    "Line": 1,
+    "Name": "UserStats",
+    "OutputColumns": [
+      {
+        "Name": "total_users",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "average_age",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        }
+      },
+      {
+        "Name": "max_age",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Nullable": true,
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: UserStats, command: one)\nSELECT COUNT(*) AS total_users, AVG(age) AS average_age, MAX(age) AS max_age FROM users;",
+    "Template": "SELECT ⟨c0 aliased:COUNT(*)⟩ AS total_users, ⟨c1 aliased:AVG(age)⟩ AS average_age, ⟨c2 aliased:MAX(age)⟩ AS max_age FROM users;"
+  }
+]

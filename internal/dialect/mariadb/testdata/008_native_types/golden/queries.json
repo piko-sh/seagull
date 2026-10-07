@@ -1,0 +1,227 @@
+[
+  {
+    "Command": "many",
+    "Filename": "devices.sql",
+    "Line": 1,
+    "Name": "ListDevices",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "devices",
+        "SourceTable": "devices"
+      },
+      {
+        "Name": "public_id",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        },
+        "SourceColumn": "public_id",
+        "SourceQualifier": "devices",
+        "SourceTable": "devices"
+      },
+      {
+        "Name": "owner",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        },
+        "SourceColumn": "owner",
+        "SourceQualifier": "devices",
+        "SourceTable": "devices"
+      },
+      {
+        "Name": "last_ip4",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "inet4"
+        },
+        "SourceColumn": "last_ip4",
+        "SourceQualifier": "devices",
+        "SourceTable": "devices"
+      },
+      {
+        "Name": "last_ip6",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "inet6"
+        },
+        "SourceColumn": "last_ip6",
+        "SourceQualifier": "devices",
+        "SourceTable": "devices"
+      },
+      {
+        "Name": "embedding",
+        "SQLType": {
+          "Category": "binary",
+          "EngineName": "vector"
+        },
+        "SourceColumn": "embedding",
+        "SourceQualifier": "devices",
+        "SourceTable": "devices"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListDevices, command: many)\nSELECT * FROM devices;",
+    "Template": "SELECT ⟨star 0=devices.id 1=devices.public_id 2=devices.owner 3=devices.last_ip4 4=devices.last_ip6 5=devices.embedding:*⟩ FROM devices;"
+  },
+  {
+    "Command": "exec",
+    "Filename": "devices.sql",
+    "InsertColumns": [
+      "id",
+      "public_id",
+      "owner",
+      "last_ip4",
+      "last_ip6",
+      "embedding"
+    ],
+    "InsertTarget": {
+      "Name": "devices"
+    },
+    "Line": 4,
+    "Name": "AddDevice",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "public_id",
+        "Number": 2,
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "owner",
+        "Nullable": true,
+        "Number": 3,
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "last_ip4",
+        "Nullable": true,
+        "Number": 4,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "inet4"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "last_ip6",
+        "Number": 5,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "inet6"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "embedding",
+        "Number": 6,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: AddDevice, command: exec)\nINSERT INTO devices (id, public_id, owner, last_ip4, last_ip6, embedding) VALUES (?, ?, ?, ?, ?, VEC_FromText(?));",
+    "Template": "INSERT INTO devices (id, public_id, owner, last_ip4, last_ip6, embedding) VALUES ⟨values:(⟨p0⟩, ⟨p1⟩, ⟨p2⟩, ⟨p3⟩, ⟨p4⟩, VEC_FromText(⟨p5⟩))⟩;⟨arguments p0 p1 p2 p3 p4 p5⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "devices.sql",
+    "Line": 7,
+    "Name": "Addresses",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "devices",
+        "SourceTable": "devices"
+      },
+      {
+        "Name": "ip_text",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "inet6"
+        },
+        "SourceColumn": "last_ip6",
+        "SourceQualifier": "devices",
+        "SourceTable": "devices"
+      },
+      {
+        "Name": "v4",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "v6",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "vector_text",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "public_id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Addresses, command: many)\nSELECT id, last_ip6 AS ip_text, IS_IPV4(last_ip4) AS v4, IS_IPV6(last_ip6) AS v6, VEC_ToText(embedding) AS vector_text\nFROM devices\nWHERE public_id = ?;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:last_ip6⟩ AS ip_text, ⟨c2 aliased:IS_IPV4(last_ip4)⟩ AS v4, ⟨c3 aliased:IS_IPV6(last_ip6)⟩ AS v6, ⟨c4 aliased:VEC_ToText(embedding)⟩ AS vector_text\\nFROM devices\\nWHERE public_id = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

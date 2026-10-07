@@ -1,0 +1,103 @@
+[
+  {
+    "Command": "many",
+    "Filename": "readings.sql",
+    "Line": 1,
+    "Name": "Readings",
+    "OutputColumns": [
+      {
+        "Name": "plain",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float",
+          "Width": 32
+        },
+        "SourceColumn": "plain",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "single",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float",
+          "Width": 32
+        },
+        "SourceColumn": "single",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "widened",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "double",
+          "Width": 64
+        },
+        "SourceColumn": "widened",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "widest",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "double",
+          "Width": 64
+        },
+        "SourceColumn": "widest",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "scaled",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float",
+          "Width": 32
+        },
+        "SourceColumn": "scaled",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "plain_doubled",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "double",
+          "Width": 64
+        },
+        "SourceColumn": "plain",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "widened_narrowed",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float",
+          "Width": 32
+        },
+        "SourceColumn": "widened",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "widened",
+        "Number": 1,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "double",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Readings, command: many)\nSELECT\n    plain,\n    single,\n    widened,\n    widest,\n    scaled,\n    CAST(plain AS FLOAT(53)) AS plain_doubled,\n    CAST(widened AS FLOAT(10)) AS widened_narrowed\nFROM readings\nWHERE widened \u003e CAST(? AS FLOAT(40));",
+    "Template": "SELECT\\n    ⟨c0:plain⟩,\\n    ⟨c1:single⟩,\\n    ⟨c2:widened⟩,\\n    ⟨c3:widest⟩,\\n    ⟨c4:scaled⟩,\\n    ⟨c5 aliased:CAST(plain AS FLOAT(53))⟩ AS plain_doubled,\\n    ⟨c6 aliased:CAST(widened AS FLOAT(10))⟩ AS widened_narrowed\\nFROM readings\\nWHERE widened \u003e CAST(⟨p0⟩ AS FLOAT(40));⟨arguments p0⟩"
+  }
+]

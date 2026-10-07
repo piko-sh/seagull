@@ -1,0 +1,2 @@
+CREATE TABLE projects (id INTEGER PRIMARY KEY, name TEXT NOT NULL);
+ALTER TABLE tasks ADD COLUMN project_id INTEGER REFERENCES projects(id);

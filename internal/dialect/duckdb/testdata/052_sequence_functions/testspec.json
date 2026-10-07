@@ -1,0 +1,3 @@
+{
+  "description": "Sequence functions: nextval over a sequence the migration creates is data-modifying (route to the writer), while a COUNT aggregate over a table is read-only (route to the reader)."
+}

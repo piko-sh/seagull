@@ -1,0 +1,4 @@
+{
+  "description": "A placeholder passed to a function or procedure is named after the parameter the signature declares at its position, and one passed by name (factor => $1, or the older factor := $1) is named and typed after that parameter whatever its position, so ScaledPriceByName binds factor as a double and amount as an integer.",
+  "expectedDiagnosticCount": 0
+}

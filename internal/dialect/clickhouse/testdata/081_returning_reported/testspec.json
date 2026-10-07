@@ -1,0 +1,1 @@
+{"description": "ClickHouse has no RETURNING clause, so one on an INSERT is recorded and reported with Q052 rather than dropped."}

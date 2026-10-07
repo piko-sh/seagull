@@ -1,0 +1,98 @@
+[
+  {
+    "Command": "one",
+    "Filename": "create_post.sql",
+    "InsertColumns": [
+      "title",
+      "body",
+      "author_id",
+      "published"
+    ],
+    "InsertTarget": {
+      "Name": "posts"
+    },
+    "Line": 1,
+    "Name": "CreatePost",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "posts",
+        "SourceTable": "posts"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "posts",
+        "SourceTable": "posts"
+      },
+      {
+        "Name": "created_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "created_at",
+        "SourceQualifier": "posts",
+        "SourceTable": "posts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "title",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "body",
+        "Nullable": true,
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "author_id",
+        "Number": 3,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "published",
+        "Number": 4,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: CreatePost, command: one)\nINSERT INTO posts (title, body, author_id, published)\nVALUES ($1, $2, $3, $4)\nRETURNING id, title, created_at;",
+    "Template": "INSERT INTO posts (title, body, author_id, published)\\nVALUES ⟨values:(⟨p0⟩, ⟨p1⟩, ⟨p2⟩, ⟨p3⟩)⟩\\nRETURNING ⟨c0:id⟩, ⟨c1:title⟩, ⟨c2:created_at⟩;⟨arguments p0 p1 p2 p3⟩"
+  }
+]

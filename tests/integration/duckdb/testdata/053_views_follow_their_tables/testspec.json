@@ -1,0 +1,5 @@
+{
+  "description": "DuckDB reads a view's definition anew for every query: after a later migration adds height to plants and widens stock to BIGINT, SELECT * from a view over plants, and from a view that names the star's leading columns, gives the new column and the wider type, which the generated code scans with keep_stars. A table's column alias list, plants AS p (code, label), renames the table's leading columns for the query.",
+  "expectedDiagnostics": [],
+  "keepStars": true
+}

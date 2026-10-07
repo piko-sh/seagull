@@ -1,0 +1,4 @@
+{
+  "description": "GROUP BY on a column of the side a LEFT JOIN can leave without a row keeps that column nullable: a harbour without boats groups under a NULL boat id, and the boat's other columns are NULL in that group even though the boat's primary key is grouped.",
+  "expectedDiagnosticCount": 0
+}

@@ -1,0 +1,18 @@
+{
+  "description": "Generated code against SQLite through database/sql, with either driver: a JSON column overridden to a plain struct and to []string is written as its document through sglDriverJSON and read back through sglScanOverrideJSON, a NULL document reading as a nil pointer; json_extract of a BLOB, a result typed any, reads into a go_type override through the override scan adapter; a batch upsert repeating a key runs one statement per row; and SELECT *, b.* and RETURNING * of an aliased table name their columns, the RETURNING ones without the alias, which SQLite does not take there, so the methods keep working after a migration adds a column to every table. json_extract reads the BLOB document without diagnostics.",
+  "expectedDiagnostics": [],
+  "typeOverrides": [
+    {
+      "SQLTypeName": "",
+      "Column": "shows.data",
+      "GoPackage": "case_runner/kinds",
+      "GoName": "Show"
+    },
+    {
+      "SQLTypeName": "",
+      "Column": "shows.tags",
+      "GoPackage": "",
+      "GoName": "[]string"
+    }
+  ]
+}

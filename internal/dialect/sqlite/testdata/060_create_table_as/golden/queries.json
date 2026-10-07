@@ -1,0 +1,47 @@
+[
+  {
+    "Command": "many",
+    "Filename": "tasks.sql",
+    "Line": 1,
+    "Name": "ListOpenTasks",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "open_tasks",
+        "SourceTable": "open_tasks"
+      },
+      {
+        "Name": "title",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "open_tasks",
+        "SourceTable": "open_tasks"
+      },
+      {
+        "Name": "shout",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "shout",
+        "SourceQualifier": "open_tasks",
+        "SourceTable": "open_tasks"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListOpenTasks, command: many)\nSELECT id, title, shout FROM open_tasks;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:title⟩, ⟨c2:shout⟩ FROM open_tasks;"
+  }
+]

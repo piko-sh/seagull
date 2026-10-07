@@ -1,0 +1,3 @@
+{
+  "description": "JSON parameter wire form: the generated JSON type is written by exec and batch and read back, and the stored document is described with the engine's own functions, compared with the same text as a literal and found by the document as a parameter; the document holds spacing, key order, a trailing zero, HTML characters and two- and four-byte UTF-8. Columns json (kept byte for byte) and jsonb (normalised by the server), and jsonb[] and json[] arrays. A second connection uses pgx's simple protocol: Value returns the text."
+}

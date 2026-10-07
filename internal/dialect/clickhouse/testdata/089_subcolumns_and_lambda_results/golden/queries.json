@@ -1,0 +1,266 @@
+[
+  {
+    "Command": "many",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "Subcolumns",
+    "OutputColumns": [
+      {
+        "Name": "tag_count",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "row_lengths",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "UInt64",
+            "Unsigned": true,
+            "Width": 64
+          },
+          "EngineName": "Array"
+        }
+      },
+      {
+        "Name": "ringers",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "String"
+          },
+          "EngineName": "Array"
+        }
+      },
+      {
+        "Name": "ring_counts",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "UInt32",
+            "Unsigned": true,
+            "Width": 32
+          },
+          "EngineName": "Array"
+        }
+      },
+      {
+        "Name": "ringer_count",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "note_missing",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "nickname_missing",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "UInt8",
+            "Unsigned": true,
+            "Width": 8
+          },
+          "EngineName": "Array"
+        }
+      },
+      {
+        "Name": "colonies",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "String"
+          },
+          "EngineName": "Array"
+        }
+      },
+      {
+        "Name": "minutes",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "UInt16",
+            "Unsigned": true,
+            "Width": 16
+          },
+          "EngineName": "Array"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(Subcolumns, many)\nSELECT tags.size0 AS tag_count, grid.size1 AS row_lengths, ringings.keys AS ringers, ringings.values AS ring_counts,\n       ringings.size0 AS ringer_count, note.null AS note_missing, nicknames.null AS nickname_missing,\n       flights.colony AS colonies, flights.minutes AS minutes\nFROM gulls;",
+    "Template": "SELECT ⟨c0 aliased:tags.size0⟩ AS tag_count, ⟨c1 aliased:grid.size1⟩ AS row_lengths, ⟨c2 aliased:ringings.keys⟩ AS ringers, ⟨c3 aliased:ringings.values⟩ AS ring_counts,\\n       ⟨c4 aliased:ringings.size0⟩ AS ringer_count, ⟨c5 aliased:note.null⟩ AS note_missing, ⟨c6 aliased:nicknames.null⟩ AS nickname_missing,\\n       ⟨c7 aliased:flights.colony⟩ AS colonies, ⟨c8 aliased:flights.minutes⟩ AS minutes\\nFROM gulls;"
+  },
+  {
+    "Command": "many",
+    "Filename": "q.sql",
+    "Line": 7,
+    "Name": "LambdaResults",
+    "OutputColumns": [
+      {
+        "Name": "tag_lengths",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "UInt64",
+            "Unsigned": true,
+            "Width": 64
+          },
+          "EngineName": "Array"
+        }
+      },
+      {
+        "Name": "labelled",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "String"
+          },
+          "EngineName": "Array"
+        }
+      },
+      {
+        "Name": "named",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "String"
+          },
+          "EngineName": "Array"
+        }
+      },
+      {
+        "Name": "first_named",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Name": "maybe_named",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String",
+          "Nullable": true
+        }
+      },
+      {
+        "Name": "busy_days",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Unsigned": true,
+          "Width": 32
+        }
+      },
+      {
+        "Name": "any_busy",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "doubled_total",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "longest",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "folded",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "running",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "UInt64",
+            "Unsigned": true,
+            "Width": 64
+          },
+          "EngineName": "Array"
+        }
+      },
+      {
+        "Name": "same_nicknames",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "String",
+            "Nullable": true
+          },
+          "EngineName": "Array"
+        }
+      },
+      {
+        "Name": "by_length",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "String"
+          },
+          "EngineName": "Array"
+        }
+      },
+      {
+        "Name": "first_nickname",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String",
+          "Nullable": true
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(LambdaResults, many)\nSELECT arrayMap(t -\u003e length(t), tags) AS tag_lengths, arrayMap((t, s) -\u003e concat(t, toString(s)), tags, sightings) AS labelled,\n       arrayFilter(t -\u003e t != '', tags) AS named, arrayFirst(t -\u003e t != '', tags) AS first_named,\n       arrayFirstOrNull(t -\u003e t != '', tags) AS maybe_named, arrayCount(s -\u003e s \u003e 1, sightings) AS busy_days,\n       arrayExists(s -\u003e s \u003e 1, sightings) AS any_busy, arraySum(s -\u003e s * 2, sightings) AS doubled_total,\n       arrayMax(t -\u003e length(t), tags) AS longest, arrayFold((total, s) -\u003e total + s, sightings, toUInt64(0)) AS folded,\n       arrayCumSum(s -\u003e s * 2, sightings) AS running, arrayMap(n -\u003e n, nicknames) AS same_nicknames,\n       arraySort(t -\u003e length(t), tags) AS by_length, nicknames[1] AS first_nickname\nFROM gulls;",
+    "Template": "SELECT ⟨c0 aliased:arrayMap(t -\u003e length(t), tags)⟩ AS tag_lengths, ⟨c1 aliased:arrayMap((t, s) -\u003e concat(t, toString(s)), tags, sightings)⟩ AS labelled,\\n       ⟨c2 aliased:arrayFilter(t -\u003e t != '', tags)⟩ AS named, ⟨c3 aliased:arrayFirst(t -\u003e t != '', tags)⟩ AS first_named,\\n       ⟨c4 aliased:arrayFirstOrNull(t -\u003e t != '', tags)⟩ AS maybe_named, ⟨c5 aliased:arrayCount(s -\u003e s \u003e 1, sightings)⟩ AS busy_days,\\n       ⟨c6 aliased:arrayExists(s -\u003e s \u003e 1, sightings)⟩ AS any_busy, ⟨c7 aliased:arraySum(s -\u003e s * 2, sightings)⟩ AS doubled_total,\\n       ⟨c8 aliased:arrayMax(t -\u003e length(t), tags)⟩ AS longest, ⟨c9 aliased:arrayFold((total, s) -\u003e total + s, sightings, toUInt64(0))⟩ AS folded,\\n       ⟨c10 aliased:arrayCumSum(s -\u003e s * 2, sightings)⟩ AS running, ⟨c11 aliased:arrayMap(n -\u003e n, nicknames)⟩ AS same_nicknames,\\n       ⟨c12 aliased:arraySort(t -\u003e length(t), tags)⟩ AS by_length, ⟨c13 aliased:nicknames[1]⟩ AS first_nickname\\nFROM gulls;"
+  }
+]

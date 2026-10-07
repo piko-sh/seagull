@@ -1,0 +1,45 @@
+[
+  {
+    "Command": "many",
+    "Filename": "accounts.sql",
+    "Line": 1,
+    "Name": "ListAccounts",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "balance",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        },
+        "SourceColumn": "balance",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListAccounts, command: many)\nSELECT id, name, balance FROM accounts ORDER BY id;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:balance⟩ FROM accounts ORDER BY id;"
+  }
+]

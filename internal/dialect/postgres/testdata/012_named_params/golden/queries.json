@@ -1,0 +1,70 @@
+[
+  {
+    "Command": "one",
+    "Filename": "find_user.sql",
+    "Line": 1,
+    "Name": "FindUser",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "email",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "min_age",
+        "Nullable": true,
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FindUser, command: one)\nSELECT id, name, email FROM users WHERE name = :name AND age \u003e :min_age;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:email⟩ FROM users WHERE name = ⟨p0⟩ AND age \u003e ⟨p1⟩;⟨arguments p0 p1⟩"
+  }
+]

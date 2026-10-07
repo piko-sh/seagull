@@ -1,0 +1,11 @@
+status "sunk": Valid() is false, and the server refuses it, as it is not a boat_status label
+
+ListBoats, where status is the generated store.BoatStatus:
+  Kittiwake   at_sea    store.BoatStatus
+  Salty Chip  at_sea    store.BoatStatus
+  Gull Wing   dry_dock  store.BoatStatus
+  Driftwood   moored    store.BoatStatus
+
+BoatsWithStatus, where a go_type override makes status a harbour.Status:
+  Kittiwake   out at sea      harbour.Status
+  Salty Chip  out at sea      harbour.Status

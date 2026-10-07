@@ -1,0 +1,46 @@
+[
+  {
+    "Command": "many",
+    "Filename": "list_products.sql",
+    "Line": 1,
+    "Name": "ListProducts",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      },
+      {
+        "Name": "price",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        },
+        "SourceColumn": "price",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListProducts, command: many)\nSELECT id, name, price FROM products ORDER BY name;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:price⟩ FROM products ORDER BY name;"
+  }
+]

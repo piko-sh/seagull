@@ -1,0 +1,449 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "public": {
+      "CompositeTypes": {
+        "__sgl_udf_two_outs__int8_c0__row": {
+          "Fields": [
+            {
+              "GeneratedKind": "none",
+              "Name": "doubled",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 5
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int8",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "label",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 5
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            }
+          ],
+          "Name": "__sgl_udf_two_outs__int8_c0__row",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 5
+          },
+          "Schema": "public"
+        },
+        "pair": {
+          "Fields": [
+            {
+              "GeneratedKind": "none",
+              "Name": "a",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int8",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "b",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            }
+          ],
+          "Name": "pair",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "Schema": "public"
+        }
+      },
+      "Functions": {
+        "add_author": [
+          {
+            "Arguments": [
+              {
+                "Name": "author",
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "text"
+                }
+              }
+            ],
+            "BodySQL": " BEGIN id := length(author); END ",
+            "DataAccess": "read-only",
+            "Language": "plpgsql",
+            "MinArguments": 1,
+            "Name": "add_author",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 6
+            },
+            "ResultName": "id",
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int8",
+              "Width": 64
+            }
+          }
+        ],
+        "create_user": [
+          {
+            "Arguments": [
+              {
+                "Name": "p_name",
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "text"
+                }
+              },
+              {
+                "Name": "p_id",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int8",
+                  "Width": 64
+                }
+              }
+            ],
+            "BodySQL": " BEGIN INSERT INTO users (id, name) VALUES (1, p_name) RETURNING id INTO p_id; END ",
+            "DataAccess": "modifies-data",
+            "Language": "plpgsql",
+            "MinArguments": 2,
+            "Name": "create_user",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 9
+            },
+            "ResultName": "p_id",
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int8",
+              "Width": 64
+            }
+          }
+        ],
+        "make_pair": [
+          {
+            "BodySQL": " SELECT 1, 'x' ",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "Name": "make_pair",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 8
+            },
+            "ReturnType": {
+              "Category": "composite",
+              "EngineName": "pair",
+              "Schema": "public"
+            }
+          }
+        ],
+        "one_user": [
+          {
+            "Arguments": [
+              {
+                "Name": "p",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int8",
+                  "Width": 64
+                }
+              }
+            ],
+            "BodySQL": " SELECT * FROM users WHERE id = p ",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "one_user",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 4
+            },
+            "ReturnType": {
+              "Category": "unknown",
+              "EngineName": "users"
+            }
+          }
+        ],
+        "tidy": [
+          {
+            "Arguments": [
+              {
+                "Name": "older",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int8",
+                  "Width": 64
+                }
+              }
+            ],
+            "BodySQL": " DELETE FROM users WHERE id \u003c older ",
+            "DataAccess": "modifies-data",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "tidy",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 10
+            },
+            "ReturnType": {
+              "Category": "unknown",
+              "EngineName": "void"
+            }
+          }
+        ],
+        "twice": [
+          {
+            "Arguments": [
+              {
+                "Name": "n",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int8",
+                  "Width": 64
+                }
+              }
+            ],
+            "BodySQL": "SELECT n * 2",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "twice",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 7
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int8",
+              "Width": 64
+            }
+          }
+        ],
+        "two_outs": [
+          {
+            "Arguments": [
+              {
+                "Name": "x",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int8",
+                  "Width": 64
+                }
+              }
+            ],
+            "BodySQL": "SELECT x * 2, 'n'",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "two_outs",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 5
+            },
+            "ReturnType": {
+              "Category": "composite",
+              "EngineName": "__sgl_udf_two_outs__int8_c0__row",
+              "Schema": "public"
+            }
+          }
+        ],
+        "users_named": [
+          {
+            "Arguments": [
+              {
+                "Name": "p",
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "text"
+                }
+              }
+            ],
+            "BodySQL": " SELECT * FROM users WHERE name = p ",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "users_named",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 3
+            },
+            "ReturnType": {
+              "Category": "unknown",
+              "EngineName": "users"
+            },
+            "ReturnsSet": true
+          }
+        ]
+      },
+      "Name": "public",
+      "Tables": {
+        "results": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int8",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "label",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "score",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "decimal",
+                "EngineName": "numeric"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Hidden": true,
+              "Name": "rowid",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int8",
+                "Width": 64
+              }
+            }
+          ],
+          "Name": "results",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 2
+          },
+          "PrimaryKey": [
+            "rowid"
+          ],
+          "Schema": "public"
+        },
+        "users": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int8",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "bar",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "composite",
+                "EngineName": "pair",
+                "Schema": "public"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "doc",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "BinaryForm": true,
+                "Category": "text",
+                "EngineName": "tsvector"
+              }
+            }
+          ],
+          "Name": "users",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 1
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

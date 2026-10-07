@@ -1,0 +1,47 @@
+[
+  {
+    "Command": "many",
+    "Filename": "union_null.sql",
+    "Line": 1,
+    "Name": "UnionNull",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "occurred_at",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "occurred_at",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: UnionNull, command: many)\nSELECT id, name, occurred_at FROM events\nUNION ALL\nSELECT 0 AS id, 'placeholder' AS name, NULL::timestamptz AS occurred_at;",
+    "Template": "SELECT id, name, occurred_at FROM events\\nUNION ALL\\nSELECT 0 AS id, 'placeholder' AS name, NULL::timestamptz AS occurred_at;"
+  }
+]

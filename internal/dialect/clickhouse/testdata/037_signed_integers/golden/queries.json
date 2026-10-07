@@ -1,0 +1,61 @@
+[
+  {
+    "Command": "one",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "ReadSignedBig",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "signed_big",
+        "SourceTable": "signed_big"
+      },
+      {
+        "Name": "big_neg",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int128",
+          "Width": 128
+        },
+        "SourceColumn": "big_neg",
+        "SourceQualifier": "signed_big",
+        "SourceTable": "signed_big"
+      },
+      {
+        "Name": "huge_neg",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int256",
+          "Width": 256
+        },
+        "SourceColumn": "huge_neg",
+        "SourceQualifier": "signed_big",
+        "SourceTable": "signed_big"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ReadSignedBig, one)\nSELECT id, big_neg, huge_neg FROM signed_big WHERE id = {id:UInt64};",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:big_neg⟩, ⟨c2:huge_neg⟩ FROM signed_big WHERE id = ⟨p0 UInt64⟩;⟨arguments p0⟩"
+  }
+]

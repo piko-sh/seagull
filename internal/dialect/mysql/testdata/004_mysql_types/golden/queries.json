@@ -1,0 +1,351 @@
+[
+  {
+    "Command": "one",
+    "Filename": "get_all_types.sql",
+    "Line": 1,
+    "Name": "GetAllTypes",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "tiny_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "tinyint",
+          "Width": 8
+        },
+        "SourceColumn": "tiny_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "small_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "smallint",
+          "Width": 16
+        },
+        "SourceColumn": "small_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "medium_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "mediumint",
+          "Width": 24
+        },
+        "SourceColumn": "medium_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "int_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "int_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "big_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "big_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "float_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float",
+          "Width": 32
+        },
+        "SourceColumn": "float_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "double_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "double",
+          "Width": 64
+        },
+        "SourceColumn": "double_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "decimal_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 10,
+          "Scale": 2
+        },
+        "SourceColumn": "decimal_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "char_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "char",
+          "Length": 10
+        },
+        "SourceColumn": "char_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "varchar_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        },
+        "SourceColumn": "varchar_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "tinytext_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "tinytext"
+        },
+        "SourceColumn": "tinytext_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "text_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "text_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "mediumtext_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "mediumtext"
+        },
+        "SourceColumn": "mediumtext_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "longtext_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "longtext"
+        },
+        "SourceColumn": "longtext_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "binary_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "binary",
+          "EngineName": "binary"
+        },
+        "SourceColumn": "binary_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "varbinary_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "binary",
+          "EngineName": "varbinary"
+        },
+        "SourceColumn": "varbinary_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "tinyblob_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "binary",
+          "EngineName": "tinyblob"
+        },
+        "SourceColumn": "tinyblob_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "blob_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "binary",
+          "EngineName": "blob"
+        },
+        "SourceColumn": "blob_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "mediumblob_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "binary",
+          "EngineName": "mediumblob"
+        },
+        "SourceColumn": "mediumblob_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "longblob_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "binary",
+          "EngineName": "longblob"
+        },
+        "SourceColumn": "longblob_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "date_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        },
+        "SourceColumn": "date_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "time_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "time",
+          "Temporal": "time"
+        },
+        "SourceColumn": "time_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "datetime_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "datetime_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "timestamp_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "timestamp_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "year_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "year",
+          "Width": 16
+        },
+        "SourceColumn": "year_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "json_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "json"
+        },
+        "SourceColumn": "json_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      },
+      {
+        "Name": "bool_col",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "tinyint"
+        },
+        "SourceColumn": "bool_col",
+        "SourceQualifier": "type_test",
+        "SourceTable": "type_test"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetAllTypes, command: one)\nSELECT\n    id, tiny_col, small_col, medium_col, int_col, big_col,\n    float_col, double_col, decimal_col,\n    char_col, varchar_col, tinytext_col, text_col, mediumtext_col, longtext_col,\n    binary_col, varbinary_col, tinyblob_col, blob_col, mediumblob_col, longblob_col,\n    date_col, time_col, datetime_col, timestamp_col, year_col,\n    json_col, bool_col\nFROM type_test\nWHERE id = ?;",
+    "Template": "SELECT\\n    ⟨c0:id⟩, ⟨c1:tiny_col⟩, ⟨c2:small_col⟩, ⟨c3:medium_col⟩, ⟨c4:int_col⟩, ⟨c5:big_col⟩,\\n    ⟨c6:float_col⟩, ⟨c7:double_col⟩, ⟨c8:decimal_col⟩,\\n    ⟨c9:char_col⟩, ⟨c10:varchar_col⟩, ⟨c11:tinytext_col⟩, ⟨c12:text_col⟩, ⟨c13:mediumtext_col⟩, ⟨c14:longtext_col⟩,\\n    ⟨c15:binary_col⟩, ⟨c16:varbinary_col⟩, ⟨c17:tinyblob_col⟩, ⟨c18:blob_col⟩, ⟨c19:mediumblob_col⟩, ⟨c20:longblob_col⟩,\\n    ⟨c21:date_col⟩, ⟨c22:time_col⟩, ⟨c23:datetime_col⟩, ⟨c24:timestamp_col⟩, ⟨c25:year_col⟩,\\n    ⟨c26:json_col⟩, ⟨c27:bool_col⟩\\nFROM type_test\\nWHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

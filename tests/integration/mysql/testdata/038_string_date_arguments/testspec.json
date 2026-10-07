@@ -1,0 +1,3 @@
+{
+  "description": "A string or a number passed to a date or time function is read as MySQL reads it: YEAR, DATEDIFF, DATE_ADD, ADDTIME, TIMESTAMPADD, TIMESTAMPDIFF, DATE_FORMAT, UNIX_TIMESTAMP, DATE, TIMESTAMP, LAST_DAY and EXTRACT over string literals, a VARCHAR column and a number generate code that scans every result: a string shifted by DATE_ADD is a string, a TIME shifted by ADDTIME a TIME, UNIX_TIMESTAMP of a string or a DATETIME(3) a DECIMAL, and a string holding no date gives NULL"
+}

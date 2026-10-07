@@ -1,0 +1,169 @@
+[
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 1,
+    "Name": "HighScores",
+    "OutputColumns": [
+      {
+        "Name": "high",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int4",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "int4[]"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(HighScores, many)\nSELECT list_filter(scores, score -\u003e score \u003e $1) AS high\nFROM boats;",
+    "Template": "SELECT ⟨c0 aliased:list_filter(scores, score -\u003e score \u003e ⟨p0⟩)⟩ AS high\\nFROM boats;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 5,
+    "Name": "TaggedBoats",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(TaggedBoats, many)\nSELECT id\nFROM boats\nWHERE len(list_filter(tags, tag -\u003e tag = $1)) \u003e 0;",
+    "Template": "SELECT ⟨c0:id⟩\\nFROM boats\\nWHERE len(list_filter(tags, tag -\u003e tag = ⟨p0⟩)) \u003e 0;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 10,
+    "Name": "LaterScores",
+    "OutputColumns": [
+      {
+        "Name": "later",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int4",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "int4[]"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(LaterScores, many)\nSELECT list_filter(scores, (score, position) -\u003e position \u003e $1) AS later\nFROM boats;",
+    "Template": "SELECT ⟨c0 aliased:list_filter(scores, (score, position) -\u003e position \u003e ⟨p0⟩)⟩ AS later\\nFROM boats;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 14,
+    "Name": "Positions",
+    "OutputColumns": [
+      {
+        "Name": "positions",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int8",
+            "Nullable": true,
+            "Width": 64
+          },
+          "EngineName": "int8[]"
+        }
+      },
+      {
+        "Name": "total",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "weighted",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "wide_total",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "joined",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(Positions, many)\nSELECT list_transform(tags, (tag, position) -\u003e position) AS positions,\n       list_reduce(scores, (total, score) -\u003e total + score) AS total,\n       list_reduce(scores, (total, score, position) -\u003e total + position) AS weighted,\n       list_reduce(scores, (total, score) -\u003e total + score, 0::BIGINT) AS wide_total,\n       list_reduce(tags, (joined, tag) -\u003e joined || tag) AS joined\nFROM boats;",
+    "Template": "SELECT ⟨c0 aliased:list_transform(tags, (tag, position) -\u003e position)⟩ AS positions,\\n       ⟨c1 aliased:list_reduce(scores, (total, score) -\u003e total + score)⟩ AS total,\\n       ⟨c2 aliased:list_reduce(scores, (total, score, position) -\u003e total + position)⟩ AS weighted,\\n       ⟨c3 aliased:list_reduce(scores, (total, score) -\u003e total + score, 0::BIGINT)⟩ AS wide_total,\\n       ⟨c4 aliased:list_reduce(tags, (joined, tag) -\u003e joined || tag)⟩ AS joined\\nFROM boats;"
+  }
+]

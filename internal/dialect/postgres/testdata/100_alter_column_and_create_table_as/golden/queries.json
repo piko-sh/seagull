@@ -1,0 +1,103 @@
+[
+  {
+    "Command": "many",
+    "Filename": "accounts.sql",
+    "Line": 1,
+    "Name": "ListAccounts",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "email",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "score",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "score",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "tier",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int2",
+          "Width": 16
+        },
+        "SourceColumn": "tier",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListAccounts, command: many)\nSELECT id, email, score, tier FROM accounts;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:email⟩, ⟨c2:score⟩, ⟨c3:tier⟩ FROM accounts;"
+  },
+  {
+    "Command": "many",
+    "Filename": "accounts.sql",
+    "Line": 4,
+    "Name": "ListAccountScores",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "account_scores",
+        "SourceTable": "account_scores"
+      },
+      {
+        "Name": "email",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "account_scores",
+        "SourceTable": "account_scores"
+      },
+      {
+        "Name": "doubled",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "doubled",
+        "SourceQualifier": "account_scores",
+        "SourceTable": "account_scores"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListAccountScores, command: many)\nSELECT id, email, doubled FROM account_scores;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:email⟩, ⟨c2:doubled⟩ FROM account_scores;"
+  }
+]

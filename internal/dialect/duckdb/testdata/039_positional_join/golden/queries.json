@@ -1,0 +1,60 @@
+[
+  {
+    "Command": "many",
+    "Filename": "combined.sql",
+    "Line": 1,
+    "Name": "GetPositionalCombined",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "l",
+        "SourceTable": "left_values"
+      },
+      {
+        "Name": "label",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "label",
+        "SourceQualifier": "l",
+        "SourceTable": "left_values"
+      },
+      {
+        "Name": "right_id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "r",
+        "SourceTable": "right_values"
+      },
+      {
+        "Name": "score",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        },
+        "SourceColumn": "score",
+        "SourceQualifier": "r",
+        "SourceTable": "right_values"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetPositionalCombined, command: many)\nSELECT l.id, l.label, r.id AS right_id, r.score\nFROM left_values l POSITIONAL JOIN right_values r;",
+    "Template": "SELECT ⟨c0:l.id⟩, ⟨c1:l.label⟩, ⟨c2 aliased:r.id⟩ AS right_id, ⟨c3:r.score⟩\\nFROM left_values l POSITIONAL JOIN right_values r;"
+  }
+]

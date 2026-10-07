@@ -1,0 +1,3 @@
+{
+  "description": "A JSON_TABLE column keeps the modifiers its type is written with: a DECIMAL(10, 2) column has its precision and scale, a VARCHAR(40) column its length and a DATETIME(3) column its fractional-second precision, as a table column of the same type does."
+}

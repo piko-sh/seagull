@@ -1,0 +1,10 @@
+execresult  moored Kittiwake as boat 1
+execresult  moored Salty Chip as boat 2
+execresult  moored Gull Wing as boat 3
+one         boat 2 is Salty Chip, at berth 2
+exec        scrapped boat 3
+one         boat 3 is gone, so GetBoat returns sql.ErrNoRows
+execrows    2 boats put to sea
+execrows    0 boats put to sea
+many        berth 1  Kittiwake   at sea: true
+many        berth 2  Salty Chip  at sea: true

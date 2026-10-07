@@ -1,0 +1,10 @@
+[
+  {
+    "Code": "Q006",
+    "Column": 1,
+    "Filename": "get_user_by_id.sql",
+    "Line": 1,
+    "Message": "duplicate query name \"GetUser\" (first defined in get_user_by_email.sql:1)",
+    "Severity": "error"
+  }
+]

@@ -1,0 +1,143 @@
+{
+  "DefaultSchema": "default",
+  "Identifiers": {
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "default": {
+      "Name": "default",
+      "Tables": {
+        "readings": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt32",
+                "Unsigned": true,
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "sensor",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "Int64",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "slot",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "Int8",
+                "Width": 8
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "small",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "Int16",
+                "Width": 16
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "wide",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "Int32",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "level",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "float",
+                "EngineName": "Float64",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "buckets",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt8",
+                "Unsigned": true,
+                "Width": 8
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "point",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "Tuple",
+                "StructFields": [
+                  {
+                    "Name": "x",
+                    "SQLType": {
+                      "Category": "float",
+                      "EngineName": "Float64",
+                      "Width": 64
+                    }
+                  },
+                  {
+                    "Name": "y",
+                    "SQLType": {
+                      "Category": "float",
+                      "EngineName": "Float64",
+                      "Width": 64
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "Name": "readings",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "default"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "default"
+  ]
+}

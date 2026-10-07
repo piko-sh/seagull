@@ -1,0 +1,36 @@
+{
+  "description": "PostgreSQL: a parameter beside a column in COALESCE takes the column's type and may be NULL; = ANY($1) and <> ALL($1) take an array of the compared column's type; BETWEEN bounds are named after the column with _from and _to, a parameter passed to lower() compared with lower(column) after the column; NULLIF($1, '') compared with a column and NULLIF(id, $1) type and name the parameter from the other argument; a parameter that is a condition, an AND operand, a CASE condition or NOT's operand is boolean; INSERT without a column list types its values by position; pg_advisory_lock($1) takes the bigint its one-argument overload declares. Reported: an unknown INSERT target column, unknown names in subqueries and a CTE outside FROM, an unknown ON CONFLICT SET target, and a parameter used where text and where bigint is expected.",
+  "expectedDiagnosticCount": 6,
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "Q001",
+      "messageContains": "unknown column \"nickname\" in table \"authors\""
+    },
+    {
+      "severity": "warning",
+      "code": "Q001",
+      "messageContains": "unknown column \"writer\""
+    },
+    {
+      "severity": "warning",
+      "code": "Q003",
+      "messageContains": "unknown table or view \"shelves\""
+    },
+    {
+      "severity": "warning",
+      "code": "Q001",
+      "messageContains": "unknown table or alias \"found\""
+    },
+    {
+      "severity": "warning",
+      "code": "Q001",
+      "messageContains": "unknown column \"nmae\""
+    },
+    {
+      "severity": "warning",
+      "code": "Q004",
+      "messageContains": "parameter name is used both where text and where int8 is expected"
+    }
+  ]
+}

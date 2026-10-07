@@ -1,0 +1,187 @@
+[
+  {
+    "Command": "many",
+    "Filename": "orders.sql",
+    "Line": 1,
+    "Name": "ListOrders",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "email",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "quantity",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "quantity",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "parts",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "parts",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "doc",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        },
+        "SourceColumn": "doc",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "ordered_on",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        },
+        "SourceColumn": "ordered_on",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "shipped_on",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        },
+        "SourceColumn": "shipped_on",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListOrders, command: many)\nSELECT * FROM orders;",
+    "Template": "SELECT ⟨star 0=orders.id 1=orders.email 2=orders.quantity 3=orders.parts 4=orders.doc 5=orders.ordered_on 6=orders.shipped_on:*⟩ FROM orders;"
+  },
+  {
+    "Command": "many",
+    "Filename": "orders.sql",
+    "Line": 4,
+    "Name": "QuantityPerPart",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "per_part",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        }
+      },
+      {
+        "Name": "whole_parts",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: QuantityPerPart, command: many)\nSELECT id, quantity / parts AS per_part, quantity // parts AS whole_parts\nFROM orders;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:quantity / parts⟩ AS per_part, ⟨c2 aliased:quantity // parts⟩ AS whole_parts\\nFROM orders;"
+  },
+  {
+    "Command": "many",
+    "Filename": "orders.sql",
+    "Line": 8,
+    "Name": "DaysToShip",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "days",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "promised_on",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: DaysToShip, command: many)\nSELECT id, shipped_on - ordered_on AS days, ordered_on + 3 AS promised_on\nFROM orders;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:shipped_on - ordered_on⟩ AS days, ⟨c2 aliased:ordered_on + 3⟩ AS promised_on\\nFROM orders;"
+  },
+  {
+    "Command": "many",
+    "Filename": "orders.sql",
+    "Line": 12,
+    "Name": "HalfDays",
+    "OutputColumns": [
+      {
+        "Name": "moment",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp",
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "moment",
+        "SourceQualifier": "moment"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: HalfDays, command: many)\nSELECT moment FROM generate_series('2024-01-01'::TIMESTAMP, '2024-01-02'::TIMESTAMP, '12 hours'::INTERVAL) AS moment ORDER BY moment;",
+    "Template": "SELECT ⟨c0:moment⟩ FROM generate_series('2024-01-01'::TIMESTAMP, '2024-01-02'::TIMESTAMP, '12 hours'::INTERVAL) AS moment ORDER BY moment;"
+  }
+]

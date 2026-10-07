@@ -1,0 +1,10 @@
+opened accounts for Pip and Gull: committed
+  balances: Pip 5000 Gull 2000
+transferred 1500 from Pip to Gull: committed
+  balances: Pip 3500 Gull 3500
+transferred 9000 from Gull to Pip: rolled back (ERROR: failed to satisfy CHECK constraint (balance >= 0:::INT8) (SQLSTATE 23514))
+  balances: Pip 3500 Gull 3500
+paid Gull 10% interest while a deposit of 100 landed:
+  attempt 1: aborted with SQLSTATE 40001, retried
+  attempt 2: committed
+  balances: Pip 3500 Gull 3960

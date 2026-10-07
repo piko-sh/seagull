@@ -1,0 +1,59 @@
+[
+  {
+    "Command": "one",
+    "Filename": "customers.sql",
+    "Line": 1,
+    "Name": "GetCustomer",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "customers",
+        "SourceTable": "customers"
+      },
+      {
+        "Name": "email",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "customers",
+        "SourceTable": "customers"
+      },
+      {
+        "Name": "country",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "country",
+        "SourceQualifier": "customers",
+        "SourceTable": "customers"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "customer_id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(GetCustomer, one)\nSELECT id, email, country FROM customers WHERE id = {customer_id:UInt64};",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:email⟩, ⟨c2:country⟩ FROM customers WHERE id = ⟨p0 UInt64⟩;⟨arguments p0⟩"
+  }
+]

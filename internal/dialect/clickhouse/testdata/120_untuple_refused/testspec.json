@@ -1,0 +1,11 @@
+{
+  "description": "untuple(...) in a select list gives one column for each element of the tuple, so it is refused with a clear message rather than typed as one column.",
+  "expectedDiagnosticCount": 1,
+  "diagnostics": [
+    {
+      "severity": "error",
+      "code": "Q010",
+      "messageContains": "untuple(...) in a select list"
+    }
+  ]
+}

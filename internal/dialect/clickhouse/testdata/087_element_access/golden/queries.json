@@ -1,0 +1,48 @@
+[
+  {
+    "Command": "many",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "Elements",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "o",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "fish",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      },
+      {
+        "Name": "position_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Name": "next_value",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(Elements, many)\nSELECT o.id, basket.fish AS fish, pos.name AS position_name, pos.value + 1 AS next_value FROM orders AS o;",
+    "Template": "SELECT ⟨c0:o.id⟩, ⟨c1 aliased:basket.fish⟩ AS fish, ⟨c2 aliased:pos.name⟩ AS position_name, ⟨c3 aliased:pos.value + 1⟩ AS next_value FROM orders AS o;"
+  }
+]

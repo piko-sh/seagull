@@ -1,0 +1,209 @@
+{
+  "DefaultSchema": "default",
+  "Identifiers": {
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "default": {
+      "Name": "default",
+      "Tables": {
+        "gulls": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt64",
+                "Unsigned": true,
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "tags",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "array",
+                "ElementType": {
+                  "Category": "text",
+                  "EngineName": "String"
+                },
+                "EngineName": "Array"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "sightings",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "array",
+                "ElementType": {
+                  "Category": "integer",
+                  "EngineName": "UInt8",
+                  "Unsigned": true,
+                  "Width": 8
+                },
+                "EngineName": "Array"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "nicknames",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "array",
+                "ElementType": {
+                  "Category": "text",
+                  "EngineName": "String",
+                  "Nullable": true
+                },
+                "EngineName": "Array"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "ringings",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "map",
+                "ElementType": {
+                  "Category": "integer",
+                  "EngineName": "UInt32",
+                  "Unsigned": true,
+                  "Width": 32
+                },
+                "EngineName": "Map",
+                "KeyType": {
+                  "Category": "text",
+                  "EngineName": "String"
+                }
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "grid",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "array",
+                "ElementType": {
+                  "Category": "array",
+                  "ElementType": {
+                    "Category": "integer",
+                    "EngineName": "UInt8",
+                    "Unsigned": true,
+                    "Width": 8
+                  },
+                  "EngineName": "Array"
+                },
+                "EngineName": "Array"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "note",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "String"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Hidden": true,
+              "Name": "flights",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "array",
+                "ElementType": {
+                  "Category": "struct",
+                  "EngineName": "Tuple",
+                  "StructFields": [
+                    {
+                      "Name": "colony",
+                      "SQLType": {
+                        "Category": "text",
+                        "EngineName": "String"
+                      }
+                    },
+                    {
+                      "Name": "minutes",
+                      "SQLType": {
+                        "Category": "integer",
+                        "EngineName": "UInt16",
+                        "Unsigned": true,
+                        "Width": 16
+                      }
+                    }
+                  ]
+                },
+                "EngineName": "Array"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "flights.colony",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "array",
+                "ElementType": {
+                  "Category": "text",
+                  "EngineName": "String"
+                },
+                "EngineName": "Array"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "flights.minutes",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "array",
+                "ElementType": {
+                  "Category": "integer",
+                  "EngineName": "UInt16",
+                  "Unsigned": true,
+                  "Width": 16
+                },
+                "EngineName": "Array"
+              }
+            }
+          ],
+          "Name": "gulls",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "default"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "default"
+  ]
+}

@@ -1,0 +1,92 @@
+[
+  {
+    "Command": "many",
+    "Filename": "select_all.sql",
+    "Line": 1,
+    "Name": "SelectAllColumns",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "u",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "u",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "p",
+        "SourceTable": "posts"
+      },
+      {
+        "Name": "author_id",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        },
+        "SourceColumn": "author_id",
+        "SourceQualifier": "p",
+        "SourceTable": "posts"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "p",
+        "SourceTable": "posts"
+      }
+    ],
+    "SQL": "-- sgl.query(name: SelectAllColumns, command: many)\nSELECT u.*, p.* FROM users u JOIN posts p ON p.author_id = u.id",
+    "Template": "SELECT u.*, p.* FROM users u JOIN posts p ON p.author_id = u.id"
+  },
+  {
+    "Command": "many",
+    "Filename": "select_qualified.sql",
+    "Line": 1,
+    "Name": "SelectUserColumns",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "u",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "u",
+        "SourceTable": "users"
+      }
+    ],
+    "SQL": "-- sgl.query(name: SelectUserColumns, command: many)\nSELECT u.* FROM users u JOIN posts p ON p.author_id = u.id",
+    "Template": "SELECT u.* FROM users u JOIN posts p ON p.author_id = u.id"
+  }
+]

@@ -1,0 +1,98 @@
+[
+  {
+    "Command": "many",
+    "Filename": "members.sql",
+    "Line": 1,
+    "Name": "ListMembers",
+    "OutputColumns": [
+      {
+        "Name": "community_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "community_id",
+        "SourceQualifier": "members",
+        "SourceTable": "members"
+      },
+      {
+        "Name": "user_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "user_id",
+        "SourceQualifier": "members",
+        "SourceTable": "members"
+      },
+      {
+        "Name": "role",
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "community_role",
+          "EnumValues": [
+            "creator",
+            "admin"
+          ],
+          "Schema": "public"
+        },
+        "SourceColumn": "role",
+        "SourceQualifier": "members",
+        "SourceTable": "members"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListMembers, command: many)\nSELECT * FROM members;",
+    "Template": "SELECT ⟨star 0=members.community_id 1=members.user_id 2=members.role:*⟩ FROM members;"
+  },
+  {
+    "Command": "many",
+    "Filename": "members.sql",
+    "Line": 4,
+    "Name": "ListMemberView",
+    "OutputColumns": [
+      {
+        "Name": "community_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "community_id",
+        "SourceQualifier": "member_view",
+        "SourceTable": "member_view"
+      },
+      {
+        "Name": "user_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "user_id",
+        "SourceQualifier": "member_view",
+        "SourceTable": "member_view"
+      },
+      {
+        "Name": "role",
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "community_role",
+          "EnumValues": [
+            "creator",
+            "admin"
+          ],
+          "Schema": "public"
+        },
+        "SourceColumn": "role",
+        "SourceQualifier": "member_view",
+        "SourceTable": "member_view"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListMemberView, command: many)\nSELECT * FROM member_view;",
+    "Template": "SELECT ⟨star 0=member_view.community_id 1=member_view.user_id 2=member_view.role:*⟩ FROM member_view;"
+  }
+]

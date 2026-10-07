@@ -1,0 +1,207 @@
+[
+  {
+    "Command": "many",
+    "Filename": "trips.sql",
+    "Line": 1,
+    "Name": "CityStats",
+    "OutputColumns": [
+      {
+        "Name": "city",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "city",
+        "SourceQualifier": "trips",
+        "SourceTable": "trips"
+      },
+      {
+        "Name": "usual_fare",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "quartiles",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CityStats, command: many)\nSELECT city, mode(fare) AS usual_fare, quantile_cont(fare, [0.25, 0.75]) AS quartiles\nFROM trips\nGROUP BY city;",
+    "Template": "SELECT ⟨c0:city⟩, ⟨c1 aliased:mode(fare)⟩ AS usual_fare, ⟨c2 aliased:quantile_cont(fare, [0.25, 0.75])⟩ AS quartiles\\nFROM trips\\nGROUP BY city;"
+  },
+  {
+    "Command": "many",
+    "Filename": "trips.sql",
+    "Line": 6,
+    "Name": "Parsed",
+    "OutputColumns": [
+      {
+        "Name": "second_number",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "squeezed",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "month",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "stops_at_three",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      },
+      {
+        "Name": "tagged",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      },
+      {
+        "Name": "finite",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      },
+      {
+        "Name": "checksum",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Parsed, command: many)\nSELECT regexp_extract(note, '(\\d+)-(\\d+)', 2) AS second_number, regexp_replace(note, '\\s+', ' ', 'g') AS squeezed,\n       strftime('%Y-%m', started_at) AS month, contains(stops, 3) AS stops_at_three, contains(tags, 'night') AS tagged,\n       isfinite(started_at) AS finite, md5(raw) AS checksum\nFROM trips;",
+    "Template": "SELECT ⟨c0 aliased:regexp_extract(note, '(\\\\d+)-(\\\\d+)', 2)⟩ AS second_number, ⟨c1 aliased:regexp_replace(note, '\\\\s+', ' ', 'g')⟩ AS squeezed,\\n       ⟨c2 aliased:strftime('%Y-%m', started_at)⟩ AS month, ⟨c3 aliased:contains(stops, 3)⟩ AS stops_at_three, ⟨c4 aliased:contains(tags, 'night')⟩ AS tagged,\\n       ⟨c5 aliased:isfinite(started_at)⟩ AS finite, ⟨c6 aliased:md5(raw)⟩ AS checksum\\nFROM trips;"
+  },
+  {
+    "Command": "many",
+    "Filename": "trips.sql",
+    "Line": 12,
+    "Name": "Lists",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "trips",
+        "SourceTable": "trips"
+      },
+      {
+        "Name": "counter",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int8",
+            "Nullable": true,
+            "Width": 64
+          },
+          "EngineName": "int8[]"
+        }
+      },
+      {
+        "Name": "hours",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "temporal",
+            "EngineName": "timestamp",
+            "Nullable": true,
+            "Temporal": "timestamp"
+          },
+          "EngineName": "timestamp[]"
+        }
+      },
+      {
+        "Name": "joined",
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Lists, command: many)\nSELECT id, range(3) AS counter, generate_series(started_at, started_at + INTERVAL 2 HOUR, INTERVAL 1 HOUR) AS hours,\n       list_aggregate(stops, 'string_agg', '|') AS joined\nFROM trips;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:range(3)⟩ AS counter, ⟨c2 aliased:generate_series(started_at, started_at + INTERVAL 2 HOUR, INTERVAL 1 HOUR)⟩ AS hours,\\n       ⟨c3 aliased:list_aggregate(stops, 'string_agg', '|')⟩ AS joined\\nFROM trips;"
+  },
+  {
+    "Command": "many",
+    "Filename": "trips.sql",
+    "Line": 17,
+    "Name": "Documents",
+    "OutputColumns": [
+      {
+        "Name": "parts",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "json",
+            "EngineName": "json",
+            "Nullable": true
+          },
+          "EngineName": "json[]"
+        }
+      },
+      {
+        "Name": "first_text",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "meta_keys",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "varchar",
+            "Nullable": true
+          },
+          "EngineName": "varchar[]"
+        }
+      },
+      {
+        "Name": "item_count",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "ubigint",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Documents, command: many)\nSELECT json_extract(doc, ['$.a', '$.b']) AS parts, json_extract_string(doc, 0) AS first_text,\n       json_keys(doc, '$.meta') AS meta_keys, json_array_length(doc, '$.items') AS item_count\nFROM trips;",
+    "Template": "SELECT ⟨c0 aliased:json_extract(doc, ['$.a', '$.b'])⟩ AS parts, ⟨c1 aliased:json_extract_string(doc, 0)⟩ AS first_text,\\n       ⟨c2 aliased:json_keys(doc, '$.meta')⟩ AS meta_keys, ⟨c3 aliased:json_array_length(doc, '$.items')⟩ AS item_count\\nFROM trips;"
+  }
+]

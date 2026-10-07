@@ -1,0 +1,1 @@
+{"description": "Built-ins used in WHERE and the select list resolve: regexp_matches, if, today, prefix, suffix, uuid, the two-argument trim and strftime(timestamp, format)"}

@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q005",
+    "Column": 8,
+    "EndColumn": 20,
+    "EndLine": 20,
+    "Filename": "users.sql",
+    "Line": 20,
+    "Message": "unknown function \"regexp_count\"",
+    "Severity": "warning"
+  }
+]

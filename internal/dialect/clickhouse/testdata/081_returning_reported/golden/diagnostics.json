@@ -1,0 +1,20 @@
+[
+  {
+    "Code": "Q009",
+    "Column": 1,
+    "Filename": "q.sql",
+    "Line": 1,
+    "Message": "query \"RingGull\" uses command \"one\" but produces no output columns",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q052",
+    "Column": 66,
+    "EndColumn": 75,
+    "EndLine": 2,
+    "Filename": "q.sql",
+    "Line": 2,
+    "Message": "query \"RingGull\" has a RETURNING clause on its INSERT, but the clickhouse dialect does not support RETURNING on any statement",
+    "Severity": "error"
+  }
+]

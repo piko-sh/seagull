@@ -1,0 +1,39 @@
+[
+  {
+    "Command": "many",
+    "Filename": "get_names.sql",
+    "Line": 1,
+    "Name": "GetFullNames",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "people",
+        "SourceTable": "people"
+      },
+      {
+        "Name": "full_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "with_middle",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetFullNames, command: many)\nSELECT\n  id,\n  first_name || ' ' || last_name as full_name,\n  first_name || ' ' || middle_name as with_middle\nFROM people",
+    "Template": "SELECT\\n  ⟨c0:id⟩,\\n  ⟨c1 aliased:first_name || ' ' || last_name⟩ as full_name,\\n  ⟨c2 aliased:first_name || ' ' || middle_name⟩ as with_middle\\nFROM people"
+  }
+]

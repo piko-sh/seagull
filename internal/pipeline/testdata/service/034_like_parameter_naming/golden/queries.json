@@ -1,0 +1,105 @@
+[
+  {
+    "Command": "many",
+    "Filename": "like_collision.sql",
+    "Line": 1,
+    "Name": "SearchNameCollision",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "like",
+        "Kind": "none",
+        "Name": "name_like",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text"
+        }
+      },
+      {
+        "Context": "like",
+        "Kind": "none",
+        "Name": "name_like_2",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: SearchNameCollision, command: many)\nSELECT id FROM users WHERE name LIKE $1 OR name LIKE $2;",
+    "Template": "SELECT id FROM users WHERE name LIKE $1 OR name LIKE $2;"
+  },
+  {
+    "Command": "many",
+    "Filename": "like_complex_lhs.sql",
+    "Line": 1,
+    "Name": "SearchByConcat",
+    "OutputColumns": [
+      {
+        "Name": "role",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "role",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "like",
+        "Kind": "none",
+        "Name": "name_like",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: SearchByConcat, command: many)\nSELECT role FROM users WHERE (name || ' ' || role) LIKE $1;",
+    "Template": "SELECT role FROM users WHERE (name || ' ' || role) LIKE $1;"
+  },
+  {
+    "Command": "many",
+    "Filename": "like_simple.sql",
+    "Line": 1,
+    "Name": "SearchByName",
+    "OutputColumns": [
+      {
+        "Name": "email",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "like",
+        "Kind": "none",
+        "Name": "name_like",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: SearchByName, command: many)\nSELECT email FROM users WHERE name LIKE $1;",
+    "Template": "SELECT email FROM users WHERE name LIKE $1;"
+  }
+]

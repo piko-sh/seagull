@@ -1,0 +1,29 @@
+[
+  {
+    "Command": "one",
+    "Filename": "get_ambiguous.sql",
+    "Line": 1,
+    "Name": "GetAmbiguous",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "u",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "name",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: GetAmbiguous, command: one)\nSELECT u.id, name FROM users u JOIN posts p ON p.author_id = u.id",
+    "Template": "SELECT u.id, name FROM users u JOIN posts p ON p.author_id = u.id"
+  }
+]

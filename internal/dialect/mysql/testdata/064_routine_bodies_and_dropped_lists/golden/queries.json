@@ -1,0 +1,76 @@
+[
+  {
+    "Command": "many",
+    "Filename": "scores.sql",
+    "Line": 1,
+    "Name": "BumpScores",
+    "OutputColumns": [
+      {
+        "Name": "bumped",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: BumpScores, command: many)\nSELECT bump_if(points) AS bumped FROM scores;",
+    "Template": "SELECT ⟨c0 aliased:bump_if(points)⟩ AS bumped FROM scores;"
+  },
+  {
+    "Command": "many",
+    "Filename": "scores.sql",
+    "Line": 4,
+    "Name": "LabelScores",
+    "OutputColumns": [
+      {
+        "Name": "label",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: LabelScores, command: many)\nSELECT label_of(points) AS label FROM scores;",
+    "Template": "SELECT ⟨c0 aliased:label_of(points)⟩ AS label FROM scores;"
+  },
+  {
+    "Command": "many",
+    "Filename": "scores.sql",
+    "Line": 7,
+    "Name": "ReadDroppedTable",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ReadDroppedTable, command: many)\nSELECT id FROM legacy_b;",
+    "Template": "SELECT ⟨c0:id⟩ FROM legacy_b;"
+  },
+  {
+    "Command": "many",
+    "Filename": "scores.sql",
+    "Line": 10,
+    "Name": "ReadDroppedView",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ReadDroppedView, command: many)\nSELECT id FROM vb;",
+    "Template": "SELECT ⟨c0:id⟩ FROM vb;"
+  }
+]

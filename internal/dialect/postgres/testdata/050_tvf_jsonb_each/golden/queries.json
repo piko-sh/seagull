@@ -1,0 +1,85 @@
+[
+  {
+    "Command": "many",
+    "Filename": "jsonb_array_elements_query.sql",
+    "Line": 1,
+    "Name": "ExtractArrayItems",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "d",
+        "SourceTable": "documents"
+      },
+      {
+        "Name": "item",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        },
+        "SourceColumn": "value",
+        "SourceQualifier": "elem"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ExtractArrayItems, command: many)\nSELECT d.id, elem.value AS item\nFROM documents d, jsonb_array_elements(d.metadata) elem;",
+    "Template": "SELECT ⟨c0:d.id⟩, ⟨c1 aliased:elem.value⟩ AS item\\nFROM documents d, jsonb_array_elements(d.metadata) elem;"
+  },
+  {
+    "Command": "many",
+    "Filename": "jsonb_each_query.sql",
+    "Line": 1,
+    "Name": "ExtractKeyValues",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "d",
+        "SourceTable": "documents"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "d",
+        "SourceTable": "documents"
+      },
+      {
+        "Name": "key",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "key",
+        "SourceQualifier": "kv"
+      },
+      {
+        "Name": "value",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        },
+        "SourceColumn": "value",
+        "SourceQualifier": "kv"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ExtractKeyValues, command: many)\nSELECT d.id, d.title, kv.key, kv.value\nFROM documents d, jsonb_each(d.metadata) kv;",
+    "Template": "SELECT ⟨c0:d.id⟩, ⟨c1:d.title⟩, ⟨c2:kv.key⟩, ⟨c3:kv.value⟩\\nFROM documents d, jsonb_each(d.metadata) kv;"
+  }
+]

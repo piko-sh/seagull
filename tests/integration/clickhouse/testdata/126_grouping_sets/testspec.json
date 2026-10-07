@@ -1,0 +1,4 @@
+{
+  "description": "ClickHouse's ROLLUP, CUBE and GROUPING SETS rows read back (on ClickHouse): without group_by_use_nulls the left-out keys hold their type's default and keep their type; a query setting group_by_use_nulls = 1 reads them as NULL into a nullable field.",
+  "expectedDiagnostics": []
+}

@@ -1,0 +1,171 @@
+[
+  {
+    "Command": "many",
+    "Filename": "duckdb_types.sql",
+    "Line": 1,
+    "Name": "GetAllDuckDBTypes",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "duckdb_types",
+        "SourceTable": "duckdb_types"
+      },
+      {
+        "Name": "tiny_val",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int1",
+          "Width": 8
+        },
+        "SourceColumn": "tiny_val",
+        "SourceQualifier": "duckdb_types",
+        "SourceTable": "duckdb_types"
+      },
+      {
+        "Name": "small_val",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int2",
+          "Width": 16
+        },
+        "SourceColumn": "small_val",
+        "SourceQualifier": "duckdb_types",
+        "SourceTable": "duckdb_types"
+      },
+      {
+        "Name": "big_val",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "big_val",
+        "SourceQualifier": "duckdb_types",
+        "SourceTable": "duckdb_types"
+      },
+      {
+        "Name": "huge_val",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "hugeint",
+          "Width": 128
+        },
+        "SourceColumn": "huge_val",
+        "SourceQualifier": "duckdb_types",
+        "SourceTable": "duckdb_types"
+      },
+      {
+        "Name": "utiny_val",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "utinyint",
+          "Unsigned": true,
+          "Width": 8
+        },
+        "SourceColumn": "utiny_val",
+        "SourceQualifier": "duckdb_types",
+        "SourceTable": "duckdb_types"
+      },
+      {
+        "Name": "usmall_val",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "usmallint",
+          "Unsigned": true,
+          "Width": 16
+        },
+        "SourceColumn": "usmall_val",
+        "SourceQualifier": "duckdb_types",
+        "SourceTable": "duckdb_types"
+      },
+      {
+        "Name": "uint_val",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "uinteger",
+          "Unsigned": true,
+          "Width": 32
+        },
+        "SourceColumn": "uint_val",
+        "SourceQualifier": "duckdb_types",
+        "SourceTable": "duckdb_types"
+      },
+      {
+        "Name": "ubig_val",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "ubigint",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "ubig_val",
+        "SourceQualifier": "duckdb_types",
+        "SourceTable": "duckdb_types"
+      },
+      {
+        "Name": "blob_val",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "binary",
+          "EngineName": "blob"
+        },
+        "SourceColumn": "blob_val",
+        "SourceQualifier": "duckdb_types",
+        "SourceTable": "duckdb_types"
+      },
+      {
+        "Name": "ts_s",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp_s",
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "ts_s",
+        "SourceQualifier": "duckdb_types",
+        "SourceTable": "duckdb_types"
+      },
+      {
+        "Name": "ts_ms",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp_ms",
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "ts_ms",
+        "SourceQualifier": "duckdb_types",
+        "SourceTable": "duckdb_types"
+      },
+      {
+        "Name": "ts_ns",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp_ns",
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "ts_ns",
+        "SourceQualifier": "duckdb_types",
+        "SourceTable": "duckdb_types"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetAllDuckDBTypes, command: many)\nSELECT id, tiny_val, small_val, big_val, huge_val, utiny_val, usmall_val, uint_val, ubig_val, blob_val, ts_s, ts_ms, ts_ns FROM duckdb_types;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:tiny_val⟩, ⟨c2:small_val⟩, ⟨c3:big_val⟩, ⟨c4:huge_val⟩, ⟨c5:utiny_val⟩, ⟨c6:usmall_val⟩, ⟨c7:uint_val⟩, ⟨c8:ubig_val⟩, ⟨c9:blob_val⟩, ⟨c10:ts_s⟩, ⟨c11:ts_ms⟩, ⟨c12:ts_ns⟩ FROM duckdb_types;"
+  }
+]

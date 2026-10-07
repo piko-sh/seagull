@@ -1,0 +1,70 @@
+[
+  {
+    "Command": "many",
+    "Filename": "by_category.sql",
+    "Line": 1,
+    "Name": "DocumentsByCategory",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "documents",
+        "SourceTable": "documents"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "documents",
+        "SourceTable": "documents"
+      },
+      {
+        "Name": "category",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 50
+        },
+        "SourceColumn": "category",
+        "SourceQualifier": "documents",
+        "SourceTable": "documents"
+      },
+      {
+        "Name": "created_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "created_at",
+        "SourceQualifier": "documents",
+        "SourceTable": "documents"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "category",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 50
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: DocumentsByCategory, command: many)\nSELECT id, title, category, created_at FROM documents WHERE category = ?;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:title⟩, ⟨c2:category⟩, ⟨c3:created_at⟩ FROM documents WHERE category = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

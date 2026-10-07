@@ -1,0 +1,284 @@
+[
+  {
+    "Command": "many",
+    "Filename": "ordinality.sql",
+    "Line": 1,
+    "Name": "TracksInOrder",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "p",
+        "SourceTable": "playlists"
+      },
+      {
+        "Name": "track",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "track",
+        "SourceQualifier": "t"
+      },
+      {
+        "Name": "position",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "position",
+        "SourceQualifier": "t"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(TracksInOrder, many)\nSELECT p.id, t.track, t.position\nFROM playlists p, unnest(p.tracks) WITH ORDINALITY AS t(track, position)\nWHERE p.id = $1\nORDER BY t.position;",
+    "Template": "SELECT ⟨c0:p.id⟩, ⟨c1:t.track⟩, ⟨c2:t.position⟩\\nFROM playlists p, unnest(p.tracks) WITH ORDINALITY AS t(track, position)\\nWHERE p.id = ⟨p0⟩\\nORDER BY t.position;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordinality.sql",
+    "Line": 7,
+    "Name": "TracksNamedAfterTheAlias",
+    "OutputColumns": [
+      {
+        "Name": "track",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "track",
+        "SourceQualifier": "track"
+      },
+      {
+        "Name": "ordinality",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "ordinality",
+        "SourceQualifier": "track"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(TracksNamedAfterTheAlias, many)\nSELECT track, ordinality FROM playlists, unnest(tracks) WITH ORDINALITY AS track;",
+    "Template": "SELECT ⟨c0:track⟩, ⟨c1:ordinality⟩ FROM playlists, unnest(tracks) WITH ORDINALITY AS track;"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordinality.sql",
+    "Line": 10,
+    "Name": "PartlyNamedColumns",
+    "OutputColumns": [
+      {
+        "Name": "rating",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "rating",
+        "SourceQualifier": "r"
+      },
+      {
+        "Name": "ordinality",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "ordinality",
+        "SourceQualifier": "r"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(PartlyNamedColumns, many)\nSELECT r.rating, r.ordinality FROM playlists, unnest(ratings) WITH ORDINALITY AS r(rating);",
+    "Template": "SELECT ⟨c0:r.rating⟩, ⟨c1:r.ordinality⟩ FROM playlists, unnest(ratings) WITH ORDINALITY AS r(rating);"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordinality.sql",
+    "Line": 13,
+    "Name": "SettingsInOrder",
+    "OutputColumns": [
+      {
+        "Name": "key",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "key",
+        "SourceQualifier": "s"
+      },
+      {
+        "Name": "value",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        },
+        "SourceColumn": "value",
+        "SourceQualifier": "s"
+      },
+      {
+        "Name": "ordinality",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "ordinality",
+        "SourceQualifier": "s"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(SettingsInOrder, many)\nSELECT s.key, s.value, s.ordinality FROM playlists, jsonb_each(settings) WITH ORDINALITY AS s;",
+    "Template": "SELECT ⟨c0:s.key⟩, ⟨c1:s.value⟩, ⟨c2:s.ordinality⟩ FROM playlists, jsonb_each(settings) WITH ORDINALITY AS s;"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordinality.sql",
+    "Line": 16,
+    "Name": "OptionalRatings",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "p",
+        "SourceTable": "playlists"
+      },
+      {
+        "Name": "rating",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "rating",
+        "SourceQualifier": "r"
+      },
+      {
+        "Name": "position",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "position",
+        "SourceQualifier": "r"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(OptionalRatings, many)\nSELECT p.id, r.rating, r.position\nFROM playlists p LEFT JOIN LATERAL unnest(p.ratings) WITH ORDINALITY r(rating, position) ON true;",
+    "Template": "SELECT ⟨c0:p.id⟩, ⟨c1:r.rating⟩, ⟨c2:r.position⟩\\nFROM playlists p LEFT JOIN LATERAL unnest(p.ratings) WITH ORDINALITY r(rating, position) ON true;"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordinality.sql",
+    "Line": 20,
+    "Name": "NumberedSeries",
+    "OutputColumns": [
+      {
+        "Name": "value",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "value",
+        "SourceQualifier": "value"
+      },
+      {
+        "Name": "ordinality",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "ordinality",
+        "SourceQualifier": "value"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(NumberedSeries, many)\nSELECT value, ordinality FROM generate_series(1, 3) WITH ORDINALITY AS value;",
+    "Template": "SELECT ⟨c0:value⟩, ⟨c1:ordinality⟩ FROM generate_series(1, 3) WITH ORDINALITY AS value;"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordinality.sql",
+    "Line": 23,
+    "Name": "SeriesWithoutAs",
+    "OutputColumns": [
+      {
+        "Name": "v",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "v",
+        "SourceQualifier": "g"
+      },
+      {
+        "Name": "p",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "p",
+        "SourceQualifier": "g"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(SeriesWithoutAs, many)\nSELECT v, p FROM generate_series(1, 3) WITH ORDINALITY g(v, p);",
+    "Template": "SELECT ⟨c0:v⟩, ⟨c1:p⟩ FROM generate_series(1, 3) WITH ORDINALITY g(v, p);"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordinality.sql",
+    "Line": 26,
+    "Name": "NumberedRows",
+    "OutputColumns": [
+      {
+        "Name": "t",
+        "SQLType": {
+          "Category": "composite",
+          "EngineName": "record"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(NumberedRows, many)\nSELECT t FROM playlists, unnest(tracks) WITH ORDINALITY AS t(track, position);",
+    "Template": "SELECT ⟨c0:t⟩ FROM playlists, unnest(tracks) WITH ORDINALITY AS t(track, position);"
+  }
+]

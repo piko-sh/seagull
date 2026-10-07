@@ -1,0 +1,1 @@
+{"description": "SQL-standard bodies (RETURN expression, BEGIN ATOMIC) are captured and scanned: calling a writing function writes; built-in calls, VOLATILE, and calls or keywords inside comments and strings do not force the writer"}

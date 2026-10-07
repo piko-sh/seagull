@@ -1,0 +1,15 @@
+id           int64      1
+species      string     mackerel
+quay         uint8      3
+boxes        int16      12
+fish         int32      480
+weight_g     int64      163200
+length_cm    float64    31.5
+water_temp   float32    11.25
+on_ice       bool       true
+landed_at    time.Time  2026-05-01T05:30:00Z
+landed_on    time.Time  2026-05-01
+catch_id     uuid.UUID  6f1c2a5e-4d3b-4c2a-9e8f-1a2b3c4d5e6f
+auction_lot  *big.Int   20260501000000000001
+tag          []uint8    04 a2 19 f3
+notes        *string    landed at Newlyn

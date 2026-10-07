@@ -1,0 +1,3 @@
+{
+  "description": "The DuckDB driver returns LIST, STRUCT and MAP values as []any, map[string]any and duckdb.OrderedMap holding its own Go values, which the generated code converts through sglScanDriverComposite: time values (TIMESTAMP, DATE, TIME, TIMESTAMPTZ, TIMESTAMP_NS), DATE/DOUBLE/BOOLEAN map keys, nested structs of lists and maps, NULL elements, DECIMAL, INTERVAL, BIGINT beyond 2^53, HUGEINT, BLOB, enums, NaN, a compound query's list column, and the typed results of arg_max(x, k, n), quantile(x, [..]), histogram and typed map literals. List elements and map values use nullable Go types, so a NULL element or value, including a NULL STRUCT element of a list, reads as nil."
+}

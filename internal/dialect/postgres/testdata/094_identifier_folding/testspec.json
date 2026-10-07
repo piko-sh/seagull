@@ -1,0 +1,7 @@
+{
+  "description": "PostgreSQL folds unquoted identifiers to lower case and keeps quoted ones exact: Accounts and ACCOUNTS name the same table and Id the same column, the quoted \"DisplayName\" column must be quoted to be found, and an unquoted DisplayName is a different, unknown column, reported with the quoted column as the suggestion and kept in the row as a nullable column of unknown type.",
+  "expectedDiagnosticCount": 1,
+  "diagnostics": [
+    { "severity": "warning", "code": "Q001", "messageContains": "\"displayname\"" }
+  ]
+}

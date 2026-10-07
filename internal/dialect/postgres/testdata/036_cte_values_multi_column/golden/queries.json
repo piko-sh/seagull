@@ -1,0 +1,44 @@
+[
+  {
+    "Command": "many",
+    "Filename": "values_join.sql",
+    "Line": 1,
+    "Name": "ValuesJoin",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "i",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "i",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "status",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "status",
+        "SourceQualifier": "i",
+        "SourceTable": "items"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ValuesJoin, command: many)\nWITH filter(target_id, target_status) AS (VALUES (1, 'active'), (2, 'pending'))\nSELECT i.id, i.name, i.status\nFROM items i\nJOIN filter f ON f.target_id = i.id AND f.target_status = i.status;",
+    "Template": "WITH filter(target_id, target_status) AS (VALUES (1, 'active'), (2, 'pending'))\\nSELECT ⟨c0:i.id⟩, ⟨c1:i.name⟩, ⟨c2:i.status⟩\\nFROM items i\\nJOIN filter f ON f.target_id = i.id AND f.target_status = i.status;"
+  }
+]

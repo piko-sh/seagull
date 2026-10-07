@@ -1,0 +1,4 @@
+{
+  "description": "A {name:Type} placeholder in the arguments of a table function, such as numbers({n:UInt64}), is bound as a function argument typed by its own tag, alone or beside the same placeholder in WHERE, rather than failing as a placeholder that matches none of the query's parameters.",
+  "expectedDiagnosticCount": 0
+}

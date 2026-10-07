@@ -1,0 +1,10 @@
+id         int64      1
+species    string     mackerel
+boxes      int64      12
+fish       int64      480
+weight_g   int64      163200
+length_cm  float64    31.5
+on_ice     bool       true
+landed_at  time.Time  2026-05-01T05:30:00Z
+tag        []uint8    04 a2 19 f3
+notes      *string    landed at Newlyn

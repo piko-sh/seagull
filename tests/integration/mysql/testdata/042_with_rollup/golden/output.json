@@ -1,0 +1,74 @@
+{
+  "monthly_rollup": [
+    {
+      "month": "2024-01",
+      "revenue": "14.75"
+    },
+    {
+      "month": "2024-02",
+      "revenue": "7.00"
+    },
+    {
+      "month": null,
+      "revenue": "21.75"
+    }
+  ],
+  "positional_rollup": [
+    {
+      "area": "NORTH",
+      "sales": 2
+    },
+    {
+      "area": "SOUTH",
+      "sales": 1
+    },
+    {
+      "area": null,
+      "sales": 3
+    }
+  ],
+  "revenue_rollup": [
+    {
+      "city": "leeds",
+      "level": 0,
+      "region": "north",
+      "revenue": "10.50",
+      "sales": 1
+    },
+    {
+      "city": "york",
+      "level": 0,
+      "region": "north",
+      "revenue": "4.25",
+      "sales": 1
+    },
+    {
+      "city": null,
+      "level": 1,
+      "region": "north",
+      "revenue": "14.75",
+      "sales": 2
+    },
+    {
+      "city": "bath",
+      "level": 0,
+      "region": "south",
+      "revenue": "7.00",
+      "sales": 1
+    },
+    {
+      "city": null,
+      "level": 1,
+      "region": "south",
+      "revenue": "7.00",
+      "sales": 1
+    },
+    {
+      "city": null,
+      "level": 3,
+      "region": null,
+      "revenue": "21.75",
+      "sales": 3
+    }
+  ]
+}

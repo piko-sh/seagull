@@ -1,0 +1,730 @@
+[
+  {
+    "Command": "many",
+    "Filename": "functions.sql",
+    "Line": 1,
+    "Name": "Everyday",
+    "OutputColumns": [
+      {
+        "Name": "described",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "column_described",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "database_size",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "relation_size",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "day",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        }
+      },
+      {
+        "Name": "tomorrow",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "yesterday",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "trimmed",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "text",
+            "Nullable": true
+          },
+          "EngineName": "text[]"
+        }
+      },
+      {
+        "Name": "characters",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "transaction_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "current_xact_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "xid8",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Everyday, command: many)\nSELECT obj_description('places'::regclass, 'pg_class') AS described, col_description('places'::regclass, 1) AS column_described,\n    pg_database_size(current_database()) AS database_size, pg_relation_size('places') AS relation_size, date(created) AS day,\n    date_add(created, interval '1 day') AS tomorrow, date_subtract(created, interval '1 day', 'UTC') AS yesterday,\n    trim_array(tags, 1) AS trimmed, character_length(label) AS characters, txid_current() AS transaction_id,\n    pg_current_xact_id() AS current_xact_id\nFROM places;",
+    "Template": "SELECT ⟨c0 aliased:obj_description('places'::regclass, 'pg_class')⟩ AS described, ⟨c1 aliased:col_description('places'::regclass, 1)⟩ AS column_described,\\n    ⟨c2 aliased:pg_database_size(current_database())⟩ AS database_size, ⟨c3 aliased:pg_relation_size('places')⟩ AS relation_size, ⟨c4 aliased:date(created)⟩ AS day,\\n    ⟨c5 aliased:date_add(created, interval '1 day')⟩ AS tomorrow, ⟨c6 aliased:date_subtract(created, interval '1 day', 'UTC')⟩ AS yesterday,\\n    ⟨c7 aliased:trim_array(tags, 1)⟩ AS trimmed, ⟨c8 aliased:character_length(label)⟩ AS characters, ⟨c9 aliased:txid_current()⟩ AS transaction_id,\\n    ⟨c10 aliased:pg_current_xact_id()⟩ AS current_xact_id\\nFROM places;"
+  },
+  {
+    "Command": "many",
+    "Filename": "functions.sql",
+    "Line": 9,
+    "Name": "Bytes",
+    "OutputColumns": [
+      {
+        "Name": "octets",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "bits",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "first_byte",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "set",
+        "SQLType": {
+          "Category": "binary",
+          "EngineName": "bytea"
+        }
+      },
+      {
+        "Name": "first_bit",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "ones",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "trimmed",
+        "SQLType": {
+          "Category": "binary",
+          "EngineName": "bytea"
+        }
+      },
+      {
+        "Name": "overlaid",
+        "SQLType": {
+          "Category": "binary",
+          "EngineName": "bytea"
+        }
+      },
+      {
+        "Name": "characters",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Bytes, command: many)\nSELECT octet_length(body) AS octets, bit_length(body) AS bits, get_byte(body, 0) AS first_byte, set_byte(body, 0, 1) AS set,\n    get_bit(body, 0) AS first_bit, bit_count(body) AS ones, ltrim(body, '\\x00'::bytea) AS trimmed,\n    overlay(body PLACING '\\x01'::bytea FROM 1) AS overlaid, length(body, 'UTF8') AS characters\nFROM places;",
+    "Template": "SELECT ⟨c0 aliased:octet_length(body)⟩ AS octets, ⟨c1 aliased:bit_length(body)⟩ AS bits, ⟨c2 aliased:get_byte(body, 0)⟩ AS first_byte, ⟨c3 aliased:set_byte(body, 0, 1)⟩ AS set,\\n    ⟨c4 aliased:get_bit(body, 0)⟩ AS first_bit, ⟨c5 aliased:bit_count(body)⟩ AS ones, ⟨c6 aliased:ltrim(body, '\\\\x00'::bytea)⟩ AS trimmed,\\n    ⟨c7 aliased:overlay(body PLACING '\\\\x01'::bytea FROM 1)⟩ AS overlaid, ⟨c8 aliased:length(body, 'UTF8')⟩ AS characters\\nFROM places;"
+  },
+  {
+    "Command": "many",
+    "Filename": "functions.sql",
+    "Line": 15,
+    "Name": "Paths",
+    "OutputColumns": [
+      {
+        "Name": "over",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      },
+      {
+        "Name": "has",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "vars",
+        "Number": 1,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Paths, command: many)\nSELECT jsonb_path_exists(doc, '$.a ? (@ \u003e $min)', $1) AS over, jsonb_path_match(doc, 'exists($.a)', vars =\u003e '{}', silent =\u003e true) AS has\nFROM places;",
+    "Template": "SELECT ⟨c0 aliased:jsonb_path_exists(doc, '$.a ? (@ \u003e $min)', ⟨p0⟩)⟩ AS over, ⟨c1 aliased:jsonb_path_match(doc, 'exists($.a)', vars =\u003e '{}', silent =\u003e true)⟩ AS has\\nFROM places;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "functions.sql",
+    "Line": 19,
+    "Name": "Greetings",
+    "OutputColumns": [
+      {
+        "Name": "plain",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "asked",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "who",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "who_2",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Greetings, command: one)\nSELECT greet($1) AS plain, greet(who =\u003e $2, punctuation =\u003e '?') AS asked;",
+    "Template": "SELECT ⟨c0 aliased:greet(⟨p0⟩)⟩ AS plain, ⟨c1 aliased:greet(who =\u003e ⟨p1⟩, punctuation =\u003e '?')⟩ AS asked;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "grammar.sql",
+    "Line": 1,
+    "Name": "Labels",
+    "OutputColumns": [
+      {
+        "Name": "column1",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "column2",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Labels, command: many)\nVALUES (0, 'none') UNION ALL SELECT id, label FROM places ORDER BY 1;",
+    "Template": "VALUES (0, 'none') UNION ALL SELECT id, label FROM places ORDER BY 1;"
+  },
+  {
+    "Command": "many",
+    "Filename": "grammar.sql",
+    "Line": 4,
+    "Name": "Countdown",
+    "OutputColumns": [
+      {
+        "Name": "n",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "n",
+        "SourceQualifier": "c",
+        "SourceTable": "c"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Countdown, command: many)\nWITH RECURSIVE c(n) AS (VALUES (3) UNION ALL SELECT n - 1 FROM c WHERE n \u003e 1) SELECT n FROM c;",
+    "Template": "WITH RECURSIVE c(n) AS (VALUES (3) UNION ALL SELECT n - 1 FROM c WHERE n \u003e 1) SELECT ⟨c0:n⟩ FROM c;"
+  },
+  {
+    "Command": "many",
+    "Filename": "grammar.sql",
+    "Line": 7,
+    "Name": "Extremes",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "x"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Extremes, command: many)\nSELECT x.id FROM ((SELECT id FROM places ORDER BY id LIMIT 1) UNION (SELECT id FROM places ORDER BY id DESC LIMIT 1)) AS x;",
+    "Template": "SELECT ⟨c0:x.id⟩ FROM ((SELECT id FROM places ORDER BY id LIMIT 1) UNION (SELECT id FROM places ORDER BY id DESC LIMIT 1)) AS x;"
+  },
+  {
+    "Command": "many",
+    "Filename": "grammar.sql",
+    "Line": 10,
+    "Name": "EveryMark",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "t"
+      },
+      {
+        "Name": "row",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "row",
+        "SourceQualifier": "t"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: EveryMark, command: many)\nSELECT t.id, t.row FROM (TABLE marks) AS t WHERE EXISTS (TABLE places);",
+    "Template": "SELECT ⟨c0:t.id⟩, ⟨c1:t.row⟩ FROM (TABLE marks) AS t WHERE EXISTS (TABLE places);"
+  },
+  {
+    "Command": "many",
+    "Filename": "grammar.sql",
+    "Line": 13,
+    "Name": "StockedItems",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceSchema": "inventory",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "items",
+        "SourceSchema": "inventory",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        },
+        "SourceColumn": "price",
+        "SourceQualifier": "items",
+        "SourceSchema": "inventory",
+        "SourceTable": "items"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "price",
+        "Nullable": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: StockedItems, command: many)\nSELECT inventory.items.* FROM inventory.items WHERE inventory.items.price \u003e $1;",
+    "Template": "SELECT ⟨star 0=items.id 1=items.name 2=items.price:inventory.items.*⟩ FROM inventory.items WHERE inventory.items.price \u003e ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "grammar.sql",
+    "Line": 16,
+    "Name": "MarkRows",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "row",
+        "SourceTable": "marks"
+      },
+      {
+        "Name": "row",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "row",
+        "SourceQualifier": "row",
+        "SourceTable": "marks"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "row",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: MarkRows, command: many)\nSELECT row.id, row.row FROM marks AS row WHERE row.row = $1;",
+    "Template": "SELECT ⟨c0:row.id⟩, ⟨c1:row.row⟩ FROM marks AS row WHERE row.row = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "grammar.sql",
+    "Line": 19,
+    "Name": "Renamed",
+    "OutputColumns": [
+      {
+        "Name": "key",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "key",
+        "SourceQualifier": "p"
+      },
+      {
+        "Name": "spot",
+        "SQLType": {
+          "Category": "geometric",
+          "EngineName": "point"
+        },
+        "SourceColumn": "spot",
+        "SourceQualifier": "p"
+      },
+      {
+        "Name": "label",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "label",
+        "SourceQualifier": "p"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "key",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Renamed, command: many)\nSELECT p.key, p.spot, p.label FROM places AS p (key, spot) WHERE p.key = $1;",
+    "Template": "SELECT ⟨c0:p.key⟩, ⟨c1:p.spot⟩, ⟨c2:p.label⟩ FROM places AS p (key, spot) WHERE p.key = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "grammar.sql",
+    "Line": 22,
+    "Name": "Page",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "places",
+        "SourceTable": "places"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "offset",
+        "Kind": "none",
+        "Name": "size",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "offset",
+        "Kind": "none",
+        "Name": "page",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Page, command: many)\nSELECT id FROM places ORDER BY id LIMIT :size::int OFFSET (:page::int - 1) * :size;",
+    "Template": "SELECT ⟨c0:id⟩ FROM places ORDER BY id LIMIT ⟨p0⟩::int OFFSET (⟨p1⟩::int - 1) * ⟨p0⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "grammar.sql",
+    "Line": 25,
+    "Name": "Nearest",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "places",
+        "SourceTable": "places"
+      },
+      {
+        "Name": "distance",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "followed",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "tsquery"
+        }
+      },
+      {
+        "Name": "trigram_distance",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Nearest, command: many)\nSELECT id, location \u003c-\u003e point(0, 0) AS distance, query \u003c-\u003e query AS followed, label \u003c-\u003e 'x' AS trigram_distance\nFROM places ORDER BY location \u003c-\u003e point(0, 0) LIMIT 5;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:location \u003c-\u003e point(0, 0)⟩ AS distance, ⟨c2 aliased:query \u003c-\u003e query⟩ AS followed, ⟨c3 aliased:label \u003c-\u003e 'x'⟩ AS trigram_distance\\nFROM places ORDER BY location \u003c-\u003e point(0, 0) LIMIT 5;"
+  },
+  {
+    "Command": "many",
+    "Filename": "placeholders.sql",
+    "Line": 1,
+    "Name": "ByAt",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "places",
+        "SourceTable": "places"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ByAt, command: many)\nSELECT id FROM places WHERE label = @label;",
+    "Template": "SELECT ⟨c0:id⟩ FROM places WHERE label = @label;"
+  },
+  {
+    "Command": "exec",
+    "Filename": "placeholders.sql",
+    "InsertColumns": [
+      "id",
+      "row"
+    ],
+    "InsertTarget": {
+      "Name": "marks"
+    },
+    "Line": 4,
+    "Name": "ByQuestion",
+    "SQL": "-- sgl.query(name: ByQuestion, command: exec)\nINSERT INTO marks (id, row) VALUES (?, ?);",
+    "Template": "INSERT INTO marks (id, row) VALUES ⟨values:(?, ?)⟩;"
+  },
+  {
+    "Command": "many",
+    "Filename": "placeholders.sql",
+    "Line": 7,
+    "Name": "OptionalLabel",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "places",
+        "SourceTable": "places"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "label",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: OptionalLabel, command: many)\nSELECT id FROM places WHERE (:label IS NULL OR label = :label);",
+    "Template": "SELECT ⟨c0:id⟩ FROM places WHERE (⟨p0⟩ IS NULL OR label = ⟨p0⟩);⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "placeholders.sql",
+    "Line": 10,
+    "Name": "CastLabel",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "places",
+        "SourceTable": "places"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "label",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CastLabel, command: many)\nSELECT id FROM places WHERE (:label::text IS NULL OR label = :label);",
+    "Template": "SELECT ⟨c0:id⟩ FROM places WHERE (⟨p0⟩::text IS NULL OR label = ⟨p0⟩);⟨arguments p0⟩"
+  }
+]

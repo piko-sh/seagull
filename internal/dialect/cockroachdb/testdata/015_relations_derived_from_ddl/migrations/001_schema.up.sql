@@ -1,0 +1,13 @@
+CREATE TABLE notes (body STRING NOT NULL, kind INT8);
+CREATE TABLE marks (rowid INT8, label STRING);
+CREATE TABLE tags (label STRING NOT NULL, colour STRING);
+ALTER TABLE tags ADD PRIMARY KEY (label);
+CREATE TABLE labels (name STRING NOT NULL, shade STRING);
+ALTER TABLE labels ALTER PRIMARY KEY USING COLUMNS (name);
+CREATE TABLE app.public.accounts (id INT8 PRIMARY KEY, email STRING NOT NULL);
+ALTER TABLE app.public.accounts ADD COLUMN nickname STRING;
+CREATE SEQUENCE account_numbers;
+CREATE SCHEMA billing;
+SET search_path TO billing, public;
+CREATE TABLE invoices (id INT8 PRIMARY KEY, account_id INT8 NOT NULL REFERENCES accounts (id));
+RESET search_path;

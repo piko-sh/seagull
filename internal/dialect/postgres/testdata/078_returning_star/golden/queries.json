@@ -1,0 +1,960 @@
+[
+  {
+    "Command": "one",
+    "Filename": "jobs.sql",
+    "Line": 1,
+    "Name": "ClaimJob",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "job_type",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "job_type",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "priority",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "priority",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "status",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "status",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "started_at",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "started_at",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "created_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "created_at",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: ClaimJob, command: one)\nUPDATE jobs\nSET status = 'running', started_at = NOW()\nWHERE id = $1\nRETURNING *;",
+    "Template": "UPDATE jobs\\nSET status = 'running', started_at = NOW()\\nWHERE id = ⟨p0⟩\\nRETURNING ⟨star 0=jobs.id 1=jobs.job_type 2=jobs.priority 3=jobs.status 4=jobs.started_at 5=jobs.created_at:*⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "jobs.sql",
+    "Line": 7,
+    "Name": "ClaimNextJobs",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "job_type",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "job_type",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "priority",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "priority",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "status",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "status",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "started_at",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "started_at",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "created_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "created_at",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "limit",
+        "Kind": "none",
+        "Name": "limit",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: ClaimNextJobs, command: many)\nWITH claimable AS (\n    SELECT id FROM jobs\n    WHERE status = 'pending'\n    ORDER BY priority ASC\n    LIMIT $1\n    FOR UPDATE SKIP LOCKED\n)\nUPDATE jobs\nSET status = 'running', started_at = NOW()\nWHERE id IN (SELECT id FROM claimable)\nRETURNING *;",
+    "Template": "WITH claimable AS (\\n    SELECT id FROM jobs\\n    WHERE status = 'pending'\\n    ORDER BY priority ASC\\n    LIMIT ⟨p0⟩\\n    FOR UPDATE SKIP LOCKED\\n)\\nUPDATE jobs\\nSET status = 'running', started_at = NOW()\\nWHERE id IN (SELECT id FROM claimable)\\nRETURNING ⟨star 0=jobs.id 1=jobs.job_type 2=jobs.priority 3=jobs.status 4=jobs.started_at 5=jobs.created_at:*⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "jobs.sql",
+    "InsertColumns": [
+      "job_type"
+    ],
+    "InsertTarget": {
+      "Name": "jobs"
+    },
+    "Line": 20,
+    "Name": "InsertJob",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "job_type",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "job_type",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "priority",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "priority",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "status",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "status",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "started_at",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "started_at",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "created_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "created_at",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "job_type",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: InsertJob, command: one)\nINSERT INTO jobs (job_type) VALUES ($1) RETURNING *;",
+    "Template": "INSERT INTO jobs (job_type) VALUES ⟨values:(⟨p0⟩)⟩ RETURNING ⟨star 0=jobs.id 1=jobs.job_type 2=jobs.priority 3=jobs.status 4=jobs.started_at 5=jobs.created_at:*⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "jobs.sql",
+    "Line": 23,
+    "Name": "DeleteCompletedJobs",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "job_type",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "job_type",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "priority",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "priority",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "status",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "status",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "started_at",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "started_at",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "created_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "created_at",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      }
+    ],
+    "SQL": "-- sgl.query(name: DeleteCompletedJobs, command: many)\nDELETE FROM jobs WHERE status = 'completed' RETURNING *;",
+    "Template": "DELETE FROM jobs WHERE status = 'completed' RETURNING ⟨star 0=jobs.id 1=jobs.job_type 2=jobs.priority 3=jobs.status 4=jobs.started_at 5=jobs.created_at:*⟩;"
+  },
+  {
+    "Command": "one",
+    "Filename": "jobs.sql",
+    "Line": 26,
+    "Name": "ClaimQualifiedJob",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "j",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "job_type",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "job_type",
+        "SourceQualifier": "j",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "priority",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "priority",
+        "SourceQualifier": "j",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "status",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "status",
+        "SourceQualifier": "j",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "started_at",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "started_at",
+        "SourceQualifier": "j",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "created_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "created_at",
+        "SourceQualifier": "j",
+        "SourceTable": "jobs"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: ClaimQualifiedJob, command: one)\nUPDATE jobs AS j SET status = 'running' WHERE j.id = $1 RETURNING j.*;",
+    "Template": "UPDATE jobs AS j SET status = 'running' WHERE j.id = ⟨p0⟩ RETURNING ⟨star 0=j.id 1=j.job_type 2=j.priority 3=j.status 4=j.started_at 5=j.created_at:j.*⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "jobs.sql",
+    "Line": 29,
+    "Name": "ClaimWithSubquery",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "job_type",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "job_type",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "priority",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "priority",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "status",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "status",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "started_at",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "started_at",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "created_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "created_at",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "limit",
+        "Kind": "none",
+        "Name": "limit",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: ClaimWithSubquery, command: many)\nUPDATE jobs\nSET status = 'running'\nWHERE id IN (SELECT id FROM jobs WHERE status = 'pending' LIMIT $1)\nRETURNING *;",
+    "Template": "UPDATE jobs\\nSET status = 'running'\\nWHERE id IN (SELECT id FROM jobs WHERE status = 'pending' LIMIT ⟨p0⟩)\\nRETURNING ⟨star 0=jobs.id 1=jobs.job_type 2=jobs.priority 3=jobs.status 4=jobs.started_at 5=jobs.created_at:*⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "jobs.sql",
+    "Line": 35,
+    "Name": "ClaimWithSubqueryExplicitColumns",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "job_type",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "job_type",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "status",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "status",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "limit",
+        "Kind": "none",
+        "Name": "limit",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: ClaimWithSubqueryExplicitColumns, command: many)\nUPDATE jobs\nSET status = 'running'\nWHERE id IN (SELECT id FROM jobs WHERE status = 'pending' LIMIT $1)\nRETURNING id, job_type, status;",
+    "Template": "UPDATE jobs\\nSET status = 'running'\\nWHERE id IN (SELECT id FROM jobs WHERE status = 'pending' LIMIT ⟨p0⟩)\\nRETURNING ⟨c0:id⟩, ⟨c1:job_type⟩, ⟨c2:status⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "jobs.sql",
+    "Line": 41,
+    "Name": "ClaimNextJobsNoLockHint",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "job_type",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "job_type",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "priority",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "priority",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "status",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "status",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "started_at",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "started_at",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "created_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "created_at",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "limit",
+        "Kind": "none",
+        "Name": "limit",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: ClaimNextJobsNoLockHint, command: many)\nWITH claimable AS (\n    SELECT id FROM jobs\n    WHERE status = 'pending'\n    ORDER BY priority ASC\n    LIMIT $1\n)\nUPDATE jobs\nSET status = 'running', started_at = NOW()\nWHERE id IN (SELECT id FROM claimable)\nRETURNING *;",
+    "Template": "WITH claimable AS (\\n    SELECT id FROM jobs\\n    WHERE status = 'pending'\\n    ORDER BY priority ASC\\n    LIMIT ⟨p0⟩\\n)\\nUPDATE jobs\\nSET status = 'running', started_at = NOW()\\nWHERE id IN (SELECT id FROM claimable)\\nRETURNING ⟨star 0=jobs.id 1=jobs.job_type 2=jobs.priority 3=jobs.status 4=jobs.started_at 5=jobs.created_at:*⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "jobs.sql",
+    "InsertColumns": [
+      "job_type",
+      "priority",
+      "status"
+    ],
+    "InsertTarget": {
+      "Name": "jobs"
+    },
+    "IsDynamic": true,
+    "Line": 53,
+    "Name": "InsertJobWithDefaults",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "job_type",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "job_type",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "priority",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "priority",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "status",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "status",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "started_at",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "started_at",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "created_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "created_at",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "IsOptional": true,
+        "Kind": "param",
+        "Name": "priority",
+        "Nullable": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "assignment",
+        "IsOptional": true,
+        "Kind": "param",
+        "Name": "status",
+        "Nullable": true,
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "param",
+        "Name": "job_type",
+        "Number": 3,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: InsertJobWithDefaults, command: one)\n-- $1 as sgl.param(priority, optional: true)\n-- $2 as sgl.param(status, optional: true)\n-- $3 as sgl.param(job_type)\nINSERT INTO jobs (job_type, priority, status)\nVALUES (\n    $3,\n    COALESCE($1::int, 5),\n    COALESCE($2::text, 'pending')\n) RETURNING *;",
+    "Template": "INSERT INTO jobs (job_type, priority, status)\\nVALUES ⟨values:(\\n    ⟨p2⟩,\\n    COALESCE(⟨p0⟩::int, 5),\\n    COALESCE(⟨p1⟩::text, 'pending')\\n)⟩ RETURNING ⟨star 0=jobs.id 1=jobs.job_type 2=jobs.priority 3=jobs.status 4=jobs.started_at 5=jobs.created_at:*⟩;⟨arguments p0 p1 p2⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "jobs.sql",
+    "IsDynamic": true,
+    "Line": 64,
+    "Name": "UpdateJobStatusWithCoalesce",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "IsOptional": true,
+        "Kind": "param",
+        "Name": "started_at",
+        "Nullable": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp",
+          "Temporal": "timestamp"
+        }
+      },
+      {
+        "Context": "assignment",
+        "IsOptional": true,
+        "Kind": "param",
+        "Name": "attempts",
+        "Nullable": true,
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "param",
+        "Name": "status",
+        "Number": 3,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "param",
+        "Name": "id",
+        "Number": 4,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: UpdateJobStatusWithCoalesce, command: exec)\n-- $1 as sgl.param(started_at, optional: true)\n-- $2 as sgl.param(attempts, optional: true)\n-- $3 as sgl.param(status)\n-- $4 as sgl.param(id)\nUPDATE jobs\nSET\n    status = $3,\n    started_at = COALESCE($1::timestamp, started_at),\n    priority = COALESCE($2::int, priority)\nWHERE id = $4;",
+    "Template": "UPDATE jobs\\nSET\\n    status = ⟨p2⟩,\\n    started_at = COALESCE(⟨p0⟩::timestamp, started_at),\\n    priority = COALESCE(⟨p1⟩::int, priority)\\nWHERE id = ⟨p3⟩;⟨arguments p0 p1 p2 p3⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "jobs.sql",
+    "Line": 76,
+    "Name": "ClaimNextJobsWithCasts",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "job_type",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "job_type",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "priority",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "priority",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "status",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "status",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "started_at",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "started_at",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      },
+      {
+        "Name": "created_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "created_at",
+        "SourceQualifier": "jobs",
+        "SourceTable": "jobs"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "limit",
+        "Kind": "none",
+        "Name": "limit",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "started_at",
+        "Number": 2,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp",
+          "Temporal": "timestamp"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: ClaimNextJobsWithCasts, command: many)\nWITH claimable AS (\n    SELECT id FROM jobs\n    WHERE status = 'pending'\n    ORDER BY priority ASC\n    LIMIT $1\n    FOR UPDATE SKIP LOCKED\n)\nUPDATE jobs\nSET status = 'running',\n    started_at = $2::timestamp,\n    priority = priority + 1\nWHERE id IN (SELECT id FROM claimable)\nRETURNING *;",
+    "Template": "WITH claimable AS (\\n    SELECT id FROM jobs\\n    WHERE status = 'pending'\\n    ORDER BY priority ASC\\n    LIMIT ⟨p0⟩\\n    FOR UPDATE SKIP LOCKED\\n)\\nUPDATE jobs\\nSET status = 'running',\\n    started_at = ⟨p1⟩::timestamp,\\n    priority = priority + 1\\nWHERE id IN (SELECT id FROM claimable)\\nRETURNING ⟨star 0=jobs.id 1=jobs.job_type 2=jobs.priority 3=jobs.status 4=jobs.started_at 5=jobs.created_at:*⟩;⟨arguments p0 p1⟩"
+  }
+]

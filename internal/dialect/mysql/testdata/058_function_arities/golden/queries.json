@@ -1,0 +1,185 @@
+[
+  {
+    "Command": "exec",
+    "Filename": "sessions.sql",
+    "InsertColumns": [
+      "id",
+      "user_id",
+      "device",
+      "ip"
+    ],
+    "InsertTarget": {
+      "Name": "sessions"
+    },
+    "Line": 1,
+    "Name": "CreateSession",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "user_id",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "device",
+        "Number": 3,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 40
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "ip",
+        "Number": 4,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 45
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: CreateSession, command: exec)\nINSERT INTO sessions (id, user_id, device, ip) VALUES (UUID_TO_BIN(?, 1), ?, ?, ?);",
+    "Template": "INSERT INTO sessions (id, user_id, device, ip) VALUES ⟨values:(UUID_TO_BIN(⟨p0⟩, 1), ⟨p1⟩, ⟨p2⟩, ⟨p3⟩)⟩;⟨arguments p0 p1 p2 p3⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "sessions.sql",
+    "Line": 4,
+    "Name": "ListSessions",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "user_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "user_id",
+        "SourceQualifier": "sessions",
+        "SourceTable": "sessions"
+      },
+      {
+        "Name": "v4",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "v6",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "mapped",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "compat",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListSessions, command: many)\nSELECT BIN_TO_UUID(id, 1) AS id, user_id, IS_IPV4(ip) AS v4, IS_IPV6(ip) AS v6,\n       IS_IPV4_MAPPED(INET6_ATON(ip)) AS mapped, IS_IPV4_COMPAT(INET6_ATON(ip)) AS compat\nFROM sessions;",
+    "Template": "SELECT ⟨c0 aliased:BIN_TO_UUID(id, 1)⟩ AS id, ⟨c1:user_id⟩, ⟨c2 aliased:IS_IPV4(ip)⟩ AS v4, ⟨c3 aliased:IS_IPV6(ip)⟩ AS v6,\\n       ⟨c4 aliased:IS_IPV4_MAPPED(INET6_ATON(ip))⟩ AS mapped, ⟨c5 aliased:IS_IPV4_COMPAT(INET6_ATON(ip))⟩ AS compat\\nFROM sessions;"
+  },
+  {
+    "Command": "one",
+    "Filename": "sessions.sql",
+    "Line": 9,
+    "Name": "DistinctPairs",
+    "OutputColumns": [
+      {
+        "Name": "pairs",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: DistinctPairs, command: one)\nSELECT COUNT(DISTINCT user_id, device) AS pairs FROM sessions;",
+    "Template": "SELECT ⟨c0 aliased:COUNT(DISTINCT user_id, device)⟩ AS pairs FROM sessions;"
+  },
+  {
+    "Command": "exec",
+    "Filename": "sessions.sql",
+    "Line": 12,
+    "Name": "Advance",
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 40
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: Advance, command: exec)\nUPDATE sequences SET value = LAST_INSERT_ID(value + 1) WHERE name = ?;",
+    "Template": "UPDATE sequences SET value = LAST_INSERT_ID(value + 1) WHERE name = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "sessions.sql",
+    "Line": 15,
+    "Name": "Current",
+    "OutputColumns": [
+      {
+        "Name": "value",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Current, command: one)\nSELECT LAST_INSERT_ID() AS value;",
+    "Template": "SELECT ⟨c0 aliased:LAST_INSERT_ID()⟩ AS value;"
+  }
+]

@@ -1,0 +1,160 @@
+[
+  {
+    "Command": "many",
+    "Filename": "landings.sql",
+    "Line": 1,
+    "Name": "MacroUntyped",
+    "OutputColumns": [
+      {
+        "Name": "harbour",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "harbour",
+        "SourceQualifier": "landings",
+        "SourceTable": "landings"
+      },
+      {
+        "Name": "tonnes",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: MacroUntyped, command: many)\nSELECT harbour, tonnes(kg) AS tonnes FROM landings;",
+    "Template": "SELECT ⟨c0:harbour⟩, ⟨c1 aliased:tonnes(kg)⟩ AS tonnes FROM landings;"
+  },
+  {
+    "Command": "many",
+    "Filename": "landings.sql",
+    "Line": 4,
+    "Name": "ShoutedSpecies",
+    "OutputColumns": [
+      {
+        "Name": "species",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ShoutedSpecies, command: many)\nSELECT shout(species) AS species FROM landings;",
+    "Template": "SELECT ⟨c0 aliased:shout(species)⟩ AS species FROM landings;"
+  },
+  {
+    "Command": "one",
+    "Filename": "landings.sql",
+    "Line": 7,
+    "Name": "NextLandingID",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: NextLandingID, command: one)\nSELECT next_landing_id() AS id;",
+    "Template": "SELECT ⟨c0 aliased:next_landing_id()⟩ AS id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "landings.sql",
+    "Line": 10,
+    "Name": "TableMacro",
+    "OutputColumns": [
+      {
+        "Name": "species",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "species",
+        "SourceQualifier": "harbour_landings"
+      },
+      {
+        "Name": "kg",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "hugeint",
+          "Width": 128
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 1,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: TableMacro, command: many)\nSELECT species, sum(kg) AS kg FROM harbour_landings($1) GROUP BY species;",
+    "Template": "SELECT ⟨c0:species⟩, ⟨c1 aliased:sum(kg)⟩ AS kg FROM harbour_landings(⟨p0⟩) GROUP BY species;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "landings.sql",
+    "Line": 13,
+    "Name": "TableMacroColumns",
+    "OutputColumns": [
+      {
+        "Name": "species",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "species",
+        "SourceQualifier": "harbour_landings"
+      },
+      {
+        "Name": "kg",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "kg",
+        "SourceQualifier": "harbour_landings"
+      },
+      {
+        "Name": "grade",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "grade",
+        "SourceQualifier": "harbour_landings"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 1,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: TableMacroColumns, command: many)\nSELECT * FROM harbour_landings($1);",
+    "Template": "SELECT ⟨star written 0=harbour_landings.species 1=harbour_landings.kg 2=harbour_landings.grade:*⟩ FROM harbour_landings(⟨p0⟩);⟨arguments p0⟩"
+  }
+]

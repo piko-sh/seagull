@@ -1,0 +1,1 @@
+{"description": "ClickHouse fills a key its ROLLUP, CUBE or GROUPING SETS rows do not group by with its type default, so the keys keep their type, unless the query sets group_by_use_nulls = 1, which makes them nullable; ROLLUP (...) in the list is a grouping modifier, not a function, and grouping() reports the left-out keys"}

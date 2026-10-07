@@ -1,0 +1,26 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: An emit.EmitterPort wraps the database/sql emitter and adds query_index.go, a list of every query with its command and whether it only reads, written with the style's header so WriteFiles prunes it like any generated file.
+differs:
+  - "the wrapper forwards emit.TypeDefaulterPort, which the generator looks for on the emitter it was given"
+  - the extra file is built from emit.Request's analysed queries and formatted with go/format
+  - "the committed internal/store comes from go run . -write; the stock sgl generate would prune query_index.go, which only this emitter writes (053 builds an sgl that keeps it)"
+entry: {file: db/queries/tasks.sql, query: ListTasks}
+live: "no"
+test: in-process

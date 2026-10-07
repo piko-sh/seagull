@@ -1,0 +1,46 @@
+[
+  {
+    "Command": "many",
+    "Filename": "get_logic.sql",
+    "Line": 1,
+    "Name": "GetLogicResults",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "flags",
+        "SourceTable": "flags"
+      },
+      {
+        "Name": "is_inactive",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "boolean"
+        }
+      },
+      {
+        "Name": "both_true",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "boolean"
+        }
+      },
+      {
+        "Name": "either_true",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "boolean"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: GetLogicResults, command: many)\nSELECT\n  id,\n  NOT active as is_inactive,\n  active AND verified as both_true,\n  active OR verified as either_true\nFROM flags",
+    "Template": "SELECT\\n  id,\\n  NOT active as is_inactive,\\n  active AND verified as both_true,\\n  active OR verified as either_true\\nFROM flags"
+  }
+]

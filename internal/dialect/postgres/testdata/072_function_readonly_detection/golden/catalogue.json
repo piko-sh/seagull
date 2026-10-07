@@ -1,0 +1,132 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "public": {
+      "Functions": {
+        "dangerous_update": [
+          {
+            "Arguments": [
+              {
+                "Name": "item_id",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int4",
+                  "Width": 32
+                }
+              }
+            ],
+            "BodySQL": "\nBEGIN\n    UPDATE items SET quantity = quantity + 1 WHERE id = item_id;\n    RETURN item_id;\nEND;\n",
+            "DataAccess": "modifies-data",
+            "Language": "plpgsql",
+            "MinArguments": 1,
+            "Name": "dangerous_update",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 2
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int4",
+              "Width": 32
+            }
+          }
+        ],
+        "safe_multiply": [
+          {
+            "Arguments": [
+              {
+                "Name": "a",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int4",
+                  "Width": 32
+                }
+              },
+              {
+                "Name": "b",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int4",
+                  "Width": 32
+                }
+              }
+            ],
+            "BodySQL": " SELECT a * b; ",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 2,
+            "Name": "safe_multiply",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 1
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int4",
+              "Width": 32
+            }
+          }
+        ]
+      },
+      "Name": "public",
+      "Tables": {
+        "items": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "quantity",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            }
+          ],
+          "Name": "items",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

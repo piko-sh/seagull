@@ -1,0 +1,27 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: A chip shop menu priced by a lambda SQL function that a migration creates with CREATE OR REPLACE FUNCTION, called like a built-in from a query.
+differs:
+  - "A ClickHouse SQL function is a lambda, CREATE FUNCTION name AS args -> expression, with no body language, volatility or RETURNS clause"
+  - "Functions belong to the server, not the database, so the migration uses CREATE OR REPLACE and the down migration DROP FUNCTION IF EXISTS"
+  - "A lambda cannot read or write tables, so sgl.migration(readonly:) has nothing to override"
+  - "Seagull types a call to a lambda from its body: price_pence * 110 widens UInt32 to UInt64, so TotalPence is uint64, and the call reads no table, so the query is routed to the reader"
+entry: {file: db/migrations/0002_with_service.up.sql}
+live: "no"
+test: integration

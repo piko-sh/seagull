@@ -1,0 +1,1 @@
+{"description": "ALTER TYPE ... ADD VALUE IF NOT EXISTS of a value the enum already holds changes nothing, so the generated enum has each constant once and its package compiles, and ADD VALUE ... BEFORE and AFTER keep the enum's order"}

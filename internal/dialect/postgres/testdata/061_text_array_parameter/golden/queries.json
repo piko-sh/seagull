@@ -1,0 +1,125 @@
+[
+  {
+    "Command": "many",
+    "Filename": "articles.sql",
+    "Line": 1,
+    "Name": "GetArticlesByTag",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "articles",
+        "SourceTable": "articles"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "articles",
+        "SourceTable": "articles"
+      },
+      {
+        "Name": "tags",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "text",
+            "Nullable": true
+          },
+          "EngineName": "text[]"
+        },
+        "SourceColumn": "tags",
+        "SourceQualifier": "articles",
+        "SourceTable": "articles"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "tags",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetArticlesByTag, command: many)\nSELECT id, title, tags FROM articles WHERE $1::text = ANY(tags);",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:title⟩, ⟨c2:tags⟩ FROM articles WHERE ⟨p0⟩::text = ANY(tags);⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "articles.sql",
+    "Line": 4,
+    "Name": "GetArticlesWithTags",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "articles",
+        "SourceTable": "articles"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "articles",
+        "SourceTable": "articles"
+      },
+      {
+        "Name": "tags",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "text",
+            "Nullable": true
+          },
+          "EngineName": "text[]"
+        },
+        "SourceColumn": "tags",
+        "SourceQualifier": "articles",
+        "SourceTable": "articles"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "tags",
+        "Number": 1,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "text",
+            "Nullable": true
+          },
+          "EngineName": "text[]"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetArticlesWithTags, command: many)\nSELECT id, title, tags FROM articles WHERE tags @\u003e $1::text[];",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:title⟩, ⟨c2:tags⟩ FROM articles WHERE tags @\u003e ⟨p0⟩::text[];⟨arguments p0⟩"
+  }
+]

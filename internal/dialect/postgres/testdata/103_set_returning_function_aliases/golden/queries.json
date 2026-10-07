@@ -1,0 +1,141 @@
+[
+  {
+    "Command": "many",
+    "Filename": "articles.sql",
+    "Line": 1,
+    "Name": "TagsByTitle",
+    "OutputColumns": [
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "articles",
+        "SourceTable": "articles"
+      },
+      {
+        "Name": "tag",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "tag",
+        "SourceQualifier": "tag"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "excluded",
+        "Nullable": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: TagsByTitle, command: many)\nSELECT title, tag\nFROM articles, unnest(tags) AS tag\nWHERE tag \u003c\u003e :excluded\nORDER BY title, tag;",
+    "Template": "SELECT ⟨c0:title⟩, ⟨c1:tag⟩\\nFROM articles, unnest(tags) AS tag\\nWHERE tag \u003c\u003e ⟨p0⟩\\nORDER BY title, tag;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "articles.sql",
+    "Line": 7,
+    "Name": "TagSlice",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "articles",
+        "SourceTable": "articles"
+      },
+      {
+        "Name": "chosen",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: TagSlice, command: many)\nSELECT id, tags[first_tag:last_tag] AS chosen\nFROM articles\nWHERE id = :id;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:tags[first_tag:last_tag]⟩ AS chosen\\nFROM articles\\nWHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "articles.sql",
+    "Line": 12,
+    "Name": "Numbers",
+    "OutputColumns": [
+      {
+        "Name": "n",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "n",
+        "SourceQualifier": "n"
+      },
+      {
+        "Name": "qualified",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "n",
+        "SourceQualifier": "n"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Numbers, command: many)\nSELECT n, n.n AS qualified\nFROM generate_series(1, 3) AS n;",
+    "Template": "SELECT ⟨c0:n⟩, ⟨c1 aliased:n.n⟩ AS qualified\\nFROM generate_series(1, 3) AS n;"
+  },
+  {
+    "Command": "many",
+    "Filename": "articles.sql",
+    "Line": 16,
+    "Name": "ArticleIds",
+    "OutputColumns": [
+      {
+        "Name": "article_id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "article_id",
+        "SourceQualifier": "article_id"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ArticleIds, command: many)\nSELECT article_id\nFROM article_ids() AS article_id;",
+    "Template": "SELECT ⟨c0:article_id⟩\\nFROM article_ids() AS article_id;"
+  }
+]

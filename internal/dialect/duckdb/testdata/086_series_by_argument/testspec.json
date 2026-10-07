@@ -1,0 +1,1 @@
+{"description": "generate_series and range take the type of their bounds, a TIMESTAMP for timestamps and dates and a BIGINT for integers, and unnest the element type of its list, as DuckDB resolves their overloads"}

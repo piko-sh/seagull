@@ -1,0 +1,4 @@
+{
+  "description": "Nullability: predicates over Nullable operands are Nullable while IS NULL never is; an aggregate subquery without GROUP BY is as nullable as its column.",
+  "expectedDiagnosticCount": 0
+}

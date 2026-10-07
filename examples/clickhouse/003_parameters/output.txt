@@ -1,0 +1,8 @@
+Penzance to St Mary's:
+  sailing 1 at 09:15, 40 seats free
+  sailing 3 at 14:30, 4 seats free
+Departing between 10:00 and 15:00:
+  sailing 2 at 11:00, St Mary's to Tresco
+  sailing 3 at 14:30, Penzance to St Mary's
+booked 3 seats on sailing 3
+sailing 3 has fewer than 3 seats free

@@ -1,0 +1,32 @@
+[
+  {
+    "Code": "Q052",
+    "Column": 41,
+    "EndColumn": 50,
+    "EndLine": 2,
+    "Filename": "articles.sql",
+    "Line": 2,
+    "Message": "query \"CreateArticle\" has a RETURNING clause on its INSERT, but the mysql dialect does not support RETURNING on any statement",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q052",
+    "Column": 1,
+    "EndColumn": 10,
+    "EndLine": 8,
+    "Filename": "articles.sql",
+    "Line": 8,
+    "Message": "query \"RenameArticle\" has a RETURNING clause on its UPDATE, but the mysql dialect does not support RETURNING on any statement",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q052",
+    "Column": 35,
+    "EndColumn": 44,
+    "EndLine": 11,
+    "Filename": "articles.sql",
+    "Line": 11,
+    "Message": "query \"DeleteArticle\" has a RETURNING clause on its DELETE, but the mysql dialect does not support RETURNING on any statement",
+    "Severity": "error"
+  }
+]

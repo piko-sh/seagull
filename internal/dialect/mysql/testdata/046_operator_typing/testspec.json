@@ -1,0 +1,4 @@
+{
+  "description": "MySQL types its own operators: / yields DECIMAL for exact operands and DOUBLE for floats, DIV a BIGINT, the bit operators a BIGINT UNSIGNED, -> JSON and ->> text; a division by a column is nullable, since MySQL gives NULL for a zero divisor, while one by a constant other than zero is not; || is logical OR; CONCAT_WS is NULL only when its separator is.",
+  "expectedDiagnosticCount": 0
+}

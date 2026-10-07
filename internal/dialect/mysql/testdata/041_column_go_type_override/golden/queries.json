@@ -1,0 +1,50 @@
+[
+  {
+    "Command": "one",
+    "Filename": "users.sql",
+    "Line": 1,
+    "Name": "GetUserUUID",
+    "OutputColumns": [
+      {
+        "GoTypeOverride": {
+          "Name": "UUID",
+          "Package": "github.com/google/uuid"
+        },
+        "Name": "id",
+        "SQLType": {
+          "Category": "binary",
+          "EngineName": "binary"
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "email",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "binary",
+          "EngineName": "binary"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(GetUserUUID, one)\n-- sgl.column(id, go_type: \"github.com/google/uuid.UUID\")\nSELECT id, email FROM users WHERE id = ?;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:email⟩ FROM users WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

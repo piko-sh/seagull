@@ -1,0 +1,40 @@
+[
+  {
+    "Command": "many",
+    "Filename": "unknown_table.sql",
+    "Line": 1,
+    "Name": "GetFromNonexistent",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      },
+      {
+        "Name": "name",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetFromNonexistent, command: many)\nSELECT id, name FROM nonexistent WHERE id = ?",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩ FROM nonexistent WHERE id = ⟨p0⟩⟨arguments p0⟩"
+  }
+]

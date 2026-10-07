@@ -1,0 +1,4 @@
+{
+  "description": "MariaDB's CREATE OR REPLACE replaces a table with its new definition, including the LIKE and AS SELECT forms, and replays for indexes, databases and triggers.",
+  "expectedDiagnosticCount": 0
+}

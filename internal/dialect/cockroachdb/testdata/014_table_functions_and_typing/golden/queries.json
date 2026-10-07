@@ -1,0 +1,746 @@
+[
+  {
+    "Command": "one",
+    "Filename": "calls.sql",
+    "Line": 1,
+    "Name": "CreateUser",
+    "OutputColumns": [
+      {
+        "Name": "p_id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "p_id",
+        "SourceQualifier": "create_user"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "p_name",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: CreateUser, command: one)\nCALL create_user($1, NULL);",
+    "Template": "CALL create_user(⟨p0⟩, NULL);⟨arguments p0⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "calls.sql",
+    "Line": 4,
+    "Name": "Tidy",
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "older",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: Tidy, command: exec)\nCALL tidy($1);",
+    "Template": "CALL tidy(⟨p0⟩);⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "functions.sql",
+    "Line": 1,
+    "Name": "UsersNamed",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "users_named"
+      },
+      {
+        "Name": "name",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "users_named"
+      },
+      {
+        "Name": "bar",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "composite",
+          "EngineName": "pair",
+          "Schema": "public"
+        },
+        "SourceColumn": "bar",
+        "SourceQualifier": "users_named"
+      },
+      {
+        "Name": "doc",
+        "Nullable": true,
+        "SQLType": {
+          "BinaryForm": true,
+          "Category": "text",
+          "EngineName": "tsvector"
+        },
+        "SourceColumn": "doc",
+        "SourceQualifier": "users_named"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "p",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: UsersNamed, command: many)\nSELECT * FROM users_named($1);",
+    "Template": "SELECT ⟨star written 0=users_named.id 1=users_named.name 2=users_named.bar 3=users_named.doc:*⟩ FROM users_named(⟨p0⟩);⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "functions.sql",
+    "Line": 4,
+    "Name": "OneUser",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "u"
+      },
+      {
+        "Name": "name",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "u"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "p",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: OneUser, command: one)\nSELECT u.id, u.name FROM one_user($1) AS u;",
+    "Template": "SELECT ⟨c0:u.id⟩, ⟨c1:u.name⟩ FROM one_user(⟨p0⟩) AS u;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "functions.sql",
+    "Line": 7,
+    "Name": "TwoOuts",
+    "OutputColumns": [
+      {
+        "Name": "doubled",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "doubled",
+        "SourceQualifier": "two_outs"
+      },
+      {
+        "Name": "label",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "label",
+        "SourceQualifier": "two_outs"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "x",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: TwoOuts, command: one)\nSELECT * FROM two_outs($1);",
+    "Template": "SELECT ⟨star written 0=two_outs.doubled 1=two_outs.label:*⟩ FROM two_outs(⟨p0⟩);⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "functions.sql",
+    "Line": 10,
+    "Name": "AuthorID",
+    "OutputColumns": [
+      {
+        "Name": "x",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "x",
+        "SourceQualifier": "x"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "author",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AuthorID, command: one)\nSELECT x FROM add_author($1) AS x;",
+    "Template": "SELECT ⟨c0:x⟩ FROM add_author(⟨p0⟩) AS x;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "functions.sql",
+    "Line": 13,
+    "Name": "Twice",
+    "OutputColumns": [
+      {
+        "Name": "t",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "t",
+        "SourceQualifier": "t"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "n",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Twice, command: one)\nSELECT t FROM twice($1) AS t;",
+    "Template": "SELECT ⟨c0:t⟩ FROM twice(⟨p0⟩) AS t;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "functions.sql",
+    "Line": 16,
+    "Name": "Builtins",
+    "OutputColumns": [
+      {
+        "Name": "l",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "l",
+        "SourceQualifier": "l"
+      },
+      {
+        "Name": "now",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "now",
+        "SourceQualifier": "now"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Builtins, command: one)\nSELECT l, now FROM lower('ABC') AS l, now();",
+    "Template": "SELECT ⟨c0:l⟩, ⟨c1:now⟩ FROM lower('ABC') AS l, now();"
+  },
+  {
+    "Command": "one",
+    "Filename": "functions.sql",
+    "Line": 19,
+    "Name": "Today",
+    "OutputColumns": [
+      {
+        "Name": "current_date",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        },
+        "SourceColumn": "current_date",
+        "SourceQualifier": "current_date"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Today, command: one)\nSELECT * FROM CURRENT_DATE;",
+    "Template": "SELECT ⟨star written 0=current_date.current_date:*⟩ FROM CURRENT_DATE;"
+  },
+  {
+    "Command": "many",
+    "Filename": "functions.sql",
+    "Line": 22,
+    "Name": "NameLengths",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "u",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "n",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "n",
+        "SourceQualifier": "n"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: NameLengths, command: many)\nSELECT u.id, n FROM users u, length(u.name) n;",
+    "Template": "SELECT ⟨c0:u.id⟩, ⟨c1:n⟩ FROM users u, length(u.name) n;"
+  },
+  {
+    "Command": "one",
+    "Filename": "functions.sql",
+    "Line": 25,
+    "Name": "MadePair",
+    "OutputColumns": [
+      {
+        "Name": "a",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "a",
+        "SourceQualifier": "make_pair"
+      },
+      {
+        "Name": "b",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "b",
+        "SourceQualifier": "make_pair"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: MadePair, command: one)\nSELECT * FROM make_pair();",
+    "Template": "SELECT ⟨star written 0=make_pair.a 1=make_pair.b:*⟩ FROM make_pair();"
+  },
+  {
+    "Command": "one",
+    "Filename": "records.sql",
+    "Line": 1,
+    "Name": "Populate",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "jsonb_populate_record"
+      },
+      {
+        "Name": "label",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "label",
+        "SourceQualifier": "jsonb_populate_record"
+      },
+      {
+        "Name": "score",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        },
+        "SourceColumn": "score",
+        "SourceQualifier": "jsonb_populate_record"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "from_json",
+        "Number": 1,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Populate, command: one)\nSELECT * FROM jsonb_populate_record(NULL::results, $1);",
+    "Template": "SELECT ⟨star written 0=jsonb_populate_record.id 1=jsonb_populate_record.label 2=jsonb_populate_record.score:*⟩ FROM jsonb_populate_record(NULL::results, ⟨p0⟩);⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "records.sql",
+    "Line": 4,
+    "Name": "PopulatePairs",
+    "OutputColumns": [
+      {
+        "Name": "a",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "a",
+        "SourceQualifier": "p"
+      },
+      {
+        "Name": "b",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "b",
+        "SourceQualifier": "p"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "from_json",
+        "Number": 1,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "json"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: PopulatePairs, command: many)\nSELECT p.a, p.b FROM json_populate_recordset(NULL::pair, $1) AS p;",
+    "Template": "SELECT ⟨c0:p.a⟩, ⟨c1:p.b⟩ FROM json_populate_recordset(NULL::pair, ⟨p0⟩) AS p;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "records.sql",
+    "Line": 7,
+    "Name": "Numbered",
+    "OutputColumns": [
+      {
+        "Name": "n",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "n",
+        "SourceQualifier": "u"
+      },
+      {
+        "Name": "label",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "label",
+        "SourceQualifier": "u"
+      },
+      {
+        "Name": "position",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "position",
+        "SourceQualifier": "u"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int8",
+            "Nullable": true,
+            "Width": 64
+          },
+          "EngineName": "integer[]"
+        }
+      },
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "p2",
+        "Number": 2,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "text",
+            "Nullable": true
+          },
+          "EngineName": "text[]"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Numbered, command: many)\nSELECT * FROM unnest($1::integer[], $2::text[]) WITH ORDINALITY AS u(n, label, position);",
+    "Template": "SELECT ⟨star written 0=u.n 1=u.label 2=u.position:*⟩ FROM unnest(⟨p0⟩::integer[], ⟨p1⟩::text[]) WITH ORDINALITY AS u(n, label, position);⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "typing.sql",
+    "Line": 1,
+    "Name": "Arrays",
+    "OutputColumns": [
+      {
+        "Name": "grid",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "array",
+            "ElementType": {
+              "Category": "integer",
+              "EngineName": "int8",
+              "Width": 64
+            },
+            "EngineName": "int8[]"
+          },
+          "EngineName": "int8[][]"
+        }
+      },
+      {
+        "Name": "ids",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int8",
+            "Nullable": true,
+            "Width": 64
+          },
+          "EngineName": "int8[]"
+        }
+      },
+      {
+        "Name": "documents",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "json",
+            "EngineName": "jsonb",
+            "Nullable": true
+          },
+          "EngineName": "jsonb[]"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Arrays, command: one)\nSELECT ARRAY[[1, 2], [3, 4]] AS grid, ARRAY(SELECT id FROM users) AS ids, ARRAY(SELECT jsonb_build_object('id', id) FROM users) AS documents;",
+    "Template": "SELECT ⟨c0 aliased:ARRAY[[1, 2], [3, 4]]⟩ AS grid, ⟨c1 aliased:ARRAY(SELECT id FROM users)⟩ AS ids, ⟨c2 aliased:ARRAY(SELECT jsonb_build_object('id', id) FROM users)⟩ AS documents;"
+  },
+  {
+    "Command": "many",
+    "Filename": "typing.sql",
+    "Line": 4,
+    "Name": "Fields",
+    "OutputColumns": [
+      {
+        "Name": "first",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "b",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "made",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "b",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Fields, command: many)\nSELECT (bar).a AS first, (u.bar).b, (make_pair()).a AS made FROM users u WHERE (u.bar).b = $1;",
+    "Template": "SELECT ⟨c0 aliased:(bar).a⟩ AS first, ⟨c1:(u.bar).b⟩, ⟨c2 aliased:(make_pair()).a⟩ AS made FROM users u WHERE (u.bar).b = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "typing.sql",
+    "Line": 7,
+    "Name": "Rename",
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "new_name",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "old_name",
+        "Number": 3,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: Rename, command: exec)\nUPDATE users SET name = :new_name WHERE id = $1 AND name = :old_name;",
+    "Template": "UPDATE users SET name = ⟨p1⟩ WHERE id = ⟨p0⟩ AND name = ⟨p2⟩;⟨arguments p0 p1 p2⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "typing.sql",
+    "Line": 10,
+    "Name": "Documents",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "doc",
+        "Nullable": true,
+        "SQLType": {
+          "BinaryForm": true,
+          "Category": "text",
+          "EngineName": "tsvector"
+        },
+        "SourceColumn": "doc",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Documents, command: many)\nSELECT id, doc FROM users;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:doc⟩ FROM users;"
+  }
+]

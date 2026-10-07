@@ -1,0 +1,1 @@
+{"description": "A dotted name whose qualifier is no table in scope reads an element of a column: a named tuple field or a JSON path."}

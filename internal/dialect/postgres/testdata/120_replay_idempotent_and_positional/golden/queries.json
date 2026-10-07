@@ -1,0 +1,350 @@
+[
+  {
+    "Command": "many",
+    "Filename": "replay.sql",
+    "Line": 1,
+    "Name": "ListItems",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "price",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListItems, command: many)\nSELECT * FROM items;",
+    "Template": "SELECT ⟨star 0=items.id 1=items.name 2=items.price:*⟩ FROM items;"
+  },
+  {
+    "Command": "many",
+    "Filename": "replay.sql",
+    "Line": 4,
+    "Name": "ListLogs",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "logs",
+        "SourceTable": "logs"
+      },
+      {
+        "Name": "kind",
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "log_event",
+          "EnumValues": [
+            "WAIT",
+            "START",
+            "PAUSE",
+            "STOP"
+          ],
+          "Schema": "archive"
+        },
+        "SourceColumn": "kind",
+        "SourceQualifier": "logs",
+        "SourceTable": "logs"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListLogs, command: many)\nSELECT * FROM logs;",
+    "Template": "SELECT ⟨star 0=logs.id 1=logs.kind:*⟩ FROM logs;"
+  },
+  {
+    "Command": "many",
+    "Filename": "replay.sql",
+    "Line": 7,
+    "Name": "ListPairs",
+    "OutputColumns": [
+      {
+        "Name": "left_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "left_id",
+        "SourceQualifier": "p",
+        "SourceTable": "pairs"
+      },
+      {
+        "Name": "right_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "right_id",
+        "SourceQualifier": "p",
+        "SourceTable": "pairs"
+      },
+      {
+        "Name": "later_left_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "left_id",
+        "SourceQualifier": "l",
+        "SourceTable": "later_pairs"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListPairs, command: many)\nSELECT p.left_id, p.right_id, l.left_id AS later_left_id FROM pairs p JOIN later_pairs l ON l.right_id = p.right_id;",
+    "Template": "SELECT ⟨c0:p.left_id⟩, ⟨c1:p.right_id⟩, ⟨c2 aliased:l.left_id⟩ AS later_left_id FROM pairs p JOIN later_pairs l ON l.right_id = p.right_id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "replay.sql",
+    "Line": 10,
+    "Name": "ListChildren",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "child",
+        "SourceTable": "child"
+      },
+      {
+        "Name": "created_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "created_at",
+        "SourceQualifier": "child",
+        "SourceTable": "child"
+      },
+      {
+        "Name": "extra",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "extra",
+        "SourceQualifier": "child",
+        "SourceTable": "child"
+      },
+      {
+        "Name": "updated_at",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "updated_at",
+        "SourceQualifier": "child",
+        "SourceTable": "child"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListChildren, command: many)\nSELECT * FROM child;",
+    "Template": "SELECT ⟨star 0=child.id 1=child.created_at 2=child.extra 3=child.updated_at:*⟩ FROM child;"
+  },
+  {
+    "Command": "many",
+    "Filename": "replay.sql",
+    "Line": 13,
+    "Name": "ListCopied",
+    "OutputColumns": [
+      {
+        "Name": "code",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "code",
+        "SourceQualifier": "copied",
+        "SourceTable": "copied"
+      },
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "copied",
+        "SourceTable": "copied"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "copied",
+        "SourceTable": "copied"
+      },
+      {
+        "Name": "price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "price",
+        "SourceQualifier": "copied",
+        "SourceTable": "copied"
+      },
+      {
+        "Name": "note",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "note",
+        "SourceQualifier": "copied",
+        "SourceTable": "copied"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListCopied, command: many)\nSELECT * FROM copied;",
+    "Template": "SELECT ⟨star 0=copied.code 1=copied.id 2=copied.name 3=copied.price 4=copied.note:*⟩ FROM copied;"
+  },
+  {
+    "Command": "many",
+    "Filename": "replay.sql",
+    "Line": 16,
+    "Name": "ListViews",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "s",
+        "SourceTable": "star_view"
+      },
+      {
+        "Name": "item_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "item_name",
+        "SourceQualifier": "s",
+        "SourceTable": "star_view"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "q",
+        "SourceTable": "qualified_view"
+      },
+      {
+        "Name": "item_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "item_id",
+        "SourceQualifier": "n",
+        "SourceTable": "named_view"
+      },
+      {
+        "Name": "named_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "item_name",
+        "SourceQualifier": "n",
+        "SourceTable": "named_view"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListViews, command: many)\nSELECT s.id, s.item_name, q.name, n.item_id, n.item_name AS named_name FROM star_view s JOIN qualified_view q ON q.id = s.id JOIN named_view n ON n.item_id = s.id;",
+    "Template": "SELECT ⟨c0:s.id⟩, ⟨c1:s.item_name⟩, ⟨c2:q.name⟩, ⟨c3:n.item_id⟩, ⟨c4 aliased:n.item_name⟩ AS named_name FROM star_view s JOIN qualified_view q ON q.id = s.id JOIN named_view n ON n.item_id = s.id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "replay.sql",
+    "Line": 19,
+    "Name": "ListSnapshot",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "snapshot",
+        "SourceSchema": "archive",
+        "SourceTable": "snapshot"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "snapshot",
+        "SourceSchema": "archive",
+        "SourceTable": "snapshot"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListSnapshot, command: many)\nSELECT * FROM archive.snapshot;",
+    "Template": "SELECT ⟨star 0=snapshot.id 1=snapshot.name:*⟩ FROM archive.snapshot;"
+  }
+]

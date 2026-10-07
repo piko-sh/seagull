@@ -1,0 +1,78 @@
+{
+  "column_before_alias": [
+    {
+      "id": "herring",
+      "next_id": 2
+    },
+    {
+      "id": "kittiwake",
+      "next_id": 3
+    }
+  ],
+  "lateral": [
+    {
+      "double_mass": "2.50",
+      "long_lived": false,
+      "mass": "1.25",
+      "row": {
+        "colour": "grey",
+        "document": {
+          "colour": "grey"
+        },
+        "double_mass": {
+          "Coeff": {},
+          "Exponent": -2,
+          "Form": 0,
+          "Negative": false
+        },
+        "doubled": 4,
+        "half_span": 0.7,
+        "life": "30 years",
+        "long_lived": true,
+        "loud": "HERRING",
+        "mass": {
+          "Coeff": {},
+          "Exponent": -2,
+          "Form": 0,
+          "Negative": false
+        },
+        "next_id": 2,
+        "shout": "HERRING!",
+        "span": 1.4
+      },
+      "shout": "HERRING!?",
+      "sum": 6
+    },
+    {
+      "double_mass": "0.80",
+      "long_lived": true,
+      "mass": "0.40",
+      "row": {
+        "colour": null,
+        "document": null,
+        "double_mass": {
+          "Coeff": {},
+          "Exponent": -2,
+          "Form": 0,
+          "Negative": false
+        },
+        "doubled": 6,
+        "half_span": null,
+        "life": "6 months",
+        "long_lived": false,
+        "loud": "KITTIWAKE",
+        "mass": {
+          "Coeff": {},
+          "Exponent": -2,
+          "Form": 0,
+          "Negative": false
+        },
+        "next_id": 3,
+        "shout": "KITTIWAKE!",
+        "span": null
+      },
+      "shout": "KITTIWAKE!?",
+      "sum": 9
+    }
+  ]
+}

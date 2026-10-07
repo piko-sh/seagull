@@ -1,0 +1,68 @@
+[
+  {
+    "Command": "one",
+    "Filename": "get_user.sql",
+    "Line": 1,
+    "Name": "GetUser",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "email",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "active",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "active",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetUser, command: one)\nSELECT id, name, email, active FROM users WHERE id = ?",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:email⟩, ⟨c3:active⟩ FROM users WHERE id = ⟨p0⟩⟨arguments p0⟩"
+  }
+]

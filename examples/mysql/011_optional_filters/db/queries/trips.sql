@@ -1,0 +1,13 @@
+-- sgl.query(AddTrip, exec)
+INSERT INTO trips (name, destination, price_pence, dogs_welcome) VALUES (?, ?, ?, ?);
+
+-- sgl.query(SearchTrips, many)
+-- ?1 as sgl.param(destination, optional: true)
+-- ?2 as sgl.param(max_price, optional: true)
+-- ?3 as sgl.param(dogs_welcome, optional: true)
+SELECT id, name, destination, price_pence, dogs_welcome
+FROM trips
+WHERE (?1 IS NULL OR destination = ?1)
+  AND (?2 IS NULL OR price_pence <= ?2)
+  AND (?3 IS NULL OR dogs_welcome = ?3)
+ORDER BY price_pence, id;

@@ -1,0 +1,167 @@
+{
+  "clickhouse": {
+    "historyTable": "piko_migrations",
+    "createTableSQL": "CREATE TABLE IF NOT EXISTS piko_migrations (\n    version        Int64       NOT NULL,\n    name           String      NOT NULL,\n    checksum       String      NOT NULL,\n    applied_at     DateTime64(6) NOT NULL DEFAULT now64(),\n    duration_ms    Int64       NOT NULL,\n    down_checksum  Nullable(String),\n    last_statement Nullable(Int32),\n    dirty          UInt8       NOT NULL DEFAULT 0\n) ENGINE = ReplacingMergeTree(applied_at) ORDER BY version",
+    "historyColumnSQL": [
+      "ALTER TABLE piko_migrations ADD COLUMN splitter_version Nullable(Int32)",
+      "ALTER TABLE piko_migrations ADD COLUMN statements_hash Nullable(String)"
+    ],
+    "createSeedTableSQL": "CREATE TABLE IF NOT EXISTS piko_seeds (\n    version     Int64         NOT NULL,\n    name        String        NOT NULL,\n    checksum    String        NOT NULL,\n    applied_at  DateTime64(6) NOT NULL DEFAULT now64(),\n    duration_ms Int64         NOT NULL\n) ENGINE = ReplacingMergeTree(applied_at) ORDER BY version",
+    "insertSeedSQL": "INSERT INTO piko_seeds (version, name, checksum, duration_ms) SELECT candidate.version, candidate.name, candidate.checksum, candidate.duration_ms FROM (SELECT $1 AS version, $2 AS name, $3 AS checksum, $4 AS duration_ms) AS candidate WHERE candidate.version NOT IN (SELECT version FROM piko_seeds)",
+    "deleteHistorySQL": "ALTER TABLE piko_migrations DELETE WHERE version = $1 SETTINGS mutations_sync = 2",
+    "lockStrategy": "\u0026migration_sql.NoOpLock{}",
+    "seedLockStrategy": "\u0026migration_sql.NoOpLock{}",
+    "migrationLockKey": "",
+    "seedLockKey": ""
+  },
+  "cockroachdb": {
+    "historyTable": "piko_migrations",
+    "createTableSQL": "CREATE TABLE IF NOT EXISTS piko_migrations (\n    version        BIGINT      NOT NULL PRIMARY KEY,\n    name           TEXT        NOT NULL,\n    checksum       TEXT        NOT NULL,\n    applied_at     TIMESTAMPTZ NOT NULL DEFAULT now(),\n    duration_ms    BIGINT      NOT NULL,\n    down_checksum  TEXT,\n    last_statement INTEGER,\n    dirty          BOOLEAN     NOT NULL DEFAULT FALSE\n)",
+    "historyColumnSQL": [
+      "ALTER TABLE piko_migrations ADD COLUMN splitter_version INTEGER",
+      "ALTER TABLE piko_migrations ADD COLUMN statements_hash VARCHAR(64)"
+    ],
+    "createSeedTableSQL": "CREATE TABLE IF NOT EXISTS piko_seeds (\n    version     BIGINT      NOT NULL PRIMARY KEY,\n    name        TEXT        NOT NULL,\n    checksum    TEXT        NOT NULL,\n    applied_at  TIMESTAMPTZ NOT NULL DEFAULT now(),\n    duration_ms BIGINT      NOT NULL\n)",
+    "insertSeedSQL": "INSERT INTO piko_seeds (version, name, checksum, duration_ms) VALUES ($1, $2, $3, $4) ON CONFLICT (version) DO NOTHING",
+    "deleteHistorySQL": "",
+    "lockStrategy": "\u0026migration_sql.CockroachDBTableLock{CreateLockTableSQL:\"CREATE TABLE IF NOT EXISTS piko_migration_lock (\\n    lock_id INTEGER NOT NULL PRIMARY KEY DEFAULT 1,\\n    CONSTRAINT piko_migration_lock_single_row CHECK (lock_id = 1)\\n)\", LockTableIDSQL:\"SELECT 'piko_migration_lock'::REGCLASS::OID::INT8\"}",
+    "seedLockStrategy": "\u0026migration_sql.CockroachDBTableSeedLock{CreateLockTableSQL:\"CREATE TABLE IF NOT EXISTS piko_seed_lock (\\n    lock_id INTEGER NOT NULL PRIMARY KEY DEFAULT 1,\\n    CONSTRAINT piko_seed_lock_single_row CHECK (lock_id = 1)\\n)\", LockTableIDSQL:\"SELECT 'piko_seed_lock'::REGCLASS::OID::INT8\"}",
+    "migrationLockKey": "",
+    "seedLockKey": ""
+  },
+  "duckdb": {
+    "historyTable": "piko_migrations",
+    "createTableSQL": "CREATE TABLE IF NOT EXISTS piko_migrations (\n    version        BIGINT      NOT NULL PRIMARY KEY,\n    name           VARCHAR     NOT NULL,\n    checksum       VARCHAR     NOT NULL,\n    applied_at     TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,\n    duration_ms    BIGINT      NOT NULL,\n    down_checksum  VARCHAR,\n    last_statement INTEGER,\n    dirty          BOOLEAN     NOT NULL DEFAULT FALSE\n)",
+    "historyColumnSQL": [
+      "ALTER TABLE piko_migrations ADD COLUMN splitter_version INTEGER",
+      "ALTER TABLE piko_migrations ADD COLUMN statements_hash VARCHAR(64)"
+    ],
+    "createSeedTableSQL": "CREATE TABLE IF NOT EXISTS piko_seeds (\n    version     BIGINT      NOT NULL PRIMARY KEY,\n    name        VARCHAR     NOT NULL,\n    checksum    VARCHAR     NOT NULL,\n    applied_at  TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,\n    duration_ms BIGINT      NOT NULL\n)",
+    "insertSeedSQL": "INSERT INTO piko_seeds (version, name, checksum, duration_ms) VALUES ($1, $2, $3, $4) ON CONFLICT (version) DO NOTHING",
+    "deleteHistorySQL": "",
+    "lockStrategy": "\u0026migration_sql.NoOpLock{}",
+    "seedLockStrategy": "\u0026migration_sql.NoOpLock{}",
+    "migrationLockKey": "",
+    "seedLockKey": ""
+  },
+  "mysql": {
+    "historyTable": "piko_migrations",
+    "createTableSQL": "CREATE TABLE IF NOT EXISTS piko_migrations (\n    version        BIGINT       NOT NULL PRIMARY KEY,\n    name           VARCHAR(255) NOT NULL,\n    checksum       VARCHAR(64)  NOT NULL,\n    applied_at     TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),\n    duration_ms    BIGINT       NOT NULL,\n    down_checksum  VARCHAR(64),\n    last_statement INTEGER,\n    dirty          BOOLEAN      NOT NULL DEFAULT FALSE\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
+    "historyColumnSQL": [
+      "ALTER TABLE piko_migrations ADD COLUMN splitter_version INTEGER",
+      "ALTER TABLE piko_migrations ADD COLUMN statements_hash VARCHAR(64)"
+    ],
+    "createSeedTableSQL": "CREATE TABLE IF NOT EXISTS piko_seeds (\n    version     BIGINT       NOT NULL PRIMARY KEY,\n    name        VARCHAR(255) NOT NULL,\n    checksum    VARCHAR(64)  NOT NULL,\n    applied_at  TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),\n    duration_ms BIGINT       NOT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
+    "insertSeedSQL": "INSERT IGNORE INTO piko_seeds (version, name, checksum, duration_ms) VALUES ($1, $2, $3, $4)",
+    "deleteHistorySQL": "",
+    "lockStrategy": "\u0026migration_sql.MySQLAdvisoryLock{LockKey:\"piko_migrations\", NameSQL:\"SELECT IF(CHAR_LENGTH(CONCAT(COALESCE(DATABASE(), ''), '.', 'piko_migrations')) \u003e 64, SHA2(CONCAT(COALESCE(DATABASE(), ''), '.', 'piko_migrations'), 256), CONCAT(COALESCE(DATABASE(), ''), '.', 'piko_migrations'))\"}",
+    "seedLockStrategy": "\u0026migration_sql.MySQLAdvisorySeedLock{NameSQL:\"SELECT IF(CHAR_LENGTH(CONCAT(COALESCE(DATABASE(), ''), '.', 'piko_seeds')) \u003e 64, SHA2(CONCAT(COALESCE(DATABASE(), ''), '.', 'piko_seeds'), 256), CONCAT(COALESCE(DATABASE(), ''), '.', 'piko_seeds'))\"}",
+    "migrationLockKey": "CONCAT(COALESCE(DATABASE(), ''), '.', 'piko_migrations')",
+    "seedLockKey": "CONCAT(COALESCE(DATABASE(), ''), '.', 'piko_seeds')"
+  },
+  "mysql_server_wide_lock": {
+    "historyTable": "piko_migrations",
+    "createTableSQL": "CREATE TABLE IF NOT EXISTS piko_migrations (\n    version        BIGINT       NOT NULL PRIMARY KEY,\n    name           VARCHAR(255) NOT NULL,\n    checksum       VARCHAR(64)  NOT NULL,\n    applied_at     TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),\n    duration_ms    BIGINT       NOT NULL,\n    down_checksum  VARCHAR(64),\n    last_statement INTEGER,\n    dirty          BOOLEAN      NOT NULL DEFAULT FALSE\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
+    "historyColumnSQL": [
+      "ALTER TABLE piko_migrations ADD COLUMN splitter_version INTEGER",
+      "ALTER TABLE piko_migrations ADD COLUMN statements_hash VARCHAR(64)"
+    ],
+    "createSeedTableSQL": "CREATE TABLE IF NOT EXISTS piko_seeds (\n    version     BIGINT       NOT NULL PRIMARY KEY,\n    name        VARCHAR(255) NOT NULL,\n    checksum    VARCHAR(64)  NOT NULL,\n    applied_at  TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),\n    duration_ms BIGINT       NOT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
+    "insertSeedSQL": "INSERT IGNORE INTO piko_seeds (version, name, checksum, duration_ms) VALUES ($1, $2, $3, $4)",
+    "deleteHistorySQL": "",
+    "lockStrategy": "\u0026migration_sql.MySQLAdvisoryLock{LockKey:\"piko_migrations\"}",
+    "seedLockStrategy": "\u0026migration_sql.MySQLAdvisorySeedLock{}",
+    "migrationLockKey": "piko_migrations",
+    "seedLockKey": "piko_seeds"
+  },
+  "mysql_with_dsn": {
+    "historyTable": "piko_migrations",
+    "createTableSQL": "CREATE TABLE IF NOT EXISTS piko_migrations (\n    version        BIGINT       NOT NULL PRIMARY KEY,\n    name           VARCHAR(255) NOT NULL,\n    checksum       VARCHAR(64)  NOT NULL,\n    applied_at     TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),\n    duration_ms    BIGINT       NOT NULL,\n    down_checksum  VARCHAR(64),\n    last_statement INTEGER,\n    dirty          BOOLEAN      NOT NULL DEFAULT FALSE\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
+    "historyColumnSQL": [
+      "ALTER TABLE piko_migrations ADD COLUMN splitter_version INTEGER",
+      "ALTER TABLE piko_migrations ADD COLUMN statements_hash VARCHAR(64)"
+    ],
+    "createSeedTableSQL": "CREATE TABLE IF NOT EXISTS piko_seeds (\n    version     BIGINT       NOT NULL PRIMARY KEY,\n    name        VARCHAR(255) NOT NULL,\n    checksum    VARCHAR(64)  NOT NULL,\n    applied_at  TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),\n    duration_ms BIGINT       NOT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
+    "insertSeedSQL": "INSERT IGNORE INTO piko_seeds (version, name, checksum, duration_ms) VALUES ($1, $2, $3, $4)",
+    "deleteHistorySQL": "",
+    "lockStrategy": "\u0026migration_sql.MySQLAdvisoryLock{LockKey:\"piko_migrations\", NameSQL:\"SELECT IF(CHAR_LENGTH(CONCAT(COALESCE(DATABASE(), ''), '.', 'piko_migrations')) \u003e 64, SHA2(CONCAT(COALESCE(DATABASE(), ''), '.', 'piko_migrations'), 256), CONCAT(COALESCE(DATABASE(), ''), '.', 'piko_migrations'))\"}",
+    "seedLockStrategy": "\u0026migration_sql.MySQLAdvisorySeedLock{NameSQL:\"SELECT IF(CHAR_LENGTH(CONCAT(COALESCE(DATABASE(), ''), '.', 'piko_seeds')) \u003e 64, SHA2(CONCAT(COALESCE(DATABASE(), ''), '.', 'piko_seeds'), 256), CONCAT(COALESCE(DATABASE(), ''), '.', 'piko_seeds'))\"}",
+    "migrationLockKey": "CONCAT(COALESCE(DATABASE(), ''), '.', 'piko_migrations')",
+    "seedLockKey": "CONCAT(COALESCE(DATABASE(), ''), '.', 'piko_seeds')"
+  },
+  "postgres": {
+    "historyTable": "piko_migrations",
+    "createTableSQL": "CREATE TABLE IF NOT EXISTS piko_migrations (\n    version        BIGINT      NOT NULL PRIMARY KEY,\n    name           TEXT        NOT NULL,\n    checksum       TEXT        NOT NULL,\n    applied_at     TIMESTAMPTZ NOT NULL DEFAULT now(),\n    duration_ms    BIGINT      NOT NULL,\n    down_checksum  TEXT,\n    last_statement INTEGER,\n    dirty          BOOLEAN     NOT NULL DEFAULT FALSE\n)",
+    "historyColumnSQL": [
+      "ALTER TABLE piko_migrations ADD COLUMN splitter_version INTEGER",
+      "ALTER TABLE piko_migrations ADD COLUMN statements_hash VARCHAR(64)"
+    ],
+    "createSeedTableSQL": "CREATE TABLE IF NOT EXISTS piko_seeds (\n    version     BIGINT      NOT NULL PRIMARY KEY,\n    name        TEXT        NOT NULL,\n    checksum    TEXT        NOT NULL,\n    applied_at  TIMESTAMPTZ NOT NULL DEFAULT now(),\n    duration_ms BIGINT      NOT NULL\n)",
+    "insertSeedSQL": "INSERT INTO piko_seeds (version, name, checksum, duration_ms) VALUES ($1, $2, $3, $4) ON CONFLICT (version) DO NOTHING",
+    "deleteHistorySQL": "",
+    "lockStrategy": "\u0026migration_sql.PostgresAdvisoryLock{LockKey:\"piko_migrations\"}",
+    "seedLockStrategy": "\u0026migration_sql.PostgresAdvisorySeedLock{}",
+    "migrationLockKey": "piko_migrations",
+    "seedLockKey": "piko_seeds"
+  },
+  "postgres_pgbouncer": {
+    "historyTable": "piko_migrations",
+    "createTableSQL": "CREATE TABLE IF NOT EXISTS piko_migrations (\n    version        BIGINT      NOT NULL PRIMARY KEY,\n    name           TEXT        NOT NULL,\n    checksum       TEXT        NOT NULL,\n    applied_at     TIMESTAMPTZ NOT NULL DEFAULT now(),\n    duration_ms    BIGINT      NOT NULL,\n    down_checksum  TEXT,\n    last_statement INTEGER,\n    dirty          BOOLEAN     NOT NULL DEFAULT FALSE\n)",
+    "historyColumnSQL": [
+      "ALTER TABLE piko_migrations ADD COLUMN splitter_version INTEGER",
+      "ALTER TABLE piko_migrations ADD COLUMN statements_hash VARCHAR(64)"
+    ],
+    "createSeedTableSQL": "CREATE TABLE IF NOT EXISTS piko_seeds (\n    version     BIGINT      NOT NULL PRIMARY KEY,\n    name        TEXT        NOT NULL,\n    checksum    TEXT        NOT NULL,\n    applied_at  TIMESTAMPTZ NOT NULL DEFAULT now(),\n    duration_ms BIGINT      NOT NULL\n)",
+    "insertSeedSQL": "INSERT INTO piko_seeds (version, name, checksum, duration_ms) VALUES ($1, $2, $3, $4) ON CONFLICT (version) DO NOTHING",
+    "deleteHistorySQL": "",
+    "lockStrategy": "\u0026migration_sql.TableBasedLock{CreateLockTableSQL:\"CREATE TABLE IF NOT EXISTS piko_migration_lock (\\n    lock_id INTEGER NOT NULL PRIMARY KEY DEFAULT 1,\\n    CONSTRAINT piko_migration_lock_single_row CHECK (lock_id = 1)\\n)\"}",
+    "seedLockStrategy": "\u0026migration_sql.TableBasedSeedLock{CreateLockTableSQL:\"CREATE TABLE IF NOT EXISTS piko_seed_lock (\\n    lock_id INTEGER NOT NULL PRIMARY KEY DEFAULT 1,\\n    CONSTRAINT piko_seed_lock_single_row CHECK (lock_id = 1)\\n)\"}",
+    "migrationLockKey": "",
+    "seedLockKey": ""
+  },
+  "postgres_renamed_history": {
+    "historyTable": "app_schema_history",
+    "createTableSQL": "CREATE TABLE IF NOT EXISTS app_schema_history (\n    version        BIGINT      NOT NULL PRIMARY KEY,\n    name           TEXT        NOT NULL,\n    checksum       TEXT        NOT NULL,\n    applied_at     TIMESTAMPTZ NOT NULL DEFAULT now(),\n    duration_ms    BIGINT      NOT NULL,\n    down_checksum  TEXT,\n    last_statement INTEGER,\n    dirty          BOOLEAN     NOT NULL DEFAULT FALSE\n)",
+    "historyColumnSQL": [
+      "ALTER TABLE app_schema_history ADD COLUMN splitter_version INTEGER",
+      "ALTER TABLE app_schema_history ADD COLUMN statements_hash VARCHAR(64)"
+    ],
+    "createSeedTableSQL": "CREATE TABLE IF NOT EXISTS piko_seeds (\n    version     BIGINT      NOT NULL PRIMARY KEY,\n    name        TEXT        NOT NULL,\n    checksum    TEXT        NOT NULL,\n    applied_at  TIMESTAMPTZ NOT NULL DEFAULT now(),\n    duration_ms BIGINT      NOT NULL\n)",
+    "insertSeedSQL": "INSERT INTO piko_seeds (version, name, checksum, duration_ms) VALUES ($1, $2, $3, $4) ON CONFLICT (version) DO NOTHING",
+    "deleteHistorySQL": "",
+    "lockStrategy": "\u0026migration_sql.PostgresAdvisoryLock{LockKey:\"app_schema_history\"}",
+    "seedLockStrategy": "\u0026migration_sql.PostgresAdvisorySeedLock{}",
+    "migrationLockKey": "app_schema_history",
+    "seedLockKey": "piko_seeds"
+  },
+  "sqlite": {
+    "historyTable": "piko_migrations",
+    "createTableSQL": "CREATE TABLE IF NOT EXISTS piko_migrations (\n    version        INTEGER NOT NULL PRIMARY KEY,\n    name           TEXT    NOT NULL,\n    checksum       TEXT    NOT NULL,\n    applied_at     TEXT    NOT NULL DEFAULT (datetime('now')),\n    duration_ms    INTEGER NOT NULL,\n    down_checksum  TEXT,\n    last_statement INTEGER,\n    dirty          INTEGER NOT NULL DEFAULT 0\n)",
+    "historyColumnSQL": [
+      "ALTER TABLE piko_migrations ADD COLUMN splitter_version INTEGER",
+      "ALTER TABLE piko_migrations ADD COLUMN statements_hash VARCHAR(64)"
+    ],
+    "createSeedTableSQL": "CREATE TABLE IF NOT EXISTS piko_seeds (\n    version     INTEGER NOT NULL PRIMARY KEY,\n    name        TEXT    NOT NULL,\n    checksum    TEXT    NOT NULL,\n    applied_at  TEXT    NOT NULL DEFAULT (datetime('now')),\n    duration_ms INTEGER NOT NULL\n)",
+    "insertSeedSQL": "INSERT INTO piko_seeds (version, name, checksum, duration_ms) VALUES ($1, $2, $3, $4) ON CONFLICT(version) DO NOTHING",
+    "deleteHistorySQL": "",
+    "lockStrategy": "\u0026migration_sql.NoOpLock{}",
+    "seedLockStrategy": "\u0026migration_sql.NoOpLock{}",
+    "migrationLockKey": "",
+    "seedLockKey": ""
+  },
+  "timescaledb": {
+    "historyTable": "piko_migrations",
+    "createTableSQL": "CREATE TABLE IF NOT EXISTS piko_migrations (\n    version        BIGINT      NOT NULL PRIMARY KEY,\n    name           TEXT        NOT NULL,\n    checksum       TEXT        NOT NULL,\n    applied_at     TIMESTAMPTZ NOT NULL DEFAULT now(),\n    duration_ms    BIGINT      NOT NULL,\n    down_checksum  TEXT,\n    last_statement INTEGER,\n    dirty          BOOLEAN     NOT NULL DEFAULT FALSE\n)",
+    "historyColumnSQL": [
+      "ALTER TABLE piko_migrations ADD COLUMN splitter_version INTEGER",
+      "ALTER TABLE piko_migrations ADD COLUMN statements_hash VARCHAR(64)"
+    ],
+    "createSeedTableSQL": "CREATE TABLE IF NOT EXISTS piko_seeds (\n    version     BIGINT      NOT NULL PRIMARY KEY,\n    name        TEXT        NOT NULL,\n    checksum    TEXT        NOT NULL,\n    applied_at  TIMESTAMPTZ NOT NULL DEFAULT now(),\n    duration_ms BIGINT      NOT NULL\n)",
+    "insertSeedSQL": "INSERT INTO piko_seeds (version, name, checksum, duration_ms) VALUES ($1, $2, $3, $4) ON CONFLICT (version) DO NOTHING",
+    "deleteHistorySQL": "",
+    "lockStrategy": "\u0026migration_sql.PostgresAdvisoryLock{LockKey:\"piko_migrations\"}",
+    "seedLockStrategy": "\u0026migration_sql.PostgresAdvisorySeedLock{}",
+    "migrationLockKey": "piko_migrations",
+    "seedLockKey": "piko_seeds"
+  }
+}

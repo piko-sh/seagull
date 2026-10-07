@@ -1,0 +1,26 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: A namespaced migrator with before-run and after-migration hooks, a migration that must run outside a transaction, and a Seeder that applies each seed file once.
+differs:
+  - "SQLite cannot change journal_mode inside a transaction, so that migration carries sgl.migration(no_transaction: true)"
+  - SQLite has no CREATE INDEX CONCURRENTLY; VACUUM is the statement Seagull detects as non-transactional without a directive
+  - the seed file runs whole, since modernc.org/sqlite accepts several statements in one call
+entry: {file: db/migrations/0002_write_ahead_log.up.sql}
+live: "no"
+test: in-process

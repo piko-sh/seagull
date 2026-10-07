@@ -1,0 +1,176 @@
+{
+  "cells": {
+    "batch": "ok",
+    "batch rows": "ok",
+    "builder": "1 read",
+    "builder 11": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "composite exec": "ok",
+    "composite literal": "ok",
+    "composite storage": "ok",
+    "composite union": "4 read",
+    "composite union 101 element 0": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "composite union 101 field": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "composite union 11 element 0": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "composite union 11 field": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "copyfrom": "ok",
+    "embed": "2 read",
+    "embed eleven": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "embed one": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "exec": "ok",
+    "literal": "ok",
+    "nested": "13 read",
+    "nested keyed": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "nested keyed unnamed 0": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "nested keyed unnamed 1": "a int64",
+    "nested listed 0": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "nested listed unnamed 0": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "nested listed unnamed 1": "a int64",
+    "nested optional keyed": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "nested optional keyed null": "null",
+    "nested optional list 0": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "nested optional list 1": "null",
+    "nested pair": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "nested unnamed 0": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "nested unnamed 1": "a int64",
+    "one 1": "1 read",
+    "one 1 data": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "one 11": "1 read",
+    "one 11 data": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "one 16": "1 read",
+    "one 16 data": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "optional 1": "1 read",
+    "optional 1 data": "null",
+    "optional 2": "1 read",
+    "optional 2 data": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "parameter": "ok",
+    "read composite 1 element": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "read composite 1 field": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "read composite 11 element": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "read composite 11 field": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "rich": "4 read",
+    "rich data": "read {\"big\":18446744073709551615,\"date\":\"2024-01-02T00:00:00Z\",\"float\":1e+21,\"nested\":{\"z\":1},\"path\":\"a/b\"}",
+    "rich keyed": "read {\"big\":18446744073709551615,\"date\":\"2024-01-02T00:00:00Z\",\"float\":1e+21,\"nested\":{\"z\":1},\"path\":\"a/b\"}",
+    "rich listed 0": "read {\"big\":18446744073709551615,\"date\":\"2024-01-02T00:00:00Z\",\"float\":1e+21,\"nested\":{\"z\":1},\"path\":\"a/b\"}",
+    "rich stored": "text {\"big\":\"18446744073709551615\",\"date\":\"2024-01-02\",\"float\":1e21,\"nested\":{\"z\":\"1\"},\"path\":\"a\\/b\"}",
+    "storage": "ok",
+    "stream": "3 read",
+    "stream 1": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "stream 11": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "stream 12": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "union": "2 read",
+    "union 101": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}",
+    "union 11": "read {\"a\":\"\\u003cé \\u0026 😀\\u003e\",\"b\":[1,2.5]}"
+  },
+  "found": {
+    "composite literal": [
+      {
+        "id": 1
+      },
+      {
+        "id": 11
+      }
+    ],
+    "composite storage": [
+      {
+        "field_stored": "{\"a\":\"\u003cé \u0026 😀\u003e\",\"b\":[1,2.5]}",
+        "id": 1,
+        "stored": "{\"a\":\"\u003cé \u0026 😀\u003e\",\"b\":[1,2.5]}"
+      },
+      {
+        "field_stored": "{\"a\":\"\u003cé \u0026 😀\u003e\",\"b\":[1,2.5]}",
+        "id": 11,
+        "stored": "{\"a\":\"\u003cé \u0026 😀\u003e\",\"b\":[1,2.5]}"
+      }
+    ],
+    "literal": [
+      {
+        "id": 1
+      },
+      {
+        "id": 11
+      },
+      {
+        "id": 12
+      },
+      {
+        "id": 13
+      },
+      {
+        "id": 14
+      },
+      {
+        "id": 15
+      },
+      {
+        "id": 16
+      }
+    ],
+    "parameter": [
+      {
+        "id": 1
+      },
+      {
+        "id": 11
+      },
+      {
+        "id": 12
+      },
+      {
+        "id": 13
+      },
+      {
+        "id": 14
+      },
+      {
+        "id": 15
+      },
+      {
+        "id": 16
+      }
+    ],
+    "storage": [
+      {
+        "extracted": "\u003cé \u0026 😀\u003e",
+        "id": 1,
+        "storage": "JSON",
+        "stored": "{\"a\":\"\u003cé \u0026 😀\u003e\",\"b\":[1,2.5]}"
+      },
+      {
+        "extracted": "\u003cé \u0026 😀\u003e",
+        "id": 11,
+        "storage": "JSON",
+        "stored": "{\"a\":\"\u003cé \u0026 😀\u003e\",\"b\":[1,2.5]}"
+      },
+      {
+        "extracted": "\u003cé \u0026 😀\u003e",
+        "id": 12,
+        "storage": "JSON",
+        "stored": "{\"a\":\"\u003cé \u0026 😀\u003e\",\"b\":[1,2.5]}"
+      },
+      {
+        "extracted": "\u003cé \u0026 😀\u003e",
+        "id": 13,
+        "storage": "JSON",
+        "stored": "{\"a\":\"\u003cé \u0026 😀\u003e\",\"b\":[1,2.5]}"
+      },
+      {
+        "extracted": "\u003cé \u0026 😀\u003e",
+        "id": 14,
+        "storage": "JSON",
+        "stored": "{\"a\":\"\u003cé \u0026 😀\u003e\",\"b\":[1,2.5]}"
+      },
+      {
+        "extracted": "\u003cé \u0026 😀\u003e",
+        "id": 15,
+        "storage": "JSON",
+        "stored": "{\"a\":\"\u003cé \u0026 😀\u003e\",\"b\":[1,2.5]}"
+      },
+      {
+        "extracted": "\u003cé \u0026 😀\u003e",
+        "id": 16,
+        "storage": "JSON",
+        "stored": "{\"a\":\"\u003cé \u0026 😀\u003e\",\"b\":[1,2.5]}"
+      }
+    ]
+  }
+}

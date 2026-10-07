@@ -1,0 +1,79 @@
+[
+  {
+    "Command": "many",
+    "Filename": "literals.sql",
+    "Line": 1,
+    "Name": "Literals",
+    "OutputColumns": [
+      {
+        "Name": "half",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        }
+      },
+      {
+        "Name": "exact",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        }
+      },
+      {
+        "Name": "approximate",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "small",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "large",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "huge",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "hugeint",
+          "Width": 128
+        }
+      },
+      {
+        "Name": "halved",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Literals, command: many)\nSELECT .5 AS half, 1.25 AS exact, 1e3 AS approximate, 42 AS small, 3000000000 AS large, 12345678901234567890 AS huge, kg * .5 AS halved\nFROM landings\nWHERE id = $1;",
+    "Template": "SELECT ⟨c0 aliased:.5⟩ AS half, ⟨c1 aliased:1.25⟩ AS exact, ⟨c2 aliased:1e3⟩ AS approximate, ⟨c3 aliased:42⟩ AS small, ⟨c4 aliased:3000000000⟩ AS large, ⟨c5 aliased:12345678901234567890⟩ AS huge, ⟨c6 aliased:kg * .5⟩ AS halved\\nFROM landings\\nWHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

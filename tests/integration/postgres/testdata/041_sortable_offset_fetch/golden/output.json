@@ -1,0 +1,26 @@
+{
+  "limit_offset_by_price_desc": [
+    {
+      "id": 5,
+      "name": "Eggplant",
+      "price": 150
+    },
+    {
+      "id": 1,
+      "name": "Apple",
+      "price": 100
+    }
+  ],
+  "offset_fetch_by_name": [
+    {
+      "id": 2,
+      "name": "Banana",
+      "price": 50
+    },
+    {
+      "id": 3,
+      "name": "Carrot",
+      "price": 75
+    }
+  ]
+}

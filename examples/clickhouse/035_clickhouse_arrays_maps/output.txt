@@ -1,0 +1,15 @@
+town      string                   Padstow
+tags      []string                 [chips takeaway]
+prices    map[string]uint32        map[chips:350 mushy peas:150]
+location  map[string]interface {}  map[lat:50.5413 lon:-4.9389]
+till      net.IP                   10.0.0.11
+kiosks by tag, one row per tag:
+  cafe       Gull's Rest
+  chips      Chips Ahoy
+  ice cream  The Ice Cream Hut
+  seating    Gull's Rest
+  takeaway   Chips Ahoy
+  takeaway   The Ice Cream Hut
+kiosks in Padstow:
+  #1 Chips Ahoy
+  #2 The Ice Cream Hut

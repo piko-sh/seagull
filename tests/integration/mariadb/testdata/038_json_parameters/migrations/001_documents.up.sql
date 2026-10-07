@@ -1,0 +1,4 @@
+CREATE TABLE documents (
+    id INT PRIMARY KEY,
+    data JSON NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

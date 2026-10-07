@@ -1,0 +1,1 @@
+{"description": "ClickHouse rounds in the type of the number: round, roundBankers, floor, ceil and trunc keep a Decimal's precision and scale and an integer's width; the exact quantiles that pick a value, quantileExact, its Low, High and Weighted forms and quantilesExact, keep the type of the values they pick"}

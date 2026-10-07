@@ -1,0 +1,28 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: A harbour's berths, daily catch and species totals kept in ReplacingMergeTree, SummingMergeTree and AggregatingMergeTree tables, read with FINAL, -Merge combinators and PREWHERE.
+differs:
+  - "ReplacingMergeTree(version) keeps the highest version per sorting key when parts merge; FINAL applies that at read time"
+  - "SummingMergeTree(kilos) adds up kilos across rows with the same key; FINAL sums at read time"
+  - "AggregatingMergeTree columns hold AggregateFunction states, written with sumState and maxState and read with sumMerge and maxMerge"
+  - "PREWHERE filters on one column before the others are read"
+  - "A -Merge result has the type its function returns and is never NULL: sumMerge of a sum(UInt64) state is uint64, and maxMerge of a max(UInt32) state is uint32"
+entry: {file: db/queries/harbour.sql, query: CurrentBerths}
+live: "no"
+test: integration

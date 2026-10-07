@@ -1,0 +1,62 @@
+[
+  {
+    "Command": "many",
+    "Filename": "inventory_status.sql",
+    "Line": 1,
+    "Name": "InventoryStatus",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "inventory",
+        "SourceTable": "inventory"
+      },
+      {
+        "Name": "item_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        },
+        "SourceColumn": "item_name",
+        "SourceQualifier": "inventory",
+        "SourceTable": "inventory"
+      },
+      {
+        "Name": "quantity",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "quantity",
+        "SourceQualifier": "inventory",
+        "SourceTable": "inventory"
+      },
+      {
+        "Name": "stock_status",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "effective_reorder",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: InventoryStatus, command: many)\nSELECT\n    id,\n    item_name,\n    quantity,\n    IF(quantity \u003c 10, 'low', 'ok') AS stock_status,\n    IFNULL(reorder_level, 0) AS effective_reorder\nFROM inventory;",
+    "Template": "SELECT\\n    ⟨c0:id⟩,\\n    ⟨c1:item_name⟩,\\n    ⟨c2:quantity⟩,\\n    ⟨c3 aliased:IF(quantity \u003c 10, 'low', 'ok')⟩ AS stock_status,\\n    ⟨c4 aliased:IFNULL(reorder_level, 0)⟩ AS effective_reorder\\nFROM inventory;"
+  }
+]

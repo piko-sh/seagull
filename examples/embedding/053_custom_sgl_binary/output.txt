@@ -1,0 +1,14 @@
+$ sgl generate --check
+tasks: generated code is up to date
+$ sgl vet --strict
+0 error(s), 0 warning(s), 0 hint(s)
+$ sgl dialects
+NAME         FAMILY      PARAMETERS   RETURNING               MIGRATE  INTROSPECT  DRIVER
+clickhouse   clickhouse  {name:Type}  no                      yes      no          none
+cockroachdb  postgres    $1           INSERT, UPDATE, DELETE  yes      yes         none
+duckdb       duckdb      $1           INSERT, UPDATE, DELETE  yes      no          none
+mariadb      mysql       ?            INSERT, DELETE          yes      no          none
+mysql        mysql       ?            no                      yes      no          none
+postgres     postgres    $1           INSERT, UPDATE, DELETE  yes      yes         none
+sqlite       sqlite      ?1           INSERT, UPDATE, DELETE  yes      yes         sqlite
+timescaledb  postgres    $1           INSERT, UPDATE, DELETE  yes      yes         none

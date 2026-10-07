@@ -1,0 +1,116 @@
+{
+  "add_voyage": "added",
+  "add_voyages": "added",
+  "clear_forecast": "cleared",
+  "driver_refuses_a_struct_holding_a_decimal": true,
+  "driver_refuses_a_typed_enum_list": true,
+  "set_price": "set",
+  "set_rates": "set",
+  "sharing_a_stormy_mood": [
+    {
+      "id": 1
+    },
+    {
+      "id": 3
+    }
+  ],
+  "voyage_1": {
+    "crew": [
+      "0b5b1f0e-7c2a-4d4e-9f00-000000000001"
+    ],
+    "fares": [
+      "12.50",
+      "0.05"
+    ],
+    "forecast": [
+      "calm"
+    ],
+    "gusts": [
+      0,
+      17,
+      255
+    ],
+    "id": 1,
+    "legs": [
+      "1 day",
+      "02:30:00"
+    ],
+    "moods": [
+      "calm",
+      "stormy"
+    ],
+    "pair": [
+      "stormy",
+      "stormy"
+    ],
+    "photos": [
+      "Ym93",
+      ""
+    ],
+    "price": {
+      "amount": "42.10",
+      "currency": "GBP"
+    },
+    "rates": {
+      "adult": "30.00",
+      "child": "15.25"
+    },
+    "watches": [
+      [
+        "calm"
+      ],
+      [
+        "stormy",
+        "calm"
+      ]
+    ]
+  },
+  "voyage_2": {
+    "crew": [],
+    "fares": [],
+    "forecast": null,
+    "gusts": [],
+    "id": 2,
+    "legs": [],
+    "moods": [],
+    "pair": [
+      "calm",
+      "calm"
+    ],
+    "photos": [],
+    "price": null,
+    "rates": null,
+    "watches": []
+  },
+  "voyage_3": {
+    "crew": [
+      "0b5b1f0e-7c2a-4d4e-9f00-000000000002"
+    ],
+    "fares": [
+      "99.99"
+    ],
+    "forecast": null,
+    "gusts": [
+      4
+    ],
+    "id": 3,
+    "legs": [
+      "03:00:00"
+    ],
+    "moods": [
+      "stormy"
+    ],
+    "pair": [
+      "calm",
+      "stormy"
+    ],
+    "photos": [
+      "c3Rlcm4="
+    ],
+    "price": null,
+    "rates": null,
+    "watches": [
+      []
+    ]
+  }
+}

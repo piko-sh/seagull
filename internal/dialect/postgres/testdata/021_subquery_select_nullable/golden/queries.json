@@ -1,0 +1,31 @@
+[
+  {
+    "Command": "many",
+    "Filename": "customer_spending.sql",
+    "Line": 1,
+    "Name": "CustomerSpending",
+    "OutputColumns": [
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "c",
+        "SourceTable": "customers"
+      },
+      {
+        "Name": "total_spent",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CustomerSpending, command: many)\nSELECT c.name, (SELECT SUM(o.amount) FROM orders o WHERE o.customer_id = c.id) AS total_spent\nFROM customers c;",
+    "Template": "SELECT ⟨c0:c.name⟩, ⟨c1 aliased:(SELECT SUM(o.amount) FROM orders o WHERE o.customer_id = c.id)⟩ AS total_spent\\nFROM customers c;"
+  }
+]

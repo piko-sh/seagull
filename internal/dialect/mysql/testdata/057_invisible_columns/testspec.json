@@ -1,0 +1,1 @@
+{"description": "MySQL leaves an INVISIBLE column out of SELECT * and t.*, and out of the table model; a query may still name it and an INSERT may give it"}

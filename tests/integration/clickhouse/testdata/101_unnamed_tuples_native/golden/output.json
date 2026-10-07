@@ -1,0 +1,60 @@
+{
+  "built": [
+    {
+      "id": 1,
+      "shifted": [
+        2,
+        51.5
+      ],
+      "tagged": [
+        1,
+        "gull"
+      ]
+    },
+    {
+      "id": 2,
+      "shifted": [
+        3,
+        55.9
+      ],
+      "tagged": [
+        2,
+        "gull"
+      ]
+    }
+  ],
+  "sightings": [
+    {
+      "id": 1,
+      "legs": [
+        [
+          "north",
+          3
+        ],
+        [
+          "south",
+          5
+        ]
+      ],
+      "position": [
+        51.5,
+        -0.12
+      ],
+      "tallies": {
+        "cod": [
+          2,
+          "many"
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "legs": [],
+      "position": [
+        55.9,
+        -3.2
+      ],
+      "tallies": {}
+    }
+  ]
+}

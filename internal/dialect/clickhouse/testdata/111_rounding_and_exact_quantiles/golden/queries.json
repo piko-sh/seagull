@@ -1,0 +1,174 @@
+[
+  {
+    "Command": "many",
+    "Filename": "orders.sql",
+    "Line": 1,
+    "Name": "RoundedPrices",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "rounded",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "Decimal",
+          "Precision": 12,
+          "Scale": 2
+        }
+      },
+      {
+        "Name": "bankers",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "Decimal",
+          "Precision": 12,
+          "Scale": 2
+        }
+      },
+      {
+        "Name": "floored",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "Decimal",
+          "Precision": 12,
+          "Scale": 2
+        }
+      },
+      {
+        "Name": "ceiled",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "Decimal",
+          "Precision": 12,
+          "Scale": 2
+        }
+      },
+      {
+        "Name": "truncated",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "Decimal",
+          "Precision": 12,
+          "Scale": 2
+        }
+      },
+      {
+        "Name": "rough_latency",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Unsigned": true,
+          "Width": 32
+        }
+      },
+      {
+        "Name": "rough_ratio",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "Float32",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "rough_discount",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "Decimal",
+          "Nullable": true,
+          "Precision": 9,
+          "Scale": 3
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: RoundedPrices, command: many)\nSELECT id, round(price, 1) AS rounded, roundBankers(price, 1) AS bankers, floor(price) AS floored,\n       ceil(price, 1) AS ceiled, trunc(price) AS truncated, round(latency_ms, -1) AS rough_latency,\n       round(ratio, 2) AS rough_ratio, round(discount, 1) AS rough_discount\nFROM orders;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:round(price, 1)⟩ AS rounded, ⟨c2 aliased:roundBankers(price, 1)⟩ AS bankers, ⟨c3 aliased:floor(price)⟩ AS floored,\\n       ⟨c4 aliased:ceil(price, 1)⟩ AS ceiled, ⟨c5 aliased:trunc(price)⟩ AS truncated, ⟨c6 aliased:round(latency_ms, -1)⟩ AS rough_latency,\\n       ⟨c7 aliased:round(ratio, 2)⟩ AS rough_ratio, ⟨c8 aliased:round(discount, 1)⟩ AS rough_discount\\nFROM orders;"
+  },
+  {
+    "Command": "one",
+    "Filename": "orders.sql",
+    "Line": 7,
+    "Name": "LatencyQuantiles",
+    "OutputColumns": [
+      {
+        "Name": "median_latency",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Unsigned": true,
+          "Width": 32
+        }
+      },
+      {
+        "Name": "low_p90",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Unsigned": true,
+          "Width": 32
+        }
+      },
+      {
+        "Name": "high_p90_price",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "Decimal",
+          "Precision": 12,
+          "Scale": 2
+        }
+      },
+      {
+        "Name": "weighted",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Unsigned": true,
+          "Width": 32
+        }
+      },
+      {
+        "Name": "median_day",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "Date",
+          "Temporal": "date"
+        }
+      },
+      {
+        "Name": "latencies",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "UInt32",
+            "Unsigned": true,
+            "Width": 32
+          },
+          "EngineName": "Array"
+        }
+      },
+      {
+        "Name": "approximate",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "Float64",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: LatencyQuantiles, command: one)\nSELECT quantileExact(latency_ms) AS median_latency, quantileExactLow(0.9)(latency_ms) AS low_p90,\n       quantileExactHigh(0.9)(price) AS high_p90_price, quantileExactWeighted(latency_ms, id) AS weighted,\n       quantileExact(placed_on) AS median_day, quantilesExact(0.5, 0.9)(latency_ms) AS latencies,\n       quantile(latency_ms) AS approximate\nFROM orders;",
+    "Template": "SELECT ⟨c0 aliased:quantileExact(latency_ms)⟩ AS median_latency, ⟨c1 aliased:quantileExactLow(0.9)(latency_ms)⟩ AS low_p90,\\n       ⟨c2 aliased:quantileExactHigh(0.9)(price)⟩ AS high_p90_price, ⟨c3 aliased:quantileExactWeighted(latency_ms, id)⟩ AS weighted,\\n       ⟨c4 aliased:quantileExact(placed_on)⟩ AS median_day, ⟨c5 aliased:quantilesExact(0.5, 0.9)(latency_ms)⟩ AS latencies,\\n       ⟨c6 aliased:quantile(latency_ms)⟩ AS approximate\\nFROM orders;"
+  }
+]

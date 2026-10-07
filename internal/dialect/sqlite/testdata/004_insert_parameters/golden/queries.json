@@ -1,0 +1,97 @@
+[
+  {
+    "Command": "one",
+    "Filename": "create_product.sql",
+    "InsertColumns": [
+      "name",
+      "price",
+      "quantity"
+    ],
+    "InsertTarget": {
+      "Name": "products"
+    },
+    "Line": 1,
+    "Name": "CreateProduct",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      },
+      {
+        "Name": "price",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        },
+        "SourceColumn": "price",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      },
+      {
+        "Name": "quantity",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "quantity",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "price",
+        "Number": 2,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "quantity",
+        "Number": 3,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: CreateProduct, command: one)\nINSERT INTO products (name, price, quantity) VALUES (?, ?, ?)\nRETURNING id, name, price, quantity",
+    "Template": "INSERT INTO products (name, price, quantity) VALUES ⟨values:(⟨p0⟩, ⟨p1⟩, ⟨p2⟩)⟩\\nRETURNING ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:price⟩, ⟨c3:quantity⟩⟨arguments p0 p1 p2⟩"
+  }
+]

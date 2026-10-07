@@ -1,0 +1,3 @@
+{
+  "description": "ClickHouse database/sql enum runtime cases: an inline Enum8 column and a Nullable(Enum8) column read into a named enum type and its pointer; an Array(Enum8), an Array(Nullable(Enum8)) and a Map(String, Enum8) column read into a slice of the enum, a slice of pointers to it and a map of it through []string, []*string and map[string]string, since database/sql stores the slices and maps clickhouse-go returns only into their own types; enum parameters bound as text, a nullable one bound as NULL, and slices and a map of them bound as text; a slice of the enum in IN and NOT IN bound whole as an Array(Enum8), nil, empty, of one and of many (an empty NOT IN keeps every row); a batch as one multi-row INSERT of per-row named parameters"
+}

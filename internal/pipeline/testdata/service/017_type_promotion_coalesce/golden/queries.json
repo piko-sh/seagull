@@ -1,0 +1,32 @@
+[
+  {
+    "Command": "one",
+    "Filename": "get_promoted.sql",
+    "Line": 1,
+    "Name": "GetPromotedValue",
+    "OutputColumns": [
+      {
+        "Name": "promoted",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: GetPromotedValue, command: one)\nSELECT COALESCE(small_value, large_value) as promoted FROM measurements WHERE id = $1",
+    "Template": "SELECT COALESCE(small_value, large_value) as promoted FROM measurements WHERE id = $1"
+  }
+]

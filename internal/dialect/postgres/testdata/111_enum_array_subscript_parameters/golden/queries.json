@@ -1,0 +1,139 @@
+[
+  {
+    "Command": "many",
+    "Filename": "crossings.sql",
+    "Line": 1,
+    "Name": "ByFirstMood",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "crossings",
+        "SourceTable": "crossings"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "in-list",
+        "IsSlice": true,
+        "Kind": "param",
+        "Name": "moods",
+        "Number": 1,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "calm",
+            "choppy",
+            "stormy"
+          ],
+          "Schema": "public"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ByFirstMood, command: many)\n-- $1 as sgl.param(moods, kind: slice)\nSELECT id FROM crossings WHERE moods[1] IN ($1);",
+    "Template": "SELECT ⟨c0:id⟩ FROM crossings WHERE moods[1] ⟨in p0:IN ⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "crossings.sql",
+    "Line": 5,
+    "Name": "ByMoods",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "crossings",
+        "SourceTable": "crossings"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "calm",
+            "choppy",
+            "stormy"
+          ],
+          "Schema": "public"
+        }
+      },
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "second",
+        "Number": 2,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "calm",
+            "choppy",
+            "stormy"
+          ],
+          "Schema": "public"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ByMoods, command: many)\nSELECT id FROM crossings WHERE moods[1] = $1 AND moods[2] = :second;",
+    "Template": "SELECT ⟨c0:id⟩ FROM crossings WHERE moods[1] = ⟨p0⟩ AND moods[2] = ⟨p1⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "crossings.sql",
+    "Line": 8,
+    "Name": "ByNestedMood",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "crossings",
+        "SourceTable": "crossings"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "third",
+        "Number": 1,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "calm",
+            "choppy",
+            "stormy"
+          ],
+          "Schema": "public"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ByNestedMood, command: many)\nSELECT id FROM crossings WHERE id IN (SELECT id FROM crossings WHERE moods[3] = :third);",
+    "Template": "SELECT ⟨c0:id⟩ FROM crossings WHERE id IN (SELECT id FROM crossings WHERE moods[3] = ⟨p0⟩);⟨arguments p0⟩"
+  }
+]

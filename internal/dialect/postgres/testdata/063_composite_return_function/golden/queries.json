@@ -1,0 +1,56 @@
+[
+  {
+    "Command": "many",
+    "Filename": "contacts.sql",
+    "Line": 1,
+    "Name": "GetContactAddresses",
+    "OutputColumns": [
+      {
+        "Name": "street",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "street",
+        "SourceQualifier": "a"
+      },
+      {
+        "Name": "city",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "city",
+        "SourceQualifier": "a"
+      },
+      {
+        "Name": "postcode",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "postcode",
+        "SourceQualifier": "a"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetContactAddresses, command: many)\nSELECT a.street, a.city, a.postcode FROM expand_addresses($1::integer) AS a;",
+    "Template": "SELECT ⟨c0:a.street⟩, ⟨c1:a.city⟩, ⟨c2:a.postcode⟩ FROM expand_addresses(⟨p0⟩::integer) AS a;⟨arguments p0⟩"
+  }
+]

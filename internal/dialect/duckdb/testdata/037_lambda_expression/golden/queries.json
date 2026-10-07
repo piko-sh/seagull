@@ -1,0 +1,92 @@
+[
+  {
+    "Command": "many",
+    "Filename": "inventories.sql",
+    "Line": 1,
+    "Name": "GetDoubledQuantities",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "inventories",
+        "SourceTable": "inventories"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "inventories",
+        "SourceTable": "inventories"
+      },
+      {
+        "Name": "doubled",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int4",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "int4[]"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetDoubledQuantities, command: many)\nSELECT id, name, list_transform(quantities, x -\u003e x * 2) AS doubled FROM inventories;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2 aliased:list_transform(quantities, x -\u003e x * 2)⟩ AS doubled FROM inventories;"
+  },
+  {
+    "Command": "many",
+    "Filename": "inventories.sql",
+    "Line": 4,
+    "Name": "GetPositiveQuantities",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "inventories",
+        "SourceTable": "inventories"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "inventories",
+        "SourceTable": "inventories"
+      },
+      {
+        "Name": "positive",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int4",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "int4[]"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetPositiveQuantities, command: many)\nSELECT id, name, list_filter(quantities, x -\u003e x \u003e 0) AS positive FROM inventories;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2 aliased:list_filter(quantities, x -\u003e x \u003e 0)⟩ AS positive FROM inventories;"
+  }
+]

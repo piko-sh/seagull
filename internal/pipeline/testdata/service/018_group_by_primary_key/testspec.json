@@ -1,0 +1,3 @@
+{
+  "description": "GROUP BY does not change nullability: grouping by both tables' primary keys under a FULL JOIN still yields the groups where one side has no row, so every output column stays nullable as the FULL JOIN made it."
+}

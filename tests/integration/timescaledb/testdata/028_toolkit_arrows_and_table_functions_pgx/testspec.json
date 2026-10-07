@@ -1,0 +1,5 @@
+{
+  "description": "The toolkit's accessor arrows against TimescaleDB through pgx: stats_agg(reading) -> average(), -> stddev('population') and -> num_vals(), and percentile_agg(reading) -> approx_percentile(0.5) and -> num_vals(), read as the double precision and bigint the engine returns; unnest of a timevector reads its time and value, and into_values of a state aggregate its state and duration, the columns the overload their argument selects gives.",
+  "emitter": "pgx",
+  "expectedDiagnostics": []
+}

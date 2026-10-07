@@ -1,0 +1,4 @@
+{
+  "description": "The native clickhouse-go emitter applies a LIMIT placeholder's default and max like database/sql: an unset page size takes the default of 3 and one of 50 is clamped to the max of 5.",
+  "emitter": "native"
+}

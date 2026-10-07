@@ -1,0 +1,47 @@
+{
+  "DefaultSchema": "default",
+  "Identifiers": {
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "default": {
+      "Name": "default",
+      "Tables": {
+        "flags": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "String"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "enabled",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "boolean",
+                "EngineName": "Bool"
+              }
+            }
+          ],
+          "Name": "flags",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "Schema": "default"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "default"
+  ]
+}

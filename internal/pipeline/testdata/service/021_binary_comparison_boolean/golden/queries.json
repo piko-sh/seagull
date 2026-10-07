@@ -1,0 +1,38 @@
+[
+  {
+    "Command": "many",
+    "Filename": "get_comparisons.sql",
+    "Line": 1,
+    "Name": "GetTaskComparisons",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "tasks",
+        "SourceTable": "tasks"
+      },
+      {
+        "Name": "is_high_priority",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "boolean"
+        }
+      },
+      {
+        "Name": "has_score",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "boolean"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: GetTaskComparisons, command: many)\nSELECT\n  id,\n  priority \u003e 5 as is_high_priority,\n  score \u003c\u003e 0.0 as has_score\nFROM tasks",
+    "Template": "SELECT\\n  id,\\n  priority \u003e 5 as is_high_priority,\\n  score \u003c\u003e 0.0 as has_score\\nFROM tasks"
+  }
+]

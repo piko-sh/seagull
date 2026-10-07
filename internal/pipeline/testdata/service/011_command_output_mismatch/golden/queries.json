@@ -1,0 +1,52 @@
+[
+  {
+    "Command": "exec",
+    "Filename": "exec_with_select.sql",
+    "Line": 1,
+    "Name": "ExecWithSelect",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      }
+    ],
+    "SQL": "-- sgl.query(name: ExecWithSelect, command: exec)\nSELECT id, name FROM users",
+    "Template": "SELECT id, name FROM users"
+  },
+  {
+    "Command": "one",
+    "Filename": "one_with_insert.sql",
+    "Line": 1,
+    "Name": "OneWithInsert",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: OneWithInsert, command: one)\nINSERT INTO users (name) VALUES ($1)",
+    "Template": "INSERT INTO users (name) VALUES ($1)"
+  }
+]

@@ -1,0 +1,111 @@
+[
+  {
+    "Command": "many",
+    "Filename": "profiles.sql",
+    "Line": 1,
+    "Name": "ListProfiles",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "profiles",
+        "SourceTable": "profiles"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "profiles",
+        "SourceTable": "profiles"
+      },
+      {
+        "Name": "details",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "struct",
+          "StructFields": [
+            {
+              "Name": "age",
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Nullable": true,
+                "Width": 32
+              }
+            },
+            {
+              "Name": "city",
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Nullable": true
+              }
+            }
+          ]
+        },
+        "SourceColumn": "details",
+        "SourceQualifier": "profiles",
+        "SourceTable": "profiles"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListProfiles, command: many)\nSELECT id, name, details FROM profiles;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:details⟩ FROM profiles;"
+  },
+  {
+    "Command": "many",
+    "Filename": "profiles.sql",
+    "Line": 4,
+    "Name": "GetStructPacked",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "profiles",
+        "SourceTable": "profiles"
+      },
+      {
+        "Name": "packed",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "struct",
+          "StructFields": [
+            {
+              "Name": "a",
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Nullable": true
+              }
+            },
+            {
+              "Name": "b",
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Nullable": true,
+                "Width": 32
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetStructPacked, command: many)\nSELECT id, struct_pack(a := name, b := id) AS packed FROM profiles;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:struct_pack(a := name, b := id)⟩ AS packed FROM profiles;"
+  }
+]

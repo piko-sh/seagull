@@ -1,0 +1,13 @@
+recorded 10 readings in 2 chunks
+Doom Bar by the hour (time_bucket):
+  22:00  mean 14.2
+  23:00  mean 13.7
+  01:00  mean 13.2
+Doom Bar by the hour, gaps filled (time_bucket_gapfill, locf):
+  22:00  mean 14.2  carried 14.2
+  23:00  mean 13.7  carried 13.7
+  00:00  mean    -  carried 13.7
+  01:00  mean 13.2  carried 13.2
+first and last reading (first, last):
+  Doom Bar      first 14.0  last 13.3
+  Stepper Point first 15.0  last 14.0

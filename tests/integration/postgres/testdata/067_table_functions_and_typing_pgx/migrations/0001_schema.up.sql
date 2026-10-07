@@ -1,0 +1,12 @@
+CREATE TYPE pair AS (a integer, b text);
+CREATE TABLE users (id integer PRIMARY KEY, name text NOT NULL, bar pair, doc tsvector);
+CREATE TABLE results (id bigint NOT NULL, label text NOT NULL, score numeric);
+CREATE FUNCTION users_named(p text) RETURNS SETOF users LANGUAGE sql STABLE AS $$ SELECT * FROM users WHERE name = p $$;
+CREATE FUNCTION one_user(p integer) RETURNS users LANGUAGE sql STABLE AS $$ SELECT * FROM users WHERE id = p $$;
+CREATE FUNCTION two_outs(IN x integer, OUT doubled integer, OUT label text) LANGUAGE sql IMMUTABLE AS 'SELECT x * 2, ''n''';
+CREATE FUNCTION add_author(author text, OUT id integer) LANGUAGE plpgsql AS $$ BEGIN id := length(author); END $$;
+CREATE FUNCTION twice(n integer) RETURNS integer LANGUAGE sql IMMUTABLE AS 'SELECT n * 2';
+CREATE FUNCTION make_pair() RETURNS pair LANGUAGE sql IMMUTABLE AS $$ SELECT 1, 'x' $$;
+CREATE PROCEDURE create_user(IN p_name text, OUT p_id integer) LANGUAGE plpgsql AS $$ BEGIN INSERT INTO users (id, name) VALUES (1, p_name) RETURNING id INTO p_id; END $$;
+CREATE PROCEDURE tidy(older integer) LANGUAGE sql AS $$ DELETE FROM users WHERE id < older $$;
+CREATE TABLE tokens (id bytea PRIMARY KEY, label text NOT NULL);

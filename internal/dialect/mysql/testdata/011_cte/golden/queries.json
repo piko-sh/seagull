@@ -1,0 +1,46 @@
+[
+  {
+    "Command": "many",
+    "Filename": "top_level_with_children.sql",
+    "Line": 1,
+    "Name": "TopLevelWithChildren",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "c",
+        "SourceTable": "categories"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "c",
+        "SourceTable": "categories"
+      },
+      {
+        "Name": "parent_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "t",
+        "SourceTable": "t"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: TopLevelWithChildren, command: many)\nWITH top_level AS (\n    SELECT id, name FROM categories WHERE parent_id IS NULL\n)\nSELECT c.id, c.name, t.name AS parent_name\nFROM categories c\nINNER JOIN top_level t ON c.parent_id = t.id;",
+    "Template": "WITH top_level AS (\\n    SELECT id, name FROM categories WHERE parent_id IS NULL\\n)\\nSELECT ⟨c0:c.id⟩, ⟨c1:c.name⟩, ⟨c2 aliased:t.name⟩ AS parent_name\\nFROM categories c\\nINNER JOIN top_level t ON c.parent_id = t.id;"
+  }
+]

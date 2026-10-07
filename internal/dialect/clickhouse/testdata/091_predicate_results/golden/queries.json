@@ -1,0 +1,172 @@
+[
+  {
+    "Command": "many",
+    "Filename": "gulls.sql",
+    "Line": 1,
+    "Name": "Predicates",
+    "OutputColumns": [
+      {
+        "Name": "missing",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "present",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "zero_or_missing",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "unnamed",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "tagged",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "gull_like",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "starts",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "ringed",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "has_token",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "not_a_number",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(Predicates, many)\nSELECT isNull(note) AS missing, isNotNull(note) AS present, isZeroOrNull(score) AS zero_or_missing,\n       empty(name) AS unnamed, has(tags, 'gull') AS tagged, like(name, 'g%') AS gull_like,\n       startsWith(name, 'g') AS starts, mapContains(ringings, 'a') AS ringed,\n       hasTokenOrNull(name, 'gull') AS has_token, isNaN(toFloat64(score)) AS not_a_number\nFROM gulls;",
+    "Template": "SELECT ⟨c0 aliased:isNull(note)⟩ AS missing, ⟨c1 aliased:isNotNull(note)⟩ AS present, ⟨c2 aliased:isZeroOrNull(score)⟩ AS zero_or_missing,\\n       ⟨c3 aliased:empty(name)⟩ AS unnamed, ⟨c4 aliased:has(tags, 'gull')⟩ AS tagged, ⟨c5 aliased:like(name, 'g%')⟩ AS gull_like,\\n       ⟨c6 aliased:startsWith(name, 'g')⟩ AS starts, ⟨c7 aliased:mapContains(ringings, 'a')⟩ AS ringed,\\n       ⟨c8 aliased:hasTokenOrNull(name, 'gull')⟩ AS has_token, ⟨c9 aliased:isNaN(toFloat64(score))⟩ AS not_a_number\\nFROM gulls;"
+  },
+  {
+    "Command": "many",
+    "Filename": "gulls.sql",
+    "Line": 8,
+    "Name": "LogicalResults",
+    "OutputColumns": [
+      {
+        "Name": "both_set",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "either",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "Bool"
+        }
+      },
+      {
+        "Name": "one_of",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "negated",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "inactive",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "Bool"
+        }
+      },
+      {
+        "Name": "zero",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "flag",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "Bool"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(LogicalResults, many)\nSELECT and(score, 1) AS both_set, or(active, score) AS either, xor(score, 1) AS one_of, not(score) AS negated,\n       NOT active AS inactive, NOT score AS zero, toBool(score) AS flag\nFROM gulls;",
+    "Template": "SELECT ⟨c0 aliased:and(score, 1)⟩ AS both_set, ⟨c1 aliased:or(active, score)⟩ AS either, ⟨c2 aliased:xor(score, 1)⟩ AS one_of, ⟨c3 aliased:not(score)⟩ AS negated,\\n       ⟨c4 aliased:NOT active⟩ AS inactive, ⟨c5 aliased:NOT score⟩ AS zero, ⟨c6 aliased:toBool(score)⟩ AS flag\\nFROM gulls;"
+  }
+]

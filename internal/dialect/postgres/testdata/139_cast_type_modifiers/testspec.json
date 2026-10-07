@@ -1,0 +1,4 @@
+{
+  "description": "A :: or CAST target keeps the modifiers its type is written with, as a column of the type does: numeric(12, 4) has precision 12 and scale 4, varchar(8) a length of 8, and numeric(7, -3) a negative scale. A time zone qualifier may follow the modifiers, as in timestamp(0) without time zone and time(3) with time zone. A parameter cast to a type takes the type with its modifiers.",
+  "expectedDiagnosticCount": 0
+}

@@ -1,0 +1,12 @@
+{
+  "description": "Generated code against ClickHouse through database/sql: a JSON column overridden to a plain struct is written and read back; and SELECT * and s.* name their columns, so the methods keep working after a migration adds a column.",
+  "expectedDiagnostics": [],
+  "typeOverrides": [
+    {
+      "SQLTypeName": "",
+      "Column": "documents.data",
+      "GoPackage": "case_runner/kinds",
+      "GoName": "Show"
+    }
+  ]
+}

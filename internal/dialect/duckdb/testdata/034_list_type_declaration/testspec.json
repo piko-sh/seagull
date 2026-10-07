@@ -1,0 +1,1 @@
+{"description": "List columns declared in DuckDB's T[] spelling; LIST(T) is not a DuckDB type"}

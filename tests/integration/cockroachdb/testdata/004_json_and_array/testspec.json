@@ -1,0 +1,3 @@
+{
+  "description": "Nullable JSONB column (the generated JSON type) and TEXT[] array column (to_json-wrapped []string): NULL and non-NULL both round-trip"
+}

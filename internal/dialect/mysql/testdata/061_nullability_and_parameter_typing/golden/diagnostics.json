@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q062",
+    "Column": 8,
+    "EndColumn": 13,
+    "EndLine": 5,
+    "Filename": "aggregates.sql",
+    "Line": 5,
+    "Message": "title is read outside every aggregate of a query that aggregates without GROUP BY, which the engine rejects in its default mode and otherwise reads as NULL when the query reads no row; group by it or read it through an aggregate such as max",
+    "Severity": "warning"
+  }
+]

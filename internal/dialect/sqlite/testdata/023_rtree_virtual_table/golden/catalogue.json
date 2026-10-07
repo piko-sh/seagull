@@ -1,0 +1,93 @@
+{
+  "DefaultSchema": "main",
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "main": {
+      "Name": "main",
+      "Tables": {
+        "spatial_idx": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_create_spatial.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "bigint",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "min_x",
+              "Origin": {
+                "Filename": "001_create_spatial.up.sql"
+              },
+              "SQLType": {
+                "Category": "float",
+                "EngineName": "real",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "max_x",
+              "Origin": {
+                "Filename": "001_create_spatial.up.sql"
+              },
+              "SQLType": {
+                "Category": "float",
+                "EngineName": "real",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "min_y",
+              "Origin": {
+                "Filename": "001_create_spatial.up.sql"
+              },
+              "SQLType": {
+                "Category": "float",
+                "EngineName": "real",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "max_y",
+              "Origin": {
+                "Filename": "001_create_spatial.up.sql"
+              },
+              "SQLType": {
+                "Category": "float",
+                "EngineName": "real",
+                "Width": 64
+              }
+            }
+          ],
+          "IsVirtual": true,
+          "Name": "spatial_idx",
+          "Origin": {
+            "Filename": "001_create_spatial.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "main",
+          "VirtualModuleName": "rtree"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "main",
+    "temp"
+  ]
+}

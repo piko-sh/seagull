@@ -1,0 +1,200 @@
+{
+  "DefaultSchema": "main",
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "main": {
+      "Name": "main",
+      "Tables": {
+        "duckdb_types": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "tiny_val",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int1",
+                "Width": 8
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "small_val",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int2",
+                "Width": 16
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "big_val",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int8",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "huge_val",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "hugeint",
+                "Width": 128
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "utiny_val",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "utinyint",
+                "Unsigned": true,
+                "Width": 8
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "usmall_val",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "usmallint",
+                "Unsigned": true,
+                "Width": 16
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "uint_val",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "uinteger",
+                "Unsigned": true,
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "ubig_val",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "ubigint",
+                "Unsigned": true,
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "blob_val",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "binary",
+                "EngineName": "blob"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "ts_s",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "temporal",
+                "EngineName": "timestamp_s",
+                "Temporal": "timestamp"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "ts_ms",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "temporal",
+                "EngineName": "timestamp_ms",
+                "Temporal": "timestamp"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "ts_ns",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "temporal",
+                "EngineName": "timestamp_ns",
+                "Temporal": "timestamp"
+              }
+            }
+          ],
+          "Name": "duckdb_types",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "main"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "main"
+  ]
+}

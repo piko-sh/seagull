@@ -1,0 +1,183 @@
+[
+  {
+    "Command": "many",
+    "Filename": "users.sql",
+    "Line": 1,
+    "Name": "GetAllUsers",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "email",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "active",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        },
+        "SourceColumn": "active",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "created_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp",
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "created_at",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetAllUsers, command: many)\nSELECT id, name, email, active, created_at FROM users;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:email⟩, ⟨c3:active⟩, ⟨c4:created_at⟩ FROM users;"
+  },
+  {
+    "Command": "one",
+    "Filename": "users.sql",
+    "Line": 4,
+    "Name": "GetUserByID",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "email",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "active",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        },
+        "SourceColumn": "active",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "created_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp",
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "created_at",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetUserByID, command: one)\nSELECT id, name, email, active, created_at FROM users WHERE id = $1;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:email⟩, ⟨c3:active⟩, ⟨c4:created_at⟩ FROM users WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "users.sql",
+    "Line": 7,
+    "Name": "GetActiveUsers",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "email",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetActiveUsers, command: many)\nSELECT id, name, email FROM users WHERE active = true;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:email⟩ FROM users WHERE active = true;"
+  }
+]

@@ -1,0 +1,52 @@
+[
+  {
+    "Command": "many",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "Compute",
+    "OutputColumns": [
+      {
+        "Name": "small",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt16",
+          "Unsigned": true,
+          "Width": 16
+        }
+      },
+      {
+        "Name": "doubled",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "shifted",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "offset",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int32",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(Compute, many)\nSELECT times_two(21) AS small, times_two(value) AS doubled, add_xy(value, {offset:Int32}) AS shifted FROM readings;",
+    "Template": "SELECT ⟨c0 aliased:times_two(21)⟩ AS small, ⟨c1 aliased:times_two(value)⟩ AS doubled, ⟨c2 aliased:add_xy(value, ⟨p0 Int32⟩)⟩ AS shifted FROM readings;⟨arguments p0⟩"
+  }
+]

@@ -1,0 +1,4 @@
+{
+  "description": "Table options are a comma-separated list read in either order: STRICT, WITHOUT ROWID and WITHOUT ROWID, STRICT both make a STRICT table, whose integers are 64-bit, without a rowid, which no query can read.",
+  "expectedDiagnosticCount": 2
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q005",
+    "Column": 12,
+    "EndColumn": 28,
+    "EndLine": 2,
+    "Filename": "unknown_function.sql",
+    "Line": 2,
+    "Message": "unknown function \"nonexistent_func\"",
+    "Severity": "warning"
+  }
+]

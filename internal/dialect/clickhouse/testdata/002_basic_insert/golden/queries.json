@@ -1,0 +1,41 @@
+[
+  {
+    "Command": "exec",
+    "Filename": "events.sql",
+    "InsertColumns": [
+      "id",
+      "payload"
+    ],
+    "InsertTarget": {
+      "Name": "events"
+    },
+    "Line": 1,
+    "Name": "InsertEvent",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "payload",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(InsertEvent, exec)\nINSERT INTO events (id, payload) VALUES ({id:UInt64}, {payload:String});",
+    "Template": "INSERT INTO events (id, payload) VALUES ⟨values:(⟨p0 UInt64⟩, ⟨p1 String⟩)⟩;⟨arguments p0 p1⟩"
+  }
+]

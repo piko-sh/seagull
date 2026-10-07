@@ -1,0 +1,34 @@
+[
+  {
+    "Command": "one",
+    "Filename": "visits.sql",
+    "Line": 1,
+    "Name": "VisitCount",
+    "OutputColumns": [
+      {
+        "Name": "total",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "path",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(VisitCount, one)\nSELECT count(*) AS total FROM visits WHERE path = {path:String};",
+    "Template": "SELECT ⟨c0 aliased:count(*)⟩ AS total FROM visits WHERE path = ⟨p0 String⟩;⟨arguments p0⟩"
+  }
+]

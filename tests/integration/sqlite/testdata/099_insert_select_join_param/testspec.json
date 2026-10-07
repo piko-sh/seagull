@@ -1,0 +1,4 @@
+{
+  "description": "INSERT ... SELECT ... INNER JOIN ... WHERE retains the SELECT body's FROM/JOIN scope, so the source aliases 's' and 'a' resolve and both declared parameters are referenced against that scope. The query analyses without diagnostics, and the generated INSERT ... SELECT archives only the active account's sessions.",
+  "expectedDiagnostics": []
+}

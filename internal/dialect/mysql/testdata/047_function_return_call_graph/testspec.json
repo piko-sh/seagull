@@ -1,0 +1,1 @@
+{"description": "A single-statement RETURN body is scanned: a function returning a call to a MODIFIES SQL DATA function writes, one returning built-in calls stays read-only, and DETERMINISTIC alone decides nothing"}

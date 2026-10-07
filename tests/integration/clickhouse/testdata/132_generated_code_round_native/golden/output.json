@@ -1,0 +1,58 @@
+{
+  "document": {
+    "data": {
+      "seasons": 6,
+      "title": "Marple"
+    },
+    "id": 1
+  },
+  "insert_document": "inserted",
+  "shows_after_migration": [
+    {
+      "id": 1,
+      "seasons": 6,
+      "title": "Marple"
+    },
+    {
+      "id": 2,
+      "seasons": 13,
+      "title": "Poirot"
+    }
+  ],
+  "shows_before_migration": [
+    {
+      "id": 1,
+      "seasons": 6,
+      "title": "Marple"
+    },
+    {
+      "id": 2,
+      "seasons": 13,
+      "title": "Poirot"
+    }
+  ],
+  "titles_after_migration": [
+    {
+      "id": 1,
+      "seasons": 6,
+      "title": "Marple"
+    },
+    {
+      "id": 2,
+      "seasons": 13,
+      "title": "Poirot"
+    }
+  ],
+  "titles_before_migration": [
+    {
+      "id": 1,
+      "seasons": 6,
+      "title": "Marple"
+    },
+    {
+      "id": 2,
+      "seasons": 13,
+      "title": "Poirot"
+    }
+  ]
+}

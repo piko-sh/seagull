@@ -1,0 +1,420 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "Shapes": {
+      "CompositeTypes": {
+        "Pair": {
+          "Fields": [
+            {
+              "GeneratedKind": "none",
+              "Name": "left_value",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 3
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "right_value",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 3
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            }
+          ],
+          "Name": "Pair",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 3
+          },
+          "Schema": "Shapes"
+        },
+        "pair": {
+          "Fields": [
+            {
+              "GeneratedKind": "none",
+              "Name": "label",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 4
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "amount",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 4
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int8",
+                "Width": 64
+              }
+            }
+          ],
+          "Name": "pair",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 4
+          },
+          "Schema": "Shapes"
+        }
+      },
+      "Name": "Shapes"
+    },
+    "public": {
+      "CompositeTypes": {
+        "Point": {
+          "Fields": [
+            {
+              "GeneratedKind": "none",
+              "Name": "x",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 5
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "y",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 5
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            }
+          ],
+          "Name": "Point",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 5
+          },
+          "Schema": "public"
+        }
+      },
+      "Enums": {
+        "Mood": {
+          "Name": "Mood",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 1
+          },
+          "Schema": "public",
+          "Values": [
+            "Happy",
+            "Sad"
+          ]
+        },
+        "mood": {
+          "Name": "mood",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 2
+          },
+          "Schema": "public",
+          "Values": [
+            "calm",
+            "tense",
+            "bored"
+          ]
+        }
+      },
+      "Functions": {
+        "Swap": [
+          {
+            "Arguments": [
+              {
+                "Name": "value",
+                "Type": {
+                  "Category": "composite",
+                  "EngineName": "Pair",
+                  "Schema": "Shapes"
+                }
+              }
+            ],
+            "BodySQL": "\n    SELECT ROW(value.right_value, value.left_value)::\"Shapes\".\"Pair\";\n",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "Swap",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 7
+            },
+            "ReturnType": {
+              "Category": "composite",
+              "EngineName": "Pair",
+              "Schema": "Shapes"
+            }
+          }
+        ],
+        "settle": [
+          {
+            "Arguments": [
+              {
+                "Name": "value",
+                "Type": {
+                  "Category": "enum",
+                  "EngineName": "Mood",
+                  "EnumValues": [
+                    "Happy",
+                    "Sad"
+                  ],
+                  "Schema": "public"
+                }
+              }
+            ],
+            "BodySQL": "\n    SELECT CASE WHEN value = 'Happy' THEN 'calm'::mood ELSE 'tense'::mood END;\n",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "settle",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 8
+            },
+            "ReturnType": {
+              "Category": "enum",
+              "EngineName": "mood",
+              "EnumValues": [
+                "calm",
+                "tense",
+                "bored"
+              ],
+              "Schema": "public"
+            }
+          }
+        ],
+        "unsettle": [
+          {
+            "Arguments": [
+              {
+                "Name": "value",
+                "Type": {
+                  "Category": "enum",
+                  "EngineName": "mood",
+                  "EnumValues": [
+                    "calm",
+                    "tense",
+                    "bored"
+                  ],
+                  "Schema": "public"
+                }
+              }
+            ],
+            "BodySQL": "\n    SELECT CASE WHEN value = 'calm' THEN 'Happy'::\"Mood\" ELSE 'Sad'::\"Mood\" END;\n",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "unsettle",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 9
+            },
+            "ReturnType": {
+              "Category": "enum",
+              "EngineName": "Mood",
+              "EnumValues": [
+                "Happy",
+                "Sad"
+              ],
+              "Schema": "public"
+            }
+          }
+        ]
+      },
+      "Name": "public",
+      "Tables": {
+        "readings": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 6
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "quoted_mood",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 6
+              },
+              "SQLType": {
+                "Category": "enum",
+                "EngineName": "Mood",
+                "EnumValues": [
+                  "Happy",
+                  "Sad"
+                ],
+                "Schema": "public"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "plain_mood",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 6
+              },
+              "SQLType": {
+                "Category": "enum",
+                "EngineName": "mood",
+                "EnumValues": [
+                  "calm",
+                  "tense",
+                  "bored"
+                ],
+                "Schema": "public"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "shouted_mood",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 6
+              },
+              "SQLType": {
+                "Category": "enum",
+                "EngineName": "mood",
+                "EnumValues": [
+                  "calm",
+                  "tense",
+                  "bored"
+                ],
+                "Schema": "public"
+              }
+            },
+            {
+              "ArrayDimensions": 1,
+              "GeneratedKind": "none",
+              "IsArray": true,
+              "Name": "quoted_moods",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 6
+              },
+              "SQLType": {
+                "Category": "enum",
+                "EngineName": "Mood",
+                "EnumValues": [
+                  "Happy",
+                  "Sad"
+                ],
+                "Nullable": true,
+                "Schema": "public"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "quoted_pair",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 6
+              },
+              "SQLType": {
+                "Category": "composite",
+                "EngineName": "Pair",
+                "Schema": "Shapes"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "plain_pair",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 6
+              },
+              "SQLType": {
+                "Category": "composite",
+                "EngineName": "pair",
+                "Schema": "Shapes"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "corner",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 6
+              },
+              "SQLType": {
+                "Category": "composite",
+                "EngineName": "Point",
+                "Schema": "public"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "spot",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 6
+              },
+              "SQLType": {
+                "Category": "geometric",
+                "EngineName": "point"
+              }
+            }
+          ],
+          "Name": "readings",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 6
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

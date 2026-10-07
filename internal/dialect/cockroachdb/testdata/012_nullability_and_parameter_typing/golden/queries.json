@@ -1,0 +1,632 @@
+[
+  {
+    "Command": "one",
+    "Filename": "aggregates.sql",
+    "Line": 1,
+    "Name": "BookCount",
+    "OutputColumns": [
+      {
+        "Name": "total",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "authors",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "ids",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int8",
+            "Width": 64
+          },
+          "EngineName": "int8[]"
+        }
+      },
+      {
+        "Name": "prices",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "decimal",
+            "EngineName": "numeric",
+            "Nullable": true,
+            "Precision": 10,
+            "Scale": 2
+          },
+          "EngineName": "numeric[]"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: BookCount, command: one)\nSELECT count(*) AS total, (SELECT count(*) FROM authors) AS authors, array_agg(id) AS ids, array_agg(price) AS prices FROM books;",
+    "Template": "SELECT ⟨c0 aliased:count(*)⟩ AS total, ⟨c1 aliased:(SELECT count(*) FROM authors)⟩ AS authors, ⟨c2 aliased:array_agg(id)⟩ AS ids, ⟨c3 aliased:array_agg(price)⟩ AS prices FROM books;"
+  },
+  {
+    "Command": "exec",
+    "Filename": "assignments.sql",
+    "InsertColumns": [
+      "id",
+      "author_id",
+      "title",
+      "published",
+      "tags"
+    ],
+    "InsertTarget": {
+      "Name": "books"
+    },
+    "Line": 1,
+    "Name": "AddBook",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "title",
+        "Number": 3,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "published",
+        "Number": 4,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "tags",
+        "Number": 5,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "text",
+            "Nullable": true
+          },
+          "EngineName": "text[]"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: AddBook, command: exec)\nINSERT INTO books (id, author_id, title, published, tags)\nVALUES ($1, (SELECT id FROM authors WHERE name = $2), upper($3), now() + $4 * interval '1 day', $5);",
+    "Template": "INSERT INTO books (id, author_id, title, published, tags)\\nVALUES ⟨values:(⟨p0⟩, (SELECT id FROM authors WHERE name = ⟨p1⟩), upper(⟨p2⟩), now() + ⟨p3⟩ * interval '1 day', ⟨p4⟩)⟩;⟨arguments p0 p1 p2 p3 p4⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "assignments.sql",
+    "Line": 5,
+    "Name": "RetagBook",
+    "Parameters": [
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "tags",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "published",
+        "Number": 3,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 4,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: RetagBook, command: exec)\nUPDATE books SET tags[$1] = $2, published = published + $3 * interval '1 hour' WHERE id = $4;",
+    "Template": "UPDATE books SET tags[⟨p0⟩] = ⟨p1⟩, published = published + ⟨p2⟩ * interval '1 hour' WHERE id = ⟨p3⟩;⟨arguments p0 p1 p2 p3⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "assignments.sql",
+    "Line": 8,
+    "Name": "BooksAfter",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "books",
+        "SourceTable": "books"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "books",
+        "SourceTable": "books"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "published",
+        "Number": 1,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp",
+          "Temporal": "timestamp"
+        }
+      },
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: BooksAfter, command: many)\nSELECT id, title FROM books WHERE (published, id) \u003e ($1, $2) ORDER BY published, id;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:title⟩ FROM books WHERE (published, id) \u003e (⟨p0⟩, ⟨p1⟩) ORDER BY published, id;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "assignments.sql",
+    "Line": 11,
+    "Name": "HasTag",
+    "OutputColumns": [
+      {
+        "Name": "tagged",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "p1",
+        "NonNullElements": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "text"
+          },
+          "EngineName": "text[]"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: HasTag, command: one)\nSELECT 'x' = ANY($1::text[]) AS tagged;",
+    "Template": "SELECT ⟨c0 aliased:'x' = ANY(⟨p0⟩::text[])⟩ AS tagged;⟨arguments p0⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "assignments.sql",
+    "Line": 14,
+    "Name": "RepriceBook",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "price",
+        "Number": 1,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "title",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "author_id",
+        "Number": 3,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "author_id_2",
+        "Nullable": true,
+        "Number": 4,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 5,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: RepriceBook, command: exec)\nUPDATE books SET price = price * $1, title = title || $2, author_id = CASE WHEN $3::boolean THEN NULLIF($4, 0) ELSE author_id END WHERE id = $5;",
+    "Template": "UPDATE books SET price = price * ⟨p0⟩, title = title || ⟨p1⟩, author_id = CASE WHEN ⟨p2⟩::boolean THEN NULLIF(⟨p3⟩, 0) ELSE author_id END WHERE id = ⟨p4⟩;⟨arguments p0 p1 p2 p3 p4⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "assignments.sql",
+    "InsertColumns": [
+      "id",
+      "author_id",
+      "title",
+      "published",
+      "tags"
+    ],
+    "InsertTarget": {
+      "Name": "books"
+    },
+    "Line": 17,
+    "Name": "AddReview",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "nickname",
+        "Nullable": true,
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "title",
+        "Number": 3,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "tags",
+        "Number": 4,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "text",
+            "Nullable": true
+          },
+          "EngineName": "text[]"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: AddReview, command: exec)\nINSERT INTO books (id, author_id, title, published, tags)\nVALUES ($1, COALESCE((SELECT id FROM authors WHERE nickname = $2), 0), $3, now(), $4);",
+    "Template": "INSERT INTO books (id, author_id, title, published, tags)\\nVALUES ⟨values:(⟨p0⟩, COALESCE((SELECT id FROM authors WHERE nickname = ⟨p1⟩), 0), ⟨p2⟩, now(), ⟨p3⟩)⟩;⟨arguments p0 p1 p2 p3⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "assignments.sql",
+    "Line": 21,
+    "Name": "TouchBook",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "published",
+        "Number": 1,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp",
+          "Temporal": "timestamp"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "price",
+        "Number": 2,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 3,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: TouchBook, command: exec)\nUPDATE books SET published = GREATEST(published, $1), price = LEAST(price, $2) WHERE id = $3;",
+    "Template": "UPDATE books SET published = GREATEST(published, ⟨p0⟩), price = LEAST(price, ⟨p1⟩) WHERE id = ⟨p2⟩;⟨arguments p0 p1 p2⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "outer_joins.sql",
+    "Line": 1,
+    "Name": "AuthorsOfBooks",
+    "OutputColumns": [
+      {
+        "Name": "author_id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "a",
+        "SourceTable": "a"
+      },
+      {
+        "Name": "name",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "a",
+        "SourceTable": "a"
+      },
+      {
+        "Name": "book_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "b",
+        "SourceTable": "books"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AuthorsOfBooks, command: many)\nWITH a AS (SELECT id, name FROM authors)\nSELECT a.id AS author_id, a.name, b.id AS book_id FROM a RIGHT JOIN books b ON b.author_id = a.id;",
+    "Template": "WITH a AS (SELECT id, name FROM authors)\\nSELECT ⟨c0 aliased:a.id⟩ AS author_id, ⟨c1:a.name⟩, ⟨c2 aliased:b.id⟩ AS book_id FROM a RIGHT JOIN books b ON b.author_id = a.id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "outer_joins.sql",
+    "Line": 5,
+    "Name": "AuthorsBesideBooks",
+    "OutputColumns": [
+      {
+        "Name": "author_id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "d"
+      },
+      {
+        "Name": "title",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "b",
+        "SourceTable": "books"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AuthorsBesideBooks, command: many)\nSELECT d.id AS author_id, b.title FROM (SELECT id FROM authors) d FULL JOIN books b ON b.author_id = d.id;",
+    "Template": "SELECT ⟨c0 aliased:d.id⟩ AS author_id, ⟨c1:b.title⟩ FROM (SELECT id FROM authors) d FULL JOIN books b ON b.author_id = d.id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "predicates.sql",
+    "Line": 1,
+    "Name": "BookFlags",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "books",
+        "SourceTable": "books"
+      },
+      {
+        "Name": "pricey",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      },
+      {
+        "Name": "cheap",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      },
+      {
+        "Name": "listed",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      },
+      {
+        "Name": "a_title",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      },
+      {
+        "Name": "not_pricey",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      },
+      {
+        "Name": "either",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      },
+      {
+        "Name": "unpriced",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      },
+      {
+        "Name": "changed",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      },
+      {
+        "Name": "chosen",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: BookFlags, command: many)\nSELECT id, price \u003e 10 AS pricey, price BETWEEN 1 AND 5 AS cheap, price IN (1, 2) AS listed, title LIKE 'A%' AS a_title,\n    NOT (price \u003e 10) AS not_pricey, price \u003e 10 OR id = 1 AS either, price IS NULL AS unpriced,\n    price IS DISTINCT FROM 1 AS changed, id = $1 AS chosen\nFROM books;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:price \u003e 10⟩ AS pricey, ⟨c2 aliased:price BETWEEN 1 AND 5⟩ AS cheap, ⟨c3 aliased:price IN (1, 2)⟩ AS listed, ⟨c4 aliased:title LIKE 'A%'⟩ AS a_title,\\n    ⟨c5 aliased:NOT (price \u003e 10)⟩ AS not_pricey, ⟨c6 aliased:price \u003e 10 OR id = 1⟩ AS either, ⟨c7 aliased:price IS NULL⟩ AS unpriced,\\n    ⟨c8 aliased:price IS DISTINCT FROM 1⟩ AS changed, ⟨c9 aliased:id = ⟨p0⟩⟩ AS chosen\\nFROM books;⟨arguments p0⟩"
+  }
+]

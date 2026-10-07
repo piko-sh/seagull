@@ -1,0 +1,10 @@
+{
+  "description": "The value helper checks each address against its value's type first: the zero netip.Addr, a nil or empty net.IP (also behind a non-nil pointer to a Nullable) and a net.IP that is neither four nor sixteen bytes are refused, as is an IPv6 address for an IPv4 value, with an error naming the parameter and the reason, which the server reports as it rejects the statement holding the value, so the statement writes no row; an IPv4-mapped address is written as IPv4, as the native driver stores it.",
+  "typeOverrides": [
+    {
+      "SQLTypeName": "IPv4",
+      "GoPackage": "net/netip",
+      "GoName": "Addr"
+    }
+  ]
+}

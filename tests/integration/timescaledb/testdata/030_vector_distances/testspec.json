@@ -1,0 +1,4 @@
+{
+  "description": "Vector distances against TimescaleDB with pgvector: <->, <=> and <#> read as double precision distances, ordered by <-> under a cast LIMIT; a VALUES arm.",
+  "expectedDiagnostics": []
+}

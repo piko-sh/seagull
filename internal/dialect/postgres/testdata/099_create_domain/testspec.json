@@ -1,0 +1,1 @@
+{"description": "CREATE DOMAIN: a column of a domain type takes the base type, NOT NULL domains (also through a domain over a domain) make the column non-null, array and enum bases resolve, a cast to a domain resolves to its base type, DROP DOMAIN removes it"}

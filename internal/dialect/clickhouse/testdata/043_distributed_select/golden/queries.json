@@ -1,0 +1,35 @@
+[
+  {
+    "Command": "many",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "ReadDistributed",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "distributed_t",
+        "SourceTable": "distributed_t"
+      },
+      {
+        "Name": "val",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "val",
+        "SourceQualifier": "distributed_t",
+        "SourceTable": "distributed_t"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ReadDistributed, many)\nSELECT id, val FROM distributed_t;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:val⟩ FROM distributed_t;"
+  }
+]

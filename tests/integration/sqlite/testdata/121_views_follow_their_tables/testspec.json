@@ -1,0 +1,5 @@
+{
+  "description": "SQLite reads a view's definition anew for every query, so a star in a view stands for the columns its table has when the query runs: after a later migration adds height to plants, SELECT * from a view over plants, a view of plants.* and a view over that view each give three columns, which the generated code scans with keep_stars.",
+  "expectedDiagnostics": [],
+  "keepStars": true
+}

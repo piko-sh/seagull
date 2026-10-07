@@ -1,0 +1,94 @@
+[
+  {
+    "Command": "many",
+    "Filename": "generate_series_query.sql",
+    "Line": 1,
+    "Name": "GenerateRange",
+    "OutputColumns": [
+      {
+        "Name": "value",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "value",
+        "SourceQualifier": "generate_series"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      },
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "p2",
+        "Number": 2,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      },
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "p3",
+        "Number": 3,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GenerateRange, command: many)\nSELECT value FROM generate_series(?, ?, ?)",
+    "Template": "SELECT ⟨c0:value⟩ FROM generate_series(⟨p0⟩, ⟨p1⟩, ⟨p2⟩)⟨arguments p0 p1 p2⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "json_each_query.sql",
+    "Line": 1,
+    "Name": "ExtractKeys",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "d",
+        "SourceTable": "documents"
+      },
+      {
+        "Name": "key",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "key",
+        "SourceQualifier": "je"
+      },
+      {
+        "Name": "value",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "value",
+        "SourceQualifier": "je"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ExtractKeys, command: many)\nSELECT d.id, je.key, je.value\nFROM documents d, json_each(d.metadata) je",
+    "Template": "SELECT ⟨c0:d.id⟩, ⟨c1:je.key⟩, ⟨c2:je.value⟩\\nFROM documents d, json_each(d.metadata) je"
+  }
+]

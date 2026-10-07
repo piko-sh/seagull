@@ -1,0 +1,3 @@
+{
+  "description": "WITH ORDINALITY through database/sql: the ordinality column a table function's alias list names, or ordinality by default, reads as a bigint, NULL only on the outer side of a LATERAL join that matched nothing; a column list follows an alias written without AS"
+}

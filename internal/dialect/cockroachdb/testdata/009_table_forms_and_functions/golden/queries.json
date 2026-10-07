@@ -1,0 +1,327 @@
+[
+  {
+    "Command": "many",
+    "Filename": "users.sql",
+    "Line": 1,
+    "Name": "ListUsers",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "created_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "created_at",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "email",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "email_domain",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "email_domain",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "email_lower",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "email_lower",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "tags",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "text",
+            "Nullable": true
+          },
+          "EngineName": "text[]"
+        },
+        "SourceColumn": "tags",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "settings",
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        },
+        "SourceColumn": "settings",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListUsers, command: many)\nSELECT * FROM users;",
+    "Template": "SELECT ⟨star 0=users.id 1=users.created_at 2=users.email 3=users.email_domain 4=users.email_lower 5=users.tags 6=users.settings:*⟩ FROM users;"
+  },
+  {
+    "Command": "one",
+    "Filename": "users.sql",
+    "InsertColumns": [
+      "email",
+      "password_hash"
+    ],
+    "InsertTarget": {
+      "Name": "users"
+    },
+    "Line": 4,
+    "Name": "CreateUser",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "email_domain",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "email_domain",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "email",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "password_hash",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: CreateUser, command: one)\nINSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email_domain;",
+    "Template": "INSERT INTO users (email, password_hash) VALUES ⟨values:(⟨p0⟩, ⟨p1⟩)⟩ RETURNING ⟨c0:id⟩, ⟨c1:email_domain⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "users.sql",
+    "Line": 7,
+    "Name": "PasswordHash",
+    "OutputColumns": [
+      {
+        "Name": "password_hash",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "password_hash",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "digest",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "email",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: PasswordHash, command: one)\nSELECT password_hash, sha256(password_hash) AS digest FROM users WHERE email = $1;",
+    "Template": "SELECT ⟨c0:password_hash⟩, ⟨c1 aliased:sha256(password_hash)⟩ AS digest FROM users WHERE email = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "users.sql",
+    "Line": 10,
+    "Name": "Similar",
+    "OutputColumns": [
+      {
+        "Name": "email",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "distance",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "sound",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "target",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Similar, command: many)\nSELECT email, levenshtein(email, $1) AS distance, soundex(email) AS sound FROM users;",
+    "Template": "SELECT ⟨c0:email⟩, ⟨c1 aliased:levenshtein(email, ⟨p0⟩)⟩ AS distance, ⟨c2 aliased:soundex(email)⟩ AS sound FROM users;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "users.sql",
+    "Line": 13,
+    "Name": "NewIdentifiers",
+    "OutputColumns": [
+      {
+        "Name": "ulid",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        }
+      },
+      {
+        "Name": "rowid",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "uuid",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: NewIdentifiers, command: one)\nSELECT gen_random_ulid() AS ulid, unordered_unique_rowid() AS rowid, uuid_generate_v4() AS uuid;",
+    "Template": "SELECT ⟨c0 aliased:gen_random_ulid()⟩ AS ulid, ⟨c1 aliased:unordered_unique_rowid()⟩ AS rowid, ⟨c2 aliased:uuid_generate_v4()⟩ AS uuid;"
+  },
+  {
+    "Command": "one",
+    "Filename": "users.sql",
+    "Line": 16,
+    "Name": "AllTags",
+    "OutputColumns": [
+      {
+        "Name": "tags",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "text",
+            "Nullable": true
+          },
+          "EngineName": "text[]"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AllTags, command: one)\nSELECT array_cat_agg(tags) AS tags FROM users;",
+    "Template": "SELECT ⟨c0 aliased:array_cat_agg(tags)⟩ AS tags FROM users;"
+  },
+  {
+    "Command": "one",
+    "Filename": "users.sql",
+    "Line": 19,
+    "Name": "CountA",
+    "OutputColumns": [
+      {
+        "Name": "a_count",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "email",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: CountA, command: one)\nSELECT regexp_count(email, 'a') AS a_count FROM users WHERE email = $1;",
+    "Template": "SELECT ⟨c0 aliased:regexp_count(email, 'a')⟩ AS a_count FROM users WHERE email = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

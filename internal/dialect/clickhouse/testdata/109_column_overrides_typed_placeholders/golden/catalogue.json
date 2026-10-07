@@ -1,0 +1,90 @@
+{
+  "DefaultSchema": "default",
+  "Identifiers": {
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "default": {
+      "Name": "default",
+      "Tables": {
+        "hosts": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_hosts.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt64",
+                "Unsigned": true,
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "GoTypeOverride": {
+                "Name": "IP",
+                "Package": "net"
+              },
+              "Name": "addr",
+              "Origin": {
+                "Filename": "001_hosts.up.sql"
+              },
+              "SQLType": {
+                "Category": "network",
+                "EngineName": "IPv4",
+                "Network": "address",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "GoTypeOverride": {
+                "Name": "HTML",
+                "Package": "html/template"
+              },
+              "Name": "label",
+              "Origin": {
+                "Filename": "001_hosts.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "String"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "GoTypeOverride": {
+                "Name": "Number",
+                "Package": "encoding/json"
+              },
+              "Name": "amount",
+              "Origin": {
+                "Filename": "001_hosts.up.sql"
+              },
+              "SQLType": {
+                "Category": "decimal",
+                "EngineName": "Decimal",
+                "Precision": 10,
+                "Scale": 2
+              }
+            }
+          ],
+          "Name": "hosts",
+          "Origin": {
+            "Filename": "001_hosts.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "default"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "default"
+  ]
+}

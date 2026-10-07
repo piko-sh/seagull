@@ -1,0 +1,69 @@
+[
+  {
+    "Command": "one",
+    "Filename": "get_account.sql",
+    "Line": 1,
+    "Name": "GetAccount",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "status",
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "account_status",
+          "EnumValues": [
+            "pending",
+            "active",
+            "disabled"
+          ]
+        },
+        "SourceColumn": "status",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "email",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: GetAccount, command: one)\nSELECT id, status, name, email FROM accounts WHERE id = $1",
+    "Template": "SELECT id, status, name, email FROM accounts WHERE id = $1"
+  }
+]

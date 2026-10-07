@@ -1,0 +1,67 @@
+{
+  "one_function": [
+    {
+      "g": 1
+    },
+    {
+      "g": 2
+    }
+  ],
+  "series_beside_settings": [
+    {
+      "key": "mode",
+      "n": 1,
+      "position": 1,
+      "value": "shuffle"
+    },
+    {
+      "key": null,
+      "n": 2,
+      "position": 2,
+      "value": null
+    },
+    {
+      "key": null,
+      "n": 3,
+      "position": 3,
+      "value": null
+    }
+  ],
+  "tracks_and_ratings_unnested": [
+    {
+      "ordinality": 1,
+      "unnest": "intro",
+      "unnest2": 5
+    },
+    {
+      "ordinality": 2,
+      "unnest": "verse",
+      "unnest2": 3
+    },
+    {
+      "ordinality": 3,
+      "unnest": "outro",
+      "unnest2": null
+    }
+  ],
+  "tracks_beside_ratings": [
+    {
+      "id": 1,
+      "position": 1,
+      "rating": 5,
+      "track": "intro"
+    },
+    {
+      "id": 1,
+      "position": 2,
+      "rating": 3,
+      "track": "verse"
+    },
+    {
+      "id": 1,
+      "position": 3,
+      "rating": null,
+      "track": "outro"
+    }
+  ]
+}

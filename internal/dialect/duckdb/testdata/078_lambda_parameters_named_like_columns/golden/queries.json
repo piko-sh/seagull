@@ -1,0 +1,218 @@
+[
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 1,
+    "Name": "HighScoringBoats",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "score",
+        "Nullable": true,
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(HighScoringBoats, many)\nSELECT id\nFROM boats\nWHERE len(list_filter(scores, score -\u003e score \u003e $1)) \u003e 0\n  AND score = $2;",
+    "Template": "SELECT ⟨c0:id⟩\\nFROM boats\\nWHERE len(list_filter(scores, score -\u003e score \u003e ⟨p0⟩)) \u003e 0\\n  AND score = ⟨p1⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 7,
+    "Name": "BoatsWithHighScores",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(BoatsWithHighScores, many)\nSELECT id\nFROM boats\nGROUP BY id\nHAVING len(list_filter(max(scores), score -\u003e score \u003e $1)) \u003e 0;",
+    "Template": "SELECT ⟨c0:id⟩\\nFROM boats\\nGROUP BY id\\nHAVING len(list_filter(max(scores), score -\u003e score \u003e ⟨p0⟩)) \u003e 0;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 13,
+    "Name": "BoatsWithComprehendedScores",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(BoatsWithComprehendedScores, many)\nSELECT id\nFROM boats\nWHERE len([score FOR score IN scores IF score \u003e $1]) \u003e 0;",
+    "Template": "SELECT ⟨c0:id⟩\\nFROM boats\\nWHERE len([score FOR score IN scores IF score \u003e ⟨p0⟩]) \u003e 0;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 18,
+    "Name": "BoatsWithOlderCrew",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Nullable": true,
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(BoatsWithOlderCrew, many)\nSELECT id\nFROM boats\nWHERE len(list_filter(crew, tag -\u003e tag.age \u003e $1)) \u003e 0;",
+    "Template": "SELECT ⟨c0:id⟩\\nFROM boats\\nWHERE len(list_filter(crew, tag -\u003e tag.age \u003e ⟨p0⟩)) \u003e 0;⟨arguments p0⟩"
+  },
+  {
+    "Command": "execrows",
+    "Filename": "boats.sql",
+    "Line": 23,
+    "Name": "RenameHighScoringBoats",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "score",
+        "Nullable": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "p2",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(RenameHighScoringBoats, execrows)\nUPDATE boats\nSET score = $1\nWHERE len(list_filter(scores, lambda score: score \u003e $2)) \u003e 0;",
+    "Template": "UPDATE boats\\nSET score = ⟨p0⟩\\nWHERE len(list_filter(scores, lambda score: score \u003e ⟨p1⟩)) \u003e 0;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "execrows",
+    "Filename": "boats.sql",
+    "Line": 28,
+    "Name": "DropScore",
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(DropScore, execrows)\nUPDATE boats\nSET scores = list_filter(scores, score -\u003e score \u003c\u003e $1)\nWHERE id = $2;",
+    "Template": "UPDATE boats\\nSET scores = list_filter(scores, score -\u003e score \u003c\u003e ⟨p0⟩)\\nWHERE id = ⟨p1⟩;⟨arguments p0 p1⟩"
+  }
+]

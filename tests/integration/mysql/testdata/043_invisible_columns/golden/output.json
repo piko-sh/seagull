@@ -1,0 +1,30 @@
+{
+  "get_token": {
+    "id": 1,
+    "token": "secret"
+  },
+  "list_accounts": [
+    {
+      "email": "a@example.com",
+      "id": 1,
+      "region": "eu"
+    },
+    {
+      "email": "b@example.com",
+      "id": 2,
+      "region": "eu"
+    }
+  ],
+  "list_qualified_accounts": [
+    {
+      "email": "a@example.com",
+      "id": 1,
+      "region": "eu"
+    },
+    {
+      "email": "b@example.com",
+      "id": 2,
+      "region": "eu"
+    }
+  ]
+}

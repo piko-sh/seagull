@@ -1,0 +1,455 @@
+[
+  {
+    "Command": "many",
+    "Filename": "aliases.sql",
+    "Line": 1,
+    "Name": "Cleaned",
+    "OutputColumns": [
+      {
+        "Name": "slug",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Name": "tidy",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Name": "lowered",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Name": "tail",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Name": "age_days",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "year",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt16",
+          "Unsigned": true,
+          "Width": 16
+        }
+      },
+      {
+        "Name": "month",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "year_text",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Cleaned, command: many)\nSELECT replace(path, '/', '-') AS slug, trim(kind) AS tidy, lcase(kind) AS lowered, substr(path, 2) AS tail,\n       date_diff('day', at, now()) AS age_days, YEAR(at) AS year, MONTH(day) AS month, DATE_FORMAT(at, '%Y') AS year_text\nFROM events;",
+    "Template": "SELECT ⟨c0 aliased:replace(path, '/', '-')⟩ AS slug, ⟨c1 aliased:trim(kind)⟩ AS tidy, ⟨c2 aliased:lcase(kind)⟩ AS lowered, ⟨c3 aliased:substr(path, 2)⟩ AS tail,\\n       ⟨c4 aliased:date_diff('day', at, now())⟩ AS age_days, ⟨c5 aliased:YEAR(at)⟩ AS year, ⟨c6 aliased:MONTH(day)⟩ AS month, ⟨c7 aliased:DATE_FORMAT(at, '%Y')⟩ AS year_text\\nFROM events;"
+  },
+  {
+    "Command": "many",
+    "Filename": "aliases.sql",
+    "Line": 6,
+    "Name": "Totals",
+    "OutputColumns": [
+      {
+        "Name": "user_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Unsigned": true,
+          "Width": 32
+        },
+        "SourceColumn": "user_id",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "some_kind",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Name": "kinds",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Name": "paths",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "String"
+          },
+          "EngineName": "Array"
+        }
+      },
+      {
+        "Name": "median_bytes",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "median_view_bytes",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "median_duration",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "Float32",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "common_flags",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Unsigned": true,
+          "Width": 32
+        }
+      },
+      {
+        "Name": "spread",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "Float64",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Totals, command: many)\nSELECT user_id, any_value(kind) AS some_kind, group_concat(kind) AS kinds, array_agg(path) AS paths,\n       medianExact(bytes) AS median_bytes, medianExactIf(bytes, kind = 'view') AS median_view_bytes,\n       medianTDigest(duration) AS median_duration, BIT_AND(flags) AS common_flags, STDDEV_POP(duration) AS spread\nFROM events\nGROUP BY user_id;",
+    "Template": "SELECT ⟨c0:user_id⟩, ⟨c1 aliased:any_value(kind)⟩ AS some_kind, ⟨c2 aliased:group_concat(kind)⟩ AS kinds, ⟨c3 aliased:array_agg(path)⟩ AS paths,\\n       ⟨c4 aliased:medianExact(bytes)⟩ AS median_bytes, ⟨c5 aliased:medianExactIf(bytes, kind = 'view')⟩ AS median_view_bytes,\\n       ⟨c6 aliased:medianTDigest(duration)⟩ AS median_duration, ⟨c7 aliased:BIT_AND(flags)⟩ AS common_flags, ⟨c8 aliased:STDDEV_POP(duration)⟩ AS spread\\nFROM events\\nGROUP BY user_id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "analytics.sql",
+    "Line": 1,
+    "Name": "Labels",
+    "OutputColumns": [
+      {
+        "Name": "label",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Name": "size",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Name": "took",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Name": "segments",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "String"
+          },
+          "EngineName": "Array"
+        }
+      },
+      {
+        "Name": "checked",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Labels, command: many)\nSELECT transform(kind, ['view', 'click'], ['Viewed', 'Clicked'], 'Other') AS label,\n       formatReadableSize(bytes) AS size, formatReadableTimeDelta(duration) AS took,\n       splitByRegexp('/', path) AS segments, throwIf(bytes \u003c 0, 'negative size') AS checked\nFROM events;",
+    "Template": "SELECT ⟨c0 aliased:transform(kind, ['view', 'click'], ['Viewed', 'Clicked'], 'Other')⟩ AS label,\\n       ⟨c1 aliased:formatReadableSize(bytes)⟩ AS size, ⟨c2 aliased:formatReadableTimeDelta(duration)⟩ AS took,\\n       ⟨c3 aliased:splitByRegexp('/', path)⟩ AS segments, ⟨c4 aliased:throwIf(bytes \u003c 0, 'negative size')⟩ AS checked\\nFROM events;"
+  },
+  {
+    "Command": "many",
+    "Filename": "analytics.sql",
+    "Line": 7,
+    "Name": "Funnel",
+    "OutputColumns": [
+      {
+        "Name": "user_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Unsigned": true,
+          "Width": 32
+        },
+        "SourceColumn": "user_id",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "reached",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "retained",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "UInt8",
+            "Unsigned": true,
+            "Width": 8
+          },
+          "EngineName": "Array"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Funnel, command: many)\nSELECT user_id, windowFunnel(3600)(at, kind = 'view', kind = 'cart', kind = 'buy') AS reached,\n       retention(kind = 'view', kind = 'buy') AS retained\nFROM events\nGROUP BY user_id;",
+    "Template": "SELECT ⟨c0:user_id⟩, ⟨c1 aliased:windowFunnel(3600)(at, kind = 'view', kind = 'cart', kind = 'buy')⟩ AS reached,\\n       ⟨c2 aliased:retention(kind = 'view', kind = 'buy')⟩ AS retained\\nFROM events\\nGROUP BY user_id;"
+  },
+  {
+    "Command": "one",
+    "Filename": "analytics.sql",
+    "Line": 13,
+    "Name": "Latency",
+    "OutputColumns": [
+      {
+        "Name": "p95",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "Float32",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "p99",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "Float32",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "spread",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "float",
+            "EngineName": "Float32",
+            "Width": 32
+          },
+          "EngineName": "Array"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Latency, command: one)\nSELECT quantileTDigest(0.95)(duration) AS p95, quantileTiming(0.99)(duration) AS p99,\n       quantilesTDigest(0.5, 0.9)(duration) AS spread\nFROM events;",
+    "Template": "SELECT ⟨c0 aliased:quantileTDigest(0.95)(duration)⟩ AS p95, ⟨c1 aliased:quantileTiming(0.99)(duration)⟩ AS p99,\\n       ⟨c2 aliased:quantilesTDigest(0.5, 0.9)(duration)⟩ AS spread\\nFROM events;"
+  },
+  {
+    "Command": "many",
+    "Filename": "dates.sql",
+    "Line": 1,
+    "Name": "Buckets",
+    "OutputColumns": [
+      {
+        "Name": "quarter_hour",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "month_start",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "Date",
+          "Temporal": "date"
+        }
+      },
+      {
+        "Name": "tick",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime64",
+          "Precision": 3,
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "hour",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "events",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Buckets, command: many)\nSELECT toStartOfInterval(at, INTERVAL 15 MINUTE) AS quarter_hour, toStartOfInterval(day, INTERVAL 1 MONTH) AS month_start,\n       toStartOfInterval(at_precise, INTERVAL 100 MILLISECOND) AS tick, time_bucket(at, INTERVAL 1 HOUR) AS hour,\n       count() AS events\nFROM events\nGROUP BY quarter_hour, month_start, tick, hour;",
+    "Template": "SELECT ⟨c0 aliased:toStartOfInterval(at, INTERVAL 15 MINUTE)⟩ AS quarter_hour, ⟨c1 aliased:toStartOfInterval(day, INTERVAL 1 MONTH)⟩ AS month_start,\\n       ⟨c2 aliased:toStartOfInterval(at_precise, INTERVAL 100 MILLISECOND)⟩ AS tick, ⟨c3 aliased:time_bucket(at, INTERVAL 1 HOUR)⟩ AS hour,\\n       ⟨c4 aliased:count()⟩ AS events\\nFROM events\\nGROUP BY quarter_hour, month_start, tick, hour;"
+  },
+  {
+    "Command": "many",
+    "Filename": "dates.sql",
+    "Line": 8,
+    "Name": "Calendar",
+    "OutputColumns": [
+      {
+        "Name": "month_key",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Unsigned": true,
+          "Width": 32
+        }
+      },
+      {
+        "Name": "day_key",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Unsigned": true,
+          "Width": 32
+        }
+      },
+      {
+        "Name": "week_start",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "Date",
+          "Temporal": "date"
+        }
+      },
+      {
+        "Name": "month_end",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "Date",
+          "Temporal": "date"
+        }
+      },
+      {
+        "Name": "five_minutes",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "millisecond",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime64",
+          "Precision": 3,
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "whole_second",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "midnight",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "next_hour",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "from_epoch",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Calendar, command: many)\nSELECT toYYYYMM(day) AS month_key, toYYYYMMDD(at) AS day_key, toMonday(day) AS week_start,\n       toLastDayOfMonth(at) AS month_end, toStartOfFiveMinutes(at) AS five_minutes,\n       toStartOfMillisecond(at_precise) AS millisecond, toDateTime(at_precise) AS whole_second, toDateTime(day) AS midnight,\n       at + toIntervalHour(1) AS next_hour, fromUnixTimestamp(bytes) AS from_epoch\nFROM events;",
+    "Template": "SELECT ⟨c0 aliased:toYYYYMM(day)⟩ AS month_key, ⟨c1 aliased:toYYYYMMDD(at)⟩ AS day_key, ⟨c2 aliased:toMonday(day)⟩ AS week_start,\\n       ⟨c3 aliased:toLastDayOfMonth(at)⟩ AS month_end, ⟨c4 aliased:toStartOfFiveMinutes(at)⟩ AS five_minutes,\\n       ⟨c5 aliased:toStartOfMillisecond(at_precise)⟩ AS millisecond, ⟨c6 aliased:toDateTime(at_precise)⟩ AS whole_second, ⟨c7 aliased:toDateTime(day)⟩ AS midnight,\\n       ⟨c8 aliased:at + toIntervalHour(1)⟩ AS next_hour, ⟨c9 aliased:fromUnixTimestamp(bytes)⟩ AS from_epoch\\nFROM events;"
+  }
+]

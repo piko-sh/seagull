@@ -1,0 +1,3 @@
+{
+  "description": "STRUCTs whose fields have names (struct_pack, a struct literal, a list of them) read into the generated structs, the forms Seagull suggests where it refuses ROW(...); a lambda parameter and a list comprehension's variable named like a VARCHAR column hide it, so the parameter compared with them is an int32"
+}

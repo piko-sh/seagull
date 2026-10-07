@@ -1,0 +1,3 @@
+{
+  "description": "Dynamic values, the paths of a JSON column and an Array(Dynamic) read through database/sql into any (the driver's chcol.Variant, which encodes as its value). Variant columns are refused with Q059, as checked by TestAggregateStatesAndVariantsAreRefusedWhereNoDriverReadsThem."
+}

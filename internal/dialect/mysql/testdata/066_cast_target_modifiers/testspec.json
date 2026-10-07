@@ -1,0 +1,3 @@
+{
+  "description": "A conversion keeps the modifiers of its target type: CAST(amount AS DECIMAL(12, 4)) has precision 12 and scale 4, CONVERT(label, CHAR(20)) a length of 20, a cast to DATETIME(6) a fractional-second precision of 6 and JSON_VALUE ... RETURNING DECIMAL(5, 2) precision 5 and scale 2, and a placeholder cast to DECIMAL(10, 2) takes that type. A cast that restates the column's type with its modifiers keeps the column's Go type override; a cast to other modifiers drops it."
+}

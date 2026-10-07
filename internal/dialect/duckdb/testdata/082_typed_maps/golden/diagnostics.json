@@ -1,0 +1,35 @@
+[
+  {
+    "Code": "Q059",
+    "Column": 5,
+    "EndColumn": 30,
+    "EndLine": 18,
+    "Filename": "maps.sql",
+    "Line": 18,
+    "Message": "column \"literal_rows\" cannot be read: it holds a STRUCT whose fields have no names, as ROW(a, b) and (a, b) build, which duckdb-go cannot read (it fails with \"empty name\")",
+    "Severity": "error",
+    "Suggestion": "name the struct's fields: struct_pack(a := a, b := b) or {'a': a, 'b': b}"
+  },
+  {
+    "Code": "Q059",
+    "Column": 5,
+    "EndColumn": 33,
+    "EndLine": 19,
+    "Filename": "maps.sql",
+    "Line": 19,
+    "Message": "column \"zipped_rows\" cannot be read: it holds a STRUCT whose fields have no names, as ROW(a, b) and (a, b) build, which duckdb-go cannot read (it fails with \"empty name\")",
+    "Severity": "error",
+    "Suggestion": "name the struct's fields: struct_pack(a := a, b := b) or {'a': a, 'b': b}"
+  },
+  {
+    "Code": "Q059",
+    "Column": 5,
+    "EndColumn": 46,
+    "EndLine": 20,
+    "Filename": "maps.sql",
+    "Line": 20,
+    "Message": "column \"entry_rows\" cannot be read: it holds a STRUCT whose fields have no names, as ROW(a, b) and (a, b) build, which duckdb-go cannot read (it fails with \"empty name\")",
+    "Severity": "error",
+    "Suggestion": "name the struct's fields: struct_pack(a := a, b := b) or {'a': a, 'b': b}"
+  }
+]

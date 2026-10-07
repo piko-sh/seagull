@@ -1,0 +1,11 @@
+{
+  "description": "A column beside an aggregate without GROUP BY is an error (Q062), as the engine rejects the query; the query is left out.",
+  "expectedDiagnosticCount": 1,
+  "diagnostics": [
+    {
+      "severity": "error",
+      "code": "Q062",
+      "messageContains": "title"
+    }
+  ]
+}

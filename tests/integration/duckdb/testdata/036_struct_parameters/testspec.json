@@ -1,0 +1,3 @@
+{
+  "description": "DuckDB STRUCT and LIST of STRUCT parameters bind through the driver composite: a struct, a list of structs and a nullable struct holding a map round-trip, and a struct compares"
+}

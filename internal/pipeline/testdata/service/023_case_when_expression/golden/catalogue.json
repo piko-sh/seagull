@@ -1,0 +1,75 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "public": {
+      "Name": "public",
+      "Tables": {
+        "orders": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_create_tables.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "status",
+              "Origin": {
+                "Filename": "001_create_tables.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "amount",
+              "Origin": {
+                "Filename": "001_create_tables.up.sql"
+              },
+              "SQLType": {
+                "Category": "decimal",
+                "EngineName": "numeric",
+                "Precision": 10,
+                "Scale": 2
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "discount",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_create_tables.up.sql"
+              },
+              "SQLType": {
+                "Category": "float",
+                "EngineName": "float4",
+                "Width": 32
+              }
+            }
+          ],
+          "Name": "orders",
+          "Origin": {
+            "Filename": "001_create_tables.up.sql"
+          },
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

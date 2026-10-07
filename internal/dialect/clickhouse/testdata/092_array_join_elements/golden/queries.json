@@ -1,0 +1,710 @@
+[
+  {
+    "Command": "many",
+    "Filename": "sightings.sql",
+    "Line": 1,
+    "Name": "ListLegs",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "sightings",
+        "SourceTable": "sightings"
+      },
+      {
+        "Name": "legs.colony",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "legs.colony",
+        "SourceQualifier": "sightings",
+        "SourceTable": "sightings"
+      },
+      {
+        "Name": "legs.minutes",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt16",
+          "Nullable": true,
+          "Unsigned": true,
+          "Width": 16
+        },
+        "SourceColumn": "legs.minutes",
+        "SourceQualifier": "sightings",
+        "SourceTable": "sightings"
+      },
+      {
+        "Name": "tags",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "String"
+          },
+          "EngineName": "Array"
+        },
+        "SourceColumn": "tags",
+        "SourceQualifier": "sightings",
+        "SourceTable": "sightings"
+      },
+      {
+        "Name": "counts",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "Int32",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "Array"
+        },
+        "SourceColumn": "counts",
+        "SourceQualifier": "sightings",
+        "SourceTable": "sightings"
+      },
+      {
+        "Name": "nests",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "struct",
+            "EngineName": "Tuple",
+            "StructFields": [
+              {
+                "Name": "colony",
+                "SQLType": {
+                  "Category": "text",
+                  "EngineName": "String"
+                }
+              },
+              {
+                "Name": "eggs",
+                "SQLType": {
+                  "Category": "integer",
+                  "EngineName": "UInt8",
+                  "Unsigned": true,
+                  "Width": 8
+                }
+              }
+            ]
+          },
+          "EngineName": "Array"
+        },
+        "SourceColumn": "nests",
+        "SourceQualifier": "sightings",
+        "SourceTable": "sightings"
+      },
+      {
+        "Name": "pairs",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "struct",
+            "EngineName": "Tuple",
+            "StructFields": [
+              {
+                "Name": "_1",
+                "Positional": true,
+                "SQLType": {
+                  "Category": "integer",
+                  "EngineName": "UInt8",
+                  "Unsigned": true,
+                  "Width": 8
+                }
+              },
+              {
+                "Name": "_2",
+                "Positional": true,
+                "SQLType": {
+                  "Category": "text",
+                  "EngineName": "String"
+                }
+              }
+            ]
+          },
+          "EngineName": "Array"
+        },
+        "SourceColumn": "pairs",
+        "SourceQualifier": "sightings",
+        "SourceTable": "sightings"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ListLegs, many)\nSELECT * FROM sightings ARRAY JOIN legs;",
+    "Template": "SELECT ⟨star 0=sightings.id 1=sightings.legs\\.colony 2=sightings.legs\\.minutes 3=sightings.tags 4=sightings.counts 5=sightings.nests 6=sightings.pairs:*⟩ FROM sightings ARRAY JOIN legs;"
+  },
+  {
+    "Command": "many",
+    "Filename": "sightings.sql",
+    "Line": 4,
+    "Name": "ListLegFields",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "sightings",
+        "SourceTable": "sightings"
+      },
+      {
+        "Name": "legs.colony",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Name": "legs.minutes",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt16",
+          "Nullable": true,
+          "Unsigned": true,
+          "Width": 16
+        }
+      },
+      {
+        "Name": "legs",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "Tuple",
+          "StructFields": [
+            {
+              "Name": "colony",
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "String"
+              }
+            },
+            {
+              "Name": "minutes",
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt16",
+                "Nullable": true,
+                "Unsigned": true,
+                "Width": 16
+              }
+            }
+          ]
+        },
+        "SourceColumn": "legs",
+        "SourceQualifier": "sightings",
+        "SourceTable": "sightings"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ListLegFields, many)\nSELECT id, legs.colony, sightings.legs.minutes, legs FROM sightings ARRAY JOIN legs;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:legs.colony⟩, ⟨c2:sightings.legs.minutes⟩, ⟨c3:legs⟩ FROM sightings ARRAY JOIN legs;"
+  },
+  {
+    "Command": "many",
+    "Filename": "sightings.sql",
+    "Line": 7,
+    "Name": "ListAliasedLegs",
+    "OutputColumns": [
+      {
+        "Name": "leg.colony",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Name": "leg.minutes",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt16",
+          "Nullable": true,
+          "Unsigned": true,
+          "Width": 16
+        }
+      },
+      {
+        "Name": "leg",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "Tuple",
+          "StructFields": [
+            {
+              "Name": "colony",
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "String"
+              }
+            },
+            {
+              "Name": "minutes",
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt16",
+                "Nullable": true,
+                "Unsigned": true,
+                "Width": 16
+              }
+            }
+          ]
+        },
+        "SourceColumn": "leg",
+        "SourceQualifier": "leg"
+      },
+      {
+        "Name": "legs.colony",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "String"
+          },
+          "EngineName": "Array"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ListAliasedLegs, many)\nSELECT leg.colony, leg.minutes, leg, legs.colony FROM sightings ARRAY JOIN legs AS leg;",
+    "Template": "SELECT ⟨c0:leg.colony⟩, ⟨c1:leg.minutes⟩, ⟨c2:leg⟩, ⟨c3:legs.colony⟩ FROM sightings ARRAY JOIN legs AS leg;"
+  },
+  {
+    "Command": "many",
+    "Filename": "sightings.sql",
+    "Line": 10,
+    "Name": "ListOneLegField",
+    "OutputColumns": [
+      {
+        "Name": "legs.colony",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "legs.colony",
+        "SourceQualifier": "sightings",
+        "SourceTable": "sightings"
+      },
+      {
+        "Name": "legs.minutes",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "UInt16",
+            "Nullable": true,
+            "Unsigned": true,
+            "Width": 16
+          },
+          "EngineName": "Array"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ListOneLegField, many)\nSELECT legs.colony, legs.minutes FROM sightings ARRAY JOIN legs.colony;",
+    "Template": "SELECT ⟨c0:legs.colony⟩, ⟨c1:legs.minutes⟩ FROM sightings ARRAY JOIN legs.colony;"
+  },
+  {
+    "Command": "many",
+    "Filename": "sightings.sql",
+    "Line": 13,
+    "Name": "ListTags",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "sightings",
+        "SourceTable": "sightings"
+      },
+      {
+        "Name": "legs.colony",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "String"
+          },
+          "EngineName": "Array"
+        },
+        "SourceColumn": "legs.colony",
+        "SourceQualifier": "sightings",
+        "SourceTable": "sightings"
+      },
+      {
+        "Name": "legs.minutes",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "UInt16",
+            "Nullable": true,
+            "Unsigned": true,
+            "Width": 16
+          },
+          "EngineName": "Array"
+        },
+        "SourceColumn": "legs.minutes",
+        "SourceQualifier": "sightings",
+        "SourceTable": "sightings"
+      },
+      {
+        "Name": "tags",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "tags",
+        "SourceQualifier": "sightings",
+        "SourceTable": "sightings"
+      },
+      {
+        "Name": "counts",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "Int32",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "Array"
+        },
+        "SourceColumn": "counts",
+        "SourceQualifier": "sightings",
+        "SourceTable": "sightings"
+      },
+      {
+        "Name": "nests",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "struct",
+            "EngineName": "Tuple",
+            "StructFields": [
+              {
+                "Name": "colony",
+                "SQLType": {
+                  "Category": "text",
+                  "EngineName": "String"
+                }
+              },
+              {
+                "Name": "eggs",
+                "SQLType": {
+                  "Category": "integer",
+                  "EngineName": "UInt8",
+                  "Unsigned": true,
+                  "Width": 8
+                }
+              }
+            ]
+          },
+          "EngineName": "Array"
+        },
+        "SourceColumn": "nests",
+        "SourceQualifier": "sightings",
+        "SourceTable": "sightings"
+      },
+      {
+        "Name": "pairs",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "struct",
+            "EngineName": "Tuple",
+            "StructFields": [
+              {
+                "Name": "_1",
+                "Positional": true,
+                "SQLType": {
+                  "Category": "integer",
+                  "EngineName": "UInt8",
+                  "Unsigned": true,
+                  "Width": 8
+                }
+              },
+              {
+                "Name": "_2",
+                "Positional": true,
+                "SQLType": {
+                  "Category": "text",
+                  "EngineName": "String"
+                }
+              }
+            ]
+          },
+          "EngineName": "Array"
+        },
+        "SourceColumn": "pairs",
+        "SourceQualifier": "sightings",
+        "SourceTable": "sightings"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ListTags, many)\nSELECT * FROM sightings ARRAY JOIN tags;",
+    "Template": "SELECT ⟨star 0=sightings.id 1=sightings.legs\\.colony 2=sightings.legs\\.minutes 3=sightings.tags 4=sightings.counts 5=sightings.nests 6=sightings.pairs:*⟩ FROM sightings ARRAY JOIN tags;"
+  },
+  {
+    "Command": "many",
+    "Filename": "sightings.sql",
+    "Line": 16,
+    "Name": "ListTagsQualified",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "s",
+        "SourceTable": "sightings"
+      },
+      {
+        "Name": "tags",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "tags",
+        "SourceQualifier": "s",
+        "SourceTable": "sightings"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ListTagsQualified, many)\nSELECT s.id, tags FROM sightings AS s ARRAY JOIN s.tags;",
+    "Template": "SELECT ⟨c0:s.id⟩, ⟨c1:tags⟩ FROM sightings AS s ARRAY JOIN s.tags;"
+  },
+  {
+    "Command": "many",
+    "Filename": "sightings.sql",
+    "Line": 19,
+    "Name": "ListNests",
+    "OutputColumns": [
+      {
+        "Name": "nest.colony",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Name": "nest.eggs",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "nest._1",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Name": "nest",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "Tuple",
+          "StructFields": [
+            {
+              "Name": "colony",
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "String"
+              }
+            },
+            {
+              "Name": "eggs",
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt8",
+                "Unsigned": true,
+                "Width": 8
+              }
+            }
+          ]
+        },
+        "SourceColumn": "nest",
+        "SourceQualifier": "nest"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ListNests, many)\nSELECT nest.colony, nest.eggs, nest.1, nest FROM sightings ARRAY JOIN nests AS nest;",
+    "Template": "SELECT ⟨c0:nest.colony⟩, ⟨c1:nest.eggs⟩, ⟨c2:nest.1⟩, ⟨c3:nest⟩ FROM sightings ARRAY JOIN nests AS nest;"
+  },
+  {
+    "Command": "many",
+    "Filename": "sightings.sql",
+    "Line": 22,
+    "Name": "ListPairs",
+    "OutputColumns": [
+      {
+        "Name": "pair._1",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "pair._2",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ListPairs, many)\nSELECT pair.1, pair.2 FROM sightings ARRAY JOIN pairs AS pair;",
+    "Template": "SELECT ⟨c0:pair.1⟩, ⟨c1:pair.2⟩ FROM sightings ARRAY JOIN pairs AS pair;"
+  },
+  {
+    "Command": "many",
+    "Filename": "sightings.sql",
+    "Line": 25,
+    "Name": "ListCountsOrEmpty",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "sightings",
+        "SourceTable": "sightings"
+      },
+      {
+        "Name": "tag",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "tag",
+        "SourceQualifier": "tag"
+      },
+      {
+        "Name": "amount",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int32",
+          "Nullable": true,
+          "Width": 32
+        },
+        "SourceColumn": "amount",
+        "SourceQualifier": "amount"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ListCountsOrEmpty, many)\nSELECT id, tag, amount FROM sightings LEFT ARRAY JOIN tags AS tag, counts AS amount;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:tag⟩, ⟨c2:amount⟩ FROM sightings LEFT ARRAY JOIN tags AS tag, counts AS amount;"
+  },
+  {
+    "Command": "many",
+    "Filename": "sightings.sql",
+    "Line": 28,
+    "Name": "ListLevels",
+    "OutputColumns": [
+      {
+        "Name": "level",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        },
+        "SourceColumn": "level",
+        "SourceQualifier": "level"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ListLevels, many)\nSELECT level FROM sightings ARRAY JOIN [1, 2, 3] AS level;",
+    "Template": "SELECT ⟨c0:level⟩ FROM sightings ARRAY JOIN [1, 2, 3] AS level;"
+  },
+  {
+    "Command": "many",
+    "Filename": "sightings.sql",
+    "Line": 31,
+    "Name": "ListDoubledMinutes",
+    "OutputColumns": [
+      {
+        "Name": "doubled",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Nullable": true,
+          "Unsigned": true,
+          "Width": 32
+        },
+        "SourceColumn": "doubled",
+        "SourceQualifier": "doubled"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ListDoubledMinutes, many)\nSELECT doubled FROM sightings ARRAY JOIN arrayMap(m -\u003e m * 2, legs.minutes) AS doubled;",
+    "Template": "SELECT ⟨c0:doubled⟩ FROM sightings ARRAY JOIN arrayMap(m -\u003e m * 2, legs.minutes) AS doubled;"
+  },
+  {
+    "Command": "many",
+    "Filename": "sightings.sql",
+    "Line": 34,
+    "Name": "ListColonyLegs",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "sightings",
+        "SourceTable": "sightings"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "colony",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ListColonyLegs, many)\nSELECT id FROM sightings ARRAY JOIN legs WHERE legs.colony = {colony:String} ORDER BY legs.minutes;",
+    "Template": "SELECT ⟨c0:id⟩ FROM sightings ARRAY JOIN legs WHERE legs.colony = ⟨p0 String⟩ ORDER BY legs.minutes;⟨arguments p0⟩"
+  }
+]

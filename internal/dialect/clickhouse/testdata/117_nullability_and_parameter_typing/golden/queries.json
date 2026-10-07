@@ -1,0 +1,133 @@
+[
+  {
+    "Command": "one",
+    "Filename": "aggregates.sql",
+    "Line": 1,
+    "Name": "BookCount",
+    "OutputColumns": [
+      {
+        "Name": "total",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "authors",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "ids",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "Int32",
+            "Width": 32
+          },
+          "EngineName": "Array"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: BookCount, command: one)\nSELECT count() AS total, (SELECT count() FROM authors) AS authors, groupArray(id) AS ids FROM books;",
+    "Template": "SELECT ⟨c0 aliased:count()⟩ AS total, ⟨c1 aliased:(SELECT count() FROM authors)⟩ AS authors, ⟨c2 aliased:groupArray(id)⟩ AS ids FROM books;"
+  },
+  {
+    "Command": "many",
+    "Filename": "predicates.sql",
+    "Line": 1,
+    "Name": "BookFlags",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int32",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "books",
+        "SourceTable": "books"
+      },
+      {
+        "Name": "pricey",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "cheap",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "listed",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "a_title",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "not_pricey",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "either",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "unpriced",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: BookFlags, command: many)\nSELECT id, price \u003e 10 AS pricey, price BETWEEN 1 AND 5 AS cheap, price IN (1, 2) AS listed, title LIKE 'A%' AS a_title,\n    NOT (price \u003e 10) AS not_pricey, price \u003e 10 OR id = 1 AS either, price IS NULL AS unpriced\nFROM books;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:price \u003e 10⟩ AS pricey, ⟨c2 aliased:price BETWEEN 1 AND 5⟩ AS cheap, ⟨c3 aliased:price IN (1, 2)⟩ AS listed, ⟨c4 aliased:title LIKE 'A%'⟩ AS a_title,\\n    ⟨c5 aliased:NOT (price \u003e 10)⟩ AS not_pricey, ⟨c6 aliased:price \u003e 10 OR id = 1⟩ AS either, ⟨c7 aliased:price IS NULL⟩ AS unpriced\\nFROM books;"
+  }
+]

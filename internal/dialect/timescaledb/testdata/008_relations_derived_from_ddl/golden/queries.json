@@ -1,0 +1,116 @@
+[
+  {
+    "Command": "many",
+    "Filename": "derived.sql",
+    "Line": 1,
+    "Name": "ListPartitionMetrics",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "metrics_2026",
+        "SourceTable": "metrics_2026"
+      },
+      {
+        "Name": "recorded_on",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        },
+        "SourceColumn": "recorded_on",
+        "SourceQualifier": "metrics_2026",
+        "SourceTable": "metrics_2026"
+      },
+      {
+        "Name": "reading",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        },
+        "SourceColumn": "reading",
+        "SourceQualifier": "metrics_2026",
+        "SourceTable": "metrics_2026"
+      },
+      {
+        "Name": "device",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "device",
+        "SourceQualifier": "metrics_2026",
+        "SourceTable": "metrics_2026"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListPartitionMetrics, command: many)\nSELECT id, recorded_on, reading, device FROM metrics_2026;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:recorded_on⟩, ⟨c2:reading⟩, ⟨c3:device⟩ FROM metrics_2026;"
+  },
+  {
+    "Command": "one",
+    "Filename": "derived.sql",
+    "Line": 4,
+    "Name": "MetricNumber",
+    "OutputColumns": [
+      {
+        "Name": "last_value",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "last_value",
+        "SourceQualifier": "metric_numbers",
+        "SourceTable": "metric_numbers"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: MetricNumber, command: one)\nSELECT last_value FROM metric_numbers;",
+    "Template": "SELECT ⟨c0:last_value⟩ FROM metric_numbers;"
+  },
+  {
+    "Command": "many",
+    "Filename": "derived.sql",
+    "Line": 7,
+    "Name": "ListSnapshots",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "snapshots",
+        "SourceSchema": "archive",
+        "SourceTable": "snapshots"
+      },
+      {
+        "Name": "taken_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "taken_at",
+        "SourceQualifier": "snapshots",
+        "SourceSchema": "archive",
+        "SourceTable": "snapshots"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListSnapshots, command: many)\nSELECT id, taken_at FROM archive.snapshots;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:taken_at⟩ FROM archive.snapshots;"
+  }
+]

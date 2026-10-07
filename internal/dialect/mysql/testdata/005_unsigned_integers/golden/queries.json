@@ -1,0 +1,109 @@
+[
+  {
+    "Command": "one",
+    "Filename": "get_counter.sql",
+    "Line": 1,
+    "Name": "GetCounter",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int unsigned",
+          "Unsigned": true,
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "counters",
+        "SourceTable": "counters"
+      },
+      {
+        "Name": "page_views",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint unsigned",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "page_views",
+        "SourceQualifier": "counters",
+        "SourceTable": "counters"
+      },
+      {
+        "Name": "small_counter",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "smallint unsigned",
+          "Unsigned": true,
+          "Width": 16
+        },
+        "SourceColumn": "small_counter",
+        "SourceQualifier": "counters",
+        "SourceTable": "counters"
+      },
+      {
+        "Name": "tiny_flag",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "tinyint unsigned",
+          "Unsigned": true,
+          "Width": 8
+        },
+        "SourceColumn": "tiny_flag",
+        "SourceQualifier": "counters",
+        "SourceTable": "counters"
+      },
+      {
+        "Name": "medium_counter",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "mediumint unsigned",
+          "Unsigned": true,
+          "Width": 24
+        },
+        "SourceColumn": "medium_counter",
+        "SourceQualifier": "counters",
+        "SourceTable": "counters"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int unsigned",
+          "Unsigned": true,
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetCounter, command: one)\nSELECT id, page_views, small_counter, tiny_flag, medium_counter\nFROM counters\nWHERE id = ?;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:page_views⟩, ⟨c2:small_counter⟩, ⟨c3:tiny_flag⟩, ⟨c4:medium_counter⟩\\nFROM counters\\nWHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "increment_views.sql",
+    "Line": 1,
+    "Name": "IncrementViews",
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int unsigned",
+          "Unsigned": true,
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: IncrementViews, command: exec)\nUPDATE counters SET page_views = page_views + 1 WHERE id = ?;",
+    "Template": "UPDATE counters SET page_views = page_views + 1 WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

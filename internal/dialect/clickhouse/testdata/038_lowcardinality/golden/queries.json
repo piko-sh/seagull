@@ -1,0 +1,60 @@
+[
+  {
+    "Command": "one",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "ReadLC",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "lc",
+        "SourceTable": "lc"
+      },
+      {
+        "Name": "country",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "country",
+        "SourceQualifier": "lc",
+        "SourceTable": "lc"
+      },
+      {
+        "Name": "tier",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "tier",
+        "SourceQualifier": "lc",
+        "SourceTable": "lc"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ReadLC, one)\nSELECT id, country, tier FROM lc WHERE id = {id:UInt64};",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:country⟩, ⟨c2:tier⟩ FROM lc WHERE id = ⟨p0 UInt64⟩;⟨arguments p0⟩"
+  }
+]

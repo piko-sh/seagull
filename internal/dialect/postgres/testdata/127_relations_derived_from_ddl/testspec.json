@@ -1,0 +1,4 @@
+{
+  "description": "Relations derived from DDL: a partition is a table holding its parent's columns, its element list's NOT NULL and its parent's later columns, a sequence can be read as a relation with last_value, log_cnt and is_called, objects created after SET search_path go to the schema it names (SET LOCAL and RESET end it, and queries keep public), names qualified by the database replay as schema-qualified ones, and CREATE OR REPLACE TRIGGER and CREATE CONSTRAINT TRIGGER replay.",
+  "expectedDiagnosticCount": 0
+}

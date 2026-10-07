@@ -1,0 +1,4 @@
+{
+  "description": "DuckDB FLOAT, FLOAT4, REAL and FLOAT(p) up to 24 bits are the four-byte single-precision type, so Seagull types them float32, as DuckDB stores and duckdb-go returns them, and FLOAT(25) to FLOAT(53) and DOUBLE float64: FLOAT and nullable FLOAT4 columns, a FLOAT(10) and a FLOAT(53) column, a FLOAT[] list column bound from []float32 in an INSERT, an UPDATE and a cast list parameter, a struct with a FLOAT field, FLOAT arithmetic and a FLOAT cast, written and read back.",
+  "expectedDiagnostics": []
+}

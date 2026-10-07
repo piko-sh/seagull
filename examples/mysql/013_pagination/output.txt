@@ -1,0 +1,20 @@
+size 0 uses the default of 3:
+  #1 crab in the north pool
+  #2 starfish in the east pool
+  #3 crab in the east pool
+the next page, offset 3:
+  #4 blenny in the north pool
+  #5 crab in the south pool
+  #6 prawn in the north pool
+size 50 is capped at 5:
+  #1 crab in the north pool
+  #2 starfish in the east pool
+  #3 crab in the east pool
+  #4 blenny in the north pool
+  #5 crab in the south pool
+biggest crabs, offset 0:
+  #3 60mm
+  #7 55mm
+biggest crabs, offset 2:
+  #1 45mm
+  #5 30mm

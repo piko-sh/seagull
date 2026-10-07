@@ -1,0 +1,24 @@
+[
+  {
+    "Command": "many",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "Aliased",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "inner"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(Aliased, many)\nSELECT inner.id FROM (SELECT id FROM t) AS inner;",
+    "Template": "SELECT ⟨c0:inner.id⟩ FROM (SELECT id FROM t) AS inner;"
+  }
+]

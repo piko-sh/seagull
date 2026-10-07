@@ -1,0 +1,140 @@
+{
+  "ages": [
+    {
+      "ends": "2024-03-02T00:00:00Z",
+      "id": 1,
+      "since_new_year": "2 mons 12:00:00",
+      "slot": "2024-03-01T12:00:00Z",
+      "starts": "2024-03-01T00:00:00Z"
+    },
+    {
+      "ends": null,
+      "id": 2,
+      "since_new_year": "1 mon",
+      "slot": "2024-02-01T00:15:00Z",
+      "starts": "2024-02-01T00:00:00Z"
+    }
+  ],
+  "documents": [
+    {
+      "first_item": {
+        "id": 7
+      },
+      "id": 1,
+      "key": "items",
+      "tagged": {
+        "items": [
+          {
+            "id": 7
+          }
+        ],
+        "kind": 1
+      }
+    },
+    {
+      "first_item": {
+        "id": 7
+      },
+      "id": 1,
+      "key": "kind",
+      "tagged": {
+        "items": [
+          {
+            "id": 7
+          }
+        ],
+        "kind": 1
+      }
+    },
+    {
+      "first_item": null,
+      "id": 2,
+      "key": "kind",
+      "tagged": {
+        "kind": 1
+      }
+    }
+  ],
+  "exact_root": "4.000000000000000",
+  "lock_account": "ok",
+  "mark_done": "ok",
+  "moods": {
+    "every_mood": [
+      "sad",
+      "ok",
+      "happy"
+    ],
+    "highest": "happy",
+    "lowest": "sad"
+  },
+  "new_id": {
+    "generated": true
+  },
+  "numbers": {
+    "correlation": 1,
+    "cube_root": 3.0000000000000004,
+    "exact_root": {
+      "Coeff": {},
+      "Exponent": -15,
+      "Form": 0,
+      "Negative": false
+    },
+    "median_ratio": 1,
+    "pairs": 2,
+    "some_feeling": "ok"
+  },
+  "series": [
+    {
+      "day": "2024-01-01T00:00:00Z",
+      "n": 1
+    },
+    {
+      "day": "2024-01-02T00:00:00Z",
+      "n": 2
+    }
+  ],
+  "statuses": [
+    {
+      "id": 1,
+      "status": "done"
+    },
+    {
+      "id": 2,
+      "status": null
+    }
+  ],
+  "texts": [
+    {
+      "a_count": 1,
+      "decoded": "hi",
+      "digest": "8f434346648f6b96df89dda901c5176b10a6d83961dd3c1ac88b59b2dc327aa4",
+      "digits": "12",
+      "first_number": [
+        "12"
+      ],
+      "hex_id": "1",
+      "id": 1,
+      "parts": [
+        "order  12",
+        " a  b"
+      ],
+      "squeezed": "order 12, a b"
+    },
+    {
+      "a_count": 0,
+      "decoded": "",
+      "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "digits": null,
+      "first_number": null,
+      "hex_id": "2",
+      "id": 2,
+      "parts": [
+        "no digits"
+      ],
+      "squeezed": "no digits"
+    }
+  ],
+  "try_lock": {
+    "locked": true
+  }
+}

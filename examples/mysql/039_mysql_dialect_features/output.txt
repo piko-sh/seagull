@@ -1,0 +1,13 @@
+INSERT IGNORE  registered Kittiwake as PZ1001 with kit "radar,radio,radar"
+INSERT IGNORE  registered Salty Chip as PZ2002 with kit "liferaft"
+INSERT IGNORE  PZ1001 is already registered, so Kittiwake II was ignored
+INSERT IGNORE  registered Gull Wing as PZ3003 with kit "radio,sonar"
+REPLACE INTO   berth 1 for PZ1001, rows affected: 1
+REPLACE INTO   berth 2 for PZ2002, rows affected: 1
+REPLACE INTO   berth 1 for PZ2002, rows affected: 3
+  berth 1 (uint8): Salty Chip
+FIND_IN_SET    Kittiwake has a radio among "radio,radar"
+FIND_IN_SET    Gull Wing has a radio among "radio"
+GROUP_CONCAT   PZ1001 Kittiwake  crossings 2 (uint32), crew: Morwenna the skipper, Jago the deckhand
+GROUP_CONCAT   PZ2002 Salty Chip crossings 0 (uint32), crew: no crew
+GROUP_CONCAT   PZ3003 Gull Wing  crossings 1 (uint32), crew: Kerensa the skipper

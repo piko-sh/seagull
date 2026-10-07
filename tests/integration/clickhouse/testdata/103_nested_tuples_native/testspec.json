@@ -1,0 +1,4 @@
+{
+  "description": "Native ClickHouse reads the nested tuples clickhouse-go reads: a named Tuple inside an unnamed one, Maps of unnamed Tuples inside unnamed and named ones, an Array of unnamed Tuples inside a named one, Arrays of Arrays and Maps of Arrays of unnamed Tuples, a nested unnamed Tuple cast to named elements, and the elements of a nested Tuple selected on their own (x.2.1)",
+  "emitter": "native"
+}

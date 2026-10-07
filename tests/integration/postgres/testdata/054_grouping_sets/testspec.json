@@ -1,0 +1,4 @@
+{
+  "description": "ROLLUP, CUBE and GROUPING SETS read their subtotal rows: a key a row does not group by reads NULL, also through an expression, a position or an alias, and GROUPING reports the left-out keys.",
+  "expectedDiagnostics": []
+}

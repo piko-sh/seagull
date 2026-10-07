@@ -1,0 +1,4 @@
+{
+  "description": "A relation named where a value is expected is its current row: row_to_json, to_json, to_jsonb and json_agg accept it, SELECT t projects the table's composite type, a derived table's row is a record, the nullable side of an outer join may be NULL, a function returning one value per row is that value, and a column of the relation's name wins over the row.",
+  "expectedDiagnosticCount": 0
+}

@@ -1,0 +1,28 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: A continuous aggregate keeps a stats_agg summary per buoy per hour; it is created outside a transaction with sgl.migration(no_transaction), refreshed outside RunInTx, read as typed rows, and rolled up over the night.
+differs:
+  - "the continuous aggregate's migration starts with -- sgl.migration(no_transaction: true), because CREATE MATERIALIZED VIEW ... WITH DATA cannot run in a transaction block; WITH NO DATA is the alternative"
+  - CALL refresh_continuous_aggregate commits as it goes, so it fails inside RunInTx with SQLSTATE 25001 and is called on the pool instead
+  - timescaledb.materialized_only = true, so the view is empty until it is refreshed
+  - Seagull types the view's columns from its SELECT; stats_agg's statssummary1d would be any, so the queries read it through average, stddev, num_vals and rollup
+  - the refresh window is NULL to NULL, written into the SQL; as parameters, a CALL's bounds would be *time.Time fields named after the procedure's arguments
+entry: {file: db/migrations/0002_hourly_readings.up.sql}
+live: "no"
+test: integration

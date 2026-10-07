@@ -1,0 +1,3 @@
+{
+  "description": "A placeholder in any of SQLite's forms compared with an expression that names no column, in the select list, a CASE condition, WHERE or HAVING, takes that expression's type; a named placeholder written twice is one parameter, and a placeholder compared with a column keeps the column's name and type."
+}

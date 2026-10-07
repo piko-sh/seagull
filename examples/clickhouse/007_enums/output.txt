@@ -1,0 +1,10 @@
+all boats, status as store.BoatsStatus:
+  1 Kittiwake   moored
+  2 Salty Chip  fishing
+  3 Gull Wing   in_dock
+  4 Driftwood   fishing
+not in dock, status as domain.Status:
+  1 Kittiwake   moored   at sea: false
+  2 Salty Chip  fishing  at sea: true
+  4 Driftwood   fishing  at sea: true
+status "sunk" refused: not one of the Enum8 labels

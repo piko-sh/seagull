@@ -1,0 +1,3 @@
+{
+  "description": "A map literal whose values are spelt like type names ({true: false}, {TRUE: FALSE, false: true}, {true: inf, false: NULL}, nested {true: {false: true}}) is read as data in the rows of INSERT ... VALUES, as ClickHouse reads it, beside a {name:Type} placeholder in the same rows."
+}

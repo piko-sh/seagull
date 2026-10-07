@@ -1,0 +1,31 @@
+table members: id bigint, name text, email text, joined_on text
+table sightings: id bigint, member_id integer, species text, count integer, seen_at text
+
+models.go:
+type Members struct {
+	ID       int64   `json:"id"`
+	Name     string  `json:"name"`
+	Email    *string `json:"email"`
+	JoinedOn string  `json:"joined_on"`
+}
+type Sightings struct {
+	ID       int64  `json:"id"`
+	MemberID int64  `json:"member_id"`
+	Species  string `json:"species"`
+	Count    int64  `json:"count"`
+	SeenAt   string `json:"seen_at"`
+}
+
+club.sql.go:
+type BirdsBySpeciesRow struct {
+	Species string `json:"species"`
+	Birds   *int64 `json:"birds"`
+}
+func (queries *Queries) BirdsBySpecies(ctx context.Context) ([]BirdsBySpeciesRow, error)
+type ListSightingsRow struct {
+	Species string  `json:"species"`
+	Count   int64   `json:"count"`
+	Member  string  `json:"member"`
+	Email   *string `json:"email"`
+}
+func (queries *Queries) ListSightings(ctx context.Context) ([]ListSightingsRow, error)

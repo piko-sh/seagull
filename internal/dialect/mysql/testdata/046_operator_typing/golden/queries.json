@@ -1,0 +1,161 @@
+[
+  {
+    "Command": "one",
+    "Filename": "orders.sql",
+    "Line": 1,
+    "Name": "OrderRatios",
+    "OutputColumns": [
+      {
+        "Name": "per_third",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Scale": 4
+        }
+      },
+      {
+        "Name": "unit_share",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Scale": 6
+        }
+      },
+      {
+        "Name": "half_weight",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "double",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "halves",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "masked",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint unsigned",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "shifted",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint unsigned",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint unsigned",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(OrderRatios, one)\nSELECT quantity / 3 AS per_third,\n       unit_price / quantity AS unit_share,\n       weight / 2 AS half_weight,\n       quantity DIV 2 AS halves,\n       flags \u0026 4 AS masked,\n       flags \u003c\u003c 1 AS shifted\nFROM orders\nWHERE id = ?;",
+    "Template": "SELECT ⟨c0 aliased:quantity / 3⟩ AS per_third,\\n       ⟨c1 aliased:unit_price / quantity⟩ AS unit_share,\\n       ⟨c2 aliased:weight / 2⟩ AS half_weight,\\n       ⟨c3 aliased:quantity DIV 2⟩ AS halves,\\n       ⟨c4 aliased:flags \u0026 4⟩ AS masked,\\n       ⟨c5 aliased:flags \u003c\u003c 1⟩ AS shifted\\nFROM orders\\nWHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "orders.sql",
+    "Line": 11,
+    "Name": "OrderLabels",
+    "OutputColumns": [
+      {
+        "Name": "joined",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "by_separator",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(OrderLabels, many)\nSELECT CONCAT_WS(',', note, label) AS joined,\n       CONCAT_WS(separator_text, label) AS by_separator\nFROM orders;",
+    "Template": "SELECT ⟨c0 aliased:CONCAT_WS(',', note, label)⟩ AS joined,\\n       ⟨c1 aliased:CONCAT_WS(separator_text, label)⟩ AS by_separator\\nFROM orders;"
+  },
+  {
+    "Command": "many",
+    "Filename": "orders.sql",
+    "Line": 16,
+    "Name": "OrderDetails",
+    "OutputColumns": [
+      {
+        "Name": "colour_json",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "json"
+        }
+      },
+      {
+        "Name": "colour",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "longtext"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(OrderDetails, many)\nSELECT details -\u003e '$.colour' AS colour_json,\n       details -\u003e\u003e '$.colour' AS colour\nFROM orders;",
+    "Template": "SELECT ⟨c0 aliased:details -\u003e '$.colour'⟩ AS colour_json,\\n       ⟨c1 aliased:details -\u003e\u003e '$.colour'⟩ AS colour\\nFROM orders;"
+  },
+  {
+    "Command": "many",
+    "Filename": "orders.sql",
+    "Line": 21,
+    "Name": "BusyOrders",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint unsigned",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "busy",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "tinyint"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(BusyOrders, many)\nSELECT id, quantity \u003e 1 || flags \u003e 0 AS busy\nFROM orders;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:quantity \u003e 1 || flags \u003e 0⟩ AS busy\\nFROM orders;"
+  }
+]

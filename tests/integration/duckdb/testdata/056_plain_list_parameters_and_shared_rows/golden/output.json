@@ -1,0 +1,85 @@
+{
+  "add_authors": "added",
+  "add_empty_and_null": "added",
+  "add_null_elements": "added",
+  "add_plain": "added",
+  "model_note": {
+    "id": 3,
+    "limits": {
+      "x": 1,
+      "y": null
+    },
+    "moods": [
+      "calm",
+      null
+    ],
+    "scores": [
+      1,
+      null
+    ],
+    "tags": [
+      "a",
+      null
+    ]
+  },
+  "reused_model_notes": [
+    {
+      "id": 1,
+      "limits": {
+        "x": 3
+      },
+      "moods": null,
+      "scores": [
+        1,
+        2
+      ],
+      "tags": [
+        "a",
+        "b"
+      ]
+    },
+    {
+      "id": 2,
+      "limits": null,
+      "moods": null,
+      "scores": null,
+      "tags": []
+    },
+    {
+      "id": 3,
+      "limits": {
+        "x": 1,
+        "y": null
+      },
+      "moods": [
+        "calm",
+        null
+      ],
+      "scores": [
+        1,
+        null
+      ],
+      "tags": [
+        "a",
+        null
+      ]
+    }
+  ],
+  "shared_row_authors": [
+    {
+      "bio": "crime",
+      "id": 1,
+      "name": "Agatha"
+    },
+    {
+      "bio": null,
+      "id": 2,
+      "name": "Dorothy"
+    }
+  ],
+  "shared_row_named": {
+    "bio": null,
+    "id": 2,
+    "name": "Dorothy"
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "add_book": "added",
+  "added_book": {
+    "author_id": 3,
+    "id": 4,
+    "published": "2024-01-04T12:00:00Z",
+    "title": "A MAN LAY DEAD"
+  },
+  "authors_of_books": [
+    {
+      "author_id": 1,
+      "book_id": 1,
+      "name": "Agatha"
+    },
+    {
+      "author_id": null,
+      "book_id": 2,
+      "name": null
+    },
+    {
+      "author_id": null,
+      "book_id": 3,
+      "name": null
+    }
+  ],
+  "book_count": {
+    "absent": 0,
+    "total": 3
+  },
+  "book_flags": [
+    {
+      "cheap": false,
+      "either": true,
+      "id": 1,
+      "listed": true,
+      "not_pricey": false,
+      "pricey": true,
+      "same": true,
+      "unpriced": false
+    },
+    {
+      "cheap": null,
+      "either": null,
+      "id": 2,
+      "listed": null,
+      "not_pricey": null,
+      "pricey": null,
+      "same": false,
+      "unpriced": true
+    },
+    {
+      "cheap": true,
+      "either": false,
+      "id": 3,
+      "listed": true,
+      "not_pricey": true,
+      "pricey": false,
+      "same": false,
+      "unpriced": false
+    }
+  ],
+  "books_after": [
+    {
+      "id": 2
+    },
+    {
+      "id": 3
+    },
+    {
+      "id": 4
+    }
+  ],
+  "books_in": [
+    {
+      "id": 1
+    },
+    {
+      "id": 2
+    }
+  ],
+  "delay_book": "delayed",
+  "derived_authors_of_books": [
+    {
+      "author_id": 1,
+      "title": "Nemesis"
+    },
+    {
+      "author_id": null,
+      "title": "Gaudy Night"
+    },
+    {
+      "author_id": null,
+      "title": "Anonymous"
+    }
+  ]
+}

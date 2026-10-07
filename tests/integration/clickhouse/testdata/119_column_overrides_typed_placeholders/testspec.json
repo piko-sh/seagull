@@ -1,0 +1,8 @@
+{
+  "description": "A placeholder declaring its column's own type takes the column override wherever it is compared with, listed against, bounds or is assigned to the column, so json.Number and []byte values bind through every database/sql path (exec, copyfrom and batch rows, comparisons, an IN list, BETWEEN, a Nullable(IPv4) comparison and an ALTER TABLE UPDATE) and round-trip. The addresses are read back through toString, since the driver hands database/sql an IPv4 value as a net.IP, which it cannot store in a json.Number",
+  "typeOverrides": [
+    {"SQLTypeName": "", "Column": "devices.addr", "GoPackage": "encoding/json", "GoName": "Number"},
+    {"SQLTypeName": "", "Column": "devices.previous", "GoPackage": "encoding/json", "GoName": "Number"},
+    {"SQLTypeName": "", "Column": "devices.label", "GoPackage": "", "GoName": "[]byte"}
+  ]
+}

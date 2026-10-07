@@ -1,0 +1,3 @@
+{
+  "description": "CockroachDB rows and function columns through database/sql: the row of a table used as a value is a record, never NULL even on the outer side of a join, and row_to_json of it is a document; the alias of a one-column table function names its column (f.f of jsonb_array_elements_text AS f); WITH ORDINALITY appends a bigint ordinality column, named by the alias column list"
+}

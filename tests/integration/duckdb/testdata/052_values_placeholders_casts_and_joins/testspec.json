@@ -1,0 +1,4 @@
+{
+  "description": "DuckDB at run time: a VALUES list as a recursive anchor, a set operation's arm and a statement; named placeholders written before $1 bind their own values; string literals passed to date and interval parameters; TRY_CAST and try() read NULL for a city or note that holds no number, the city though NOT NULL; a CAST to a fixed-size array; an alias on a parenthesised join joined ON a condition names the join; a select-list alias filters in WHERE.",
+  "expectedDiagnostics": []
+}

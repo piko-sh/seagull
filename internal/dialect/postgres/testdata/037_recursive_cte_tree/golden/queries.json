@@ -1,0 +1,45 @@
+[
+  {
+    "Command": "many",
+    "Filename": "tree_walk.sql",
+    "Line": 1,
+    "Name": "TreeWalk",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "cat_tree",
+        "SourceTable": "cat_tree"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "cat_tree",
+        "SourceTable": "cat_tree"
+      },
+      {
+        "Name": "depth",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "depth",
+        "SourceQualifier": "cat_tree",
+        "SourceTable": "cat_tree"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: TreeWalk, command: many)\nWITH RECURSIVE cat_tree AS (\n    SELECT id, name, parent_id, 1 AS depth\n    FROM categories\n    WHERE parent_id IS NULL\n    UNION ALL\n    SELECT c.id, c.name, c.parent_id, ct.depth + 1\n    FROM categories c\n    JOIN cat_tree ct ON c.parent_id = ct.id\n)\nSELECT id, name, depth FROM cat_tree;",
+    "Template": "WITH RECURSIVE cat_tree AS (\\n    SELECT id, name, parent_id, 1 AS depth\\n    FROM categories\\n    WHERE parent_id IS NULL\\n    UNION ALL\\n    SELECT c.id, c.name, c.parent_id, ct.depth + 1\\n    FROM categories c\\n    JOIN cat_tree ct ON c.parent_id = ct.id\\n)\\nSELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:depth⟩ FROM cat_tree;"
+  }
+]

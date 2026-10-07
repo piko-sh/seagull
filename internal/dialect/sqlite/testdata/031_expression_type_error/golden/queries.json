@@ -1,0 +1,46 @@
+[
+  {
+    "Command": "many",
+    "Filename": "unknown_column_expression.sql",
+    "Line": 1,
+    "Name": "GetComputed",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "computed",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetComputed, command: many)\nSELECT id, missing_column + 1 AS computed FROM users WHERE id = ?",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:missing_column + 1⟩ AS computed FROM users WHERE id = ⟨p0⟩⟨arguments p0⟩"
+  }
+]

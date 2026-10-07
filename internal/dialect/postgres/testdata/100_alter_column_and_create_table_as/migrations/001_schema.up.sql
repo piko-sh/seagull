@@ -1,0 +1,14 @@
+CREATE TABLE accounts (
+    id SERIAL PRIMARY KEY,
+    email TEXT,
+    score INTEGER NOT NULL,
+    legacy TEXT
+);
+
+ALTER TABLE accounts ALTER COLUMN email SET NOT NULL, ALTER COLUMN score TYPE BIGINT USING score::bigint;
+
+ALTER TABLE accounts DROP COLUMN legacy CASCADE, ADD COLUMN tier SMALLINT NOT NULL DEFAULT 1;
+
+ALTER TABLE accounts ALTER COLUMN tier DROP NOT NULL, ALTER COLUMN tier SET DEFAULT 2;
+
+CREATE TABLE account_scores AS SELECT id, email, score * 2 AS doubled FROM accounts WITH NO DATA;

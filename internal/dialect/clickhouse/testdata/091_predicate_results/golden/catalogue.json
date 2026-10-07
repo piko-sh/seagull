@@ -1,0 +1,124 @@
+{
+  "DefaultSchema": "default",
+  "Identifiers": {
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "default": {
+      "Name": "default",
+      "Tables": {
+        "gulls": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt64",
+                "Unsigned": true,
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "String"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "note",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "String"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "score",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt32",
+                "Unsigned": true,
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "active",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "boolean",
+                "EngineName": "Bool"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "tags",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "array",
+                "ElementType": {
+                  "Category": "text",
+                  "EngineName": "String"
+                },
+                "EngineName": "Array"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "ringings",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "map",
+                "ElementType": {
+                  "Category": "integer",
+                  "EngineName": "UInt32",
+                  "Unsigned": true,
+                  "Width": 32
+                },
+                "EngineName": "Map",
+                "KeyType": {
+                  "Category": "text",
+                  "EngineName": "String"
+                }
+              }
+            }
+          ],
+          "Name": "gulls",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "default"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "default"
+  ]
+}

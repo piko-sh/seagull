@@ -1,0 +1,33 @@
+[
+  {
+    "Command": "many",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "CombinedCounts",
+    "OutputColumns": [
+      {
+        "Name": "today_count",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "week_count",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(CombinedCounts, many)\nWITH \n    today AS (SELECT count(*) AS c FROM events WHERE ts \u003e= today()),\n    week AS (SELECT count(*) AS c FROM events WHERE ts \u003e= today() - 7)\nSELECT (SELECT c FROM today) AS today_count, (SELECT c FROM week) AS week_count;",
+    "Template": "WITH \\n    today AS (SELECT count(*) AS c FROM events WHERE ts \u003e= today()),\\n    week AS (SELECT count(*) AS c FROM events WHERE ts \u003e= today() - 7)\\nSELECT ⟨c0 aliased:(SELECT c FROM today)⟩ AS today_count, ⟨c1 aliased:(SELECT c FROM week)⟩ AS week_count;"
+  }
+]

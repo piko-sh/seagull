@@ -1,0 +1,166 @@
+{
+  "busy_names": [
+    {
+      "first_name": "Ada",
+      "most_visits": 3,
+      "total": 2
+    }
+  ],
+  "countdown": [
+    {
+      "n": 1
+    },
+    {
+      "n": 2
+    },
+    {
+      "n": 3
+    }
+  ],
+  "dates": [
+    {
+      "cast_date": "1815-12-10T00:00:00Z",
+      "id": 1,
+      "parsed": "1815-12-10T00:00:00Z",
+      "signed_up_day": "2024-01-02T00:00:00Z"
+    },
+    {
+      "cast_date": null,
+      "id": 2,
+      "parsed": null,
+      "signed_up_day": "2024-02-03T00:00:00Z"
+    },
+    {
+      "cast_date": "1816-01-16T00:00:00Z",
+      "id": 3,
+      "parsed": "1816-01-16T00:00:00Z",
+      "signed_up_day": "2024-03-04T00:00:00Z"
+    }
+  ],
+  "definition": [
+    "archived_people",
+    true
+  ],
+  "divide_by_zero": {
+    "nothing": null
+  },
+  "everyone": [
+    {
+      "id": 2
+    },
+    {
+      "id": 3
+    },
+    {
+      "id": 10
+    }
+  ],
+  "from_the_view": [
+    {
+      "first_name": "Ada",
+      "id": 1
+    },
+    {
+      "first_name": "Ada",
+      "id": 3
+    }
+  ],
+  "labels": [
+    {
+      "id": 1,
+      "joined": "ab",
+      "kind": "member",
+      "label": "Ada:Lovelace",
+      "visit_count": 3
+    },
+    {
+      "id": 2,
+      "joined": "ab",
+      "kind": "member",
+      "label": "Grace:Hopper",
+      "visit_count": 0
+    },
+    {
+      "id": 3,
+      "joined": "ab",
+      "kind": "member",
+      "label": "Ada:Byron",
+      "visit_count": 2
+    }
+  ],
+  "newest_and_oldest": [
+    {
+      "first_name": "Ada",
+      "id": 3
+    },
+    {
+      "first_name": "Alan",
+      "id": 10
+    }
+  ],
+  "ratios": [
+    {
+      "half": "15.000000",
+      "id": 1,
+      "per_visit": "10.000000",
+      "remainder": 0,
+      "whole": 1
+    },
+    {
+      "half": "0.000000",
+      "id": 2,
+      "per_visit": null,
+      "remainder": null,
+      "whole": null
+    },
+    {
+      "half": "4.995000",
+      "id": 3,
+      "per_visit": "4.995000",
+      "remainder": 0,
+      "whole": 1
+    }
+  ],
+  "search_pipes": [
+    {
+      "id": 1
+    },
+    {
+      "id": 2
+    },
+    {
+      "id": 3
+    }
+  ],
+  "setting": [
+    {
+      "Value": "ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION",
+      "Variable_name": "sql_mode"
+    }
+  ],
+  "tables": [
+    "archived_people BASE TABLE",
+    "newest_and_oldest VIEW",
+    "people BASE TABLE"
+  ],
+  "warning_count": {
+    "@@session.warning_count": 1
+  },
+  "warnings": [
+    {
+      "Code": 1365,
+      "Level": "Warning",
+      "Message": "Division by 0"
+    }
+  ],
+  "with_defaults": [
+    {
+      "column1": 0,
+      "column2": "nobody"
+    },
+    {
+      "column1": 1,
+      "column2": "Ada"
+    }
+  ]
+}

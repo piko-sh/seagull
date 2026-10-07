@@ -1,0 +1,61 @@
+[
+  {
+    "Command": "one",
+    "Filename": "hashes.sql",
+    "Line": 1,
+    "Name": "GetHash",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "hashes",
+        "SourceTable": "hashes"
+      },
+      {
+        "Name": "sha1",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "FixedString",
+          "Length": 20
+        },
+        "SourceColumn": "sha1",
+        "SourceQualifier": "hashes",
+        "SourceTable": "hashes"
+      },
+      {
+        "Name": "sha256",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "FixedString",
+          "Length": 32
+        },
+        "SourceColumn": "sha256",
+        "SourceQualifier": "hashes",
+        "SourceTable": "hashes"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(GetHash, one)\nSELECT id, sha1, sha256 FROM hashes WHERE id = {id:UInt64};",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:sha1⟩, ⟨c2:sha256⟩ FROM hashes WHERE id = ⟨p0 UInt64⟩;⟨arguments p0⟩"
+  }
+]

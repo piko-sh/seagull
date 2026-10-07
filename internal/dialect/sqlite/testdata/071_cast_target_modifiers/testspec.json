@@ -1,0 +1,3 @@
+{
+  "description": "A CAST to a spelling typed by itself keeps the modifiers written with it, as a column declared with that type does: CAST(code AS VARCHAR(20)) has a length of 20 and CAST(price AS DECIMAL(12, 4)) precision 12 and scale 4, and a placeholder cast so takes that type. A CAST typed by its affinity, such as CAST(placed_at AS TIMESTAMP(3)), takes none. A cast that restates the column's type with its modifiers keeps the column's Go type override; a cast to other modifiers drops it."
+}

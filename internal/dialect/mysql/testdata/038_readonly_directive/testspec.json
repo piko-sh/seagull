@@ -1,0 +1,1 @@
+{"description": "sgl.readonly directive: bare=true, sgl.readonly(true), sgl.readonly(false) at query level; sgl.readonly override in migrations before CREATE FUNCTION"}

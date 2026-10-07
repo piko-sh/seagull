@@ -1,0 +1,105 @@
+[
+  {
+    "Command": "many",
+    "Filename": "spines.sql",
+    "Line": 1,
+    "Name": "DailySpine",
+    "OutputColumns": [
+      {
+        "Name": "day",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp",
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "day",
+        "SourceQualifier": "t"
+      },
+      {
+        "Name": "signups",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: DailySpine, command: many)\nSELECT day, count(s.id) AS signups\nFROM generate_series(TIMESTAMP '2024-01-01', TIMESTAMP '2024-01-03', INTERVAL 1 DAY) AS t(day)\nLEFT JOIN signups s ON s.created_at \u003e= day AND s.created_at \u003c day + INTERVAL 1 DAY\nGROUP BY day\nORDER BY day;",
+    "Template": "SELECT ⟨c0:day⟩, ⟨c1 aliased:count(s.id)⟩ AS signups\\nFROM generate_series(TIMESTAMP '2024-01-01', TIMESTAMP '2024-01-03', INTERVAL 1 DAY) AS t(day)\\nLEFT JOIN signups s ON s.created_at \u003e= day AND s.created_at \u003c day + INTERVAL 1 DAY\\nGROUP BY day\\nORDER BY day;"
+  },
+  {
+    "Command": "many",
+    "Filename": "spines.sql",
+    "Line": 8,
+    "Name": "DateRange",
+    "OutputColumns": [
+      {
+        "Name": "d",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp",
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "d",
+        "SourceQualifier": "t"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: DateRange, command: many)\nSELECT d FROM range(DATE '2024-02-27', DATE '2024-03-01', INTERVAL 1 DAY) AS t(d);",
+    "Template": "SELECT ⟨c0:d⟩ FROM range(DATE '2024-02-27', DATE '2024-03-01', INTERVAL 1 DAY) AS t(d);"
+  },
+  {
+    "Command": "many",
+    "Filename": "spines.sql",
+    "Line": 11,
+    "Name": "Counted",
+    "OutputColumns": [
+      {
+        "Name": "n",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "n",
+        "SourceQualifier": "t"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Counted, command: many)\nSELECT n FROM range(3) AS t(n);",
+    "Template": "SELECT ⟨c0:n⟩ FROM range(3) AS t(n);"
+  },
+  {
+    "Command": "many",
+    "Filename": "spines.sql",
+    "Line": 14,
+    "Name": "Tags",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "s",
+        "SourceTable": "signups"
+      },
+      {
+        "Name": "tag",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "tag",
+        "SourceQualifier": "t"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Tags, command: many)\nSELECT s.id, tag FROM signups s, unnest(s.tags) AS t(tag);",
+    "Template": "SELECT ⟨c0:s.id⟩, ⟨c1:tag⟩ FROM signups s, unnest(s.tags) AS t(tag);"
+  }
+]

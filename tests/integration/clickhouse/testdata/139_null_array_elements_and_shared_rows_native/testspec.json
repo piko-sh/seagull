@@ -1,0 +1,6 @@
+{
+  "description": "ClickHouse says in the type where NULL can be, so an Array(Nullable(T)) parameter binds []*T whose nil elements are stored as NULL and an Array(T) one plain elements, and a Map(String, Nullable(Int32)) parameter a map of pointers; they read back through the table's model. Rows read into a table's model: model: notes in another column order, and the whole-row ListNotes under reuse_models; and a row type two queries share, AuthorSummary, declared once. Through the native driver.",
+  "expectedDiagnostics": [],
+  "reuseModels": true,
+  "emitter": "native"
+}

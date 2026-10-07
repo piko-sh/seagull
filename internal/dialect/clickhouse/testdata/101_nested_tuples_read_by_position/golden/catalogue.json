@@ -1,0 +1,531 @@
+{
+  "DefaultSchema": "default",
+  "Identifiers": {
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "default": {
+      "Name": "default",
+      "Tables": {
+        "nests": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt32",
+                "Unsigned": true,
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "pairs_in_pair",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "Tuple",
+                "StructFields": [
+                  {
+                    "Name": "_1",
+                    "Positional": true,
+                    "SQLType": {
+                      "Category": "integer",
+                      "EngineName": "UInt8",
+                      "Unsigned": true,
+                      "Width": 8
+                    }
+                  },
+                  {
+                    "Name": "_2",
+                    "Positional": true,
+                    "SQLType": {
+                      "Category": "struct",
+                      "EngineName": "Tuple",
+                      "StructFields": [
+                        {
+                          "Name": "_1",
+                          "Positional": true,
+                          "SQLType": {
+                            "Category": "text",
+                            "EngineName": "String"
+                          }
+                        },
+                        {
+                          "Name": "_2",
+                          "Positional": true,
+                          "SQLType": {
+                            "Category": "integer",
+                            "EngineName": "UInt16",
+                            "Unsigned": true,
+                            "Width": 16
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "pair_in_fields",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "Tuple",
+                "StructFields": [
+                  {
+                    "Name": "a",
+                    "SQLType": {
+                      "Category": "integer",
+                      "EngineName": "UInt8",
+                      "Unsigned": true,
+                      "Width": 8
+                    }
+                  },
+                  {
+                    "Name": "b",
+                    "SQLType": {
+                      "Category": "struct",
+                      "EngineName": "Tuple",
+                      "StructFields": [
+                        {
+                          "Name": "_1",
+                          "Positional": true,
+                          "SQLType": {
+                            "Category": "text",
+                            "EngineName": "String"
+                          }
+                        },
+                        {
+                          "Name": "_2",
+                          "Positional": true,
+                          "SQLType": {
+                            "Category": "integer",
+                            "EngineName": "UInt16",
+                            "Unsigned": true,
+                            "Width": 16
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "fields_in_pair",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "Tuple",
+                "StructFields": [
+                  {
+                    "Name": "_1",
+                    "Positional": true,
+                    "SQLType": {
+                      "Category": "integer",
+                      "EngineName": "UInt8",
+                      "Unsigned": true,
+                      "Width": 8
+                    }
+                  },
+                  {
+                    "Name": "_2",
+                    "Positional": true,
+                    "SQLType": {
+                      "Category": "struct",
+                      "EngineName": "Tuple",
+                      "StructFields": [
+                        {
+                          "Name": "s",
+                          "SQLType": {
+                            "Category": "text",
+                            "EngineName": "String"
+                          }
+                        },
+                        {
+                          "Name": "n",
+                          "SQLType": {
+                            "Category": "integer",
+                            "EngineName": "UInt16",
+                            "Unsigned": true,
+                            "Width": 16
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "keyed_pairs_in_pair",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "Tuple",
+                "StructFields": [
+                  {
+                    "Name": "_1",
+                    "Positional": true,
+                    "SQLType": {
+                      "Category": "integer",
+                      "EngineName": "UInt8",
+                      "Unsigned": true,
+                      "Width": 8
+                    }
+                  },
+                  {
+                    "Name": "_2",
+                    "Positional": true,
+                    "SQLType": {
+                      "Category": "map",
+                      "ElementType": {
+                        "Category": "struct",
+                        "EngineName": "Tuple",
+                        "StructFields": [
+                          {
+                            "Name": "_1",
+                            "Positional": true,
+                            "SQLType": {
+                              "Category": "text",
+                              "EngineName": "String"
+                            }
+                          },
+                          {
+                            "Name": "_2",
+                            "Positional": true,
+                            "SQLType": {
+                              "Category": "integer",
+                              "EngineName": "UInt16",
+                              "Unsigned": true,
+                              "Width": 16
+                            }
+                          }
+                        ]
+                      },
+                      "EngineName": "Map",
+                      "KeyType": {
+                        "Category": "text",
+                        "EngineName": "String"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "pair_list_in_fields",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "Tuple",
+                "StructFields": [
+                  {
+                    "Name": "a",
+                    "SQLType": {
+                      "Category": "integer",
+                      "EngineName": "UInt8",
+                      "Unsigned": true,
+                      "Width": 8
+                    }
+                  },
+                  {
+                    "Name": "b",
+                    "SQLType": {
+                      "Category": "array",
+                      "ElementType": {
+                        "Category": "struct",
+                        "EngineName": "Tuple",
+                        "StructFields": [
+                          {
+                            "Name": "_1",
+                            "Positional": true,
+                            "SQLType": {
+                              "Category": "text",
+                              "EngineName": "String"
+                            }
+                          },
+                          {
+                            "Name": "_2",
+                            "Positional": true,
+                            "SQLType": {
+                              "Category": "integer",
+                              "EngineName": "UInt16",
+                              "Unsigned": true,
+                              "Width": 16
+                            }
+                          }
+                        ]
+                      },
+                      "EngineName": "Array"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "keyed_pairs_in_fields",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "Tuple",
+                "StructFields": [
+                  {
+                    "Name": "a",
+                    "SQLType": {
+                      "Category": "integer",
+                      "EngineName": "UInt8",
+                      "Unsigned": true,
+                      "Width": 8
+                    }
+                  },
+                  {
+                    "Name": "b",
+                    "SQLType": {
+                      "Category": "map",
+                      "ElementType": {
+                        "Category": "struct",
+                        "EngineName": "Tuple",
+                        "StructFields": [
+                          {
+                            "Name": "_1",
+                            "Positional": true,
+                            "SQLType": {
+                              "Category": "text",
+                              "EngineName": "String"
+                            }
+                          },
+                          {
+                            "Name": "_2",
+                            "Positional": true,
+                            "SQLType": {
+                              "Category": "integer",
+                              "EngineName": "UInt16",
+                              "Unsigned": true,
+                              "Width": 16
+                            }
+                          }
+                        ]
+                      },
+                      "EngineName": "Map",
+                      "KeyType": {
+                        "Category": "text",
+                        "EngineName": "String"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "numbers_in_pair",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "Tuple",
+                "StructFields": [
+                  {
+                    "Name": "_1",
+                    "Positional": true,
+                    "SQLType": {
+                      "Category": "integer",
+                      "EngineName": "UInt8",
+                      "Unsigned": true,
+                      "Width": 8
+                    }
+                  },
+                  {
+                    "Name": "_2",
+                    "Positional": true,
+                    "SQLType": {
+                      "Category": "array",
+                      "ElementType": {
+                        "Category": "integer",
+                        "EngineName": "UInt8",
+                        "Unsigned": true,
+                        "Width": 8
+                      },
+                      "EngineName": "Array"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "listed_lists",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "array",
+                "ElementType": {
+                  "Category": "array",
+                  "ElementType": {
+                    "Category": "struct",
+                    "EngineName": "Tuple",
+                    "StructFields": [
+                      {
+                        "Name": "_1",
+                        "Positional": true,
+                        "SQLType": {
+                          "Category": "integer",
+                          "EngineName": "UInt8",
+                          "Unsigned": true,
+                          "Width": 8
+                        }
+                      },
+                      {
+                        "Name": "_2",
+                        "Positional": true,
+                        "SQLType": {
+                          "Category": "text",
+                          "EngineName": "String"
+                        }
+                      }
+                    ]
+                  },
+                  "EngineName": "Array"
+                },
+                "EngineName": "Array"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "field_list_in_pair",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "Tuple",
+                "StructFields": [
+                  {
+                    "Name": "_1",
+                    "Positional": true,
+                    "SQLType": {
+                      "Category": "integer",
+                      "EngineName": "UInt8",
+                      "Unsigned": true,
+                      "Width": 8
+                    }
+                  },
+                  {
+                    "Name": "_2",
+                    "Positional": true,
+                    "SQLType": {
+                      "Category": "array",
+                      "ElementType": {
+                        "Category": "struct",
+                        "EngineName": "Tuple",
+                        "StructFields": [
+                          {
+                            "Name": "s",
+                            "SQLType": {
+                              "Category": "text",
+                              "EngineName": "String"
+                            }
+                          },
+                          {
+                            "Name": "n",
+                            "SQLType": {
+                              "Category": "integer",
+                              "EngineName": "UInt16",
+                              "Unsigned": true,
+                              "Width": 16
+                            }
+                          }
+                        ]
+                      },
+                      "EngineName": "Array"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "keyed_lists",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "map",
+                "ElementType": {
+                  "Category": "array",
+                  "ElementType": {
+                    "Category": "struct",
+                    "EngineName": "Tuple",
+                    "StructFields": [
+                      {
+                        "Name": "_1",
+                        "Positional": true,
+                        "SQLType": {
+                          "Category": "integer",
+                          "EngineName": "UInt8",
+                          "Unsigned": true,
+                          "Width": 8
+                        }
+                      },
+                      {
+                        "Name": "_2",
+                        "Positional": true,
+                        "SQLType": {
+                          "Category": "text",
+                          "EngineName": "String"
+                        }
+                      }
+                    ]
+                  },
+                  "EngineName": "Array"
+                },
+                "EngineName": "Map",
+                "KeyType": {
+                  "Category": "text",
+                  "EngineName": "String"
+                }
+              }
+            }
+          ],
+          "Name": "nests",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "default"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "default"
+  ]
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "Command": "many",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "RollupSums",
+    "OutputColumns": [
+      {
+        "Name": "region",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "t",
+        "SourceTable": "t"
+      },
+      {
+        "Name": "city",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "city",
+        "SourceQualifier": "t",
+        "SourceTable": "t"
+      },
+      {
+        "Name": "s",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(RollupSums, many)\nSELECT region, city, sum(val) AS s FROM t GROUP BY region, city WITH ROLLUP;",
+    "Template": "SELECT ⟨c0:region⟩, ⟨c1:city⟩, ⟨c2 aliased:sum(val)⟩ AS s FROM t GROUP BY region, city WITH ROLLUP;"
+  }
+]

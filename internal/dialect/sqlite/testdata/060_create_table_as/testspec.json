@@ -1,0 +1,1 @@
+{"description": "CREATE TABLE ... AS SELECT takes its columns from the query, each nullable"}

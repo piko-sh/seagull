@@ -1,0 +1,1 @@
+ALTER TABLE boats ADD COLUMN home_port STRING NOT NULL DEFAULT 'Padstow';

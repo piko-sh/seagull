@@ -1,0 +1,5 @@
+{
+  "description": "Array parameters hold NULL elements: an INSERT and an UPDATE of text[], integer[] and an enum's array bind []*T whose nil elements the server stores as NULL, read back as nil; an array id = ANY($1) reads binds plain elements, as does a parameter declaring non_null_elements: true; an unnest bulk upsert takes plain ids and names and nullable bios. Rows read into a table's model: model: notes in another column order, and the whole-row ListNotes under reuse_models; and a row type two queries share, AuthorSummary, declared once. Through database/sql.",
+  "expectedDiagnostics": [],
+  "reuseModels": true
+}

@@ -1,0 +1,4 @@
+{
+  "description": "MySQL subtracts dates and datetimes as numbers (on the MySQL family): the difference reads back as a BIGINT, or a DECIMAL when an operand has fractional seconds.",
+  "expectedDiagnostics": []
+}

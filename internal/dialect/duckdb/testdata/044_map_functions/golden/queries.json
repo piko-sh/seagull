@@ -1,0 +1,122 @@
+[
+  {
+    "Command": "many",
+    "Filename": "stores.sql",
+    "Line": 1,
+    "Name": "ListStores",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "key_value_stores",
+        "SourceTable": "key_value_stores"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "key_value_stores",
+        "SourceTable": "key_value_stores"
+      },
+      {
+        "Name": "data",
+        "SQLType": {
+          "Category": "map",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int4",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "map",
+          "KeyType": {
+            "Category": "text",
+            "EngineName": "varchar"
+          }
+        },
+        "SourceColumn": "data",
+        "SourceQualifier": "key_value_stores",
+        "SourceTable": "key_value_stores"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListStores, command: many)\nSELECT id, name, data FROM key_value_stores;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:data⟩ FROM key_value_stores;"
+  },
+  {
+    "Command": "many",
+    "Filename": "stores.sql",
+    "Line": 4,
+    "Name": "GetMapKeys",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "key_value_stores",
+        "SourceTable": "key_value_stores"
+      },
+      {
+        "Name": "keys",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "varchar"
+          },
+          "EngineName": "varchar[]"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetMapKeys, command: many)\nSELECT id, map_keys(data) AS keys FROM key_value_stores;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:map_keys(data)⟩ AS keys FROM key_value_stores;"
+  },
+  {
+    "Command": "many",
+    "Filename": "stores.sql",
+    "Line": 7,
+    "Name": "GetMapValues",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "key_value_stores",
+        "SourceTable": "key_value_stores"
+      },
+      {
+        "Name": "vals",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int4",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "int4[]"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetMapValues, command: many)\nSELECT id, map_values(data) AS vals FROM key_value_stores;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:map_values(data)⟩ AS vals FROM key_value_stores;"
+  }
+]

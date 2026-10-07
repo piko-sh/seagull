@@ -1,0 +1,52 @@
+[
+  {
+    "Command": "many",
+    "Filename": "rankings.sql",
+    "Line": 1,
+    "Name": "GetPlayerRankings",
+    "OutputColumns": [
+      {
+        "Name": "player",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "player",
+        "SourceQualifier": "scores",
+        "SourceTable": "scores"
+      },
+      {
+        "Name": "game",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "game",
+        "SourceQualifier": "scores",
+        "SourceTable": "scores"
+      },
+      {
+        "Name": "points",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "points",
+        "SourceQualifier": "scores",
+        "SourceTable": "scores"
+      },
+      {
+        "Name": "rank",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetPlayerRankings, command: many)\nSELECT player, game, points, row_number() OVER (PARTITION BY game ORDER BY points DESC) AS rank FROM scores;",
+    "Template": "SELECT ⟨c0:player⟩, ⟨c1:game⟩, ⟨c2:points⟩, ⟨c3 aliased:row_number() OVER (PARTITION BY game ORDER BY points DESC)⟩ AS rank FROM scores;"
+  }
+]

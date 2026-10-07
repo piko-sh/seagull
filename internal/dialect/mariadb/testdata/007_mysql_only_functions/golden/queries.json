@@ -1,0 +1,185 @@
+[
+  {
+    "Command": "many",
+    "Filename": "readings.sql",
+    "Line": 1,
+    "Name": "MySQLOnlyFunctions",
+    "OutputColumns": [
+      {
+        "Name": "label",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 40
+        },
+        "SourceColumn": "label",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "any_tally",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      },
+      {
+        "Name": "starts_with_a",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      },
+      {
+        "Name": "token_text",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      },
+      {
+        "Name": "label_is_uuid",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      },
+      {
+        "Name": "fresh_token",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      },
+      {
+        "Name": "document_size",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      },
+      {
+        "Name": "label_grouped",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: MySQLOnlyFunctions, command: many)\nSELECT\n    label,\n    ANY_VALUE(tally) AS any_tally,\n    REGEXP_LIKE(label, '^a') AS starts_with_a,\n    BIN_TO_UUID(MAX(token)) AS token_text,\n    IS_UUID(label) AS label_is_uuid,\n    UUID_TO_BIN(UUID()) AS fresh_token,\n    JSON_STORAGE_SIZE(MAX(document)) AS document_size,\n    GROUPING(label) AS label_grouped\nFROM readings\nGROUP BY label WITH ROLLUP;",
+    "Template": "SELECT\\n    ⟨c0:label⟩,\\n    ⟨c1 aliased:ANY_VALUE(tally)⟩ AS any_tally,\\n    ⟨c2 aliased:REGEXP_LIKE(label, '^a')⟩ AS starts_with_a,\\n    ⟨c3 aliased:BIN_TO_UUID(MAX(token))⟩ AS token_text,\\n    ⟨c4 aliased:IS_UUID(label)⟩ AS label_is_uuid,\\n    ⟨c5 aliased:UUID_TO_BIN(UUID())⟩ AS fresh_token,\\n    ⟨c6 aliased:JSON_STORAGE_SIZE(MAX(document))⟩ AS document_size,\\n    ⟨c7 aliased:GROUPING(label)⟩ AS label_grouped\\nFROM readings\\nGROUP BY label WITH ROLLUP;"
+  },
+  {
+    "Command": "many",
+    "Filename": "readings.sql",
+    "Line": 14,
+    "Name": "ArgumentsMariaDBTakes",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "first_a",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "label_number",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "replaced",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "previous_tally",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "next_tally",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ArgumentsMariaDBTakes, command: many)\nSELECT\n    id,\n    REGEXP_INSTR(label, 'a') AS first_a,\n    REGEXP_SUBSTR(label, '[0-9]+') AS label_number,\n    REGEXP_REPLACE(label, 'a', 'b') AS replaced,\n    LAG(tally, 1) OVER (ORDER BY id) AS previous_tally,\n    LEAD(tally) OVER (ORDER BY id) AS next_tally\nFROM readings;",
+    "Template": "SELECT\\n    ⟨c0:id⟩,\\n    ⟨c1 aliased:REGEXP_INSTR(label, 'a')⟩ AS first_a,\\n    ⟨c2 aliased:REGEXP_SUBSTR(label, '[0-9]+')⟩ AS label_number,\\n    ⟨c3 aliased:REGEXP_REPLACE(label, 'a', 'b')⟩ AS replaced,\\n    ⟨c4 aliased:LAG(tally, 1) OVER (ORDER BY id)⟩ AS previous_tally,\\n    ⟨c5 aliased:LEAD(tally) OVER (ORDER BY id)⟩ AS next_tally\\nFROM readings;"
+  },
+  {
+    "Command": "many",
+    "Filename": "readings.sql",
+    "Line": 24,
+    "Name": "ArgumentsOnlyMySQLTakes",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "later_a",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      },
+      {
+        "Name": "second_number",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      },
+      {
+        "Name": "first_replaced",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      },
+      {
+        "Name": "previous_tally",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: ArgumentsOnlyMySQLTakes, command: many)\nSELECT\n    id,\n    REGEXP_INSTR(label, 'a', 2) AS later_a,\n    REGEXP_SUBSTR(label, '[0-9]+', 1, 2) AS second_number,\n    REGEXP_REPLACE(label, 'a', 'b', 1, 1) AS first_replaced,\n    LAG(tally, 1, 0) OVER (ORDER BY id) AS previous_tally\nFROM readings;",
+    "Template": "SELECT\\n    ⟨c0:id⟩,\\n    ⟨c1 aliased:REGEXP_INSTR(label, 'a', 2)⟩ AS later_a,\\n    ⟨c2 aliased:REGEXP_SUBSTR(label, '[0-9]+', 1, 2)⟩ AS second_number,\\n    ⟨c3 aliased:REGEXP_REPLACE(label, 'a', 'b', 1, 1)⟩ AS first_replaced,\\n    ⟨c4 aliased:LAG(tally, 1, 0) OVER (ORDER BY id)⟩ AS previous_tally\\nFROM readings;"
+  }
+]

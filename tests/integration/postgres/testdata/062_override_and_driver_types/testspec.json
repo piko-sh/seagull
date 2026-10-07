@@ -1,0 +1,18 @@
+{
+  "description": "Overrides and driver type mapping through database/sql: money reads as the text the server writes; timetz, bit and varbit read as strings; timestamp[], date[], numeric[] and bytea[] read through to_json; a column override on a numeric[] column names the elements' type in the model, the result and the UPDATE parameter alike; and an override naming the Go 1.27 standard library's uuid.UUID binds and reads.",
+  "expectedDiagnostics": [],
+  "typeOverrides": [
+    {
+      "SQLTypeName": "",
+      "Column": "ledgers.rates",
+      "GoPackage": "case_runner/kinds",
+      "GoName": "Rate"
+    },
+    {
+      "SQLTypeName": "",
+      "Column": "ledgers.ident",
+      "GoPackage": "uuid",
+      "GoName": "UUID"
+    }
+  ]
+}

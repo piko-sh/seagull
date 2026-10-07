@@ -1,0 +1,226 @@
+[
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 1,
+    "Name": "BoatRows",
+    "OutputColumns": [
+      {
+        "Name": "boats",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "struct",
+          "StructFields": [
+            {
+              "Name": "id",
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Nullable": true,
+                "Width": 32
+              }
+            },
+            {
+              "Name": "name",
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Nullable": true
+              }
+            },
+            {
+              "Name": "berth",
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "struct",
+                "Nullable": true,
+                "StructFields": [
+                  {
+                    "Name": "pontoon",
+                    "SQLType": {
+                      "Category": "text",
+                      "EngineName": "varchar",
+                      "Nullable": true
+                    }
+                  },
+                  {
+                    "Name": "number",
+                    "SQLType": {
+                      "Category": "integer",
+                      "EngineName": "int4",
+                      "Nullable": true,
+                      "Width": 32
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "Name": "crews",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "struct",
+          "StructFields": [
+            {
+              "Name": "boat_id",
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Nullable": true,
+                "Width": 32
+              }
+            },
+            {
+              "Name": "skipper",
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Nullable": true
+              }
+            }
+          ]
+        }
+      },
+      {
+        "Name": "document",
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "json"
+        }
+      },
+      {
+        "Name": "row_document",
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "json"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(BoatRows, many)\nSELECT boats, crews, to_json(boats) AS document, row_to_json(boats) AS row_document\nFROM boats\nLEFT JOIN crews ON crews.boat_id = boats.id;",
+    "Template": "SELECT ⟨c0:boats⟩, ⟨c1:crews⟩, ⟨c2 aliased:to_json(boats)⟩ AS document, ⟨c3 aliased:row_to_json(boats)⟩ AS row_document\\nFROM boats\\nLEFT JOIN crews ON crews.boat_id = boats.id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 6,
+    "Name": "BoatKeys",
+    "OutputColumns": [
+      {
+        "Name": "key",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Nullable": true,
+          "Width": 32
+        }
+      },
+      {
+        "Name": "spelt",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Nullable": true
+        }
+      },
+      {
+        "Name": "depth",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Nullable": true,
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(BoatKeys, many)\nSELECT {'name': name, 'id': id}['id'] AS key, struct_pack(spelt := name)['spelt'] AS spelt,\n       struct_insert(berth, depth := 4)['depth'] AS depth\nFROM boats;",
+    "Template": "SELECT ⟨c0 aliased:{'name': name, 'id': id}['id']⟩ AS key, ⟨c1 aliased:struct_pack(spelt := name)['spelt']⟩ AS spelt,\\n       ⟨c2 aliased:struct_insert(berth, depth := 4)['depth']⟩ AS depth\\nFROM boats;"
+  },
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 11,
+    "Name": "ExtendedBerths",
+    "OutputColumns": [
+      {
+        "Name": "extended",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "struct",
+          "StructFields": [
+            {
+              "Name": "pontoon",
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Nullable": true
+              }
+            },
+            {
+              "Name": "number",
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Nullable": true,
+                "Width": 32
+              }
+            },
+            {
+              "Name": "depth",
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Nullable": true,
+                "Width": 32
+              }
+            },
+            {
+              "Name": "crane",
+              "SQLType": {
+                "Category": "boolean",
+                "EngineName": "bool",
+                "Nullable": true
+              }
+            }
+          ]
+        }
+      },
+      {
+        "Name": "built",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "struct",
+          "StructFields": [
+            {
+              "Name": "id",
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Nullable": true,
+                "Width": 32
+              }
+            },
+            {
+              "Name": "name",
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Nullable": true
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ExtendedBerths, many)\nSELECT struct_insert(berth, depth := 4, crane := true) AS extended, struct_insert({'id': id}, name := name) AS built\nFROM boats;",
+    "Template": "SELECT ⟨c0 aliased:struct_insert(berth, depth := 4, crane := true)⟩ AS extended, ⟨c1 aliased:struct_insert({'id': id}, name := name)⟩ AS built\\nFROM boats;"
+  }
+]

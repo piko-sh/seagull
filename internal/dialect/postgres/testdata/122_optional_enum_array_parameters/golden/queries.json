@@ -1,0 +1,98 @@
+[
+  {
+    "Command": "many",
+    "Filename": "things.sql",
+    "IsDynamic": true,
+    "Line": 1,
+    "Name": "FilterThings",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "things",
+        "SourceTable": "things"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "IsOptional": true,
+        "Kind": "param",
+        "Name": "colours",
+        "Nullable": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "enum",
+            "EngineName": "colour",
+            "EnumValues": [
+              "red",
+              "green",
+              "blue"
+            ],
+            "Nullable": true,
+            "Schema": "public"
+          },
+          "EngineName": "colour[]"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FilterThings, command: many)\n-- :colours as sgl.param(optional: true)\nSELECT id FROM things WHERE (:colours::colour[] IS NULL OR colours \u0026\u0026 :colours::colour[]) ORDER BY id;",
+    "Template": "SELECT ⟨c0:id⟩ FROM things WHERE ⟨where:(⟨p0⟩::colour[] IS NULL OR colours \u0026\u0026 ⟨p0⟩::colour[])⟩ ⟨order:ORDER BY id⟩⟨pagination⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "things.sql",
+    "IsDynamic": true,
+    "Line": 5,
+    "Name": "FilterByFavourite",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "things",
+        "SourceTable": "things"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "IsOptional": true,
+        "Kind": "param",
+        "Name": "wanted",
+        "NonNullElements": true,
+        "Nullable": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "enum",
+            "EngineName": "colour",
+            "EnumValues": [
+              "red",
+              "green",
+              "blue"
+            ],
+            "Schema": "public"
+          },
+          "EngineName": "colour[]"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FilterByFavourite, command: many)\n-- :wanted as sgl.param(optional: true)\nSELECT id FROM things WHERE (:wanted::colour[] IS NULL OR favourite = ANY(:wanted::colour[])) ORDER BY id;",
+    "Template": "SELECT ⟨c0:id⟩ FROM things WHERE ⟨where:(⟨p0⟩::colour[] IS NULL OR favourite = ANY(⟨p0⟩::colour[]))⟩ ⟨order:ORDER BY id⟩⟨pagination⟩;⟨arguments p0⟩"
+  }
+]

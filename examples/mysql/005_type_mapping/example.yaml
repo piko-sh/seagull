@@ -1,0 +1,29 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: One landing of fish read back column by column, printing the Go type each MySQL column type became, unsigned integers and DECIMAL included.
+differs:
+  - "UNSIGNED integers map to unsigned Go types of the same width: TINYINT UNSIGNED is uint8"
+  - "BOOLEAN is TINYINT(1) and maps to bool"
+  - "DATETIME maps to time.Time, which go-sql-driver/mysql returns only with parseTime=true in the DSN"
+  - "VARBINARY maps to []byte"
+  - "DECIMAL(6, 2) is a real exact type and maps to apd.Decimal; the insert binds it as text with sgl.param(type: text)"
+  - "No RETURNING, so the new id comes from LastInsertId"
+entry: {file: db/queries/landings.sql, query: GetLanding}
+live: "no"
+test: integration

@@ -1,0 +1,98 @@
+[
+  {
+    "Command": "many",
+    "Filename": "catches.sql",
+    "Line": 1,
+    "Name": "ListCatches",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "catches",
+        "SourceTable": "catches"
+      },
+      {
+        "Name": "weight",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        },
+        "SourceColumn": "weight",
+        "SourceQualifier": "catches",
+        "SourceTable": "catches"
+      },
+      {
+        "Name": "species",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "varchar",
+            "Nullable": true
+          },
+          "EngineName": "varchar[]"
+        },
+        "SourceColumn": "species",
+        "SourceQualifier": "catches",
+        "SourceTable": "catches"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListCatches, command: many)\nSELECT id, weight, species FROM catches;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:weight⟩, ⟨c2:species⟩ FROM catches;"
+  },
+  {
+    "Command": "many",
+    "Filename": "catches.sql",
+    "Line": 4,
+    "Name": "ListHeavyCatches",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "heavy_catches",
+        "SourceTable": "heavy_catches"
+      },
+      {
+        "Name": "weight",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        },
+        "SourceColumn": "weight",
+        "SourceQualifier": "heavy_catches",
+        "SourceTable": "heavy_catches"
+      },
+      {
+        "Name": "doubled",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        },
+        "SourceColumn": "doubled",
+        "SourceQualifier": "heavy_catches",
+        "SourceTable": "heavy_catches"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListHeavyCatches, command: many)\nSELECT id, weight, doubled FROM heavy_catches;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:weight⟩, ⟨c2:doubled⟩ FROM heavy_catches;"
+  }
+]

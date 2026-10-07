@@ -1,0 +1,4 @@
+{
+  "description": "ClickHouse rounds in the type of the number and the exact quantiles keep the type of the values they pick, read through database/sql: round, roundBankers, floor, ceil and trunc of a Decimal(12, 2) read as decimals, of a UInt32 as a UInt32, and quantileExact of a UInt32 as a UInt32.",
+  "expectedDiagnostics": []
+}

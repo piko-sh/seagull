@@ -1,0 +1,156 @@
+[
+  {
+    "Command": "many",
+    "Filename": "events.sql",
+    "Line": 1,
+    "Name": "Days",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "day",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "local_time",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "month",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "julian_day",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "from_julian",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "clock",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Days, command: many)\nSELECT id, date(created_at, 'unixepoch') AS day, datetime(created_at, 'unixepoch', 'localtime') AS local_time,\n       strftime('%Y-%m', created_at, 'unixepoch') AS month, julianday(created_at, 'unixepoch') AS julian_day,\n       unixepoch(julian) AS from_julian, time(julian) AS clock\nFROM events;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:date(created_at, 'unixepoch')⟩ AS day, ⟨c2 aliased:datetime(created_at, 'unixepoch', 'localtime')⟩ AS local_time,\\n       ⟨c3 aliased:strftime('%Y-%m', created_at, 'unixepoch')⟩ AS month, ⟨c4 aliased:julianday(created_at, 'unixepoch')⟩ AS julian_day,\\n       ⟨c5 aliased:unixepoch(julian)⟩ AS from_julian, ⟨c6 aliased:time(julian)⟩ AS clock\\nFROM events;"
+  },
+  {
+    "Command": "many",
+    "Filename": "events.sql",
+    "Line": 7,
+    "Name": "Flags",
+    "OutputColumns": [
+      {
+        "Name": "state",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "shown",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "count_word",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Flags, command: many)\nSELECT if(flag, 'on', 'off') AS state, iif(flag, label) AS shown, if(flag = 1, 'one', flag = 2, 'two', 'many') AS count_word\nFROM events;",
+    "Template": "SELECT ⟨c0 aliased:if(flag, 'on', 'off')⟩ AS state, ⟨c1 aliased:iif(flag, label)⟩ AS shown, ⟨c2 aliased:if(flag = 1, 'one', flag = 2, 'two', 'many')⟩ AS count_word\\nFROM events;"
+  },
+  {
+    "Command": "one",
+    "Filename": "events.sql",
+    "Line": 11,
+    "Name": "Curves",
+    "OutputColumns": [
+      {
+        "Name": "squashed",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "hyperbolic",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "decoded",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Curves, command: one)\nSELECT tanh(julian) AS squashed, cosh(julian) AS hyperbolic, unistr(label) AS decoded FROM events WHERE id = ?;",
+    "Template": "SELECT ⟨c0 aliased:tanh(julian)⟩ AS squashed, ⟨c1 aliased:cosh(julian)⟩ AS hyperbolic, ⟨c2 aliased:unistr(label)⟩ AS decoded FROM events WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

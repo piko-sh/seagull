@@ -1,0 +1,66 @@
+[
+  {
+    "Command": "many",
+    "Filename": "list_events.sql",
+    "Line": 1,
+    "Name": "ListEvents",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "payload",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "payload",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "created_at",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "created_at",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListEvents, command: many)\nSELECT id, name, payload, created_at FROM events WHERE name = ?",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:payload⟩, ⟨c3:created_at⟩ FROM events WHERE name = ⟨p0⟩⟨arguments p0⟩"
+  }
+]

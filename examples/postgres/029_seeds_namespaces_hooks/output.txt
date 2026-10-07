@@ -1,0 +1,13 @@
+history tables: chippy_migrations and chippy_seeds
+migrating: 2 pending, versions [1 2]
+  applied 0001 menu
+  applied 0002 menu_price_index
+menu_price_idx built concurrently, valid=true
+sgl_migrations (default namespace): 0 of 2 migrations applied
+seeds applied: 1
+seeds applied: 0
+  cod and chips     950p
+  haddock and chips 1020p
+  mushy peas        250p
+level=WARN msg="seed file checksum changed since last application" version=1 name=menu applied_checksum=0fe49fb6264686ee639a2b35cf19026da57e5a5f0e2bcdcecf4035b8d98ba635 file_checksum=41505f6d893d13901c29bd1badc3a62675bedbd0daabc516763951970d7b798b
+seeds applied after editing 0001_menu.sql: 0

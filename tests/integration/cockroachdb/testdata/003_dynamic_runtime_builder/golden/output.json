@@ -1,0 +1,30 @@
+{
+  "expensive_products": [
+    {
+      "id": 1218016567496835073,
+      "in_stock": false,
+      "name": "gadget",
+      "price": 150
+    },
+    {
+      "id": 1218016567504568321,
+      "in_stock": true,
+      "name": "gizmo",
+      "price": 200
+    }
+  ],
+  "stocked_expensive_products": [
+    {
+      "id": 1218016567504568321,
+      "in_stock": true,
+      "name": "gizmo",
+      "price": 200
+    },
+    {
+      "id": 1218016567511416833,
+      "in_stock": true,
+      "name": "gimbal",
+      "price": 250
+    }
+  ]
+}

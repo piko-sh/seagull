@@ -1,0 +1,11 @@
+CREATE TABLE trips (
+    id INTEGER PRIMARY KEY,
+    city VARCHAR NOT NULL,
+    note VARCHAR NOT NULL,
+    raw BLOB NOT NULL,
+    fare DOUBLE NOT NULL,
+    started_at TIMESTAMP NOT NULL,
+    stops INTEGER[] NOT NULL,
+    tags MAP(VARCHAR, INTEGER) NOT NULL,
+    doc JSON NOT NULL
+);

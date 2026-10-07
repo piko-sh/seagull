@@ -1,0 +1,65 @@
+[
+  {
+    "Command": "one",
+    "Filename": "products.sql",
+    "Line": 1,
+    "Name": "GetDoubledPrice",
+    "OutputColumns": [
+      {
+        "Name": "doubled",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetDoubledPrice, command: one)\nSELECT double_price(price) AS doubled FROM products WHERE id = $1;",
+    "Template": "SELECT ⟨c0 aliased:double_price(price)⟩ AS doubled FROM products WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "products.sql",
+    "Line": 4,
+    "Name": "GetCurrentPrice",
+    "OutputColumns": [
+      {
+        "Name": "price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetCurrentPrice, command: one)\nSELECT get_current_price($1::integer) AS price;",
+    "Template": "SELECT ⟨c0 aliased:get_current_price(⟨p0⟩::integer)⟩ AS price;⟨arguments p0⟩"
+  }
+]

@@ -1,0 +1,5 @@
+CREATE TABLE jobs (
+    id BIGINT PRIMARY KEY,
+    state VARCHAR(20) NOT NULL,
+    owner VARCHAR(40)
+) ENGINE=InnoDB;

@@ -1,0 +1,27 @@
+[
+  {
+    "Command": "one",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "ExtremeLabels",
+    "OutputColumns": [
+      {
+        "Name": "lowest",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Name": "highest",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ExtremeLabels, one)\nSELECT argMin(label, score) AS lowest, argMax(label, score) AS highest FROM t;",
+    "Template": "SELECT ⟨c0 aliased:argMin(label, score)⟩ AS lowest, ⟨c1 aliased:argMax(label, score)⟩ AS highest FROM t;"
+  }
+]

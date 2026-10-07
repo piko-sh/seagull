@@ -1,0 +1,4 @@
+{
+  "description": "A tuple or map is never Nullable itself, its fields Nullable where their values may be NULL; a date or time moved by a unit, through date_add and its spellings, the addDays family or interval arithmetic, takes the type ClickHouse gives it: a calendar unit keeps the type, a time of day moves a Date to a DateTime and a Date32 to a DateTime64(3), and a fraction of a second moves a DateTime to a DateTime64 of that precision.",
+  "expectedDiagnosticCount": 0
+}

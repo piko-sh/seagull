@@ -1,0 +1,93 @@
+[
+  {
+    "Command": "many",
+    "Filename": "ranked_sales.sql",
+    "Line": 1,
+    "Name": "GetRankedSales",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "region",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "product",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "product",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "amount",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        },
+        "SourceColumn": "amount",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "rank_in_region",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "previous_amount",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "running_total",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "region",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetRankedSales, command: many)\nSELECT\n  id,\n  region,\n  product,\n  amount,\n  row_number() OVER (PARTITION BY region ORDER BY amount DESC) AS rank_in_region,\n  lag(amount, 1) OVER (PARTITION BY region ORDER BY sale_date) AS previous_amount,\n  sum(amount) OVER (ORDER BY sale_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_total\nFROM sales\nWHERE region = ?",
+    "Template": "SELECT\\n  ⟨c0:id⟩,\\n  ⟨c1:region⟩,\\n  ⟨c2:product⟩,\\n  ⟨c3:amount⟩,\\n  ⟨c4 aliased:row_number() OVER (PARTITION BY region ORDER BY amount DESC)⟩ AS rank_in_region,\\n  ⟨c5 aliased:lag(amount, 1) OVER (PARTITION BY region ORDER BY sale_date)⟩ AS previous_amount,\\n  ⟨c6 aliased:sum(amount) OVER (ORDER BY sale_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)⟩ AS running_total\\nFROM sales\\nWHERE region = ⟨p0⟩⟨arguments p0⟩"
+  }
+]

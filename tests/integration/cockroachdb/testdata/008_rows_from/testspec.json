@@ -1,0 +1,3 @@
+{
+  "description": "CockroachDB ROWS FROM through database/sql: each function's columns in turn, the rows of a shorter function padded with NULLs that scan into nil, the ordinality column last; an unnest of several arrays reads one column per array; one function reads as the function alone"
+}

@@ -1,0 +1,4 @@
+{
+  "description": "Grammar and built-ins against PostgreSQL through database/sql: LIMIT and OFFSET over cast and multiplied parameters; a VALUES arm; a set operation of queries in parentheses as a derived table; (TABLE t) as a derived table and in EXISTS; row as a table alias and a column; a table's column alias list; <-> between points with point(x, y); date, date_add, trim_array, character_length, the binary string functions, jsonb_path_exists with variables, a function whose argument default is written with = and pg_current_xact_id read as a uint64.",
+  "expectedDiagnostics": []
+}

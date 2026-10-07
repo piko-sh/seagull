@@ -1,0 +1,82 @@
+{
+  "add_empty_log": "added",
+  "add_log": "added",
+  "calm_mornings": [
+    {
+      "id": 1
+    }
+  ],
+  "driver_refuses_a_map_holding_an_enum": true,
+  "driver_refuses_a_map_keyed_by_an_enum": true,
+  "driver_refuses_a_struct_holding_an_enum": true,
+  "feeling_of_log_1": "stormy",
+  "log_1": {
+    "counts": {
+      "stormy": 3
+    },
+    "entries": [
+      {
+        "feeling": "stormy"
+      },
+      {
+        "feeling": "calm"
+      }
+    ],
+    "entry": {
+      "feeling": "stormy",
+      "note": "fair winds"
+    },
+    "history": {
+      "feelings": [
+        "calm",
+        "stormy"
+      ]
+    },
+    "id": 1,
+    "moods": {
+      "evening": "stormy",
+      "morning": "calm"
+    }
+  },
+  "log_1_feelings": {
+    "feeling": "stormy",
+    "feelings": [
+      "calm",
+      "stormy"
+    ],
+    "mood_values": [
+      "calm",
+      "stormy"
+    ],
+    "morning": "calm"
+  },
+  "log_2": {
+    "counts": null,
+    "entries": null,
+    "entry": null,
+    "history": null,
+    "id": 2,
+    "moods": null
+  },
+  "log_2_feelings": {
+    "feeling": null,
+    "feelings": null,
+    "mood_values": null,
+    "morning": null
+  },
+  "stormy_logs": [
+    {
+      "id": 1
+    }
+  ],
+  "stormy_logs_by_key": [
+    {
+      "id": 1
+    }
+  ],
+  "stormy_logs_extracted": [
+    {
+      "id": 1
+    }
+  ]
+}

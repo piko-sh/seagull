@@ -1,0 +1,11 @@
+{
+  "ends_at_nil": true,
+  "flags": "[00000101]",
+  "in_season": [
+    {
+      "id": 1
+    }
+  ],
+  "season": 2024,
+  "starts_at": "09:30:00"
+}

@@ -1,0 +1,55 @@
+[
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 1,
+    "Name": "ListLongBoats",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "long_boats",
+        "SourceTable": "long_boats"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "long_boats",
+        "SourceTable": "long_boats"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListLongBoats, command: many)\nSELECT id, name FROM long_boats;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩ FROM long_boats;"
+  },
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 4,
+    "Name": "ListBoatLabels",
+    "OutputColumns": [
+      {
+        "Name": "label",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 120
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListBoatLabels, command: many)\nSELECT boat_label(name) AS label FROM boat_names;",
+    "Template": "SELECT ⟨c0 aliased:boat_label(name)⟩ AS label FROM boat_names;"
+  }
+]

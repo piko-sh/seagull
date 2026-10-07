@@ -1,0 +1,4 @@
+{
+  "description": "A quoted mixed-case type name and the unquoted name of the same letters are two types, as PostgreSQL keeps them: the enum \"Mood\" and the enum mood, and the composites \"Shapes\".\"Pair\" and \"Shapes\".pair, each keep their own labels or fields as columns, as :: and CAST results, as array casts, as a parameter typed by a cast, as function parameter and return types, and in a column definition list. An unquoted MOOD folds to mood. A quoted name that spells a built-in in another case is not the built-in: the composite \"Point\" is apart from the geometric point, which a quoted \"point\" in lower case still names.",
+  "expectedDiagnosticCount": 0
+}

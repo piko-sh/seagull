@@ -1,0 +1,90 @@
+{
+  "all_tags": [
+    {
+      "id": 1,
+      "legs.colony": [
+        "cod",
+        "ling"
+      ],
+      "legs.minutes": [
+        3,
+        null
+      ],
+      "note": "calm",
+      "started": "2024-01-31T00:00:00Z",
+      "tags": "blue"
+    },
+    {
+      "id": 1,
+      "legs.colony": [
+        "cod",
+        "ling"
+      ],
+      "legs.minutes": [
+        3,
+        null
+      ],
+      "note": "calm",
+      "started": "2024-01-31T00:00:00Z",
+      "tags": "red"
+    }
+  ],
+  "leg_tuples": [
+    {
+      "colony": "cod",
+      "id": 1,
+      "leg": {
+        "colony": "cod",
+        "minutes": 3
+      }
+    },
+    {
+      "colony": "ling",
+      "id": 1,
+      "leg": {
+        "colony": "ling",
+        "minutes": null
+      }
+    }
+  ],
+  "legs": [
+    {
+      "id": 1,
+      "legs.colony": "cod",
+      "legs.minutes": 3
+    },
+    {
+      "id": 1,
+      "legs.colony": "ling",
+      "legs.minutes": null
+    }
+  ],
+  "moved": [
+    {
+      "half_past": "2024-01-31T00:30:00Z",
+      "next_day": "2024-02-01T00:00:00Z",
+      "next_hour": "2024-01-31T02:00:00Z",
+      "nudged": "2024-01-31T10:00:00.005Z"
+    },
+    {
+      "half_past": "2024-02-29T00:30:00Z",
+      "next_day": "2024-03-01T00:00:00Z",
+      "next_hour": "2024-02-29T02:00:00Z",
+      "nudged": "2024-02-29T23:59:59.005Z"
+    }
+  ],
+  "tags_or_empty": [
+    {
+      "id": 1,
+      "tag": "blue"
+    },
+    {
+      "id": 1,
+      "tag": "red"
+    },
+    {
+      "id": 2,
+      "tag": ""
+    }
+  ]
+}

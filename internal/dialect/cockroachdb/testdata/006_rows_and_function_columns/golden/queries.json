@@ -1,0 +1,364 @@
+[
+  {
+    "Command": "many",
+    "Filename": "functions.sql",
+    "Line": 1,
+    "Name": "FacilityElements",
+    "OutputColumns": [
+      {
+        "Name": "f",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        },
+        "SourceColumn": "f",
+        "SourceQualifier": "f"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(FacilityElements, many)\nSELECT f FROM harbours, jsonb_array_elements(harbours.facilities) AS f;",
+    "Template": "SELECT ⟨c0:f⟩ FROM harbours, jsonb_array_elements(harbours.facilities) AS f;"
+  },
+  {
+    "Command": "many",
+    "Filename": "functions.sql",
+    "Line": 4,
+    "Name": "FacilityElementsQualified",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "harbours",
+        "SourceTable": "harbours"
+      },
+      {
+        "Name": "f",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        },
+        "SourceColumn": "f",
+        "SourceQualifier": "f"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(FacilityElementsQualified, many)\nSELECT harbours.id, f.f FROM harbours, jsonb_array_elements(harbours.facilities) AS f;",
+    "Template": "SELECT ⟨c0:harbours.id⟩, ⟨c1:f.f⟩ FROM harbours, jsonb_array_elements(harbours.facilities) AS f;"
+  },
+  {
+    "Command": "many",
+    "Filename": "functions.sql",
+    "Line": 7,
+    "Name": "FacilityElementsStar",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "harbours",
+        "SourceTable": "harbours"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "harbours",
+        "SourceTable": "harbours"
+      },
+      {
+        "Name": "berth_numbers",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int8",
+            "Nullable": true,
+            "Width": 64
+          },
+          "EngineName": "int8[]"
+        },
+        "SourceColumn": "berth_numbers",
+        "SourceQualifier": "harbours",
+        "SourceTable": "harbours"
+      },
+      {
+        "Name": "facilities",
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        },
+        "SourceColumn": "facilities",
+        "SourceQualifier": "harbours",
+        "SourceTable": "harbours"
+      },
+      {
+        "Name": "f",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "f",
+        "SourceQualifier": "f"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(FacilityElementsStar, many)\nSELECT * FROM harbours, jsonb_array_elements_text(harbours.facilities) AS f;",
+    "Template": "SELECT ⟨star written 0=harbours.id 1=harbours.name 2=harbours.berth_numbers 3=harbours.facilities 4=f.f:*⟩ FROM harbours, jsonb_array_elements_text(harbours.facilities) AS f;"
+  },
+  {
+    "Command": "many",
+    "Filename": "functions.sql",
+    "Line": 10,
+    "Name": "FacilityElementsUnaliased",
+    "OutputColumns": [
+      {
+        "Name": "value",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        },
+        "SourceColumn": "value",
+        "SourceQualifier": "jsonb_array_elements"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(FacilityElementsUnaliased, many)\nSELECT value FROM jsonb_array_elements('[1, 2]'::JSONB);",
+    "Template": "SELECT ⟨c0:value⟩ FROM jsonb_array_elements('[1, 2]'::JSONB);"
+  },
+  {
+    "Command": "many",
+    "Filename": "functions.sql",
+    "Line": 13,
+    "Name": "FacilityElementsNumbered",
+    "OutputColumns": [
+      {
+        "Name": "f",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        },
+        "SourceColumn": "f",
+        "SourceQualifier": "f"
+      },
+      {
+        "Name": "ordinality",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "ordinality",
+        "SourceQualifier": "f"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(FacilityElementsNumbered, many)\nSELECT f, ordinality FROM harbours, jsonb_array_elements(harbours.facilities) WITH ORDINALITY AS f;",
+    "Template": "SELECT ⟨c0:f⟩, ⟨c1:ordinality⟩ FROM harbours, jsonb_array_elements(harbours.facilities) WITH ORDINALITY AS f;"
+  },
+  {
+    "Command": "many",
+    "Filename": "functions.sql",
+    "Line": 16,
+    "Name": "BerthNumbers",
+    "OutputColumns": [
+      {
+        "Name": "n",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "n",
+        "SourceQualifier": "n"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(BerthNumbers, many)\nSELECT n FROM harbours, unnest(harbours.berth_numbers) AS n;",
+    "Template": "SELECT ⟨c0:n⟩ FROM harbours, unnest(harbours.berth_numbers) AS n;"
+  },
+  {
+    "Command": "many",
+    "Filename": "functions.sql",
+    "Line": 19,
+    "Name": "BerthNumbersNumbered",
+    "OutputColumns": [
+      {
+        "Name": "number",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "number",
+        "SourceQualifier": "n"
+      },
+      {
+        "Name": "position",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "position",
+        "SourceQualifier": "n"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(BerthNumbersNumbered, many)\nSELECT n.number, n.position FROM harbours, unnest(harbours.berth_numbers) WITH ORDINALITY AS n(number, position);",
+    "Template": "SELECT ⟨c0:n.number⟩, ⟨c1:n.position⟩ FROM harbours, unnest(harbours.berth_numbers) WITH ORDINALITY AS n(number, position);"
+  },
+  {
+    "Command": "many",
+    "Filename": "functions.sql",
+    "Line": 22,
+    "Name": "FacilityPairs",
+    "OutputColumns": [
+      {
+        "Name": "key",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "key",
+        "SourceQualifier": "pair"
+      },
+      {
+        "Name": "value",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        },
+        "SourceColumn": "value",
+        "SourceQualifier": "pair"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(FacilityPairs, many)\nSELECT pair.key, pair.value FROM harbours, jsonb_each(harbours.facilities) AS pair;",
+    "Template": "SELECT ⟨c0:pair.key⟩, ⟨c1:pair.value⟩ FROM harbours, jsonb_each(harbours.facilities) AS pair;"
+  },
+  {
+    "Command": "many",
+    "Filename": "rows.sql",
+    "Line": 1,
+    "Name": "HarbourRows",
+    "OutputColumns": [
+      {
+        "Name": "harbour",
+        "SQLType": {
+          "Category": "composite",
+          "EngineName": "record"
+        }
+      },
+      {
+        "Name": "document",
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "json"
+        }
+      },
+      {
+        "Name": "binary_document",
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(HarbourRows, many)\nSELECT h AS harbour, row_to_json(h) AS document, to_jsonb(h) AS binary_document FROM harbours h;",
+    "Template": "SELECT ⟨c0 aliased:h⟩ AS harbour, ⟨c1 aliased:row_to_json(h)⟩ AS document, ⟨c2 aliased:to_jsonb(h)⟩ AS binary_document FROM harbours h;"
+  },
+  {
+    "Command": "many",
+    "Filename": "rows.sql",
+    "Line": 4,
+    "Name": "BerthRowsOuterJoined",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "h",
+        "SourceTable": "harbours"
+      },
+      {
+        "Name": "berth",
+        "SQLType": {
+          "Category": "composite",
+          "EngineName": "record"
+        }
+      },
+      {
+        "Name": "berth_document",
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "json"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(BerthRowsOuterJoined, many)\nSELECT h.id, b AS berth, row_to_json(b) AS berth_document\nFROM harbours h LEFT JOIN berths b ON b.harbour_id = h.id;",
+    "Template": "SELECT ⟨c0:h.id⟩, ⟨c1 aliased:b⟩ AS berth, ⟨c2 aliased:row_to_json(b)⟩ AS berth_document\\nFROM harbours h LEFT JOIN berths b ON b.harbour_id = h.id;"
+  },
+  {
+    "Command": "one",
+    "Filename": "rows.sql",
+    "Line": 8,
+    "Name": "HarbourDocuments",
+    "OutputColumns": [
+      {
+        "Name": "harbours",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "json"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(HarbourDocuments, one)\nSELECT json_agg(h) AS harbours FROM harbours h;",
+    "Template": "SELECT ⟨c0 aliased:json_agg(h)⟩ AS harbours FROM harbours h;"
+  },
+  {
+    "Command": "many",
+    "Filename": "rows.sql",
+    "Line": 11,
+    "Name": "DerivedRows",
+    "OutputColumns": [
+      {
+        "Name": "d",
+        "SQLType": {
+          "Category": "composite",
+          "EngineName": "record"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(DerivedRows, many)\nSELECT d FROM (SELECT id, name FROM harbours) AS d;",
+    "Template": "SELECT ⟨c0:d⟩ FROM (SELECT id, name FROM harbours) AS d;"
+  }
+]

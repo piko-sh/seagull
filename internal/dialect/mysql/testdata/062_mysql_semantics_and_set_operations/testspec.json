@@ -1,0 +1,11 @@
+{
+  "description": "MySQL semantics and set operations: \"...\" is a string in the default sql_mode, strings written together join and a string after an item names it; || is a logical OR, and a || with a text operand is warned of (Q063, IT-82); a division or remainder by a column is nullable, since MySQL gives NULL for a zero divisor, while one by a constant other than zero is not; STR_TO_DATE and a conversion of text to a date are nullable; a select-list alias is an operand in HAVING and ORDER BY; a VALUES list and a query in parentheses with its own ORDER BY and LIMIT are arms of a set operation, a derived table, a recursive CTE anchor and a view; SHOW WARNINGS, COUNT(*) WARNINGS, VARIABLES, FULL TABLES and CREATE TABLE return declared columns; a text column of the binary character set is binary.",
+  "expectedDiagnosticCount": 1,
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "Q063",
+      "messageContains": "CONCAT"
+    }
+  ]
+}

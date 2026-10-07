@@ -1,0 +1,1 @@
+{"description": "Temporal arithmetic takes DuckDB's result types: the difference of two timestamps is an INTERVAL, of two dates a BIGINT number of days, a date moved by days a DATE and a date moved by an interval a TIMESTAMP"}

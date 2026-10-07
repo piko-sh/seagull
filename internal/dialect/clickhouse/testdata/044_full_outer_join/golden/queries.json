@@ -1,0 +1,37 @@
+[
+  {
+    "Command": "many",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "FullJoin",
+    "OutputColumns": [
+      {
+        "Name": "l_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "l",
+        "SourceTable": "left_t"
+      },
+      {
+        "Name": "r_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "r",
+        "SourceTable": "right_t"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(FullJoin, many)\nSELECT l.id AS l_id, r.id AS r_id FROM left_t l FULL OUTER JOIN right_t r ON l.id = r.id;",
+    "Template": "SELECT ⟨c0 aliased:l.id⟩ AS l_id, ⟨c1 aliased:r.id⟩ AS r_id FROM left_t l FULL OUTER JOIN right_t r ON l.id = r.id;"
+  }
+]

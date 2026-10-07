@@ -1,0 +1,28 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: UpTo, Up, Down, Status and Validate on an embedded set of migrations, then the advisory lock and the PgBouncer table lock that stop two instances migrating at once, refused at once with WithNonBlockingLock.
+differs:
+  - "migrate_backend_postgres.New() holds a session-level advisory lock, pg_advisory_lock(hashtext('sgl_migrations')), for the whole run"
+  - "migrate_backend_postgres.NewPgBouncer() locks the single row of sgl_migration_lock with SELECT ... FOR UPDATE instead, as transaction pooling loses session locks"
+  - "WithNonBlockingLock makes a run fail at once with ErrLockNotAcquired instead of waiting; Up takes no lock when nothing is pending"
+  - Down stops with a NoDownMigrationError at a migration with no .down.sql file
+  - Validate and Up return a ChecksumMismatchError when an applied file has changed, even by a comment
+entry: {file: db/migrations/0002_tidy_species.up.sql}
+live: "no"
+test: integration

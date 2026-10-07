@@ -1,0 +1,4 @@
+{
+  "description": "CockroachDB rows and function columns as the engine has them: the row of any relation used as a value is a record that is never NULL, even on the nullable side of an outer join; the alias of a table function returning one column names that column, even for a function that names its own (jsonb_array_elements AS f reads f, never value), while an unaliased call keeps the function's name; WITH ORDINALITY appends ordinality.",
+  "expectedDiagnosticCount": 0
+}

@@ -1,0 +1,75 @@
+[
+  {
+    "Command": "one",
+    "Filename": "prices.sql",
+    "Line": 1,
+    "Name": "GetPrice",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "prices",
+        "SourceTable": "prices"
+      },
+      {
+        "Name": "amount",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "Decimal",
+          "Precision": 18,
+          "Scale": 4
+        },
+        "SourceColumn": "amount",
+        "SourceQualifier": "prices",
+        "SourceTable": "prices"
+      },
+      {
+        "Name": "fee",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "Decimal64",
+          "Precision": 18,
+          "Scale": 2
+        },
+        "SourceColumn": "fee",
+        "SourceQualifier": "prices",
+        "SourceTable": "prices"
+      },
+      {
+        "Name": "micro_amount",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "Decimal128",
+          "Precision": 38,
+          "Scale": 8
+        },
+        "SourceColumn": "micro_amount",
+        "SourceQualifier": "prices",
+        "SourceTable": "prices"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(GetPrice, one)\nSELECT id, amount, fee, micro_amount FROM prices WHERE id = {id:UInt64};",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:amount⟩, ⟨c2:fee⟩, ⟨c3:micro_amount⟩ FROM prices WHERE id = ⟨p0 UInt64⟩;⟨arguments p0⟩"
+  }
+]

@@ -1,0 +1,10 @@
+3 replicas started at once and applied 2 migrations between them
+a replica restarted and applied 0 migrations
+  Cormorant of Padstow
+  Gannet    of Padstow
+  Kittiwake of Padstow
+  Puffin    of Padstow
+advisory lock refused: lock mode not supported by this backend: invalid configuration: advisory on CockroachDB
+history in sgl_migrations, locked through sgl_migration_lock:
+  0001 boats           applied=true
+  0002 boat_home_port  applied=true

@@ -1,0 +1,3 @@
+{
+  "description": "ClickHouse database/sql values on a session whose time zone is not UTC: a DateTime and a DateTime64 bind as Unix seconds, so the moment is kept, and a Date as the calendar date in the time's own location; Array(UUID), Array(IPv4), Array(Array(UInt8)) and Array(Int128) bind with each level quoted or bare as the type reads it; text keeps backslashes, tabs, newlines, carriage returns and NULs; a named Tuple and a Map bind in a fixed order; a kind: slice parameter binds whole as Array(T) in IN and NOT IN, nil and empty included; a batch keeps its row's expression."
+}

@@ -1,0 +1,67 @@
+{
+  "all_items": [
+    {
+      "id": 1,
+      "name": "Apple",
+      "price": 100
+    },
+    {
+      "id": 2,
+      "name": "Banana",
+      "price": 50
+    },
+    {
+      "id": 3,
+      "name": "Carrot",
+      "price": 75
+    },
+    {
+      "id": 4,
+      "name": "Date",
+      "price": 200
+    },
+    {
+      "id": 5,
+      "name": "Eggplant",
+      "price": 150
+    }
+  ],
+  "fruit_count": 3,
+  "fruit_count_from_100": 2,
+  "fruit_from_60": [
+    {
+      "id": 1,
+      "name": "Apple",
+      "price": 100
+    },
+    {
+      "id": 4,
+      "name": "Date",
+      "price": 200
+    }
+  ],
+  "fruit_rows_from_100": [
+    {
+      "id": 4,
+      "name": "Date",
+      "price": 200
+    },
+    {
+      "id": 1,
+      "name": "Apple",
+      "price": 100
+    }
+  ],
+  "sorted_page": [
+    {
+      "id": 5,
+      "name": "Eggplant",
+      "price": 150
+    },
+    {
+      "id": 1,
+      "name": "Apple",
+      "price": 100
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "docs": [
+    {
+      "has_email": 1,
+      "id": 1,
+      "user_name": "alice",
+      "user_sub": "[{\"name\":\"alice\",\"email\":\"alice@example.com\"}]"
+    },
+    {
+      "has_email": 0,
+      "id": 2,
+      "user_name": "bob",
+      "user_sub": "[{\"name\":\"bob\"}]"
+    }
+  ]
+}

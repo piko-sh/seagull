@@ -1,0 +1,56 @@
+[
+  {
+    "Command": "stream",
+    "Filename": "stream_events.sql",
+    "Line": 1,
+    "Name": "StreamEvents",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "payload",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "payload",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "created_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp",
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "created_at",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: StreamEvents, command: stream)\nSELECT id, name, payload, created_at FROM events ORDER BY created_at;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:payload⟩, ⟨c3:created_at⟩ FROM events ORDER BY created_at;"
+  }
+]

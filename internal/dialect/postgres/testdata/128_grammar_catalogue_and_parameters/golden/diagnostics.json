@@ -1,0 +1,42 @@
+[
+  {
+    "Code": "Q063",
+    "Column": 37,
+    "EndColumn": 43,
+    "EndLine": 2,
+    "Filename": "placeholders.sql",
+    "Line": 2,
+    "Message": "@label is no parameter here: @ before a name is the absolute value operator, so the statement reads the column label or fails rather than taking a parameter; write $1 or :label",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q063",
+    "Column": 37,
+    "EndColumn": 38,
+    "EndLine": 5,
+    "Filename": "placeholders.sql",
+    "Line": 5,
+    "Message": "? is no parameter here: it is the operator that tests whether a jsonb document has a key, so the statement fails; write $1 or :name",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q063",
+    "Column": 40,
+    "EndColumn": 41,
+    "EndLine": 5,
+    "Filename": "placeholders.sql",
+    "Line": 5,
+    "Message": "? is no parameter here: it is the operator that tests whether a jsonb document has a key, so the statement fails; write $1 or :name",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q063",
+    "Column": 30,
+    "EndColumn": 36,
+    "EndLine": 8,
+    "Filename": "placeholders.sql",
+    "Line": 8,
+    "Message": "the server cannot determine the type of :label, which it meets first as the operand of IS NULL, so every call fails; cast it where it first appears to the type it holds, such as :label::text or :label::bigint",
+    "Severity": "warning"
+  }
+]

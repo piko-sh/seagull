@@ -1,0 +1,1 @@
+{"description": "ALTER COLUMN ... SET NOT NULL and DROP NOT NULL change a column's nullability in the catalogue"}

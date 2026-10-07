@@ -1,0 +1,43 @@
+{
+  "add_2026": "added",
+  "add_2027": "added",
+  "add_2028": "added",
+  "attached_readings": [
+    {
+      "id": 30,
+      "note": "first",
+      "value": 7
+    }
+  ],
+  "detached_readings": [
+    {
+      "id": 1,
+      "taken_on": "2025-06-01T00:00:00Z",
+      "value": 5
+    }
+  ],
+  "low_readings": [
+    {
+      "id": 20,
+      "note": null,
+      "taken_on": "2027-03-01T00:00:00Z",
+      "value": null
+    }
+  ],
+  "next_reading_number": {
+    "number": 100
+  },
+  "reading_numbers": {
+    "is_called": true,
+    "last_value": 100,
+    "log_cnt": 32
+  },
+  "readings_2026": [
+    {
+      "id": 10,
+      "note": "first",
+      "taken_on": "2026-03-01T00:00:00Z",
+      "value": 7
+    }
+  ]
+}

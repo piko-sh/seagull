@@ -1,0 +1,39 @@
+[
+  {
+    "Command": "many",
+    "Filename": "agg_json.sql",
+    "Line": 1,
+    "Name": "AggJSON",
+    "OutputColumns": [
+      {
+        "Name": "category",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "category",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "all_data",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "json"
+        }
+      },
+      {
+        "Name": "all_data_b",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AggJSON, command: many)\nSELECT category, json_agg(data) AS all_data, jsonb_agg(data) AS all_data_b\nFROM events\nGROUP BY category;",
+    "Template": "SELECT ⟨c0:category⟩, ⟨c1 aliased:json_agg(data)⟩ AS all_data, ⟨c2 aliased:jsonb_agg(data)⟩ AS all_data_b\\nFROM events\\nGROUP BY category;"
+  }
+]

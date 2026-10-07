@@ -1,0 +1,86 @@
+{
+  "stock": [
+    {
+      "counts": {
+        "apples": 5,
+        "pears}": 2
+      },
+      "id": 1,
+      "nested": {
+        "c": {
+          "d": 4
+        }
+      },
+      "shelves": [
+        {
+          "top": 1
+        },
+        {}
+      ],
+      "tagged": [
+        {
+          "b": 2
+        },
+        3
+      ]
+    },
+    {
+      "counts": {},
+      "id": 2,
+      "nested": {},
+      "shelves": [],
+      "tagged": [
+        {},
+        0
+      ]
+    },
+    {
+      "counts": {
+        "kiwis": 7
+      },
+      "id": 3,
+      "nested": {},
+      "shelves": [],
+      "tagged": [
+        {},
+        0
+      ]
+    },
+    {
+      "counts": {
+        "restocked": 1
+      },
+      "id": 4,
+      "nested": {},
+      "shelves": [],
+      "tagged": [
+        {},
+        0
+      ]
+    },
+    {
+      "counts": {
+        "restocked": 1
+      },
+      "id": 5,
+      "nested": {},
+      "shelves": [],
+      "tagged": [
+        {},
+        0
+      ]
+    },
+    {
+      "counts": {
+        "figs": 1
+      },
+      "id": 9,
+      "nested": {},
+      "shelves": [],
+      "tagged": [
+        {},
+        0
+      ]
+    }
+  ]
+}

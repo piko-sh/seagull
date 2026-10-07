@@ -1,0 +1,566 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+version: "2"
+
+run:
+  timeout: 10m
+  go: "1.27"
+
+linters:
+  default: none
+  enable:
+    - revive
+    - staticcheck
+    - gocritic
+    - gosec
+    - godoclint
+    - exhaustruct_v5
+    - depguard
+    - exhaustive
+    - govet
+    - dupl
+    - modernize
+    - funcorder
+    - goheader
+    - decorder
+    - misspell
+    - errorlint
+    - bidichk
+    - iotamixing
+    - unused
+    - prealloc
+    - nolintlint
+
+  settings:
+    nolintlint:
+      allow-unused: false
+      require-specific: true
+      require-explanation: true
+
+    depguard:
+      rules:
+        foundations-below-everything:
+          list-mode: lax
+          files:
+            - "**/internal/diag/**"
+            - "**/internal/namespace/**"
+            - "**/internal/structtag/**"
+            - "**/internal/logging/**"
+            - "**/internal/leakcheck/**"
+            - "**/internal/fault/**"
+            - "**/internal/observe/**"
+            - "**/internal/panicguard/**"
+            - "**/internal/sqllex/**"
+            - "**/internal/sqlmodel/**"
+            - "**/internal/dialect/ast/**"
+            - "**/internal/dialect/*/lexical/**"
+            - "!**/internal/dialect/timescaledb/lexical/**"
+            - "!$test"
+          allow:
+            - seagull.sh/seagull/internal/diag$
+            - seagull.sh/seagull/internal/fault
+            - seagull.sh/seagull/internal/logging
+            - seagull.sh/seagull/internal/sqllex
+            - seagull.sh/seagull/internal/sqlmodel
+          deny:
+            - pkg: seagull.sh/seagull
+              desc: the foundation packages sit below everything else in the module
+        dialects-see-only-the-contract:
+          list-mode: lax
+          files:
+            - "**/internal/dialect/**"
+            - "!**/internal/dialect/dialecttest/**"
+            - "!$test"
+          allow:
+            - seagull.sh/seagull/internal/diag$
+            - seagull.sh/seagull/internal/dialect
+            - seagull.sh/seagull/internal/fault
+            - seagull.sh/seagull/internal/logging
+            - seagull.sh/seagull/internal/sqllex
+            - seagull.sh/seagull/internal/sqlmodel
+          deny:
+            - pkg: seagull.sh/seagull
+              desc: a dialect sees only the dialect contract, the SQL model, the lexer and the foundation packages
+        extensions-below-core:
+          list-mode: lax
+          files:
+            - "**/internal/emit/**"
+            - "**/internal/gogen/**"
+            - "**/internal/schema/**"
+            - "!**/internal/emit/emittest/**"
+            - "!$test"
+          deny:
+            - pkg: seagull.sh/seagull/internal/directive
+              desc: emitters, the code generator and schema sources never reach into the analyser
+            - pkg: seagull.sh/seagull/internal/resolve
+              desc: emitters, the code generator and schema sources never reach into the analyser
+            - pkg: seagull.sh/seagull/internal/check
+              desc: emitters, the code generator and schema sources never reach into the analyser
+            - pkg: seagull.sh/seagull/internal/analyse
+              desc: emitters, the code generator and schema sources never reach into the analyser
+            - pkg: seagull.sh/seagull/internal/catalogue
+              desc: emitters, the code generator and schema sources never reach into the analyser
+            - pkg: seagull.sh/seagull/internal/dialect/ast
+              desc: emitters, the code generator and schema sources read the SQL model, never a dialect's syntax tree
+            - pkg: seagull.sh/seagull/internal/gotypes
+              desc: emitters, the code generator and schema sources never reach into the type mapper
+            - pkg: seagull.sh/seagull/internal/sqltemplate
+              desc: emitters, the code generator and schema sources never reach into the query's SQL builder
+            - pkg: seagull.sh/seagull/internal/pipeline
+              desc: emitters, the code generator and schema sources never reach into the pipeline
+            - pkg: seagull.sh/seagull/internal/output
+              desc: emitters, the code generator and schema sources never reach into the writer
+            - pkg: seagull.sh/seagull/internal/app
+              desc: emitters, the code generator and schema sources never reach up to the composition root
+            - pkg: seagull.sh/seagull/internal/migrate
+              desc: emitters, the code generator and schema sources never reach into the migration run time
+            - pkg: seagull.sh/seagull$
+              desc: emitters, the code generator and schema sources never reach into the root facade
+        core-never-imports-an-adapter:
+          list-mode: lax
+          files:
+            - "**/internal/resolve/**"
+            - "**/internal/check/**"
+            - "**/internal/analyse/**"
+            - "**/internal/catalogue/**"
+            - "**/internal/gotypes/**"
+            - "**/internal/gogen/**"
+            - "**/internal/sqltemplate/**"
+            - "**/internal/pipeline/**"
+            - "!$test"
+          allow:
+            - seagull.sh/seagull/internal/dialect/ast
+            - seagull.sh/seagull/internal/emit/emitkit
+          deny:
+            - pkg: seagull.sh/seagull/internal/dialect/
+              desc: the core sees an engine only through the dialect contract
+            - pkg: seagull.sh/seagull/internal/emit/
+              desc: the core sees an emitter only through the emit contract; internal/app picks the default
+            - pkg: seagull.sh/seagull/internal/schema/
+              desc: the core reads a live schema only through the SchemaSourcePort in internal/schema
+            - pkg: seagull.sh/seagull/internal/migrate
+              desc: the generator core never links the migration run time
+            - pkg: seagull.sh/seagull/internal/app
+              desc: the core sits below the composition root and never reaches up to it
+        emitters-never-import-an-engine:
+          list-mode: lax
+          files:
+            - "**/internal/emit/**"
+            - "**/internal/gogen/**"
+            - "**/internal/output/**"
+            - "!**/internal/emit/emittest/**"
+            - "!$test"
+          deny:
+            - pkg: seagull.sh/seagull/internal/dialect/
+              desc: emitters, the code generator and the writer see an engine only through the dialect contract
+        app-is-the-composition-root:
+          list-mode: lax
+          files:
+            - "**/internal/app/**"
+            - "!$test"
+          allow:
+            - seagull.sh/seagull/internal/emit/databasesql
+          deny:
+            - pkg: seagull.sh/seagull/internal/dialect/
+              desc: the composition root takes its engine from the caller as a DialectPort and never picks one
+            - pkg: seagull.sh/seagull/internal/emit/
+              desc: the composition root defaults to the database/sql emitter; any other arrives through WithEmitter
+            - pkg: seagull.sh/seagull/internal/schema/
+              desc: a schema source arrives through the SchemaSourcePort; the composition root never opens a database
+            - pkg: seagull.sh/seagull/internal/migrate
+              desc: the generator never links the migration run time
+        internal-never-imports-the-facades:
+          list-mode: lax
+          files:
+            - "**/internal/**"
+            - "!**/cmd/**"
+            - "!**/sdk/**"
+            - "!**/tests/**"
+          deny:
+            - pkg: seagull.sh/seagull$
+              desc: internal owns the implementation; the root package is the facade over it
+            - pkg: seagull.sh/seagull/sdk
+              desc: internal owns the implementation; sdk is the facade over it
+        sdk-imports-only-internal:
+          list-mode: lax
+          files:
+            - "**/sdk/**"
+            - "!$test"
+          allow:
+            - seagull.sh/seagull/internal
+            - seagull.sh/seagull/sdk/dialect$
+            - seagull.sh/seagull/sdk/emit$
+            - seagull.sh/seagull/sdk/migrate$
+            - seagull.sh/seagull/sdk/schema$
+          deny:
+            - pkg: seagull.sh/seagull
+              desc: an sdk package builds only on internal packages and the facades
+        callers-use-the-facades:
+          list-mode: lax
+          files:
+            - "**/cmd/**"
+            - "**/tests/**"
+            - "!**/tests/integration/**"
+          allow:
+            - seagull.sh/seagull/internal/apitest
+            - seagull.sh/seagull/internal/leakcheck
+            - seagull.sh/seagull/internal/logging
+            - seagull.sh/seagull/internal/panicguard
+            - seagull.sh/seagull/internal/testkit
+          deny:
+            - pkg: seagull.sh/seagull/internal
+              desc: callers use the library through the root package and sdk/, never its internal packages
+        integration-suites-use-the-facades-and-the-kits:
+          list-mode: lax
+          files:
+            - "**/tests/integration/**"
+          allow:
+            - seagull.sh/seagull/internal/apitest
+            - seagull.sh/seagull/internal/leakcheck
+            - seagull.sh/seagull/internal/logging
+            - seagull.sh/seagull/internal/panicguard
+            - seagull.sh/seagull/internal/testkit
+            - seagull.sh/seagull/internal/dialect/dialecttest
+            - seagull.sh/seagull/internal/migrate/sqlexec
+          deny:
+            - pkg: seagull.sh/seagull/internal
+              desc: an integration suite uses the facades, and of the internal packages only the test tooling, the dialect facts kit and the seed executor
+        test-tooling-only-in-tests:
+          list-mode: lax
+          files:
+            - "$all"
+            - "!$test"
+            - "!**/tests/**"
+            - "!**/internal/testkit/**"
+            - "!**/internal/dialect/dialecttest/**"
+            - "!**/internal/emit/emittest/**"
+            - "!**/sdk/emit/emit_testkit/**"
+          deny:
+            - pkg: seagull.sh/seagull/internal/testkit
+              desc: the test kit is for tests only
+            - pkg: seagull.sh/seagull/internal/apitest
+              desc: the API snapshot helper is for tests only
+            - pkg: seagull.sh/seagull/internal/dialect/dialecttest
+              desc: the dialect conformance kit is for tests only
+            - pkg: seagull.sh/seagull/internal/emit/emittest
+              desc: the emitter conformance kit is for tests only
+            - pkg: seagull.sh/seagull/internal/dialect/martian
+              desc: the martian dialect is test tooling, imported only from tests
+            - pkg: seagull.sh/seagull/sdk/emit/emit_testkit
+              desc: the emitter conformance kit is for tests only
+        analyser-reads-a-finished-catalogue:
+          list-mode: lax
+          files:
+            - "**/internal/check/**"
+            - "**/internal/analyse/**"
+            - "!$test"
+          deny:
+            - pkg: seagull.sh/seagull/internal/catalogue
+              desc: the analyser reads a finished catalogue and never builds one
+        cmd-is-pure-go-and-stands-alone:
+          list-mode: lax
+          files:
+            - "**/cmd/**"
+          deny:
+            - pkg: piko.sh/piko
+              desc: seagull stands alone; only the shared piko.sh utility modules are allowed
+            - pkg: github.com/mattn/go-sqlite3
+              desc: the command is pure Go
+            - pkg: github.com/duckdb
+              desc: the command is pure Go
+            - pkg: github.com/marcboeker
+              desc: the command is pure Go
+    revive:
+      severity: warning
+      confidence: 0.8
+      rules:
+        - name: waitgroup-by-value
+        - name: use-waitgroup-go
+        - name: atomic
+        - name: unreachable-code
+        - name: identical-branches
+        - name: identical-ifelseif-branches
+        - name: identical-switch-branches
+        - name: identical-ifelseif-conditions
+        - name: identical-switch-conditions
+        - name: useless-fallthrough
+        - name: constant-logical-expr
+        - name: range-val-address
+        - name: range-val-in-closure
+        - name: unchecked-type-assertion
+        - name: redefines-builtin-id
+        - name: error-return
+        - name: errorf
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: defer
+        - name: time-equal
+        - name: duplicated-imports
+        - name: call-to-gc
+        - name: datarace
+        - name: unconditional-recursion
+        - name: struct-tag
+        - name: import-shadowing
+        - name: string-of-int
+        - name: forbidden-call-in-wg-go
+        - name: line-length-limit
+          arguments: [ 200 ]
+        - name: file-length-limit
+          arguments:
+            - max: 1000
+              skip-comments: true
+              skip-blank-lines: true
+        - name: function-length
+          arguments: [ 90, 60 ]
+        - name: argument-limit
+          arguments: [ 7 ]
+        - name: function-result-limit
+          arguments: [ 4 ]
+        - name: cyclomatic
+          arguments: [ 20 ]
+        - name: cognitive-complexity
+          arguments: [ 15 ]
+        - name: max-public-structs
+          arguments: [ 25 ]
+        - name: max-control-nesting
+          arguments: [ 3 ]
+        - name: add-constant
+          arguments:
+            - max-lit-count: "3"
+              allow-strs: "\"\",\"/\",\".\",\"\\n\",\"\\n\\n\""
+              allow-ints: "0,1,2,-1"
+              allow-floats: "0.0,1.0"
+              ignore-funcs: "strconv\\.Parse.*,strconv\\.Format.*,time\\.Date"
+        - name: empty-lines
+        - name: superfluous-else
+        - name: early-return
+        - name: indent-error-flow
+        - name: unnecessary-stmt
+        - name: var-declaration
+        - name: comment-spacings
+        - name: use-any
+        - name: increment-decrement
+        - name: bare-return
+        - name: bool-literal-in-expr
+        - name: empty-block
+        - name: var-naming
+          arguments: [ [ ], [ ], [ { "skip-initialism-name-checks": false, "skip-package-name-checks": true } ] ]
+        - name: receiver-naming
+        - name: error-naming
+        - name: exported
+          arguments: [ "disableStutteringCheck" ]
+        - name: package-comments
+        - name: package-directory-mismatch
+        - name: time-naming
+        - name: unhandled-error
+          arguments:
+            - "^fmt\\.Fprintf$"
+            - "^fmt\\.Fprintln$"
+            - "^fmt\\.Println$"
+            - "^fmt\\.Printf$"
+            - "^strings\\.Builder\\.WriteString$"
+            - "^strings\\.Builder\\.WriteByte$"
+            - "^strings\\.Builder\\.Write$"
+            - "^os\\.File\\.Close$"
+        - name: error-strings
+        - name: blank-imports
+        - name: dot-imports
+        - name: unused-parameter
+        - name: unused-receiver
+        - name: confusing-results
+        - name: unexported-return
+        - name: modifies-parameter
+        - name: confusing-naming
+          disabled: true
+        - name: modifies-value-receiver
+        - name: use-slices-sort
+        - name: epoch-naming
+        - name: use-errors-new
+        - name: use-fmt-print
+        - name: unnecessary-format
+        - name: unnecessary-if
+        - name: if-return
+        - name: useless-break
+        - name: redundant-import-alias
+        - name: redundant-build-tag
+        - name: redundant-test-main-exit
+        - name: inefficient-map-lookup
+        - name: time-date
+        - name: range
+        - name: optimize-operands-order
+
+    modernize:
+      disable:
+        - embedlit
+
+    misspell:
+      locale: UK
+      mode: "restricted"
+      ignore-rules:
+        - color
+        - center
+        - initialize
+        - initialized
+
+    gocritic:
+      enable-all: true
+      disabled-tags:
+        - opinionated
+        - style
+      settings:
+        hugeParam:
+          sizeThreshold: 256
+
+    gosec:
+      excludes:
+        - G103
+        - G117
+        - G402
+        - G704
+        - G705
+
+    godoclint:
+      default: all
+      disable:
+        - require-stdlib-doclink
+        - single-pkg-doc
+      options:
+        max-len:
+          length: 90
+        start-with-name:
+          include-unexported: true
+
+    govet:
+      enable:
+        - fieldalignment
+
+    exhaustive:
+      default-signifies-exhaustive: true
+
+    exhaustruct_v5:
+      explicit-mode: true
+      enforce-patterns:
+        - 'seagull\.sh/seagull[/.].*'
+      ignore-patterns:
+        - '.*\.<anonymous>'
+      allow-empty: true
+
+    goheader:
+      template: |-
+        Copyright 2026 PolitePixels Limited
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+    decorder:
+      dec-order:
+        - const
+        - var
+      disable-dec-order-check: false
+      disable-init-func-first-check: true
+      disable-dec-num-check: true
+      ignore-underscore-vars: true
+
+    dupl:
+      threshold: 100
+
+  exclusions:
+    generated: strict
+
+    paths:
+      - third_party
+      - vendor
+      - node_modules
+      - examples
+
+    rules:
+      - linters: [ misspell ]
+        text: "^`[A-Z][A-Z0-9_]*` is a misspelling"
+
+      - path: internal/
+        linters: [ misspell ]
+        text: "(?i)materializ"
+
+      - path: ^(internal/app/)?options\.go$
+        linters: [ gocritic ]
+        text: "^hugeParam: chosen is heavy"
+
+      - path: facade[^/]*\.go$
+        linters: [ revive ]
+        text: "max-public-structs"
+
+      - path: _test\.go$
+        linters:
+          - gocritic
+          - gosec
+          - godoclint
+          - funcorder
+          - dupl
+          - exhaustruct_v5
+          - goheader
+          - decorder
+          - unused
+
+      - path: _test\.go$
+        linters: [ staticcheck ]
+        text: "QF1011|SA1012|SA1029|S1040|SA2001"
+
+      - path: _test\.go$
+        linters: [ revive ]
+        text: "call-to-gc|line-length-limit|file-length-limit|function-length|argument-limit|function-result-limit|cyclomatic|cognitive-complexity|max-public-structs|max-control-nesting|empty-lines|superfluous-else|early-return|indent-error-flow|unnecessary-stmt|var-declaration|comment-spacings|use-any|increment-decrement|bare-return|bool-literal-in-expr|empty-block|var-naming|receiver-naming|error-naming|exported|package-comments|package-directory-mismatch|time-naming|unhandled-error|error-strings|blank-imports|dot-imports|unused-parameter|unused-receiver|confusing-results|unexported-return|modifies-parameter|confusing-naming|modifies-value-receiver|add-constant|use-slices-sort|epoch-naming|use-errors-new|use-fmt-print|unnecessary-format|unnecessary-if|if-return|useless-break|redundant-import-alias|redundant-build-tag|redundant-test-main-exit|inefficient-map-lookup|time-date|range|optimize-operands-order|struct-tag|context-as-argument"
+
+      - path: testdata/
+        linters: [ revive ]
+        text: "line-length-limit|file-length-limit|function-length|argument-limit|function-result-limit|cyclomatic|cognitive-complexity|max-public-structs|max-control-nesting|empty-lines|superfluous-else|early-return|indent-error-flow|unnecessary-stmt|var-declaration|comment-spacings|use-any|increment-decrement|bare-return|bool-literal-in-expr|empty-block|var-naming|receiver-naming|error-naming|exported|package-comments|package-directory-mismatch|time-naming|unhandled-error|error-strings|blank-imports|dot-imports|unused-parameter|unused-receiver|confusing-results|unexported-return|modifies-parameter|confusing-naming|modifies-value-receiver|add-constant|use-slices-sort|epoch-naming|use-errors-new|use-fmt-print|unnecessary-format|unnecessary-if|if-return|useless-break|redundant-import-alias|redundant-build-tag|redundant-test-main-exit|inefficient-map-lookup|time-date|range|optimize-operands-order|context-as-argument"
+
+      - linters: [ decorder ]
+        text: "var must not be placed after var"
+
+      - path: _test\.go$
+        linters: [ govet ]
+        text: "fieldalignment"
+
+      - linters: [ exhaustive ]
+        text: 'switch of type reflect\.Kind'
+
+      - path: _test\.go$
+        linters: [ exhaustive ]
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  uniq-by-line: false
+
+output:
+  formats:
+    text:
+      path: stdout
+      colors: true
+  sort-order:
+    - linter
+    - file

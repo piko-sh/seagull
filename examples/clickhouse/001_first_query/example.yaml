@@ -1,0 +1,29 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: A tasks table on MergeTree and four queries; parameters are {name:Type} placeholders, the caller picks each id, and completing a task is an ALTER TABLE UPDATE mutation.
+differs:
+  - "{name:Type} placeholders, sent through database/sql as clickhouse.Named(\"p_<name>\", ...) with the value formatted as text"
+  - No auto-increment and no RETURNING, so CreateTask is exec with a caller-chosen id and GetTask reads the row back with one
+  - "CompleteTask uses an ALTER TABLE ... UPDATE asynchronous mutation, declared asyncexec, and mutations_sync=2 makes it finish before the call returns"
+  - "No execrows: clickhouse-go reports 0 rows affected for every statement, so the output names the task instead of counting rows"
+  - UInt64 maps to uint64, UInt8 to uint8 and DateTime to time.Time
+  - Every table needs an engine; MergeTree with ORDER BY id
+entry: {file: db/queries/tasks.sql, query: CreateTask}
+live: "no"
+test: integration

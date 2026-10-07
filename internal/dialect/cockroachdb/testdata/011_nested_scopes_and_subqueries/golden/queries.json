@@ -1,0 +1,565 @@
+[
+  {
+    "Command": "many",
+    "Filename": "column_lists.sql",
+    "Line": 1,
+    "Name": "RenamedDerivedTable",
+    "OutputColumns": [
+      {
+        "Name": "book",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "book",
+        "SourceQualifier": "r"
+      },
+      {
+        "Name": "writer",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "writer",
+        "SourceQualifier": "r"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "writer",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: RenamedDerivedTable, command: many)\nSELECT r.book, r.writer FROM (SELECT id, author_id FROM books) AS r (book, writer) WHERE r.writer = $1;",
+    "Template": "SELECT ⟨c0:r.book⟩, ⟨c1:r.writer⟩ FROM (SELECT id, author_id FROM books) AS r (book, writer) WHERE r.writer = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "column_lists.sql",
+    "Line": 4,
+    "Name": "PartlyRenamedCTE",
+    "OutputColumns": [
+      {
+        "Name": "book",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "book",
+        "SourceQualifier": "t",
+        "SourceTable": "t"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "t",
+        "SourceTable": "t"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: PartlyRenamedCTE, command: many)\nWITH t (book) AS (SELECT id, title FROM books) SELECT book, title FROM t;",
+    "Template": "WITH t (book) AS (SELECT id, title FROM books) SELECT ⟨c0:book⟩, ⟨c1:title⟩ FROM t;"
+  },
+  {
+    "Command": "many",
+    "Filename": "column_lists.sql",
+    "Line": 7,
+    "Name": "RenamedStarCTE",
+    "OutputColumns": [
+      {
+        "Name": "key",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "key",
+        "SourceQualifier": "t",
+        "SourceTable": "t"
+      },
+      {
+        "Name": "label",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "label",
+        "SourceQualifier": "t",
+        "SourceTable": "t"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: RenamedStarCTE, command: many)\nWITH t (key, label) AS (SELECT * FROM authors) SELECT key, label FROM t;",
+    "Template": "WITH t (key, label) AS (SELECT * FROM authors) SELECT ⟨c0:key⟩, ⟨c1:label⟩ FROM t;"
+  },
+  {
+    "Command": "many",
+    "Filename": "column_lists.sql",
+    "Line": 10,
+    "Name": "RenamedValues",
+    "OutputColumns": [
+      {
+        "Name": "n",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "n",
+        "SourceQualifier": "v"
+      },
+      {
+        "Name": "label",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "label",
+        "SourceQualifier": "v"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: RenamedValues, command: many)\nSELECT v.n, v.label FROM (VALUES (1, 'one'), (2, 'two')) AS v (n, label);",
+    "Template": "SELECT ⟨c0:v.n⟩, ⟨c1:v.label⟩ FROM (VALUES (1, 'one'), (2, 'two')) AS v (n, label);"
+  },
+  {
+    "Command": "many",
+    "Filename": "column_lists.sql",
+    "Line": 13,
+    "Name": "AliasedJoin",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "r"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "r"
+      },
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "r"
+      },
+      {
+        "Name": "author_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "author_id",
+        "SourceQualifier": "r"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "r"
+      },
+      {
+        "Name": "price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        },
+        "SourceColumn": "price",
+        "SourceQualifier": "r"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AliasedJoin, command: many)\nSELECT r.* FROM (authors a JOIN books b ON b.author_id = a.id) AS r;",
+    "Template": "SELECT ⟨star written 0=r.id 1=r.name 2=r.id 3=r.author_id 4=r.title 5=r.price:r.*⟩ FROM (authors a JOIN books b ON b.author_id = a.id) AS r;"
+  },
+  {
+    "Command": "many",
+    "Filename": "column_lists.sql",
+    "Line": 16,
+    "Name": "AliasedJoinColumns",
+    "OutputColumns": [
+      {
+        "Name": "writer",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "writer",
+        "SourceQualifier": "r"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "r"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "title",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AliasedJoinColumns, command: many)\nSELECT r.writer, r.title FROM (authors a JOIN books b ON b.author_id = a.id AND b.title \u003c\u003e $1) AS r (author, writer, book, author_ref, title, price);",
+    "Template": "SELECT ⟨c0:r.writer⟩, ⟨c1:r.title⟩ FROM (authors a JOIN books b ON b.author_id = a.id AND b.title \u003c\u003e ⟨p0⟩) AS r (author, writer, book, author_ref, title, price);⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "nested_scopes.sql",
+    "Line": 1,
+    "Name": "AuthorTitles",
+    "OutputColumns": [
+      {
+        "Name": "author_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "author_id",
+        "SourceQualifier": "author_books",
+        "SourceTable": "author_books"
+      },
+      {
+        "Name": "book_count",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AuthorTitles, command: many)\nWITH author_books AS (\n    SELECT d.author_id, d.title FROM (SELECT author_id, title FROM books) d\n)\nSELECT author_id, count(*) AS book_count FROM author_books GROUP BY author_id;",
+    "Template": "WITH author_books AS (\\n    SELECT d.author_id, d.title FROM (SELECT author_id, title FROM books) d\\n)\\nSELECT ⟨c0:author_id⟩, ⟨c1 aliased:count(*)⟩ AS book_count FROM author_books GROUP BY author_id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "nested_scopes.sql",
+    "Line": 7,
+    "Name": "NestedWith",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "outer_rows",
+        "SourceTable": "outer_rows"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "outer_rows",
+        "SourceTable": "outer_rows"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: NestedWith, command: many)\nWITH outer_rows AS (\n    WITH inner_rows AS (SELECT id, name FROM authors)\n    SELECT id, name FROM inner_rows\n)\nSELECT id, name FROM outer_rows;",
+    "Template": "WITH outer_rows AS (\\n    WITH inner_rows AS (SELECT id, name FROM authors)\\n    SELECT id, name FROM inner_rows\\n)\\nSELECT ⟨c0:id⟩, ⟨c1:name⟩ FROM outer_rows;"
+  },
+  {
+    "Command": "many",
+    "Filename": "nested_scopes.sql",
+    "Line": 14,
+    "Name": "StarOfAnEarlierCTE",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "second_rows",
+        "SourceTable": "second_rows"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "second_rows",
+        "SourceTable": "second_rows"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: StarOfAnEarlierCTE, command: many)\nWITH first_rows AS (SELECT id, name FROM authors), second_rows AS (SELECT * FROM first_rows)\nSELECT * FROM second_rows;",
+    "Template": "WITH first_rows AS (SELECT id, name FROM authors), second_rows AS (SELECT * FROM first_rows)\\nSELECT ⟨star written 0=second_rows.id 1=second_rows.name:*⟩ FROM second_rows;"
+  },
+  {
+    "Command": "many",
+    "Filename": "nested_scopes.sql",
+    "Line": 18,
+    "Name": "JoinedEarlierCTE",
+    "OutputColumns": [
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "titled",
+        "SourceTable": "titled"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "titled",
+        "SourceTable": "titled"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: JoinedEarlierCTE, command: many)\nWITH named AS (SELECT id, name FROM authors), titled AS (SELECT b.title, n.name FROM books b JOIN named n ON n.id = b.author_id)\nSELECT title, name FROM titled;",
+    "Template": "WITH named AS (SELECT id, name FROM authors), titled AS (SELECT b.title, n.name FROM books b JOIN named n ON n.id = b.author_id)\\nSELECT ⟨c0:title⟩, ⟨c1:name⟩ FROM titled;"
+  },
+  {
+    "Command": "many",
+    "Filename": "nested_scopes.sql",
+    "Line": 22,
+    "Name": "CTEInsideADerivedUnion",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "u"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "u"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CTEInsideADerivedUnion, command: many)\nWITH a AS (SELECT id, name FROM authors)\nSELECT u.id, u.name FROM (SELECT id, name FROM a UNION ALL SELECT id, name FROM a) u;",
+    "Template": "WITH a AS (SELECT id, name FROM authors)\\nSELECT ⟨c0:u.id⟩, ⟨c1:u.name⟩ FROM (SELECT id, name FROM a UNION ALL SELECT id, name FROM a) u;"
+  },
+  {
+    "Command": "many",
+    "Filename": "nested_scopes.sql",
+    "Line": 26,
+    "Name": "DerivedTableInALaterArm",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "authors",
+        "SourceTable": "authors"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "authors",
+        "SourceTable": "authors"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: DerivedTableInALaterArm, command: many)\nSELECT id, name FROM authors UNION ALL SELECT d.id, d.title FROM (SELECT id, title FROM books) d;",
+    "Template": "SELECT id, name FROM authors UNION ALL SELECT d.id, d.title FROM (SELECT id, title FROM books) d;"
+  },
+  {
+    "Command": "many",
+    "Filename": "nested_scopes.sql",
+    "Line": 29,
+    "Name": "LateralInsideACTE",
+    "OutputColumns": [
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "latest",
+        "SourceTable": "latest"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "latest",
+        "SourceTable": "latest"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: LateralInsideACTE, command: many)\nWITH latest AS (\n    SELECT a.name, l.title FROM authors a CROSS JOIN LATERAL (SELECT b.title FROM books b WHERE b.author_id = a.id ORDER BY b.id DESC LIMIT 1) l\n)\nSELECT name, title FROM latest;",
+    "Template": "WITH latest AS (\\n    SELECT a.name, l.title FROM authors a CROSS JOIN LATERAL (SELECT b.title FROM books b WHERE b.author_id = a.id ORDER BY b.id DESC LIMIT 1) l\\n)\\nSELECT ⟨c0:name⟩, ⟨c1:title⟩ FROM latest;"
+  },
+  {
+    "Command": "many",
+    "Filename": "scalar_subqueries.sql",
+    "Line": 1,
+    "Name": "AuthorsWithFirstTitle",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "a",
+        "SourceTable": "authors"
+      },
+      {
+        "Name": "title",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "top_price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Nullable": true,
+          "Precision": 10,
+          "Scale": 2
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AuthorsWithFirstTitle, command: many)\nSELECT a.id, (SELECT b.title FROM books b WHERE b.author_id = a.id ORDER BY b.id LIMIT 1), (SELECT max(b.price) FROM books b WHERE b.author_id = a.id) AS top_price\nFROM authors a;",
+    "Template": "SELECT ⟨c0:a.id⟩, ⟨c1:(SELECT b.title FROM books b WHERE b.author_id = a.id ORDER BY b.id LIMIT 1)⟩, ⟨c2 aliased:(SELECT max(b.price) FROM books b WHERE b.author_id = a.id)⟩ AS top_price\\nFROM authors a;"
+  },
+  {
+    "Command": "many",
+    "Filename": "scalar_subqueries.sql",
+    "Line": 5,
+    "Name": "AuthorsAboveCount",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "a",
+        "SourceTable": "authors"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AuthorsAboveCount, command: many)\nSELECT a.id FROM authors a WHERE (SELECT count(*) FROM books b WHERE b.author_id = a.id) \u003e $1;",
+    "Template": "SELECT ⟨c0:a.id⟩ FROM authors a WHERE (SELECT count(*) FROM books b WHERE b.author_id = a.id) \u003e ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "scalar_subqueries.sql",
+    "Line": 8,
+    "Name": "NullInTheFirstBranch",
+    "OutputColumns": [
+      {
+        "Name": "name",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: NullInTheFirstBranch, command: many)\nSELECT NULL AS name UNION ALL SELECT name FROM authors;",
+    "Template": "SELECT NULL AS name UNION ALL SELECT name FROM authors;"
+  }
+]

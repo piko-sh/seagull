@@ -1,0 +1,21 @@
+[
+  {
+    "Command": "one",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "MedianVal",
+    "OutputColumns": [
+      {
+        "Name": "median",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "Float64",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(MedianVal, one)\nSELECT quantile(0.5)(val) AS median FROM t;",
+    "Template": "SELECT ⟨c0 aliased:quantile(0.5)(val)⟩ AS median FROM t;"
+  }
+]

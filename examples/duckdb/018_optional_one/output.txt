@@ -1,0 +1,5 @@
+ringed a herring gull as GB1001, gull 1
+ringed a kittiwake as GB1002, gull 2
+ring GB1001 is already taken, so the black-headed gull was not ringed
+ring GB1002 is on gull 2, a kittiwake
+no gull wears ring GB9999

@@ -1,0 +1,3 @@
+{
+  "description": "DISTINCT ON (category) keeps its key list while the array column reads through the driver-composite scan adapter into []*string."
+}

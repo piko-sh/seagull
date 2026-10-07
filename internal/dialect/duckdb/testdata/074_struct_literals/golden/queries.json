@@ -1,0 +1,177 @@
+[
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 1,
+    "Name": "PackedBoats",
+    "OutputColumns": [
+      {
+        "Name": "packed",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "struct",
+          "StructFields": [
+            {
+              "Name": "id",
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Nullable": true,
+                "Width": 32
+              }
+            },
+            {
+              "Name": "name",
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Nullable": true
+              }
+            }
+          ]
+        }
+      },
+      {
+        "Name": "literal",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "struct",
+          "StructFields": [
+            {
+              "Name": "name",
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Nullable": true
+              }
+            },
+            {
+              "Name": "length",
+              "SQLType": {
+                "Category": "float",
+                "EngineName": "float8",
+                "Nullable": true,
+                "Width": 64
+              }
+            }
+          ]
+        }
+      },
+      {
+        "Name": "spelt",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "struct",
+          "StructFields": [
+            {
+              "Name": "key",
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Nullable": true,
+                "Width": 32
+              }
+            },
+            {
+              "Name": "Mixed Case",
+              "SQLType": {
+                "Category": "array",
+                "ElementType": {
+                  "Category": "text",
+                  "EngineName": "varchar",
+                  "Nullable": true
+                },
+                "EngineName": "varchar[]",
+                "Nullable": true
+              }
+            },
+            {
+              "Name": "quoted",
+              "SQLType": {
+                "Category": "decimal",
+                "EngineName": "numeric",
+                "Nullable": true
+              }
+            }
+          ]
+        }
+      },
+      {
+        "Name": "nested",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "struct",
+          "StructFields": [
+            {
+              "Name": "outer",
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "struct",
+                "Nullable": true,
+                "StructFields": [
+                  {
+                    "Name": "inner",
+                    "SQLType": {
+                      "Category": "integer",
+                      "EngineName": "int4",
+                      "Nullable": true,
+                      "Width": 32
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(PackedBoats, many)\nSELECT struct_pack(id := id, name := name) AS packed, {'name': name, 'length': length} AS literal,\n       {key: id, 'Mixed Case': tags, \"quoted\": 2.5} AS spelt, {'outer': {'inner': id}} AS nested\nFROM boats;",
+    "Template": "SELECT ⟨c0 aliased:struct_pack(id := id, name := name)⟩ AS packed, ⟨c1 aliased:{'name': name, 'length': length}⟩ AS literal,\\n       ⟨c2 aliased:{key: id, 'Mixed Case': tags, \"quoted\": 2.5}⟩ AS spelt, ⟨c3 aliased:{'outer': {'inner': id}}⟩ AS nested\\nFROM boats;"
+  },
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 6,
+    "Name": "BoatFields",
+    "OutputColumns": [
+      {
+        "Name": "length",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Nullable": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Nullable": true,
+          "Width": 32
+        }
+      },
+      {
+        "Name": "tags",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "varchar",
+            "Nullable": true
+          },
+          "EngineName": "varchar[]",
+          "Nullable": true
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(BoatFields, many)\nSELECT {'name': name, 'length': length}.length AS length, struct_pack(id := id).id AS id,\n       struct_extract({'tags': tags}, 'tags') AS tags\nFROM boats;",
+    "Template": "SELECT ⟨c0 aliased:{'name': name, 'length': length}.length⟩ AS length, ⟨c1 aliased:struct_pack(id := id).id⟩ AS id,\\n       ⟨c2 aliased:struct_extract({'tags': tags}, 'tags')⟩ AS tags\\nFROM boats;"
+  }
+]

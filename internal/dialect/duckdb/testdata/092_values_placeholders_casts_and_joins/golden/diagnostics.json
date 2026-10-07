@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q063",
+    "Column": 71,
+    "EndColumn": 72,
+    "EndLine": 5,
+    "Filename": "joins.sql",
+    "Line": 5,
+    "Message": "DuckDB ignores the alias r of a parenthesised join whose last join merges columns with USING, so the tables inside keep their own names; join ON a condition to name the join",
+    "Severity": "warning"
+  }
+]

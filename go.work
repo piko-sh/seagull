@@ -1,0 +1,22 @@
+go 1.27.0
+
+use (
+	.
+	./cmd/seagull
+	./cmd/sgl
+	./cmd/wasm
+	./examples/catalogue
+	./tests/facade
+	./tests/integration/clickhouse
+	./tests/integration/cockroachdb
+	./tests/integration/compile
+	./tests/integration/duckdb
+	./tests/integration/internal/harness
+	./tests/integration/mariadb
+	./tests/integration/mysql
+	./tests/integration/postgres
+	./tests/integration/sqlite
+	./tests/integration/sqlite_cgo
+	./tests/integration/timescaledb
+	./tests/tutorials
+)

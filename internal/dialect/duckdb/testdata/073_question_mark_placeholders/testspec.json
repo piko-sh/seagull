@@ -1,0 +1,3 @@
+{
+  "description": "DuckDB ? and ?N placeholders: a bare ? takes the number after the largest one before it, as DuckDB binds it, so it mixes with $N; ?N gives its number. The executed SQL writes each as $N."
+}

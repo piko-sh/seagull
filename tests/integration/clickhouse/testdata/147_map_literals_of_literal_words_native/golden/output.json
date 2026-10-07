@@ -1,0 +1,31 @@
+[
+  {
+    "flags": {
+      "true": false
+    },
+    "id": 1,
+    "nested": {
+      "true": {
+        "false": true
+      }
+    },
+    "ratios": {
+      "false": "NULL",
+      "true": "+Inf"
+    }
+  },
+  {
+    "flags": {
+      "false": true,
+      "true": false
+    },
+    "id": 2,
+    "nested": {
+      "false": {
+        "true": false
+      },
+      "true": {}
+    },
+    "ratios": {}
+  }
+]

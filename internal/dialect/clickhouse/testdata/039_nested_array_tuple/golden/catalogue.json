@@ -1,0 +1,76 @@
+{
+  "DefaultSchema": "default",
+  "Identifiers": {
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "default": {
+      "Name": "default",
+      "Tables": {
+        "nested_tbl": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt64",
+                "Unsigned": true,
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "items",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "array",
+                "ElementType": {
+                  "Category": "struct",
+                  "EngineName": "Tuple",
+                  "StructFields": [
+                    {
+                      "Name": "_1",
+                      "Positional": true,
+                      "SQLType": {
+                        "Category": "text",
+                        "EngineName": "String"
+                      }
+                    },
+                    {
+                      "Name": "_2",
+                      "Positional": true,
+                      "SQLType": {
+                        "Category": "integer",
+                        "EngineName": "UInt64",
+                        "Unsigned": true,
+                        "Width": 64
+                      }
+                    }
+                  ]
+                },
+                "EngineName": "Array"
+              }
+            }
+          ],
+          "Name": "nested_tbl",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "default"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "default"
+  ]
+}

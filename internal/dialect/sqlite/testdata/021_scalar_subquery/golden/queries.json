@@ -1,0 +1,65 @@
+[
+  {
+    "Command": "many",
+    "Filename": "products_with_max.sql",
+    "Line": 1,
+    "Name": "GetProductsWithMaxPrice",
+    "OutputColumns": [
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      },
+      {
+        "Name": "price",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        },
+        "SourceColumn": "price",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      },
+      {
+        "Name": "max_price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "category",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "category_2",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetProductsWithMaxPrice, command: many)\nSELECT name, price, (SELECT max(price) FROM products WHERE category = ?) AS max_price FROM products WHERE category = ?",
+    "Template": "SELECT ⟨c0:name⟩, ⟨c1:price⟩, ⟨c2 aliased:(SELECT max(price) FROM products WHERE category = ⟨p0⟩)⟩ AS max_price FROM products WHERE category = ⟨p1⟩⟨arguments p0 p1⟩"
+  }
+]

@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "payload": "plain",
+    "payload_length": 5
+  },
+  {
+    "id": 2,
+    "payload": "back\\slash",
+    "payload_length": 10
+  },
+  {
+    "id": 3,
+    "payload": "tab\\t and \\N and it's",
+    "payload_length": 21
+  },
+  {
+    "id": 4,
+    "payload": "",
+    "payload_length": 0
+  }
+]

@@ -1,0 +1,7 @@
+{
+  "description": "Unused declared parameter error. Tests that a parameter declared in annotations but not referenced in the query produces a Q042 (unreferenced parameter) diagnostic.",
+  "expectedDiagnosticCount": 1,
+  "diagnostics": [
+    { "severity": "error", "code": "Q042", "messageContains": "unused" }
+  ]
+}

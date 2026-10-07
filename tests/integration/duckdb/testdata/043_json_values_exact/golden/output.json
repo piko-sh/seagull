@@ -1,0 +1,95 @@
+{
+  "compound": [
+    {
+      "amount": "1.50",
+      "body": {
+        "text": "\"a string\"",
+        "valid": true
+      },
+      "note": {
+        "text": null,
+        "valid": false
+      },
+      "span": "01:30:00"
+    },
+    {
+      "amount": "-0.05",
+      "body": {
+        "text": "12345678901234567000",
+        "valid": true
+      },
+      "note": {
+        "text": "true",
+        "valid": true
+      },
+      "span": "1 year 2 months"
+    }
+  ],
+  "documents": [
+    {
+      "bodies": [
+        {
+          "text": "\"listed\"",
+          "valid": true
+        },
+        {
+          "text": "12345678901234567000",
+          "valid": true
+        },
+        {
+          "text": null,
+          "valid": false
+        }
+      ],
+      "body": {
+        "text": "\"a string\"",
+        "valid": true
+      },
+      "encoded": "{\"id\":1,\"body\":\"a string\",\"note\":null,\"bodies\":[\"listed\",12345678901234567000,null]}",
+      "id": 1,
+      "note": {
+        "text": null,
+        "valid": false
+      }
+    },
+    {
+      "bodies": [],
+      "body": {
+        "text": "12345678901234567890",
+        "valid": true
+      },
+      "encoded": "{\"id\":2,\"body\":12345678901234567890,\"note\":true,\"bodies\":null}",
+      "id": 2,
+      "note": {
+        "text": "true",
+        "valid": true
+      }
+    },
+    {
+      "bodies": [],
+      "body": {
+        "text": "{\"nested\": {\"n\": 12345678901234567890, \"f\": 1.10}, \"list\": [1, \"two\", null]}",
+        "valid": true
+      },
+      "encoded": "{\"id\":3,\"body\":{\"nested\":{\"n\":12345678901234567890,\"f\":1.10},\"list\":[1,\"two\",null]},\"note\":null,\"bodies\":[]}",
+      "id": 3,
+      "note": {
+        "text": "null",
+        "valid": true
+      }
+    },
+    {
+      "bodies": [],
+      "body": {
+        "text": "{\"written\": 98765432109876543210, \"s\": \"x\"}",
+        "valid": true
+      },
+      "encoded": "{\"id\":4,\"body\":{\"written\":98765432109876543210,\"s\":\"x\"},\"note\":\"quoted\",\"bodies\":null}",
+      "id": 4,
+      "note": {
+        "text": "\"quoted\"",
+        "valid": true
+      }
+    }
+  ]
+}

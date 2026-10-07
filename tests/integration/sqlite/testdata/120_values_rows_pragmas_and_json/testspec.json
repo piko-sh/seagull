@@ -1,0 +1,4 @@
+{
+  "description": "SQLite at run time: a VALUES list as a recursive anchor and a common table expression; row values compared and assigned element by element; a division and a remainder by a zero column read NULL while one by 2 does not; PRAGMA user_version and table_info read the columns SQLite returns and a setter runs; a select-list alias filters in WHERE; double-quoted names that name no column are the strings SQLite reads (two Q063 warnings); a JSONB column reads its document, a STRING column its text, and the JSON functions read a blob document.",
+  "expectedDiagnostics": ["Q063", "Q063"]
+}

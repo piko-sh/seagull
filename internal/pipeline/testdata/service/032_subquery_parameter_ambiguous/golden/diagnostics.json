@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q001",
+    "Column": 1,
+    "EndColumn": 57,
+    "EndLine": 4,
+    "Filename": "find_orphan.sql",
+    "Line": 1,
+    "Message": "unknown column \"email\"",
+    "Severity": "warning"
+  }
+]

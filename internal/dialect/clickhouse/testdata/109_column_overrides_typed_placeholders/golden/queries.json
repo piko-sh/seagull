@@ -1,0 +1,478 @@
+[
+  {
+    "Command": "many",
+    "Filename": "hosts.sql",
+    "Line": 1,
+    "Name": "CompareAddresses",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "hosts",
+        "SourceTable": "hosts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "GoTypeOverride": {
+          "Name": "IP",
+          "Package": "net"
+        },
+        "Kind": "none",
+        "Name": "addr",
+        "Number": 1,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "IPv4",
+          "Network": "address",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "comparison",
+        "GoTypeOverride": {
+          "Name": "IP",
+          "Package": "net"
+        },
+        "Kind": "none",
+        "Name": "nullable_addr",
+        "Nullable": true,
+        "Number": 2,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "IPv4",
+          "Network": "address",
+          "Nullable": true,
+          "Width": 32
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "text",
+        "Number": 3,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CompareAddresses, command: many)\nSELECT id FROM hosts WHERE addr = {addr:IPv4} OR {nullable_addr:Nullable(IPv4)} \u003c\u003e addr OR addr = {text:String};",
+    "Template": "SELECT ⟨c0:id⟩ FROM hosts WHERE addr = ⟨p0 IPv4⟩ OR ⟨p1 Nullable(IPv4)⟩ \u003c\u003e addr OR addr = ⟨p2 String⟩;⟨arguments p0 p1 p2⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "hosts.sql",
+    "Line": 4,
+    "Name": "ListAddresses",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "hosts",
+        "SourceTable": "hosts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "GoTypeOverride": {
+          "Name": "IP",
+          "Package": "net"
+        },
+        "Kind": "none",
+        "Name": "first",
+        "Number": 1,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "IPv4",
+          "Network": "address",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "comparison",
+        "GoTypeOverride": {
+          "Name": "IP",
+          "Package": "net"
+        },
+        "Kind": "none",
+        "Name": "second",
+        "Number": 2,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "IPv4",
+          "Network": "address",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "many",
+        "Number": 3,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "network",
+            "EngineName": "IPv4",
+            "Network": "address",
+            "Width": 32
+          },
+          "EngineName": "Array"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListAddresses, command: many)\nSELECT id FROM hosts WHERE addr IN ({first:IPv4}, {second:IPv4}) OR addr IN {many:Array(IPv4)};",
+    "Template": "SELECT ⟨c0:id⟩ FROM hosts WHERE addr IN (⟨p0 IPv4⟩, ⟨p1 IPv4⟩) OR addr IN ⟨p2 Array(IPv4)⟩;⟨arguments p0 p1 p2⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "hosts.sql",
+    "Line": 7,
+    "Name": "BoundAddresses",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "hosts",
+        "SourceTable": "hosts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "GoTypeOverride": {
+          "Name": "IP",
+          "Package": "net"
+        },
+        "Kind": "none",
+        "Name": "low",
+        "Number": 1,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "IPv4",
+          "Network": "address",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "comparison",
+        "GoTypeOverride": {
+          "Name": "IP",
+          "Package": "net"
+        },
+        "Kind": "none",
+        "Name": "high",
+        "Number": 2,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "IPv4",
+          "Network": "address",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: BoundAddresses, command: many)\nSELECT id FROM hosts WHERE addr BETWEEN {low:IPv4} AND {high:IPv4};",
+    "Template": "SELECT ⟨c0:id⟩ FROM hosts WHERE addr BETWEEN ⟨p0 IPv4⟩ AND ⟨p1 IPv4⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "hosts.sql",
+    "Line": 10,
+    "Name": "MatchLabels",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "hosts",
+        "SourceTable": "hosts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "GoTypeOverride": {
+          "Name": "HTML",
+          "Package": "html/template"
+        },
+        "Kind": "none",
+        "Name": "label",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "pattern",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "lowered",
+        "Number": 3,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: MatchLabels, command: many)\nSELECT id FROM hosts WHERE label = {label:String} OR label LIKE {pattern:String} OR lower(label) = {lowered:String};",
+    "Template": "SELECT ⟨c0:id⟩ FROM hosts WHERE label = ⟨p0 String⟩ OR label LIKE ⟨p1 String⟩ OR lower(label) = ⟨p2 String⟩;⟨arguments p0 p1 p2⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "hosts.sql",
+    "Line": 13,
+    "Name": "CompareAmounts",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "hosts",
+        "SourceTable": "hosts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "GoTypeOverride": {
+          "Name": "Number",
+          "Package": "encoding/json"
+        },
+        "Kind": "none",
+        "Name": "amount",
+        "Number": 1,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "Decimal",
+          "Precision": 10,
+          "Scale": 2
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "wider",
+        "Number": 2,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "Decimal",
+          "Precision": 12,
+          "Scale": 4
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CompareAmounts, command: many)\nSELECT id FROM hosts WHERE amount = {amount:Decimal(10, 2)} OR amount \u003e {wider:Decimal(12, 4)};",
+    "Template": "SELECT ⟨c0:id⟩ FROM hosts WHERE amount = ⟨p0 Decimal(10, 2)⟩ OR amount \u003e ⟨p1 Decimal(12, 4)⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "hosts.sql",
+    "InsertColumns": [
+      "id",
+      "addr",
+      "label",
+      "amount"
+    ],
+    "InsertTarget": {
+      "Name": "hosts"
+    },
+    "Line": 16,
+    "Name": "InsertHost",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Context": "assignment",
+        "GoTypeOverride": {
+          "Name": "IP",
+          "Package": "net"
+        },
+        "Kind": "none",
+        "Name": "addr",
+        "Number": 2,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "IPv4",
+          "Network": "address",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "label",
+        "Number": 3,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Context": "assignment",
+        "GoTypeOverride": {
+          "Name": "Number",
+          "Package": "encoding/json"
+        },
+        "Kind": "none",
+        "Name": "amount",
+        "Number": 4,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "Decimal",
+          "Precision": 10,
+          "Scale": 2
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: InsertHost, command: exec)\nINSERT INTO hosts (id, addr, label, amount) VALUES ({id:UInt64}, {addr:IPv4}, concat({label:String}, ''), {amount:Decimal(10, 2)});",
+    "Template": "INSERT INTO hosts (id, addr, label, amount) VALUES ⟨values:(⟨p0 UInt64⟩, ⟨p1 IPv4⟩, concat(⟨p2 String⟩, ''), ⟨p3 Decimal(10, 2)⟩)⟩;⟨arguments p0 p1 p2 p3⟩"
+  },
+  {
+    "Command": "asyncexec",
+    "Filename": "hosts.sql",
+    "Line": 19,
+    "Name": "MoveHost",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "GoTypeOverride": {
+          "Name": "IP",
+          "Package": "net"
+        },
+        "Kind": "none",
+        "Name": "addr",
+        "Number": 1,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "IPv4",
+          "Network": "address",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "assignment",
+        "GoTypeOverride": {
+          "Name": "HTML",
+          "Package": "html/template"
+        },
+        "Kind": "none",
+        "Name": "label",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 3,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: MoveHost, command: asyncexec)\nALTER TABLE hosts UPDATE addr = {addr:IPv4}, label = {label:String} WHERE id = {id:UInt64};",
+    "Template": "ALTER TABLE hosts UPDATE addr = ⟨p0 IPv4⟩, label = ⟨p1 String⟩ WHERE id = ⟨p2 UInt64⟩;⟨arguments p0 p1 p2⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "hosts.sql",
+    "Line": 22,
+    "Name": "RelabelHost",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "GoTypeOverride": {
+          "Name": "HTML",
+          "Package": "html/template"
+        },
+        "Kind": "none",
+        "Name": "label",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Context": "comparison",
+        "GoTypeOverride": {
+          "Name": "IP",
+          "Package": "net"
+        },
+        "Kind": "none",
+        "Name": "addr",
+        "Number": 2,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "IPv4",
+          "Network": "address",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: RelabelHost, command: exec)\nUPDATE hosts SET label = {label:String} WHERE addr = {addr:IPv4};",
+    "Template": "UPDATE hosts SET label = ⟨p0 String⟩ WHERE addr = ⟨p1 IPv4⟩;⟨arguments p0 p1⟩"
+  }
+]

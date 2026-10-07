@@ -1,0 +1,65 @@
+[
+  {
+    "Command": "many",
+    "Filename": "products.sql",
+    "Line": 1,
+    "Name": "UnnestNamesAndPrices",
+    "OutputColumns": [
+      {
+        "Name": "name",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "t"
+      },
+      {
+        "Name": "price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        },
+        "SourceColumn": "price",
+        "SourceQualifier": "t"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "text",
+            "Nullable": true
+          },
+          "EngineName": "text[]"
+        }
+      },
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "p2",
+        "Number": 2,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "decimal",
+            "EngineName": "numeric",
+            "Nullable": true
+          },
+          "EngineName": "numeric[]"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: UnnestNamesAndPrices, command: many)\nSELECT * FROM UNNEST($1::text[], $2::numeric[]) AS t(name text, price numeric);",
+    "Template": "SELECT ⟨star written 0=t.name 1=t.price:*⟩ FROM UNNEST(⟨p0⟩::text[], ⟨p1⟩::numeric[]) AS t(name text, price numeric);⟨arguments p0 p1⟩"
+  }
+]

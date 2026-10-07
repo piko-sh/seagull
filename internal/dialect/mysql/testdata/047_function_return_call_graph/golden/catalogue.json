@@ -1,0 +1,139 @@
+{
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "": {
+      "Functions": {
+        "audited": [
+          {
+            "Arguments": [
+              {
+                "Name": "note",
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "varchar",
+                  "Length": 100
+                }
+              }
+            ],
+            "BodySQL": "write_audit(note)",
+            "DataAccess": "modifies-data",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "audited",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 2
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int",
+              "Width": 32
+            }
+          }
+        ],
+        "tidied": [
+          {
+            "Arguments": [
+              {
+                "Name": "note",
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "varchar",
+                  "Length": 100
+                }
+              }
+            ],
+            "BodySQL": "LOWER(TRIM(note))",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "tidied",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 3
+            },
+            "ReturnType": {
+              "Category": "text",
+              "EngineName": "varchar",
+              "Length": 100
+            }
+          }
+        ],
+        "write_audit": [
+          {
+            "Arguments": [
+              {
+                "Name": "note",
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "varchar",
+                  "Length": 100
+                }
+              }
+            ],
+            "BodySQL": "INSERT INTO audit_log (note) VALUES (note);\n    RETURN LAST_INSERT_ID();",
+            "DataAccess": "modifies-data",
+            "MinArguments": 1,
+            "Name": "write_audit",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 1
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int",
+              "Width": 32
+            }
+          }
+        ]
+      },
+      "Tables": {
+        "audit_log": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "note",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Length": 100
+              }
+            }
+          ],
+          "Name": "audit_log",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ]
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    ""
+  ]
+}

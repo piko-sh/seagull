@@ -1,0 +1,18 @@
+{
+  "description": "Generated code against MariaDB through database/sql: a JSON column overridden to a plain struct and to []string is written as its document through sglDriverJSON and read back through sglScanOverrideJSON, a NULL document reading as a nil pointer; a batch upsert repeating a key runs one statement per row, as on the other engines; and SELECT *, b.* and DELETE ... RETURNING * name their columns, so the methods keep working after a migration adds a column to every table.",
+  "expectedDiagnostics": [],
+  "typeOverrides": [
+    {
+      "SQLTypeName": "",
+      "Column": "shows.data",
+      "GoPackage": "case_runner/kinds",
+      "GoName": "Show"
+    },
+    {
+      "SQLTypeName": "",
+      "Column": "shows.tags",
+      "GoPackage": "",
+      "GoName": "[]string"
+    }
+  ]
+}

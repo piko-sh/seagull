@@ -1,0 +1,31 @@
+{
+  "description": "PostgreSQL: statements the engine refuses on every call are reported as errors: a VALUES row and an INSERT ... SELECT of another width than the listed target columns (IT-72, Q064), a parameter in SET LOCAL and in NOTIFY, where the server takes none, with the set_config and pg_notify forms to write instead (N-230, Q010 rather than the internal Q030), and an embed of a table the query does not read (IT-120, Q028).",
+  "expectedDiagnosticCount": 5,
+  "diagnostics": [
+    {
+      "severity": "error",
+      "code": "Q064",
+      "messageContains": "row 1 of the INSERT gives 1 value for the 2 target columns it lists"
+    },
+    {
+      "severity": "error",
+      "code": "Q064",
+      "messageContains": "the SELECT of the INSERT gives 1 column for the 2 target columns it lists"
+    },
+    {
+      "severity": "error",
+      "code": "Q010",
+      "messageContains": "SELECT set_config('setting', $1, true)"
+    },
+    {
+      "severity": "error",
+      "code": "Q010",
+      "messageContains": "SELECT pg_notify('channel', $1)"
+    },
+    {
+      "severity": "error",
+      "code": "Q028",
+      "messageContains": "sgl.embed(books) names no table the query reads"
+    }
+  ]
+}

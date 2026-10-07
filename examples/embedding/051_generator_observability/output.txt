@@ -1,0 +1,23 @@
+generating:
+generate package=store
+  generate.catalogue
+    generate.catalogue.migration
+    generate.catalogue.migration
+  generate.analyse
+    generate.analyse.query
+      generate.resolve.columns
+      generate.resolve.params
+    generate.analyse.query
+      generate.resolve.columns
+      generate.resolve.params
+  generate.plan
+  generate.emit
+    generate.format
+    generate.format
+level=TRACE msg="generation complete" package=store files=4 queries=2 partial=false elapsed=0s
+
+migrating:
+migrate.up
+level=TRACE msg="applied migration" version=1 name=tasks skip_up_to=-1
+level=TRACE msg="applied migration" version=2 name=task_done skip_up_to=-1
+migrate.status

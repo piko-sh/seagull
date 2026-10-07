@@ -1,0 +1,16 @@
+results:
+  Salty Chip crew 3  56m50s
+  Driftwood  crew 2  59m48s
+  Kittiwake  crew 4  1h2m5s
+  Gull Wing  crew 5  1h6m30s
+by boat:
+  Driftwood  crew 2  59m48s
+  Gull Wing  crew 5  1h6m30s
+  Kittiwake  crew 4  1h2m5s
+  Salty Chip crew 3  56m50s
+largest crew first:
+  Gull Wing  crew 5  1h6m30s
+  Kittiwake  crew 4  1h2m5s
+  Salty Chip crew 3  56m50s
+  Driftwood  crew 2  59m48s
+raw text, ignored: 4 entries, in no set order

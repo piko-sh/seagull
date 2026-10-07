@@ -1,0 +1,3 @@
+{
+  "description": "ClickHouse database/sql ARRAY JOIN and moved dates: a Nested column unfolded in place reads its fields as elements, an aliased tuple element and its field, LEFT ARRAY JOIN gives an empty array's row the default value, SELECT * lists an unfolded column's element in place, and a Date moved by days stays a Date, by hours or minutes becomes a DateTime, a DateTime moved by milliseconds a DateTime64(3), and a tuple of a nullable value is not nullable itself"
+}

@@ -1,0 +1,28 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: RunInTx commits a transfer when its function returns nil and rolls it back on an error, and WithTx binds the queries to a transaction you begin yourself.
+differs:
+  - RunInTx and WithTx take a *sql.DB and a *sql.Tx from database/sql, opened with pgx's stdlib driver
+  - "the CHECK constraint failure is a *pgconn.PgError; the example matches its SQLSTATE, 23514, as the message wording varies between servers"
+  - "PostgreSQL takes row locks as each UPDATE runs, so other transactions can write to other accounts meanwhile"
+  - ":amount and :id named placeholders become $1 and $2 in the generated SQL; without a name, the first would be inferred as balance"
+  - "go.interface generates store.Querier, which printBalances takes, so one function reads through the database's queries and the transaction's alike"
+entry: {file: db/queries/accounts.sql, query: Withdraw}
+live: "no"
+test: integration

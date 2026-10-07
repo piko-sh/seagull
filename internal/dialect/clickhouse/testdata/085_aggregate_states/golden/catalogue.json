@@ -1,0 +1,102 @@
+{
+  "DefaultSchema": "default",
+  "Identifiers": {
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "default": {
+      "Name": "default",
+      "Tables": {
+        "totals": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "species",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "String"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "a",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "aggregate-state",
+                "ElementType": {
+                  "Category": "text",
+                  "EngineName": "String"
+                },
+                "EngineName": "AggregateFunction(uniq, String)"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "b",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "aggregate-state",
+                "ElementType": {
+                  "Category": "integer",
+                  "EngineName": "UInt64",
+                  "Unsigned": true,
+                  "Width": 64
+                },
+                "EngineName": "AggregateFunction(sum, UInt64)"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "c",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "aggregate-state",
+                "ElementType": {
+                  "Category": "integer",
+                  "EngineName": "UInt32",
+                  "Unsigned": true,
+                  "Width": 32
+                },
+                "EngineName": "AggregateFunction(max, UInt32)"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "d",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "aggregate-state",
+                "ElementType": {
+                  "Category": "unknown"
+                },
+                "EngineName": "AggregateFunction(count)"
+              }
+            }
+          ],
+          "Name": "totals",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "species"
+          ],
+          "Schema": "default"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "default"
+  ]
+}

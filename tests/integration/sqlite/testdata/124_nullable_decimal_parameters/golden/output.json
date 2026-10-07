@@ -1,0 +1,116 @@
+{
+  "add_batch": "added",
+  "add_with_discount": "added",
+  "add_without_discount": "added",
+  "amounts_in": [
+    {
+      "id": 2
+    },
+    {
+      "id": 6
+    }
+  ],
+  "browse_below_amount": [
+    2
+  ],
+  "browse_from_discount": [
+    {
+      "amount": "20",
+      "discount": "2.5",
+      "id": 2
+    },
+    {
+      "amount": "60",
+      "discount": "6.25",
+      "id": 6
+    }
+  ],
+  "browse_from_no_discount": 0,
+  "clear_discount": 1,
+  "copy_rows": "copied",
+  "list_prices": [
+    {
+      "amount": "10",
+      "discount": "1.25",
+      "effective": "1.25",
+      "id": 1
+    },
+    {
+      "amount": "20",
+      "discount": "2.5",
+      "effective": "2.5",
+      "id": 2
+    },
+    {
+      "amount": "30",
+      "discount": null,
+      "effective": "0",
+      "id": 3
+    },
+    {
+      "amount": "40",
+      "discount": null,
+      "effective": "0",
+      "id": 4
+    },
+    {
+      "amount": "50",
+      "discount": null,
+      "effective": "0",
+      "id": 5
+    },
+    {
+      "amount": "60",
+      "discount": "6.25",
+      "effective": "6.25",
+      "id": 6
+    }
+  ],
+  "search_by_amount": [
+    {
+      "id": 1
+    },
+    {
+      "id": 2
+    },
+    {
+      "id": 3
+    }
+  ],
+  "search_by_discount": [
+    {
+      "id": 1
+    },
+    {
+      "id": 2
+    }
+  ],
+  "search_unfiltered": [
+    {
+      "id": 1
+    },
+    {
+      "id": 2
+    },
+    {
+      "id": 3
+    },
+    {
+      "id": 4
+    },
+    {
+      "id": 5
+    },
+    {
+      "id": 6
+    }
+  ],
+  "set_discount": 1,
+  "stored_classes": "real,real,null,null,null,real",
+  "with_discount": [
+    {
+      "id": 2
+    }
+  ],
+  "with_no_discount": null
+}

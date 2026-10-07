@@ -1,0 +1,1 @@
+{"description": "Transitive data-access propagation: IMMUTABLE and STABLE wrappers of a pure function stay read-only"}

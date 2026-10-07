@@ -1,0 +1,62 @@
+[
+  {
+    "Command": "many",
+    "Filename": "events.sql",
+    "Line": 1,
+    "Name": "GetEventName",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "event_name",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetEventName, command: many)\nSELECT id, payload-\u003e\u003e'name' AS event_name FROM events;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:payload-\u003e\u003e'name'⟩ AS event_name FROM events;"
+  },
+  {
+    "Command": "many",
+    "Filename": "events.sql",
+    "Line": 4,
+    "Name": "GetEventMetadata",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "metadata",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "json"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetEventMetadata, command: many)\nSELECT id, payload-\u003e'metadata' AS metadata FROM events;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:payload-\u003e'metadata'⟩ AS metadata FROM events;"
+  }
+]

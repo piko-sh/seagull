@@ -1,0 +1,58 @@
+[
+  {
+    "Command": "many",
+    "Filename": "customer_totals.sql",
+    "Line": 1,
+    "Name": "GetCustomerTotals",
+    "OutputColumns": [
+      {
+        "Name": "customer_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "customer_id",
+        "SourceQualifier": "sub"
+      },
+      {
+        "Name": "total_amount",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        },
+        "SourceColumn": "total_amount",
+        "SourceQualifier": "sub"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "status",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "total_amount",
+        "Nullable": true,
+        "Number": 2,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetCustomerTotals, command: many)\nSELECT sub.customer_id, sub.total_amount\nFROM (SELECT customer_id, sum(amount) AS total_amount FROM orders WHERE status = ? GROUP BY customer_id) sub\nWHERE sub.total_amount \u003e ?",
+    "Template": "SELECT ⟨c0:sub.customer_id⟩, ⟨c1:sub.total_amount⟩\\nFROM (SELECT customer_id, sum(amount) AS total_amount FROM orders WHERE status = ⟨p0⟩ GROUP BY customer_id) sub\\nWHERE sub.total_amount \u003e ⟨p1⟩⟨arguments p0 p1⟩"
+  }
+]

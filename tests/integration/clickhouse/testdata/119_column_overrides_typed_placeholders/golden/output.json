@@ -1,0 +1,75 @@
+{
+  "between": [
+    {
+      "id": 2
+    },
+    {
+      "id": 3
+    }
+  ],
+  "by_address": [
+    {
+      "address": "10.0.0.3",
+      "id": 3,
+      "label": "Y29weQ==",
+      "previous_address": "10.9.0.1"
+    }
+  ],
+  "by_addresses": [
+    {
+      "id": 1
+    },
+    {
+      "id": 4
+    }
+  ],
+  "by_previous": [
+    {
+      "id": 1
+    },
+    {
+      "id": 3
+    },
+    {
+      "id": 6
+    }
+  ],
+  "devices": [
+    {
+      "address": "10.0.1.1",
+      "id": 1,
+      "label": "bW92ZWQ=",
+      "previous_address": "10.9.0.1"
+    },
+    {
+      "address": "10.0.0.2",
+      "id": 2,
+      "label": "Y29weQ==",
+      "previous_address": null
+    },
+    {
+      "address": "10.0.0.3",
+      "id": 3,
+      "label": "Y29weQ==",
+      "previous_address": "10.9.0.1"
+    },
+    {
+      "address": "10.0.0.4",
+      "id": 4,
+      "label": "YmF0Y2g=",
+      "previous_address": null
+    },
+    {
+      "address": "10.0.0.5",
+      "id": 5,
+      "label": "YmF0Y2g=",
+      "previous_address": null
+    },
+    {
+      "address": "10.0.0.6",
+      "id": 6,
+      "label": "cm93cw==",
+      "previous_address": "10.9.0.1"
+    }
+  ]
+}

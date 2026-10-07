@@ -1,0 +1,1 @@
+{"description": "ALTER TABLE applies every action: ALTER COLUMN SET/DROP NOT NULL and TYPE change the column; an action after DROP COLUMN ... CASCADE still applies; CREATE TABLE ... AS SELECT takes its columns from the query, each nullable"}

@@ -1,0 +1,42 @@
+[
+  {
+    "Command": "one",
+    "Filename": "counters.sql",
+    "Line": 1,
+    "Name": "ReadOnlyWrapperPure",
+    "OutputColumns": [
+      {
+        "Name": "result",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ReadOnlyWrapperPure, command: one)\nSELECT wrapper_pure(42) AS result;",
+    "Template": "SELECT ⟨c0 aliased:wrapper_pure(42)⟩ AS result;"
+  },
+  {
+    "Command": "one",
+    "Filename": "counters.sql",
+    "Line": 4,
+    "Name": "ReadOnlyWrapperStable",
+    "OutputColumns": [
+      {
+        "Name": "result",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ReadOnlyWrapperStable, command: one)\nSELECT wrapper_dangerous(1) AS result;",
+    "Template": "SELECT ⟨c0 aliased:wrapper_dangerous(1)⟩ AS result;"
+  }
+]

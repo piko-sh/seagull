@@ -1,0 +1,41 @@
+{
+  "bumped": [
+    {
+      "bumped": 15,
+      "id": 1
+    },
+    {
+      "bumped": 25,
+      "id": 2
+    }
+  ],
+  "bumped_parameter": "int32",
+  "masked": [
+    {
+      "id": 1,
+      "masked": 2
+    },
+    {
+      "id": 2,
+      "masked": 2
+    }
+  ],
+  "masked_parameter": "int32",
+  "scaled": [
+    {
+      "id": 1,
+      "scaled": "3.750"
+    },
+    {
+      "id": 2,
+      "scaled": "6.000"
+    }
+  ],
+  "scaled_parameter": "apd.Decimal",
+  "shrink": [
+    {
+      "id": 2,
+      "lowered": 19
+    }
+  ]
+}

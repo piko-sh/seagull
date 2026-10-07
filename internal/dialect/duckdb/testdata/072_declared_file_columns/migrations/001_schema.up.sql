@@ -1,0 +1,4 @@
+CREATE TABLE harbours (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR NOT NULL
+);

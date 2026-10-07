@@ -1,0 +1,29 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: With go.driver pgx, batch queues one INSERT per row in a pgx.Batch sent at once, and copyfrom streams rows with COPY and returns how many it loaded.
+differs:
+  - "batch builds a pgx.Batch and reads every result; it returns only error"
+  - "pgx runs a batch in one implicit transaction, so a failing row undoes the whole batch"
+  - "copyfrom calls CopyFrom with the INSERT's table and columns and returns (int64, error), the number of rows copied"
+  - "no chunking: neither a batch nor COPY binds the rows as variables of one statement"
+  - "Both queries' Params structs have the same fields, so they convert into each other"
+  - "the readings table is the database/sql variant's: keyed by (station, minute), with BIGINT columns"
+entry: {file: db/queries/readings.sql, query: LoadReadings}
+live: "no"
+test: integration

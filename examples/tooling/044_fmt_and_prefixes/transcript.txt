@@ -1,0 +1,72 @@
+# customers.sql uses the seagull. alias and loose spacing. fmt -l lists every file
+# whose directives are not in canonical form.
+$ sgl fmt -l
+db/queries/customers.sql
+# exit 0
+
+# --check lists the same files and exits 1, for CI.
+$ sgl fmt --check
+db/queries/customers.sql
+# exit 1
+
+# sgl.yaml sets directives.require_canonical, so vet reports each alias with a Q050
+# hint. imported.sql came from another tool: sgl does not parse a directive written with
+# that tool's prefix, so it warns with Q051, and the parameter is named customer_id,
+# after the column, instead of customer.
+$ sgl vet
+db/queries/customers.sql:1:6: hint[Q050]: directive prefix "seagull" is an alias; write "sgl"
+   |
+ 1 | --   seagull.query( GetCustomer ,one )
+   |      ^^^^^^^
+help: did you mean "sgl"?
+
+db/queries/customers.sql:4:4: hint[Q050]: directive prefix "seagull" is an alias; write "sgl"
+   |
+ 4 | -- seagull.query(ListCustomers,many)
+   |    ^^^^^^^
+help: did you mean "sgl"?
+
+db/queries/imported.sql:2:10: warning[Q051]: -- piko.param is not enabled here; add piko to directives.prefixes to accept it, then optionally format the directives to rewrite it to the canonical prefix
+   |
+ 2 | -- ?1 as piko.param(customer)
+   |          ^^^^^^^^^^
+help: once the prefix is accepted, `sgl fmt -w` rewrites it to the canonical prefix
+0 error(s), 1 warning(s), 2 hint(s)
+# exit 0
+
+# Without -w, fmt prints a file as it would write it.
+$ sgl fmt db/queries/customers.sql
+-- sgl.query(GetCustomer, one)
+SELECT id, name, email FROM customers WHERE id = ?;
+
+-- sgl.query(ListCustomers, many)
+SELECT id, name, email FROM customers ORDER BY name;
+# exit 0
+
+# -w rewrites the files in place.
+$ sgl fmt -w
+# exit 0
+
+# The other tool's prefix is not an alias, so fmt left imported.sql alone. adopt.yaml
+# accepts it as one for a single run, which rewrites it to sgl.
+$ sgl -c adopt.yaml fmt -w
+# exit 0
+$ cat db/queries/imported.sql
+-- sgl.query(OrdersForCustomer, many)
+-- ?1 as sgl.param(customer)
+SELECT id, total FROM orders WHERE customer_id = ? ORDER BY id;
+# exit 0
+
+# Every directive is canonical now, and vet is clean.
+$ sgl fmt --check
+# exit 0
+$ sgl vet
+0 error(s), 0 warning(s), 0 hint(s)
+# exit 0
+
+# --rewrite-prefix rewrites directives to another accepted prefix, here printing
+# orders.sql in the seagull. spelling.
+$ sgl fmt --rewrite-prefix seagull db/queries/orders.sql
+-- seagull.query(ListOrders, many)
+SELECT id, customer_id, total FROM orders ORDER BY id;
+# exit 0

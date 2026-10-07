@@ -1,0 +1,32 @@
+GetNote (one, reads) notes.sql:1
+  param  id     bigint not null
+  column id     bigint not null from notes.id
+  column title  text   not null from notes.title
+  column body   text   null     from notes.body
+ListNotesWithTags (many, reads) notes.sql:4
+  column id     bigint not null from notes.id
+  column title  text   not null from notes.title
+  column tag    text   null     from tags.name
+ArchiveNote (execrows, writes) notes.sql:11
+  param  id     bigint not null
+ArchiveEverything (execrows, writes) notes.sql:14
+  lint: ArchiveEverything writes without a parameter, so it changes every row
+4 queries, 1 lint finding(s)
+
+table main.notes (primary key id)
+  id bigint not null
+  title text not null
+  body text null
+  archived integer not null
+table main.tags (primary key id)
+  id bigint not null
+  note_id integer not null
+  name text not null
+
+Vet of a query with readonly: maybe
+  notes.sql:1:38: error[Q028]: invalid value "maybe" for keyword argument "readonly"; allowed: true, false
+Report.Err with an error diagnostic: ErrDiagnostics
+New without a dialect: ErrInvalidConfig, ErrNoSource
+New with the prefix Acme: ErrInvalidConfig, ErrInvalidPrefix
+Generate into package my-store: ErrInvalidConfig
+Vet with WithMaxFileBytes(32): ErrLimit, ErrFileTooLarge

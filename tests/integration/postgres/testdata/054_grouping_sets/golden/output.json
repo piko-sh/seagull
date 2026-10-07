@@ -1,0 +1,193 @@
+{
+  "alias_rollup": [
+    {
+      "area": "north",
+      "revenue": "14.75"
+    },
+    {
+      "area": "south",
+      "revenue": "7.00"
+    },
+    {
+      "area": null,
+      "revenue": "21.75"
+    }
+  ],
+  "grouping_sets": [
+    {
+      "month": null,
+      "product": "cake",
+      "region": "north",
+      "revenue": "4.25"
+    },
+    {
+      "month": null,
+      "product": "tea",
+      "region": "north",
+      "revenue": "10.50"
+    },
+    {
+      "month": null,
+      "product": "tea",
+      "region": "south",
+      "revenue": "7.00"
+    },
+    {
+      "month": "2024-01-01T00:00:00Z",
+      "product": null,
+      "region": null,
+      "revenue": "14.75"
+    },
+    {
+      "month": "2024-02-01T00:00:00Z",
+      "product": null,
+      "region": null,
+      "revenue": "7.00"
+    },
+    {
+      "month": null,
+      "product": null,
+      "region": null,
+      "revenue": "21.75"
+    }
+  ],
+  "positional_rollup": [
+    {
+      "area": "north",
+      "revenue": "14.75"
+    },
+    {
+      "area": "south",
+      "revenue": "7.00"
+    },
+    {
+      "area": null,
+      "revenue": "21.75"
+    }
+  ],
+  "product_cube": [
+    {
+      "product": "cake",
+      "region": "north",
+      "sales": 1
+    },
+    {
+      "product": "tea",
+      "region": "north",
+      "sales": 1
+    },
+    {
+      "product": null,
+      "region": "north",
+      "sales": 2
+    },
+    {
+      "product": "tea",
+      "region": "south",
+      "sales": 1
+    },
+    {
+      "product": null,
+      "region": "south",
+      "sales": 1
+    },
+    {
+      "product": "cake",
+      "region": null,
+      "sales": 1
+    },
+    {
+      "product": "tea",
+      "region": null,
+      "sales": 2
+    },
+    {
+      "product": null,
+      "region": null,
+      "sales": 3
+    }
+  ],
+  "region_city_rollup": [
+    {
+      "city": "leeds",
+      "region": "north",
+      "revenue": "10.50"
+    },
+    {
+      "city": "york",
+      "region": "north",
+      "revenue": "4.25"
+    },
+    {
+      "city": null,
+      "region": "north",
+      "revenue": "14.75"
+    },
+    {
+      "city": "bath",
+      "region": "south",
+      "revenue": "7.00"
+    },
+    {
+      "city": null,
+      "region": "south",
+      "revenue": "7.00"
+    }
+  ],
+  "revenue_rollup": [
+    {
+      "city": "leeds",
+      "city_label": "leeds",
+      "level": 0,
+      "loud_city": "LEEDS",
+      "region": "north",
+      "revenue": "10.50",
+      "sales": 1
+    },
+    {
+      "city": "york",
+      "city_label": "york",
+      "level": 0,
+      "loud_city": "YORK",
+      "region": "north",
+      "revenue": "4.25",
+      "sales": 1
+    },
+    {
+      "city": null,
+      "city_label": "all cities",
+      "level": 1,
+      "loud_city": null,
+      "region": "north",
+      "revenue": "14.75",
+      "sales": 2
+    },
+    {
+      "city": "bath",
+      "city_label": "bath",
+      "level": 0,
+      "loud_city": "BATH",
+      "region": "south",
+      "revenue": "7.00",
+      "sales": 1
+    },
+    {
+      "city": null,
+      "city_label": "all cities",
+      "level": 1,
+      "loud_city": null,
+      "region": "south",
+      "revenue": "7.00",
+      "sales": 1
+    },
+    {
+      "city": null,
+      "city_label": "all cities",
+      "level": 3,
+      "loud_city": null,
+      "region": null,
+      "revenue": "21.75",
+      "sales": 3
+    }
+  ]
+}

@@ -1,0 +1,131 @@
+[
+  {
+    "Command": "many",
+    "Filename": "glob_query.sql",
+    "Line": 1,
+    "Name": "FindByGlob",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "files",
+        "SourceTable": "files"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "files",
+        "SourceTable": "files"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "like",
+        "Kind": "none",
+        "Name": "name_like",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FindByGlob, command: many)\nSELECT id, name FROM files WHERE name GLOB ?",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩ FROM files WHERE name GLOB ⟨p0⟩⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "like_query.sql",
+    "Line": 1,
+    "Name": "FindByLike",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "files",
+        "SourceTable": "files"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "files",
+        "SourceTable": "files"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "like",
+        "Kind": "none",
+        "Name": "name_like",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FindByLike, command: many)\nSELECT id, name FROM files WHERE name LIKE ?",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩ FROM files WHERE name LIKE ⟨p0⟩⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "match_query.sql",
+    "Line": 1,
+    "Name": "FindByMatch",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "files",
+        "SourceTable": "files"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "files",
+        "SourceTable": "files"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "like",
+        "Kind": "none",
+        "Name": "path_like",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FindByMatch, command: many)\nSELECT id, name FROM files WHERE path MATCH ?",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩ FROM files WHERE path MATCH ⟨p0⟩⟨arguments p0⟩"
+  }
+]

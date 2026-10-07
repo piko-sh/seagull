@@ -1,0 +1,3 @@
+{
+  "description": "FTS5 virtual tables are parsed into catalogue entries with text columns and FTS5's hidden rank and table-named columns, so articles_fts MATCH ? resolves against the table-named column without Q001. FTS5 auxiliary functions (highlight, snippet, bm25) resolve correctly."
+}

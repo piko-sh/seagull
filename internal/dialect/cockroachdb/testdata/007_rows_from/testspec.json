@@ -1,0 +1,4 @@
+{
+  "description": "CockroachDB reads ROWS FROM (f(...), g(...)) as PostgreSQL does: each function's columns in turn, every one of them NULL where a shorter function is padded, then the ordinality column; the alias column list renames them by position, the alias alone names none even under the flavour's alias naming of one-column functions, and one function reads as the function alone.",
+  "expectedDiagnosticCount": 0
+}

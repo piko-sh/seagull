@@ -1,0 +1,76 @@
+[
+  {
+    "Command": "one",
+    "Filename": "accounts.sql",
+    "Line": 1,
+    "Name": "GetAccount",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "DisplayName",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "DisplayName",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "email",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(GetAccount, one)\nSELECT id, \"DisplayName\", EMAIL FROM ACCOUNTS WHERE ID = $1;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:\"DisplayName\"⟩, ⟨c2:EMAIL⟩ FROM ACCOUNTS WHERE ID = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "accounts.sql",
+    "Line": 4,
+    "Name": "UnquotedDisplayName",
+    "OutputColumns": [
+      {
+        "Name": "displayname",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(UnquotedDisplayName, many)\nSELECT DisplayName FROM accounts;",
+    "Template": "SELECT ⟨c0:DisplayName⟩ FROM accounts;"
+  }
+]

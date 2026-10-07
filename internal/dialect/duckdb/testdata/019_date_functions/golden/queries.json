@@ -1,0 +1,42 @@
+[
+  {
+    "Command": "many",
+    "Filename": "events.sql",
+    "Line": 1,
+    "Name": "GetEventsWithDateParts",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "event_year",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetEventsWithDateParts, command: many)\nSELECT id, name, date_part('year', occurred_at) AS event_year FROM events;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2 aliased:date_part('year', occurred_at)⟩ AS event_year FROM events;"
+  }
+]

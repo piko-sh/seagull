@@ -1,0 +1,273 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "billing": {
+      "Domains": {
+        "cents": {
+          "BaseType": {
+            "Category": "integer",
+            "EngineName": "int8",
+            "Width": 64
+          },
+          "Name": "cents",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 4
+          },
+          "Schema": "billing"
+        }
+      },
+      "Name": "billing"
+    },
+    "public": {
+      "Domains": {
+        "contact_email": {
+          "BaseType": {
+            "Category": "text",
+            "EngineName": "text"
+          },
+          "Name": "contact_email",
+          "NotNull": true,
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 5
+          },
+          "Schema": "public"
+        },
+        "email_address": {
+          "BaseType": {
+            "Category": "text",
+            "EngineName": "text"
+          },
+          "Name": "email_address",
+          "NotNull": true,
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 2
+          },
+          "Schema": "public"
+        },
+        "feeling": {
+          "BaseType": {
+            "Category": "enum",
+            "EngineName": "mood",
+            "EnumValues": [
+              "happy",
+              "sad"
+            ],
+            "Schema": "public"
+          },
+          "Name": "feeling",
+          "NotNull": true,
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 7
+          },
+          "Schema": "public"
+        },
+        "nickname": {
+          "BaseType": {
+            "Category": "text",
+            "EngineName": "varchar",
+            "Length": 40
+          },
+          "Name": "nickname",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 3
+          },
+          "Schema": "public"
+        },
+        "tags": {
+          "ArrayDimensions": 1,
+          "BaseType": {
+            "Category": "text",
+            "EngineName": "text"
+          },
+          "Name": "tags",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 6
+          },
+          "Schema": "public"
+        }
+      },
+      "Enums": {
+        "mood": {
+          "Name": "mood",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 1
+          },
+          "Schema": "public",
+          "Values": [
+            "happy",
+            "sad"
+          ]
+        }
+      },
+      "Name": "public",
+      "Tables": {
+        "mailing": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 11
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "ArrayDimensions": 1,
+              "GeneratedKind": "none",
+              "IsArray": true,
+              "Name": "recipients",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 11
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text",
+                "Nullable": true
+              }
+            }
+          ],
+          "Name": "mailing",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 11
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "public"
+        },
+        "people": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 8
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "email",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 8
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "backup_email",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 8
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "nickname",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 8
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Length": 40
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "balance",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 8
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int8",
+                "Width": 64
+              }
+            },
+            {
+              "ArrayDimensions": 1,
+              "GeneratedKind": "none",
+              "IsArray": true,
+              "Name": "labels",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 8
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text",
+                "Nullable": true
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "current_feeling",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 8
+              },
+              "SQLType": {
+                "Category": "enum",
+                "EngineName": "mood",
+                "EnumValues": [
+                  "happy",
+                  "sad"
+                ],
+                "Schema": "public"
+              }
+            }
+          ],
+          "Name": "people",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 8
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

@@ -1,0 +1,4 @@
+DROP FUNCTION species_price(TEXT);
+DROP FUNCTION land_catch(TEXT, TEXT, INTEGER);
+DROP FUNCTION boat_haul(TEXT);
+DROP FUNCTION price_pence(INTEGER, INTEGER);

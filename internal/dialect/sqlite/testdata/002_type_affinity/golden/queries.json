@@ -1,0 +1,163 @@
+[
+  {
+    "Command": "many",
+    "Filename": "get_all.sql",
+    "Line": 1,
+    "Name": "GetAllTypedValues",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "typed_values",
+        "SourceTable": "typed_values"
+      },
+      {
+        "Name": "int_val",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "int_val",
+        "SourceQualifier": "typed_values",
+        "SourceTable": "typed_values"
+      },
+      {
+        "Name": "bigint_val",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "bigint_val",
+        "SourceQualifier": "typed_values",
+        "SourceTable": "typed_values"
+      },
+      {
+        "Name": "text_val",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "text_val",
+        "SourceQualifier": "typed_values",
+        "SourceTable": "typed_values"
+      },
+      {
+        "Name": "varchar_val",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text",
+          "Length": 255
+        },
+        "SourceColumn": "varchar_val",
+        "SourceQualifier": "typed_values",
+        "SourceTable": "typed_values"
+      },
+      {
+        "Name": "real_val",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        },
+        "SourceColumn": "real_val",
+        "SourceQualifier": "typed_values",
+        "SourceTable": "typed_values"
+      },
+      {
+        "Name": "double_val",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        },
+        "SourceColumn": "double_val",
+        "SourceQualifier": "typed_values",
+        "SourceTable": "typed_values"
+      },
+      {
+        "Name": "blob_val",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "binary",
+          "EngineName": "blob"
+        },
+        "SourceColumn": "blob_val",
+        "SourceQualifier": "typed_values",
+        "SourceTable": "typed_values"
+      },
+      {
+        "Name": "numeric_val",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        },
+        "SourceColumn": "numeric_val",
+        "SourceQualifier": "typed_values",
+        "SourceTable": "typed_values"
+      },
+      {
+        "Name": "bool_val",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "boolean"
+        },
+        "SourceColumn": "bool_val",
+        "SourceQualifier": "typed_values",
+        "SourceTable": "typed_values"
+      },
+      {
+        "Name": "date_val",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        },
+        "SourceColumn": "date_val",
+        "SourceQualifier": "typed_values",
+        "SourceTable": "typed_values"
+      },
+      {
+        "Name": "datetime_val",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "datetime_val",
+        "SourceQualifier": "typed_values",
+        "SourceTable": "typed_values"
+      },
+      {
+        "Name": "json_val",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "json"
+        },
+        "SourceColumn": "json_val",
+        "SourceQualifier": "typed_values",
+        "SourceTable": "typed_values"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetAllTypedValues, command: many)\nSELECT\n  id, int_val, bigint_val, text_val, varchar_val,\n  real_val, double_val, blob_val, numeric_val,\n  bool_val, date_val, datetime_val, json_val\nFROM typed_values",
+    "Template": "SELECT\\n  ⟨c0:id⟩, ⟨c1:int_val⟩, ⟨c2:bigint_val⟩, ⟨c3:text_val⟩, ⟨c4:varchar_val⟩,\\n  ⟨c5:real_val⟩, ⟨c6:double_val⟩, ⟨c7:blob_val⟩, ⟨c8:numeric_val⟩,\\n  ⟨c9:bool_val⟩, ⟨c10:date_val⟩, ⟨c11:datetime_val⟩, ⟨c12:json_val⟩\\nFROM typed_values"
+  }
+]

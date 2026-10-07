@@ -1,0 +1,3 @@
+{
+  "description": "The aggregates and scalar functions an analytics query reaches for generate without a false Q005 and the generated code reads every result DuckDB returns: arg_max and max_by (with a count, a list), quantiles, a histogram MAP, approx_top_k, HUGEINT and UINTEGER counts, the date part extractors and date arithmetic, string splitting, list aggregates (NULL over an empty list), list positions and JSON extractions (NULL when nothing is there)"
+}

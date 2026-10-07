@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q005",
+    "Column": 8,
+    "EndColumn": 15,
+    "EndLine": 5,
+    "Filename": "compute.sql",
+    "Line": 5,
+    "Message": "unknown function \"DOUBLED\"",
+    "Severity": "warning"
+  }
+]

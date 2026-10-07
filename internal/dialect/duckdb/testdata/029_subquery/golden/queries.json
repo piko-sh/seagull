@@ -1,0 +1,34 @@
+[
+  {
+    "Command": "many",
+    "Filename": "authors_with_books.sql",
+    "Line": 1,
+    "Name": "AuthorsWithBooks",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "a",
+        "SourceTable": "authors"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "a",
+        "SourceTable": "authors"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AuthorsWithBooks, command: many)\nSELECT a.id, a.name FROM authors a\nWHERE EXISTS (SELECT 1 FROM books b WHERE b.author_id = a.id)\nORDER BY a.name;",
+    "Template": "SELECT ⟨c0:a.id⟩, ⟨c1:a.name⟩ FROM authors a\\nWHERE EXISTS (SELECT 1 FROM books b WHERE b.author_id = a.id)\\nORDER BY a.name;"
+  }
+]

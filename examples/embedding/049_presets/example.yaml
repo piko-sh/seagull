@@ -1,0 +1,27 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: "A tool that embeds Seagull white-labels it: FormatDirectives converts the queries to the acme. prefix, WithPreset generates with Acme's header, helper and error names and query-names file, nothing generated says sgl, and WithLegacyHeaders prunes the file the stock header marked."
+differs:
+  - "the preset starts from DefaultPreset; sgl becomes a foreign prefix, so an unconverted directive draws Q051"
+  - "helpers become acme..., sentinel errors ErrAcme..., and error text starts acme:"
+  - "query_names.go was renamed acme_query_names.go, so only WithLegacyHeaders lets WriteFiles prune the old file"
+  - the acme package is written to a temporary directory, since its header is not sgl's
+entry: {file: db/queries/parcels.sql, query: SearchParcels}
+live: "no"
+test: in-process

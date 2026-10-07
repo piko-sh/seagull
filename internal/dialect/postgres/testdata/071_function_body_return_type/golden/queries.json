@@ -1,0 +1,41 @@
+[
+  {
+    "Command": "one",
+    "Filename": "orders.sql",
+    "Line": 1,
+    "Name": "GetOrderCount",
+    "OutputColumns": [
+      {
+        "Name": "total_orders",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetOrderCount, command: one)\nSELECT order_count() AS total_orders;",
+    "Template": "SELECT ⟨c0 aliased:order_count()⟩ AS total_orders;"
+  },
+  {
+    "Command": "one",
+    "Filename": "orders.sql",
+    "Line": 4,
+    "Name": "GetLatestCustomer",
+    "OutputColumns": [
+      {
+        "Name": "customer",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetLatestCustomer, command: one)\nSELECT latest_customer() AS customer;",
+    "Template": "SELECT ⟨c0 aliased:latest_customer()⟩ AS customer;"
+  }
+]

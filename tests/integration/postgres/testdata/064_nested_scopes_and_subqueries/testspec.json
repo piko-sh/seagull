@@ -1,0 +1,4 @@
+{
+  "description": "Nested scopes and subqueries against PostgreSQL through database/sql: a star over an earlier CTE and an alias on a parenthesised join read their rows into typed row structs; a WITH clause inside a CTE body, a CTE body's derived table and LATERAL subquery, a CTE joined in a later CTE and a CTE read in a derived table, a derived table in a later arm of a UNION, column lists on a derived table, a VALUES list and a CTE, a shorter one keeping the rest, scalar subqueries projecting a column and compared with a parameter, and a NULL in the first branch all read typed values without diagnostics.",
+  "expectedDiagnostics": []
+}

@@ -1,0 +1,1 @@
+{"description": "ALTER COLUMN TYPE and SET DATA TYPE change the column's type and keep its nullability; CREATE TABLE ... AS SELECT takes its columns from the query, each nullable"}

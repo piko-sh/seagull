@@ -1,0 +1,43 @@
+[
+  {
+    "Command": "many",
+    "Filename": "unknown_function.sql",
+    "Line": 1,
+    "Name": "GetProcessed",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "processed",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: GetProcessed, command: many)\nSELECT id, nonexistent_func(name) AS processed FROM users WHERE id = ?",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:nonexistent_func(name)⟩ AS processed FROM users WHERE id = ⟨p0⟩⟨arguments p0⟩"
+  }
+]

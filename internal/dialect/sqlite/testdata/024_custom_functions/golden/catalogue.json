@@ -1,0 +1,105 @@
+{
+  "DefaultSchema": "main",
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "main": {
+      "Functions": {
+        "vec_distance_l2": [
+          {
+            "Arguments": [
+              {
+                "Type": {
+                  "Category": "binary",
+                  "EngineName": "blob"
+                }
+              },
+              {
+                "Type": {
+                  "Category": "binary",
+                  "EngineName": "blob"
+                }
+              }
+            ],
+            "DataAccess": "read-only",
+            "MinArguments": 2,
+            "Name": "vec_distance_L2",
+            "NullableBehaviour": "returns-null-on-null",
+            "ReturnType": {
+              "Category": "float",
+              "EngineName": "real",
+              "Width": 64
+            },
+            "Schema": "main"
+          }
+        ],
+        "vec_to_json": [
+          {
+            "Arguments": [
+              {
+                "Type": {
+                  "Category": "binary",
+                  "EngineName": "blob"
+                }
+              }
+            ],
+            "DataAccess": "read-only",
+            "MinArguments": 1,
+            "Name": "vec_to_json",
+            "NullableBehaviour": "returns-null-on-null",
+            "ReturnType": {
+              "Category": "text",
+              "EngineName": "text"
+            },
+            "Schema": "main"
+          }
+        ]
+      },
+      "Name": "main",
+      "Tables": {
+        "vectors": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_create_vectors.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "bigint",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "embedding",
+              "Origin": {
+                "Filename": "001_create_vectors.up.sql"
+              },
+              "SQLType": {
+                "Category": "binary",
+                "EngineName": "blob"
+              }
+            }
+          ],
+          "Name": "vectors",
+          "Origin": {
+            "Filename": "001_create_vectors.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "main"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "main",
+    "temp"
+  ]
+}

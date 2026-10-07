@@ -1,0 +1,34 @@
+[
+  {
+    "Command": "many",
+    "Filename": "files.sql",
+    "Line": 1,
+    "Name": "ListFiles",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "files",
+        "SourceTable": "files"
+      },
+      {
+        "Name": "path",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "path",
+        "SourceQualifier": "files",
+        "SourceTable": "files"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListFiles, command: many)\nSELECT id, path FROM files;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:path⟩ FROM files;"
+  }
+]

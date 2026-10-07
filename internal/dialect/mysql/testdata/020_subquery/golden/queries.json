@@ -1,0 +1,89 @@
+[
+  {
+    "Command": "many",
+    "Filename": "category_stats.sql",
+    "Line": 1,
+    "Name": "CategoryStats",
+    "OutputColumns": [
+      {
+        "Name": "category",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        },
+        "SourceColumn": "category",
+        "SourceQualifier": "s"
+      },
+      {
+        "Name": "product_count",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "product_count",
+        "SourceQualifier": "s"
+      },
+      {
+        "Name": "avg_price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "double",
+          "Width": 64
+        },
+        "SourceColumn": "avg_price",
+        "SourceQualifier": "s"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CategoryStats, command: many)\nSELECT s.category, s.product_count, s.avg_price\nFROM (\n    SELECT category, COUNT(*) AS product_count, AVG(price) AS avg_price\n    FROM products\n    GROUP BY category\n) AS s\nORDER BY s.avg_price DESC;",
+    "Template": "SELECT ⟨c0:s.category⟩, ⟨c1:s.product_count⟩, ⟨c2:s.avg_price⟩\\nFROM (\\n    SELECT category, COUNT(*) AS product_count, AVG(price) AS avg_price\\n    FROM products\\n    GROUP BY category\\n) AS s\\nORDER BY s.avg_price DESC;"
+  },
+  {
+    "Command": "many",
+    "Filename": "products_above_average.sql",
+    "Line": 1,
+    "Name": "ProductsAboveAverage",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 200
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      },
+      {
+        "Name": "price",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 10,
+          "Scale": 2
+        },
+        "SourceColumn": "price",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ProductsAboveAverage, command: many)\nSELECT id, name, price\nFROM products\nWHERE price \u003e (SELECT AVG(price) FROM products);",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:price⟩\\nFROM products\\nWHERE price \u003e (SELECT AVG(price) FROM products);"
+  }
+]

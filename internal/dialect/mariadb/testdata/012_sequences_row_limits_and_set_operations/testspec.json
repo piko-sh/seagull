@@ -1,0 +1,4 @@
+{
+  "description": "MariaDB sequences, row limits and set operations: NEXT VALUE FOR, PREVIOUS VALUE FOR, NEXTVAL, LASTVAL and SETVAL read the sequence they name, NEXTVAL as a BIGINT that is never NULL and LASTVAL and SETVAL, whose value is a number written in the statement, as nullable, and a query calling NEXTVAL or SETVAL changes data; OFFSET n ROWS FETCH NEXT n ROWS ONLY and FETCH FIRST n ROWS WITH TIES are row limits, MEDIAN and PERCENTILE_CONT ... WITHIN GROUP (ORDER BY ...) OVER (...) are nullable DOUBLEs and PERCENTILE_DISC takes its sorted value's type; VALUES (...) and queries in parentheses are arms of a set operation; a division by a column is nullable, \"...\" is a string and STR_TO_DATE is nullable.",
+  "expectedDiagnosticCount": 0
+}

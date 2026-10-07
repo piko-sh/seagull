@@ -1,0 +1,22 @@
+[
+  {
+    "Code": "Q031",
+    "Column": 27,
+    "EndColumn": 28,
+    "EndLine": 1,
+    "Filename": "missing_command.sql",
+    "Line": 1,
+    "Message": "missing required command on sgl.query",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q031",
+    "Column": 27,
+    "EndColumn": 28,
+    "EndLine": 1,
+    "Filename": "missing_name.sql",
+    "Line": 1,
+    "Message": "missing required name on sgl.query",
+    "Severity": "error"
+  }
+]

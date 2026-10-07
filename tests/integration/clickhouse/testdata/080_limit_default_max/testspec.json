@@ -1,0 +1,1 @@
+{"description": "A {page_size:UInt32} placeholder that is the whole LIMIT is a pagination bound, so its default and max are applied before binding: an unset page size takes the default of 3 and one of 50 is clamped to the max of 5, while the OFFSET placeholder binds as given."}

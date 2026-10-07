@@ -1,0 +1,1 @@
+{"description": "regclass and regtype are relation and type names in and out: a regclass parameter binds a relation name as text, and a regtype result reads as text"}

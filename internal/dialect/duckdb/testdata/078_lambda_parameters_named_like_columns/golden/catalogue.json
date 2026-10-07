@@ -1,0 +1,111 @@
+{
+  "DefaultSchema": "main",
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "main": {
+      "Name": "main",
+      "Tables": {
+        "boats": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_boats.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "score",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_boats.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "tag",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_boats.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "ArrayDimensions": 1,
+              "GeneratedKind": "none",
+              "IsArray": true,
+              "Name": "scores",
+              "Origin": {
+                "Filename": "001_boats.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Nullable": true,
+                "Width": 32
+              }
+            },
+            {
+              "ArrayDimensions": 1,
+              "GeneratedKind": "none",
+              "IsArray": true,
+              "Name": "crew",
+              "Origin": {
+                "Filename": "001_boats.up.sql"
+              },
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "struct",
+                "Nullable": true,
+                "StructFields": [
+                  {
+                    "Name": "name",
+                    "SQLType": {
+                      "Category": "text",
+                      "EngineName": "varchar",
+                      "Nullable": true
+                    }
+                  },
+                  {
+                    "Name": "age",
+                    "SQLType": {
+                      "Category": "integer",
+                      "EngineName": "int4",
+                      "Nullable": true,
+                      "Width": 32
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "Name": "boats",
+          "Origin": {
+            "Filename": "001_boats.up.sql"
+          },
+          "Schema": "main"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "main"
+  ]
+}

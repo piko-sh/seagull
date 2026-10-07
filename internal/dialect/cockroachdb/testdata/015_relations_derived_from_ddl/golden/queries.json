@@ -1,0 +1,244 @@
+[
+  {
+    "Command": "many",
+    "Filename": "derived.sql",
+    "Line": 1,
+    "Name": "ListNotes",
+    "OutputColumns": [
+      {
+        "Name": "rowid",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "rowid",
+        "SourceQualifier": "notes",
+        "SourceTable": "notes"
+      },
+      {
+        "Name": "body",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "body",
+        "SourceQualifier": "notes",
+        "SourceTable": "notes"
+      },
+      {
+        "Name": "kind",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "kind",
+        "SourceQualifier": "notes",
+        "SourceTable": "notes"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListNotes, command: many)\nSELECT rowid, body, kind FROM notes;",
+    "Template": "SELECT ⟨c0:rowid⟩, ⟨c1:body⟩, ⟨c2:kind⟩ FROM notes;"
+  },
+  {
+    "Command": "many",
+    "Filename": "derived.sql",
+    "Line": 4,
+    "Name": "ListMarks",
+    "OutputColumns": [
+      {
+        "Name": "rowid_1",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "rowid_1",
+        "SourceQualifier": "marks",
+        "SourceTable": "marks"
+      },
+      {
+        "Name": "rowid",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "rowid",
+        "SourceQualifier": "marks",
+        "SourceTable": "marks"
+      },
+      {
+        "Name": "label",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "label",
+        "SourceQualifier": "marks",
+        "SourceTable": "marks"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListMarks, command: many)\nSELECT rowid_1, rowid, label FROM marks;",
+    "Template": "SELECT ⟨c0:rowid_1⟩, ⟨c1:rowid⟩, ⟨c2:label⟩ FROM marks;"
+  },
+  {
+    "Command": "many",
+    "Filename": "derived.sql",
+    "Line": 7,
+    "Name": "ListTags",
+    "OutputColumns": [
+      {
+        "Name": "label",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "label",
+        "SourceQualifier": "tags",
+        "SourceTable": "tags"
+      },
+      {
+        "Name": "colour",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "colour",
+        "SourceQualifier": "tags",
+        "SourceTable": "tags"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListTags, command: many)\nSELECT * FROM tags;",
+    "Template": "SELECT ⟨star 0=tags.label 1=tags.colour:*⟩ FROM tags;"
+  },
+  {
+    "Command": "many",
+    "Filename": "derived.sql",
+    "Line": 10,
+    "Name": "ListLabels",
+    "OutputColumns": [
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "labels",
+        "SourceTable": "labels"
+      },
+      {
+        "Name": "shade",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "shade",
+        "SourceQualifier": "labels",
+        "SourceTable": "labels"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListLabels, command: many)\nSELECT * FROM labels;",
+    "Template": "SELECT ⟨star 0=labels.name 1=labels.shade:*⟩ FROM labels;"
+  },
+  {
+    "Command": "one",
+    "Filename": "derived.sql",
+    "Line": 13,
+    "Name": "AccountNumber",
+    "OutputColumns": [
+      {
+        "Name": "last_value",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "last_value",
+        "SourceQualifier": "account_numbers",
+        "SourceTable": "account_numbers"
+      },
+      {
+        "Name": "log_cnt",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "log_cnt",
+        "SourceQualifier": "account_numbers",
+        "SourceTable": "account_numbers"
+      },
+      {
+        "Name": "is_called",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        },
+        "SourceColumn": "is_called",
+        "SourceQualifier": "account_numbers",
+        "SourceTable": "account_numbers"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AccountNumber, command: one)\nSELECT last_value, log_cnt, is_called FROM account_numbers;",
+    "Template": "SELECT ⟨c0:last_value⟩, ⟨c1:log_cnt⟩, ⟨c2:is_called⟩ FROM account_numbers;"
+  },
+  {
+    "Command": "many",
+    "Filename": "derived.sql",
+    "Line": 16,
+    "Name": "ListInvoices",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "i",
+        "SourceSchema": "billing",
+        "SourceTable": "invoices"
+      },
+      {
+        "Name": "email",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "a",
+        "SourceSchema": "public",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "nickname",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "nickname",
+        "SourceQualifier": "a",
+        "SourceSchema": "public",
+        "SourceTable": "accounts"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListInvoices, command: many)\nSELECT i.id, a.email, a.nickname FROM billing.invoices AS i JOIN app.public.accounts AS a ON a.id = i.account_id;",
+    "Template": "SELECT ⟨c0:i.id⟩, ⟨c1:a.email⟩, ⟨c2:a.nickname⟩ FROM billing.invoices AS i JOIN app.public.accounts AS a ON a.id = i.account_id;"
+  }
+]

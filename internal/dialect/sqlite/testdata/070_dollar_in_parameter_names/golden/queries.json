@@ -1,0 +1,79 @@
+[
+  {
+    "Command": "many",
+    "Filename": "prices.sql",
+    "Line": 1,
+    "Name": "PricesBetween",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "prices",
+        "SourceTable": "prices"
+      },
+      {
+        "Name": "label",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "label",
+        "SourceQualifier": "prices",
+        "SourceTable": "prices"
+      },
+      {
+        "Name": "amount$usd",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "amount$usd",
+        "SourceQualifier": "prices",
+        "SourceTable": "prices"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "low$usd",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "high$usd",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "skip$",
+        "Number": 3,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(PricesBetween, many)\nSELECT id, label, amount$usd FROM prices WHERE amount$usd \u003e= :low$usd AND amount$usd \u003c $high$usd AND label \u003c\u003e @skip$;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:label⟩, ⟨c2:amount$usd⟩ FROM prices WHERE amount$usd \u003e= ⟨p0⟩ AND amount$usd \u003c ⟨p1⟩ AND label \u003c\u003e ⟨p2⟩;⟨arguments p0 p1 p2⟩"
+  }
+]

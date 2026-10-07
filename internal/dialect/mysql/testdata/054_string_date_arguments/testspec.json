@@ -1,0 +1,3 @@
+{
+  "description": "A string or a number passed to a date or time function is read as a date or time, as MySQL reads it: YEAR('2024-01-01'), DATEDIFF(NOW(), '2024-01-01') and their kin analyse without a diagnostic and may be NULL, since a string that holds no date gives NULL; DATE_ADD and its kin of a string give a string, of a TIME a TIME, and UNIX_TIMESTAMP of a string or of a DATETIME with fractional seconds a DECIMAL; comparing a DATE, DATETIME or TIME column with a string stays free of diagnostics."
+}

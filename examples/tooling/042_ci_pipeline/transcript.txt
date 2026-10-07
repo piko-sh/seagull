@@ -1,0 +1,102 @@
+# sgl is a tool of this module (the `tool seagull.sh/seagull/cmd/sgl` line in go.mod),
+# so CI runs the version go.mod pins. The committed code matches the queries:
+$ go tool sgl generate --check
+tasks: generated code is up to date
+# exit 0
+
+# A pull request changes a query but forgets to run sgl generate.
+$ cp change/tasks.sql db/queries/tasks.sql
+# exit 0
+
+# --check fails the build; --diff shows the reviewer what generate would change.
+$ go tool sgl generate --check --diff
+db/queries/tasks.sql:1:1: warning[Q046]: query "CreateTask" uses command "one" with ON CONFLICT DO NOTHING and RETURNING; a conflict skips the insert so RETURNING yields no row and the call returns the driver no-rows sentinel (sql.ErrNoRows, or pgx.ErrNoRows for native pgx). Add optional: true to return (row, false, nil), use command "exec"/"execrows", or handle errors.Is with that sentinel.
+   |
+ 1 | -- sgl.query(CreateTask, one)
+   | ^
+--- a/internal/store/tasks.sql.go
++++ b/internal/store/tasks.sql.go
+@@ -4,7 +4,7 @@
+ 
+ import "context"
+ 
+-const createTaskSQL = `INSERT INTO tasks (title) VALUES (?1) RETURNING id, title, done;`
++const createTaskSQL = `INSERT INTO tasks (title) VALUES (?1) ON CONFLICT (title) DO NOTHING RETURNING id, title, done;`
+ 
+ type CreateTaskRow struct {
+ 	ID    int64  `json:"id"`
+sgl: database "tasks": generated code in internal/store is out of date; run `sgl generate`
+  modify internal/store/tasks.sql.go
+# exit 1
+
+# The change also has a warning. GitHub Actions turns these lines into annotations on
+# the pull request.
+$ go tool sgl vet --format github
+::warning file=db/queries/tasks.sql,line=1,col=1,title=Q046::query "CreateTask" uses command "one" with ON CONFLICT DO NOTHING and RETURNING; a conflict skips the insert so RETURNING yields no row and the call returns the driver no-rows sentinel (sql.ErrNoRows, or pgx.ErrNoRows for native pgx). Add optional: true to return (row, false, nil), use command "exec"/"execrows", or handle errors.Is with that sentinel.
+# exit 0
+
+# SARIF carries the same findings to GitHub code scanning and other tools.
+$ go tool sgl vet --format sarif
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "sgl",
+          "version": "dev",
+          "informationUri": "https://seagull.sh",
+          "rules": [
+            {
+              "id": "Q046",
+              "shortDescription": {
+                "text": "A conflict that skips the row, with RETURNING on a one query"
+              },
+              "fullDescription": {
+                "text": "A `one` query combines a conflict clause that skips the row, such as `ON CONFLICT DO NOTHING`, MariaDB's `INSERT IGNORE` or SQLite's `INSERT OR IGNORE`, with `RETURNING`. When the conflict occurs the insert is skipped and no row is returned, so the generated method returns the driver's no-rows error (`sql.ErrNoRows`, or `pgx.ErrNoRows` for pgx) on that path.\n\nAdd `optional: true` to the header to receive `(row, false, nil)` instead, use `exec` or `execrows`, or handle the no-rows error explicitly with `errors.Is`:\n\n```sql\n-- sgl.query(CreateTag, one, optional: true)\nINSERT INTO tags (name) VALUES ($1) ON CONFLICT DO NOTHING RETURNING id;\n```"
+              },
+              "helpUri": "https://seagull.sh/docs/reference/diagnostics#q046",
+              "defaultConfiguration": {
+                "level": "warning"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "Q046",
+          "level": "warning",
+          "message": {
+            "text": "query \"CreateTask\" uses command \"one\" with ON CONFLICT DO NOTHING and RETURNING; a conflict skips the insert so RETURNING yields no row and the call returns the driver no-rows sentinel (sql.ErrNoRows, or pgx.ErrNoRows for native pgx). Add optional: true to return (row, false, nil), use command \"exec\"/\"execrows\", or handle errors.Is with that sentinel."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1
+                },
+                "artifactLocation": {
+                  "uri": "db/queries/tasks.sql"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+# exit 0
+
+# Apply the migrations to a throwaway database, then check the files still match what
+# was applied.
+$ go tool sgl migrate up --dsn file:ci.db
+up 1 init
+1 applied
+# exit 0
+$ go tool sgl migrate validate --dsn file:ci.db
+migrations are valid
+# exit 0

@@ -1,0 +1,53 @@
+[
+  {
+    "Command": "many",
+    "Filename": "catches.sql",
+    "Line": 1,
+    "Name": "FilterCatches",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "catches",
+        "SourceTable": "catches"
+      },
+      {
+        "Name": "species",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "caught_on",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "size_class",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "request_id",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FilterCatches, command: many)\nSELECT\n    id,\n    trim(species, ' ') AS species,\n    strftime(caught_at, '%Y-%m-%d') AS caught_on,\n    if(weight \u003e 10, 'heavy', 'light') AS size_class,\n    uuid() AS request_id\nFROM catches\nWHERE regexp_matches(species, '^cod')\n  AND prefix(species, 'c')\n  AND suffix(species, 'd')\n  AND caught_at \u003c today();",
+    "Template": "SELECT\\n    ⟨c0:id⟩,\\n    ⟨c1 aliased:trim(species, ' ')⟩ AS species,\\n    ⟨c2 aliased:strftime(caught_at, '%Y-%m-%d')⟩ AS caught_on,\\n    ⟨c3 aliased:if(weight \u003e 10, 'heavy', 'light')⟩ AS size_class,\\n    ⟨c4 aliased:uuid()⟩ AS request_id\\nFROM catches\\nWHERE regexp_matches(species, '^cod')\\n  AND prefix(species, 'c')\\n  AND suffix(species, 'd')\\n  AND caught_at \u003c today();"
+  }
+]

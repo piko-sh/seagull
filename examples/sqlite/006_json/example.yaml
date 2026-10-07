@@ -1,0 +1,27 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: Chip shop orders kept as JSON documents, encoded into the generated JSON type and searched with -> and ->>.
+differs:
+  - "SQLite has no JSON storage type; a column declared JSON keeps the document's text and maps to the generated JSON type"
+  - "-> extracts a JSON fragment, and ->> the SQL value the document holds, which Seagull types as any"
+  - "The ->> result is cast to TEXT to make Address a *string"
+  - "The ->> comparison's parameter is typed with sgl.param(fish, type: text), as inference leaves it as any"
+entry: {file: db/queries/orders.sql, query: OrdersWithFish}
+live: "yes"
+test: in-process

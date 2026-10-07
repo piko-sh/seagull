@@ -1,0 +1,4 @@
+{
+  "description": "Relations derived from DDL against TimescaleDB: partitions are tables a query can read, holding their parent's columns, an element list's NOT NULL and the column the parent gains later; a sequence can be read as a relation; CREATE OR REPLACE TRIGGER replays. The introspection parity check finds the partitions as the replay does.",
+  "expectedDiagnostics": []
+}

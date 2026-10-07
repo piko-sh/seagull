@@ -1,0 +1,27 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: The chip shop's JSONB orders through pgx, which reads store.JSON through its Scan method and decodes a basket straight into a struct named by a go_type override.
+differs:
+  - "store.JSON implements driver.Valuer and sql.Scanner, which pgx calls too, so the type is the same as database/sql's"
+  - "pgx decodes JSONB into any Go type, so a go_type override on basket returns a chips.Basket with no json.Unmarshal"
+  - "The override changes the returned column only; PlaceOrderParams still takes store.JSON"
+  - "The ->> comparison's parameter is typed with sgl.param(fish, type: text), and @> binds $1::jsonb"
+entry: {file: db/queries/orders.sql, query: GetOrder}
+live: "no"
+test: integration

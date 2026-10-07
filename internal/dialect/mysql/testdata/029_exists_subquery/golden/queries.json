@@ -1,0 +1,68 @@
+[
+  {
+    "Command": "many",
+    "Filename": "customers_with_orders.sql",
+    "Line": 1,
+    "Name": "CustomersWithOrders",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "c",
+        "SourceTable": "customers"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "c",
+        "SourceTable": "customers"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CustomersWithOrders, command: many)\nSELECT id, name\nFROM customers c\nWHERE EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id);",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩\\nFROM customers c\\nWHERE EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id);"
+  },
+  {
+    "Command": "many",
+    "Filename": "customers_without_orders.sql",
+    "Line": 1,
+    "Name": "CustomersWithoutOrders",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "c",
+        "SourceTable": "customers"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "c",
+        "SourceTable": "customers"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CustomersWithoutOrders, command: many)\nSELECT id, name\nFROM customers c\nWHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id);",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩\\nFROM customers c\\nWHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id);"
+  }
+]

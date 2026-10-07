@@ -1,0 +1,4 @@
+{
+  "description": "A lambda's parameters are typed as the list function passing it decides: the element, a BIGINT position beside it in a transform or filter, and a reduce's accumulator, typed as an element or the wider of an element and the starting value, which also types the reduce; a parameter compared with a lambda parameter takes the parameter's type, in the select list and in a WHERE condition.",
+  "expectedDiagnosticCount": 0
+}

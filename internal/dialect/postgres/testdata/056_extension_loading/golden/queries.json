@@ -1,0 +1,50 @@
+[
+  {
+    "Command": "one",
+    "Filename": "create_token.sql",
+    "InsertColumns": [
+      "value"
+    ],
+    "InsertTarget": {
+      "Name": "tokens"
+    },
+    "Line": 1,
+    "Name": "CreateToken",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "tokens",
+        "SourceTable": "tokens"
+      },
+      {
+        "Name": "value",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "value",
+        "SourceQualifier": "tokens",
+        "SourceTable": "tokens"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "value",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: CreateToken, command: one)\nINSERT INTO tokens (value) VALUES ($1) RETURNING id, value;",
+    "Template": "INSERT INTO tokens (value) VALUES ⟨values:(⟨p0⟩)⟩ RETURNING ⟨c0:id⟩, ⟨c1:value⟩;⟨arguments p0⟩"
+  }
+]

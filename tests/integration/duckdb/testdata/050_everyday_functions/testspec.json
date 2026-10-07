@@ -1,0 +1,4 @@
+{
+  "description": "Everyday DuckDB forms generate without warnings and read back as DuckDB returns them: mode of a column, regexp_extract of a group, regexp_replace with the global option, strftime with the format first, contains over a list, range and generate_series called as values, which return lists, the JSON functions with a list of paths, which return lists, and json_keys at a path.",
+  "expectedDiagnostics": []
+}

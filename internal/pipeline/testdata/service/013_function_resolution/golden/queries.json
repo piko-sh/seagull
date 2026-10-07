@@ -1,0 +1,31 @@
+[
+  {
+    "Command": "one",
+    "Filename": "lower_name.sql",
+    "Line": 1,
+    "Name": "GetLoweredName",
+    "OutputColumns": [
+      {
+        "Name": "lowered_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: GetLoweredName, command: one)\nSELECT lower(name) as lowered_name FROM users WHERE id = $1",
+    "Template": "SELECT lower(name) as lowered_name FROM users WHERE id = $1"
+  }
+]

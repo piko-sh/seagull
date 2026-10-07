@@ -1,0 +1,58 @@
+[
+  {
+    "Command": "many",
+    "Filename": "get_log.sql",
+    "Line": 1,
+    "Name": "GetAuditLog",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "audit_log",
+        "SourceTable": "audit_log"
+      },
+      {
+        "Name": "action",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "action",
+        "SourceQualifier": "audit_log",
+        "SourceTable": "audit_log"
+      },
+      {
+        "Name": "created_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "created_at",
+        "SourceQualifier": "audit_log",
+        "SourceTable": "audit_log"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "action",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetAuditLog, command: many)\nSELECT id, action, created_at FROM audit_log WHERE action = $1;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:action⟩, ⟨c2:created_at⟩ FROM audit_log WHERE action = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

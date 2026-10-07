@@ -1,0 +1,4 @@
+{
+  "description": "Predicates are typed as ClickHouse types them: a comparison, LIKE, IN and BETWEEN are a UInt8, a Nullable(UInt8) when a value they compare may be NULL (for IN, only the value it tests); IS NULL and EXISTS are a UInt8 that is never NULL; AND and OR are a Bool when an operand is a Bool and a UInt8 otherwise, Nullable over a Nullable operand; and NOT follows its operand.",
+  "expectedDiagnosticCount": 0
+}

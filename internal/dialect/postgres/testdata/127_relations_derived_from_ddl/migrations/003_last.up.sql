@@ -1,0 +1,1 @@
+CREATE TABLE refunds (id BIGINT PRIMARY KEY, payment_id BIGINT NOT NULL);

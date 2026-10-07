@@ -1,0 +1,1 @@
+{"description": "Temporal arithmetic takes PostgreSQL's result types: the difference of two timestamps is an interval, of two dates an integer number of days, a date moved by days a date, a date moved by an interval a timestamp, and an interval scaled by a number an interval"}

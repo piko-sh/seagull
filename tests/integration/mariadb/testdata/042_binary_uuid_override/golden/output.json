@@ -1,0 +1,10 @@
+{
+  "add_token": "added",
+  "stored_bytes": {
+    "hex_id": "0B9F8E2C6D1A4F3E9A7B5C4D3E2F1A0B"
+  },
+  "token_by_uuid": {
+    "id": "0b9f8e2c-6d1a-4f3e-9a7b-5c4d3e2f1a0b",
+    "label": "anchor"
+  }
+}

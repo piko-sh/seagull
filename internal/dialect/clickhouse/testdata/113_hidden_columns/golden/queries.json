@@ -1,0 +1,183 @@
+[
+  {
+    "Command": "many",
+    "Filename": "events.sql",
+    "Line": 1,
+    "Name": "ListEvents",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "region",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListEvents, command: many)\nSELECT * FROM events ORDER BY id;",
+    "Template": "SELECT ⟨star 0=events.id 1=events.name 2=events.region:*⟩ FROM events ORDER BY id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "events.sql",
+    "Line": 4,
+    "Name": "ListQualifiedEvents",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "e",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "e",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "region",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "e",
+        "SourceTable": "events"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListQualifiedEvents, command: many)\nSELECT e.* FROM events AS e ORDER BY e.id;",
+    "Template": "SELECT ⟨star 0=e.id 1=e.name 2=e.region:e.*⟩ FROM events AS e ORDER BY e.id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "events.sql",
+    "Line": 7,
+    "Name": "ListComputed",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "doubled",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "doubled",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "loud",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "loud",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListComputed, command: many)\nSELECT id, doubled, loud FROM events ORDER BY id;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:doubled⟩, ⟨c2:loud⟩ FROM events ORDER BY id;"
+  },
+  {
+    "Command": "exec",
+    "Filename": "events.sql",
+    "InsertColumns": [
+      "id",
+      "name",
+      "raw"
+    ],
+    "InsertTarget": {
+      "Name": "events"
+    },
+    "Line": 10,
+    "Name": "AddEvent",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "raw",
+        "Number": 3,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: AddEvent, command: exec)\nINSERT INTO events (id, name, raw) VALUES ({id:UInt64}, {name:String}, {raw:String});",
+    "Template": "INSERT INTO events (id, name, raw) VALUES ⟨values:(⟨p0 UInt64⟩, ⟨p1 String⟩, ⟨p2 String⟩)⟩;⟨arguments p0 p1 p2⟩"
+  }
+]

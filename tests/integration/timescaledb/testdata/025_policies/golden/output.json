@@ -1,0 +1,26 @@
+{
+  "hourly_conditions": [
+    {
+      "avg_temp": 21,
+      "bucket": "2024-01-01T10:00:00Z",
+      "device_id": "a"
+    },
+    {
+      "avg_temp": 18,
+      "bucket": "2024-01-01T11:00:00Z",
+      "device_id": "b"
+    }
+  ],
+  "recent_conditions": [
+    {
+      "device_id": "a",
+      "temperature": 21.5,
+      "time": "2024-01-01T10:45:00Z"
+    },
+    {
+      "device_id": "b",
+      "temperature": 18,
+      "time": "2024-01-01T11:05:00Z"
+    }
+  ]
+}

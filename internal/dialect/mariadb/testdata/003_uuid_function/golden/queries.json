@@ -1,0 +1,47 @@
+[
+  {
+    "Command": "one",
+    "Filename": "tokens.sql",
+    "Line": 1,
+    "Name": "GenerateToken",
+    "OutputColumns": [
+      {
+        "Name": "token_value",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GenerateToken, command: one)\nSELECT UUID() AS token_value;",
+    "Template": "SELECT ⟨c0 aliased:UUID()⟩ AS token_value;"
+  },
+  {
+    "Command": "exec",
+    "Filename": "tokens.sql",
+    "InsertColumns": [
+      "token"
+    ],
+    "InsertTarget": {
+      "Name": "tokens"
+    },
+    "Line": 4,
+    "Name": "InsertToken",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "token",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 36
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: InsertToken, command: exec)\nINSERT INTO tokens (token) VALUES (?);",
+    "Template": "INSERT INTO tokens (token) VALUES ⟨values:(⟨p0⟩)⟩;⟨arguments p0⟩"
+  }
+]

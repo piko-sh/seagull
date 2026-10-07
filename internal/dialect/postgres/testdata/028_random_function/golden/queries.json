@@ -1,0 +1,47 @@
+[
+  {
+    "Command": "many",
+    "Filename": "random_items.sql",
+    "Line": 1,
+    "Name": "RandomItems",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "limit",
+        "Kind": "none",
+        "Name": "limit",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: RandomItems, command: many)\nSELECT id, name FROM items ORDER BY RANDOM() LIMIT $1;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩ FROM items ORDER BY RANDOM() LIMIT ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

@@ -1,0 +1,263 @@
+[
+  {
+    "Command": "one",
+    "Filename": "prices.sql",
+    "Line": 1,
+    "Name": "CastResults",
+    "OutputColumns": [
+      {
+        "Name": "widened",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 12,
+          "Scale": 4
+        },
+        "SourceColumn": "amount",
+        "SourceQualifier": "prices",
+        "SourceTable": "prices"
+      },
+      {
+        "Name": "short_sku",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 8
+        },
+        "SourceColumn": "sku",
+        "SourceQualifier": "prices",
+        "SourceTable": "prices"
+      },
+      {
+        "Name": "local_seen",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp",
+          "Precision": 0,
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "seen",
+        "SourceQualifier": "prices",
+        "SourceTable": "prices"
+      },
+      {
+        "Name": "zoned_opened",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timetz",
+          "Precision": 3,
+          "Temporal": "time",
+          "TimeZone": true
+        },
+        "SourceColumn": "opened",
+        "SourceQualifier": "prices",
+        "SourceTable": "prices"
+      },
+      {
+        "Name": "precise_seen",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Precision": 6,
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "seen",
+        "SourceQualifier": "prices",
+        "SourceTable": "prices"
+      },
+      {
+        "Name": "thousands",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 7,
+          "Scale": -3
+        },
+        "SourceColumn": "hundreds",
+        "SourceQualifier": "prices",
+        "SourceTable": "prices"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CastResults, command: one)\nSELECT amount::numeric(12, 4) AS widened,\n       CAST(sku AS varchar(8)) AS short_sku,\n       seen::timestamp(0) without time zone AS local_seen,\n       opened::time(3) with time zone AS zoned_opened,\n       CAST(seen AS timestamp(6) with time zone) AS precise_seen,\n       hundreds::numeric(7, -3) AS thousands\nFROM prices\nWHERE id = $1;",
+    "Template": "SELECT ⟨c0 aliased:amount::numeric(12, 4)⟩ AS widened,\\n       ⟨c1 aliased:CAST(sku AS varchar(8))⟩ AS short_sku,\\n       ⟨c2 aliased:seen::timestamp(0) without time zone⟩ AS local_seen,\\n       ⟨c3 aliased:opened::time(3) with time zone⟩ AS zoned_opened,\\n       ⟨c4 aliased:CAST(seen AS timestamp(6) with time zone)⟩ AS precise_seen,\\n       ⟨c5 aliased:hundreds::numeric(7, -3)⟩ AS thousands\\nFROM prices\\nWHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "prices.sql",
+    "Line": 11,
+    "Name": "CastParameters",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "prices",
+        "SourceTable": "prices"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "amount",
+        "Number": 1,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        }
+      },
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "sku",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 40
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "seen",
+        "Number": 3,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Precision": 3,
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "opened",
+        "Number": 4,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "time",
+          "Precision": 0,
+          "Temporal": "time"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CastParameters, command: many)\nSELECT id\nFROM prices\nWHERE amount = $1::numeric(10, 2)\n  AND sku = CAST($2 AS varchar(40))\n  AND seen \u003e $3::timestamp(3) with time zone\n  AND opened \u003c CAST($4 AS time(0) without time zone);",
+    "Template": "SELECT ⟨c0:id⟩\\nFROM prices\\nWHERE amount = ⟨p0⟩::numeric(10, 2)\\n  AND sku = CAST(⟨p1⟩ AS varchar(40))\\n  AND seen \u003e ⟨p2⟩::timestamp(3) with time zone\\n  AND opened \u003c CAST(⟨p3⟩ AS time(0) without time zone);⟨arguments p0 p1 p2 p3⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "prices.sql",
+    "InsertColumns": [
+      "id",
+      "amount",
+      "hundreds",
+      "sku",
+      "seen",
+      "opened"
+    ],
+    "InsertTarget": {
+      "Name": "prices"
+    },
+    "Line": 19,
+    "Name": "InsertPrice",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "amount",
+        "Number": 2,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "hundreds",
+        "Number": 3,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 5,
+          "Scale": -2
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "sku",
+        "Number": 4,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 40
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "seen",
+        "Number": 5,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Precision": 3,
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "opened",
+        "Number": 6,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "time",
+          "Precision": 0,
+          "Temporal": "time"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: InsertPrice, command: exec)\nINSERT INTO prices (id, amount, hundreds, sku, seen, opened)\nVALUES ($1, $2::numeric(10, 2), $3::numeric(5, -2), $4, $5, $6);",
+    "Template": "INSERT INTO prices (id, amount, hundreds, sku, seen, opened)\\nVALUES ⟨values:(⟨p0⟩, ⟨p1⟩::numeric(10, 2), ⟨p2⟩::numeric(5, -2), ⟨p3⟩, ⟨p4⟩, ⟨p5⟩)⟩;⟨arguments p0 p1 p2 p3 p4 p5⟩"
+  }
+]

@@ -1,0 +1,12 @@
+CREATE TABLE gulls (
+    id       BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    ring     TEXT   NOT NULL UNIQUE,
+    nickname TEXT
+);
+
+CREATE TABLE sightings (
+    id      BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    gull_id BIGINT NOT NULL REFERENCES gulls (id),
+    seen_on DATE   NOT NULL,
+    place   TEXT   NOT NULL
+);

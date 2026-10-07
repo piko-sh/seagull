@@ -1,0 +1,121 @@
+[
+  {
+    "Command": "one",
+    "Filename": "get_typed.sql",
+    "Line": 1,
+    "Name": "GetTypedData",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "typed_data",
+        "SourceTable": "typed_data"
+      },
+      {
+        "Name": "data",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        },
+        "SourceColumn": "data",
+        "SourceQualifier": "typed_data",
+        "SourceTable": "typed_data"
+      },
+      {
+        "Name": "tags",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "text",
+            "Nullable": true
+          },
+          "EngineName": "text[]"
+        },
+        "SourceColumn": "tags",
+        "SourceQualifier": "typed_data",
+        "SourceTable": "typed_data"
+      },
+      {
+        "Name": "metadata",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "json"
+        },
+        "SourceColumn": "metadata",
+        "SourceQualifier": "typed_data",
+        "SourceTable": "typed_data"
+      },
+      {
+        "Name": "ip_addr",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "inet",
+          "Network": "prefix"
+        },
+        "SourceColumn": "ip_addr",
+        "SourceQualifier": "typed_data",
+        "SourceTable": "typed_data"
+      },
+      {
+        "Name": "unique_id",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        },
+        "SourceColumn": "unique_id",
+        "SourceQualifier": "typed_data",
+        "SourceTable": "typed_data"
+      },
+      {
+        "Name": "price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        },
+        "SourceColumn": "price",
+        "SourceQualifier": "typed_data",
+        "SourceTable": "typed_data"
+      },
+      {
+        "Name": "raw_data",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "binary",
+          "EngineName": "bytea"
+        },
+        "SourceColumn": "raw_data",
+        "SourceQualifier": "typed_data",
+        "SourceTable": "typed_data"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetTypedData, command: one)\nSELECT id, data, tags, metadata, ip_addr, unique_id, price, raw_data FROM typed_data WHERE id = $1;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:data⟩, ⟨c2:tags⟩, ⟨c3:metadata⟩, ⟨c4:ip_addr⟩, ⟨c5:unique_id⟩, ⟨c6:price⟩, ⟨c7:raw_data⟩ FROM typed_data WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

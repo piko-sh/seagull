@@ -1,0 +1,51 @@
+[
+  {
+    "Command": "many",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "ByDay",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "t",
+        "SourceTable": "t"
+      },
+      {
+        "Name": "ts",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "ts",
+        "SourceQualifier": "t",
+        "SourceTable": "t"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "start",
+        "Number": 1,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ByDay, many)\nSELECT id, ts FROM t WHERE ts \u003e= {start:DateTime};",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:ts⟩ FROM t WHERE ts \u003e= ⟨p0 DateTime⟩;⟨arguments p0⟩"
+  }
+]

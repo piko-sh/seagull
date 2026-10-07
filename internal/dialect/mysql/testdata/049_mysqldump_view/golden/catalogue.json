@@ -1,0 +1,160 @@
+{
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "": {
+      "Functions": {
+        "boat_label": [
+          {
+            "Arguments": [
+              {
+                "Name": "boat_name",
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "varchar",
+                  "Length": 100
+                }
+              }
+            ],
+            "BodySQL": "CONCAT('Boat ', `boat_name`)",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "boat_label",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 4
+            },
+            "ReturnType": {
+              "Category": "text",
+              "EngineName": "varchar",
+              "Length": 120
+            }
+          }
+        ]
+      },
+      "Tables": {
+        "boats": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Length": 100
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "length_m",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "decimal",
+                "EngineName": "decimal",
+                "Precision": 6,
+                "Scale": 2
+              }
+            }
+          ],
+          "Name": "boats",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 1
+          },
+          "PrimaryKey": [
+            "id"
+          ]
+        }
+      },
+      "Views": {
+        "boat_names": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 3
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Length": 100
+              }
+            }
+          ],
+          "Name": "boat_names",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 3
+          }
+        },
+        "long_boats": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Length": 100
+              }
+            }
+          ],
+          "Name": "long_boats",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 2
+          }
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    ""
+  ]
+}

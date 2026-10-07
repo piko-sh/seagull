@@ -1,0 +1,120 @@
+{
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "": {
+      "Functions": {
+        "pure_add": [
+          {
+            "Arguments": [
+              {
+                "Name": "a",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int",
+                  "Width": 32
+                }
+              },
+              {
+                "Name": "b",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int",
+                  "Width": 32
+                }
+              }
+            ],
+            "BodySQL": "a + b",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 2,
+            "Name": "pure_add",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 1
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int",
+              "Width": 32
+            }
+          }
+        ],
+        "wrapper_pure": [
+          {
+            "Arguments": [
+              {
+                "Name": "x",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int",
+                  "Width": 32
+                }
+              }
+            ],
+            "BodySQL": "pure_add(x, 10)",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "wrapper_pure",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 2
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int",
+              "Width": 32
+            }
+          }
+        ]
+      },
+      "Tables": {
+        "counters": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "value",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            }
+          ],
+          "Name": "counters",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ]
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    ""
+  ]
+}

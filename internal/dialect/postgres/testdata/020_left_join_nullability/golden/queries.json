@@ -1,0 +1,34 @@
+[
+  {
+    "Command": "many",
+    "Filename": "dept_employees.sql",
+    "Line": 1,
+    "Name": "DeptEmployees",
+    "OutputColumns": [
+      {
+        "Name": "dept_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "d",
+        "SourceTable": "departments"
+      },
+      {
+        "Name": "employee_name",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "e",
+        "SourceTable": "employees"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: DeptEmployees, command: many)\nSELECT d.name AS dept_name, e.name AS employee_name\nFROM departments d\nLEFT JOIN employees e ON e.dept_id = d.id;",
+    "Template": "SELECT ⟨c0 aliased:d.name⟩ AS dept_name, ⟨c1 aliased:e.name⟩ AS employee_name\\nFROM departments d\\nLEFT JOIN employees e ON e.dept_id = d.id;"
+  }
+]

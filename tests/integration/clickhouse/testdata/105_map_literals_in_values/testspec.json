@@ -1,0 +1,3 @@
+{
+  "description": "Map literals in the rows of INSERT ... VALUES: {key: value} beside {name:Type} placeholders, with a key holding a brace, empty, inside an array, a tuple and another map, over several rows and in a batch row, and inline JSON rows after FORMAT, are generated and run rather than refused as malformed placeholders"
+}

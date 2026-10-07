@@ -1,0 +1,145 @@
+{
+  "DefaultSchema": "main",
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "main": {
+      "Name": "main",
+      "Tables": {
+        "events": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_create_events.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "bigint",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Origin": {
+                "Filename": "001_create_events.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "payload",
+              "Origin": {
+                "Filename": "001_create_events.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "created_at",
+              "Origin": {
+                "Filename": "001_create_events.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            }
+          ],
+          "Name": "events",
+          "Origin": {
+            "Filename": "001_create_events.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "main"
+        },
+        "events_fts": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_create_events.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "payload",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_create_events.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "virtual",
+              "Hidden": true,
+              "IsGenerated": true,
+              "Name": "rank",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_create_events.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "float",
+                "EngineName": "real",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Hidden": true,
+              "Name": "events_fts",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_create_events.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            }
+          ],
+          "IsVirtual": true,
+          "Name": "events_fts",
+          "Origin": {
+            "Filename": "001_create_events.up.sql",
+            "Statement": 2
+          },
+          "Schema": "main",
+          "VirtualModuleName": "fts5"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "main",
+    "temp"
+  ]
+}

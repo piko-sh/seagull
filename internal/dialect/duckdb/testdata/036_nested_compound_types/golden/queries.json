@@ -1,0 +1,95 @@
+[
+  {
+    "Command": "many",
+    "Filename": "routes.sql",
+    "Line": 1,
+    "Name": "ListRoutes",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "routes",
+        "SourceTable": "routes"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "routes",
+        "SourceTable": "routes"
+      },
+      {
+        "Name": "waypoints",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "struct",
+            "EngineName": "struct",
+            "Nullable": true,
+            "StructFields": [
+              {
+                "Name": "x",
+                "SQLType": {
+                  "Category": "float",
+                  "EngineName": "float8",
+                  "Nullable": true,
+                  "Width": 64
+                }
+              },
+              {
+                "Name": "y",
+                "SQLType": {
+                  "Category": "float",
+                  "EngineName": "float8",
+                  "Nullable": true,
+                  "Width": 64
+                }
+              }
+            ]
+          },
+          "EngineName": "struct[]"
+        },
+        "SourceColumn": "waypoints",
+        "SourceQualifier": "routes",
+        "SourceTable": "routes"
+      },
+      {
+        "Name": "metadata",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "map",
+          "ElementType": {
+            "Category": "array",
+            "ElementType": {
+              "Category": "integer",
+              "EngineName": "int4",
+              "Nullable": true,
+              "Width": 32
+            },
+            "EngineName": "int4[]",
+            "Nullable": true
+          },
+          "EngineName": "map",
+          "KeyType": {
+            "Category": "text",
+            "EngineName": "varchar"
+          }
+        },
+        "SourceColumn": "metadata",
+        "SourceQualifier": "routes",
+        "SourceTable": "routes"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListRoutes, command: many)\nSELECT id, name, waypoints, metadata FROM routes;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:waypoints⟩, ⟨c3:metadata⟩ FROM routes;"
+  }
+]

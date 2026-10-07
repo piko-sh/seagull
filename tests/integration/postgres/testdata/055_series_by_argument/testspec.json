@@ -1,0 +1,4 @@
+{
+  "description": "Date spines and series read back as PostgreSQL types them by their bounds: generate_series over timestamps with time zones, timestamps and dates gives timestamps, over an integer and a bigint integers of each width, and unnest the element type of its array.",
+  "expectedDiagnostics": []
+}

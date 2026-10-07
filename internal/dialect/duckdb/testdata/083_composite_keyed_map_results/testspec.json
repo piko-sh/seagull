@@ -1,0 +1,4 @@
+{
+  "description": "duckdb-go cannot read a MAP keyed by a LIST, STRUCT, MAP or UNION at all (it fails with \"MAP key type not supported\" before any row is scanned), so a column a query returns that holds one, directly, in a list or in a named struct, or through a star, is refused with an error at its select-list item, suggesting map_entries or map_keys and map_values, which read; a MAP keyed by a DATE or VARCHAR is read.",
+  "expectedDiagnosticCount": 6
+}

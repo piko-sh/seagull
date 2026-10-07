@@ -1,0 +1,4 @@
+{
+  "description": "pgx runtime cases: a slice bound as an array in = ANY and <> ALL, nil, empty, of one and of many (a nil NOT IN slice is sent empty, so it keeps every row); a nullable enum parameter and column, which pgx binds and scans through the string kind; a slice of a named enum in = ANY and <> ALL, and an enum array parameter and column, nil, empty and of many, which the generated code binds and scans as Go's own []string, so pgx sends and reads a text array the server parses as the enum's array type, with no type loaded on the connection; a batch queued per row with an ON CONFLICT reading EXCLUDED; a copyfrom into a schema-qualified table through CopyFrom, and one into an enum column, of a value and of NULL, which CopyFrom sends in binary as the label the value holds with no type loaded on the connection (refuses only a copyfrom into an enum array column)",
+  "emitter": "pgx"
+}

@@ -1,0 +1,3 @@
+{
+  "description": "DuckDB reads a select item naming an earlier item's alias (a lateral column alias): the later items are typed from the earlier ones, with no unknown-column warning, and an item a later one names is never wrapped in the cast to text the driver reads a DECIMAL, an INTERVAL or a JSON value through, since the later item would then read the text (mass * 2 over VARCHAR fails in DuckDB): such an item is read through the driver-composite scan adapter instead; a column of the table wins over an alias of its name."
+}

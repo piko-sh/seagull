@@ -1,0 +1,103 @@
+{
+  "add_book": "added",
+  "added_book": {
+    "author_id": 3,
+    "id": 4,
+    "published": "2024-01-04T00:00:00Z",
+    "tags": [
+      "classic"
+    ],
+    "title": "A MAN LAY DEAD"
+  },
+  "authors_beside_books": [
+    {
+      "author_id": 1,
+      "title": "Nemesis"
+    },
+    {
+      "author_id": 2,
+      "title": "Gaudy Night"
+    },
+    {
+      "author_id": 3,
+      "title": null
+    },
+    {
+      "author_id": null,
+      "title": "Anonymous"
+    }
+  ],
+  "authors_of_books": [
+    {
+      "author_id": 1,
+      "book_id": 1,
+      "name": "Agatha"
+    },
+    {
+      "author_id": null,
+      "book_id": 2,
+      "name": null
+    },
+    {
+      "author_id": null,
+      "book_id": 3,
+      "name": null
+    }
+  ],
+  "book_count": {
+    "absent": 0,
+    "ids": [
+      1,
+      2,
+      3
+    ],
+    "total": 3
+  },
+  "book_flags": [
+    {
+      "changed": false,
+      "cheap": false,
+      "either": true,
+      "id": 1,
+      "listed": true,
+      "not_pricey": false,
+      "pricey": true,
+      "unpriced": false
+    },
+    {
+      "changed": true,
+      "cheap": null,
+      "either": null,
+      "id": 2,
+      "listed": null,
+      "not_pricey": null,
+      "pricey": null,
+      "unpriced": true
+    },
+    {
+      "changed": true,
+      "cheap": true,
+      "either": false,
+      "id": 3,
+      "listed": true,
+      "not_pricey": true,
+      "pricey": false,
+      "unpriced": false
+    }
+  ],
+  "books_after": [
+    {
+      "id": 2
+    },
+    {
+      "id": 3
+    },
+    {
+      "id": 4
+    }
+  ],
+  "has_tag": {
+    "tagged": true
+  },
+  "retag_book": "retagged"
+}

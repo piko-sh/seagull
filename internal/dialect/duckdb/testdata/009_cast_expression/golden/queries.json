@@ -1,0 +1,68 @@
+[
+  {
+    "Command": "many",
+    "Filename": "data.sql",
+    "Line": 1,
+    "Name": "GetValueAsInteger",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "data",
+        "SourceTable": "data"
+      },
+      {
+        "Name": "int_value",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "value",
+        "SourceQualifier": "data",
+        "SourceTable": "data"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetValueAsInteger, command: many)\nSELECT id, value::integer AS int_value FROM data;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:value::integer⟩ AS int_value FROM data;"
+  },
+  {
+    "Command": "many",
+    "Filename": "data.sql",
+    "Line": 4,
+    "Name": "GetAmountAsVarchar",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "data",
+        "SourceTable": "data"
+      },
+      {
+        "Name": "amount_text",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "amount",
+        "SourceQualifier": "data",
+        "SourceTable": "data"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetAmountAsVarchar, command: many)\nSELECT id, CAST(amount AS varchar) AS amount_text FROM data;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:CAST(amount AS varchar)⟩ AS amount_text FROM data;"
+  }
+]

@@ -1,0 +1,3 @@
+{
+  "description": "MariaDB runtime cases: a slice in IN and NOT IN, nil, empty, of one and of many (an empty NOT IN keeps every row); a slice of an inline ENUM and a nullable ENUM parameter and column; a batch whose row holds expressions with ON DUPLICATE KEY UPDATE reading VALUES(column); a copyfrom with shuffled columns as a multi-row INSERT"
+}

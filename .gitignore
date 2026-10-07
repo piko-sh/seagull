@@ -1,0 +1,10 @@
+/bin/
+*.test
+coverage.out
+/output
+/examples/catalogue/vetcheck
+/examples/catalogue/twins
+/examples/catalogue/export
+/examples/catalogue/cmd/*/vetcheck
+/examples/catalogue/cmd/*/twins
+/examples/catalogue/cmd/*/export

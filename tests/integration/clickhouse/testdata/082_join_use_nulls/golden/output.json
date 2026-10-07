@@ -1,0 +1,24 @@
+{
+  "default_matched": {
+    "beach": "Porthcurno",
+    "count": 3,
+    "id": 1,
+    "note": "windy"
+  },
+  "default_unmatched": {
+    "beach": "",
+    "count": 0,
+    "note": null
+  },
+  "nulls_matched": {
+    "beach": "Porthcurno",
+    "count": 3,
+    "id": 1,
+    "note": "windy"
+  },
+  "nulls_unmatched": {
+    "beach": null,
+    "count": null,
+    "note": null
+  }
+}

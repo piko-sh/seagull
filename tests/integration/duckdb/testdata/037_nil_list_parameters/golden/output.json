@@ -1,0 +1,20 @@
+{
+  "crew_1": {
+    "id": 1,
+    "missing": true,
+    "name_count": -1,
+    "rank_count": 1
+  },
+  "crew_2": {
+    "id": 2,
+    "missing": false,
+    "name_count": 0,
+    "rank_count": 0
+  },
+  "crew_3": {
+    "id": 3,
+    "missing": false,
+    "name_count": 2,
+    "rank_count": 2
+  }
+}

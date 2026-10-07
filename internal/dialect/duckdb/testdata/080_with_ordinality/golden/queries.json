@@ -1,0 +1,128 @@
+[
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 1,
+    "Name": "NumberedScores",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      },
+      {
+        "Name": "score",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "score",
+        "SourceQualifier": "u"
+      },
+      {
+        "Name": "position",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "position",
+        "SourceQualifier": "u"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(NumberedScores, many)\nSELECT boats.id, u.score, u.position\nFROM boats, unnest(boats.scores) WITH ORDINALITY AS u(score, position);",
+    "Template": "SELECT ⟨c0:boats.id⟩, ⟨c1:u.score⟩, ⟨c2:u.position⟩\\nFROM boats, unnest(boats.scores) WITH ORDINALITY AS u(score, position);"
+  },
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 5,
+    "Name": "NumberedRange",
+    "OutputColumns": [
+      {
+        "Name": "range",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "range",
+        "SourceQualifier": "r"
+      },
+      {
+        "Name": "ordinality",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "ordinality",
+        "SourceQualifier": "r"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(NumberedRange, many)\nSELECT * FROM range(3) WITH ORDINALITY AS r;",
+    "Template": "SELECT ⟨star written 0=r.range 1=r.ordinality:*⟩ FROM range(3) WITH ORDINALITY AS r;"
+  },
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 8,
+    "Name": "NumberedSeries",
+    "OutputColumns": [
+      {
+        "Name": "ordinality",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "ordinality",
+        "SourceQualifier": "generate_series"
+      },
+      {
+        "Name": "generate_series",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "generate_series",
+        "SourceQualifier": "generate_series"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(NumberedSeries, many)\nSELECT ordinality, generate_series FROM generate_series(1, 3) WITH ORDINALITY;",
+    "Template": "SELECT ⟨c0:ordinality⟩, ⟨c1:generate_series⟩ FROM generate_series(1, 3) WITH ORDINALITY;"
+  },
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 11,
+    "Name": "LateralPositions",
+    "OutputColumns": [
+      {
+        "Name": "position",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "position",
+        "SourceQualifier": "n"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(LateralPositions, many)\nSELECT n.position FROM boats, LATERAL unnest(boats.scores) WITH ORDINALITY AS n(score, position);",
+    "Template": "SELECT ⟨c0:n.position⟩ FROM boats, LATERAL unnest(boats.scores) WITH ORDINALITY AS n(score, position);"
+  }
+]

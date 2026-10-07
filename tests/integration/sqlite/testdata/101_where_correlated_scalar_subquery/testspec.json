@@ -1,0 +1,4 @@
+{
+  "description": "Correlated scalar subqueries in WHERE, with and without a parameter in the subquery body: av2.id < ?2 resolves the subquery-local alias av2 in its own scope. Both queries analyse without diagnostics and the generated code returns the correct version rows.",
+  "expectedDiagnostics": []
+}

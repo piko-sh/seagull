@@ -1,0 +1,58 @@
+[
+  {
+    "Command": "one",
+    "Filename": "sales.sql",
+    "Line": 1,
+    "Name": "GetSalesSummary",
+    "OutputColumns": [
+      {
+        "Name": "total_count",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "total_amount",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        }
+      },
+      {
+        "Name": "avg_amount",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "min_amount",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        }
+      },
+      {
+        "Name": "max_amount",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetSalesSummary, command: one)\nSELECT count(*) AS total_count, sum(amount) AS total_amount, avg(amount) AS avg_amount, min(amount) AS min_amount, max(amount) AS max_amount FROM sales;",
+    "Template": "SELECT ⟨c0 aliased:count(*)⟩ AS total_count, ⟨c1 aliased:sum(amount)⟩ AS total_amount, ⟨c2 aliased:avg(amount)⟩ AS avg_amount, ⟨c3 aliased:min(amount)⟩ AS min_amount, ⟨c4 aliased:max(amount)⟩ AS max_amount FROM sales;"
+  }
+]

@@ -1,0 +1,4 @@
+{
+  "description": "MariaDB's own column types round-trip: UUID reads and binds as a UUID, INET4 and INET6 as the address's text, which IS_IPV4 and IS_IPV6 take, and VECTOR(3) as its packed bytes, with VEC_FromText and VEC_ToText converting it; the VECTOR INDEX element of the CREATE TABLE declares no column, so SELECT * reads the table's six columns; and IS_IPV4 is an INT that is 0 for NULL.",
+  "expectedDiagnostics": []
+}

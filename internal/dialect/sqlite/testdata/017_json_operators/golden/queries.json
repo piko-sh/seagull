@@ -1,0 +1,51 @@
+[
+  {
+    "Command": "one",
+    "Filename": "json_access.sql",
+    "Line": 1,
+    "Name": "GetEventType",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "event_type",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "json"
+        }
+      },
+      {
+        "Name": "event_name",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown",
+          "EngineName": "any"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetEventType, command: one)\nSELECT id, payload -\u003e '$.type' AS event_type, payload -\u003e\u003e '$.name' AS event_name FROM events WHERE payload -\u003e\u003e '$.active' = ?",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:payload -\u003e '$.type'⟩ AS event_type, ⟨c2 aliased:payload -\u003e\u003e '$.name'⟩ AS event_name FROM events WHERE payload -\u003e\u003e '$.active' = ⟨p0⟩⟨arguments p0⟩"
+  }
+]

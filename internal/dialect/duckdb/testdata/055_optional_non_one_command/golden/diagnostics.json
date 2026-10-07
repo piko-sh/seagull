@@ -1,0 +1,10 @@
+[
+  {
+    "Code": "Q047",
+    "Column": 1,
+    "Filename": "list_events.sql",
+    "Line": 1,
+    "Message": "query \"ListEvents\" sets optional: true but optional applies only to command:one, not command \"many\". Remove optional or use a static command:one.",
+    "Severity": "error"
+  }
+]

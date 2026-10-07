@@ -1,0 +1,35 @@
+{
+  "add_event": "added",
+  "add_event_without_options": "added",
+  "casts": {
+    "day_year": "2024",
+    "fraction": "12.5",
+    "happened_year": "2024",
+    "micro_year": "2024",
+    "precise_year": "2024"
+  },
+  "casts_without_options": {
+    "day_year": null,
+    "micro_year": null
+  },
+  "event": {
+    "day": "2024-03-01",
+    "happened": "2024-03-01T12:30:00Z",
+    "id": 1,
+    "micro": "2024-03-01 12:30:00.123456",
+    "precise": "2024-03-01 12:30:00.123"
+  },
+  "event_without_options": {
+    "day": null,
+    "happened": "2024-03-01T12:30:00Z",
+    "id": 2,
+    "micro": null,
+    "precise": "2024-03-02 08:00:00.000"
+  },
+  "events_at": [
+    {
+      "id": 2
+    }
+  ],
+  "stored_classes": "text,text,text,text"
+}

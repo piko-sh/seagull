@@ -1,0 +1,59 @@
+[
+  {
+    "Command": "one",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "ReadSHA",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "t",
+        "SourceTable": "t"
+      },
+      {
+        "Name": "raw",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "raw",
+        "SourceQualifier": "t",
+        "SourceTable": "t"
+      },
+      {
+        "Name": "sha",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "sha",
+        "SourceQualifier": "t",
+        "SourceTable": "t"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ReadSHA, one)\nSELECT id, raw, sha FROM t WHERE id = {id:UInt64};",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:raw⟩, ⟨c2:sha⟩ FROM t WHERE id = ⟨p0 UInt64⟩;⟨arguments p0⟩"
+  }
+]

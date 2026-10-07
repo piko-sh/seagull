@@ -1,0 +1,51 @@
+{
+  "buckets": [
+    {
+      "bucket": 2,
+      "id": 1,
+      "wide_bucket": 2
+    },
+    {
+      "bucket": 0,
+      "id": 2,
+      "wide_bucket": 0
+    },
+    {
+      "bucket": 256,
+      "id": 3,
+      "wide_bucket": 256
+    }
+  ],
+  "remainders": [
+    {
+      "id": 1,
+      "operator_remainder": 0,
+      "positive": 2,
+      "positive_float": 1.5,
+      "positive_small": 0,
+      "positive_wide": 0,
+      "remainder_or_zero": -1,
+      "signed_remainder": 0
+    },
+    {
+      "id": 2,
+      "operator_remainder": 100,
+      "positive": 0,
+      "positive_float": 2.75,
+      "positive_small": 100,
+      "positive_wide": 0,
+      "remainder_or_zero": 0,
+      "signed_remainder": 100
+    },
+    {
+      "id": 3,
+      "operator_remainder": 5,
+      "positive": 5,
+      "positive_float": 2,
+      "positive_small": 5,
+      "positive_wide": 0,
+      "remainder_or_zero": 5,
+      "signed_remainder": 5
+    }
+  ]
+}

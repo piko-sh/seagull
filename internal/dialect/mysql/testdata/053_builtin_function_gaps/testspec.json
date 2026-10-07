@@ -1,0 +1,3 @@
+{
+  "description": "Built-in functions MySQL and MariaDB both have: a DECIMAL passed to ROUND, a number or a date and time passed to a string function, and UTC_TIMESTAMP with a fractional seconds precision analyse without a diagnostic; CEIL and MOD of a DOUBLE are DOUBLE, ABS of a BIGINT a BIGINT and CRC32 an INT UNSIGNED, so no result is read into a narrower integer; MD5, SHA2, FIELD, MONTHNAME, EXTRACT, REGEXP_SUBSTR, CONVERT_TZ and VAR_POP are known."
+}

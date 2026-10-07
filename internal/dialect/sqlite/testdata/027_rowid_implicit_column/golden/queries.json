@@ -1,0 +1,79 @@
+[
+  {
+    "Command": "many",
+    "Filename": "select_oid.sql",
+    "Line": 1,
+    "Name": "SelectOID",
+    "OutputColumns": [
+      {
+        "Name": "_rowid_",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "_rowid_",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: SelectOID, command: many)\nSELECT _rowid_, name FROM items",
+    "Template": "SELECT ⟨c0:_rowid_⟩, ⟨c1:name⟩ FROM items"
+  },
+  {
+    "Command": "many",
+    "Filename": "select_rowid.sql",
+    "Line": 1,
+    "Name": "SelectRowID",
+    "OutputColumns": [
+      {
+        "Name": "rowid",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "rowid",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "rowid",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: SelectRowID, command: many)\nSELECT rowid, name FROM items WHERE rowid \u003e ?",
+    "Template": "SELECT ⟨c0:rowid⟩, ⟨c1:name⟩ FROM items WHERE rowid \u003e ⟨p0⟩⟨arguments p0⟩"
+  }
+]

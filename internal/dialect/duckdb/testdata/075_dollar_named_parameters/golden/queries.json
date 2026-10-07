@@ -1,0 +1,96 @@
+[
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 1,
+    "Name": "BoatsLongerThan",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      },
+      {
+        "Name": "label",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "min_length",
+        "Nullable": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(BoatsLongerThan, many)\nSELECT id, name, $tag$ $length $tag$ AS label FROM boats WHERE length \u003e $min_length AND name \u003c\u003e $name OR length = $min_length;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2 aliased:$tag$ $length $tag$⟩ AS label FROM boats WHERE length \u003e ⟨p0⟩ AND name \u003c\u003e ⟨p1⟩ OR length = ⟨p0⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "boats.sql",
+    "Line": 4,
+    "Name": "RenameBoat",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "new_name",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(RenameBoat, exec)\nUPDATE boats SET name = $new_name WHERE id = :id;",
+    "Template": "UPDATE boats SET name = ⟨p0⟩ WHERE id = ⟨p1⟩;⟨arguments p0 p1⟩"
+  }
+]

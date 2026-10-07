@@ -1,0 +1,308 @@
+[
+  {
+    "Command": "many",
+    "Filename": "derived.sql",
+    "Line": 1,
+    "Name": "ListPartitionReadings",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "readings_2026",
+        "SourceTable": "readings_2026"
+      },
+      {
+        "Name": "taken_on",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        },
+        "SourceColumn": "taken_on",
+        "SourceQualifier": "readings_2026",
+        "SourceTable": "readings_2026"
+      },
+      {
+        "Name": "value",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        },
+        "SourceColumn": "value",
+        "SourceQualifier": "readings_2026",
+        "SourceTable": "readings_2026"
+      },
+      {
+        "Name": "note",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "note",
+        "SourceQualifier": "readings_2026",
+        "SourceTable": "readings_2026"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "taken_on",
+        "Number": 1,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListPartitionReadings, command: many)\nSELECT id, taken_on, value, note FROM readings_2026 WHERE taken_on \u003e= $1;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:taken_on⟩, ⟨c2:value⟩, ⟨c3:note⟩ FROM readings_2026 WHERE taken_on \u003e= ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "derived.sql",
+    "Line": 4,
+    "Name": "ListLaterReadings",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "readings_2027",
+        "SourceSchema": "public",
+        "SourceTable": "readings_2027"
+      },
+      {
+        "Name": "taken_on",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        },
+        "SourceColumn": "taken_on",
+        "SourceQualifier": "readings_2027",
+        "SourceSchema": "public",
+        "SourceTable": "readings_2027"
+      },
+      {
+        "Name": "value",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        },
+        "SourceColumn": "value",
+        "SourceQualifier": "readings_2027",
+        "SourceSchema": "public",
+        "SourceTable": "readings_2027"
+      },
+      {
+        "Name": "note",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "note",
+        "SourceQualifier": "readings_2027",
+        "SourceSchema": "public",
+        "SourceTable": "readings_2027"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListLaterReadings, command: many)\nSELECT * FROM app.public.readings_2027;",
+    "Template": "SELECT ⟨star 0=readings_2027.id 1=readings_2027.taken_on 2=readings_2027.value 3=readings_2027.note:*⟩ FROM app.public.readings_2027;"
+  },
+  {
+    "Command": "one",
+    "Filename": "derived.sql",
+    "Line": 7,
+    "Name": "ReadingNumbers",
+    "OutputColumns": [
+      {
+        "Name": "last_value",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "last_value",
+        "SourceQualifier": "reading_numbers",
+        "SourceTable": "reading_numbers"
+      },
+      {
+        "Name": "log_cnt",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "log_cnt",
+        "SourceQualifier": "reading_numbers",
+        "SourceTable": "reading_numbers"
+      },
+      {
+        "Name": "is_called",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        },
+        "SourceColumn": "is_called",
+        "SourceQualifier": "reading_numbers",
+        "SourceTable": "reading_numbers"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ReadingNumbers, command: one)\nSELECT last_value, log_cnt, is_called FROM reading_numbers;",
+    "Template": "SELECT ⟨c0:last_value⟩, ⟨c1:log_cnt⟩, ⟨c2:is_called⟩ FROM reading_numbers;"
+  },
+  {
+    "Command": "one",
+    "Filename": "derived.sql",
+    "Line": 10,
+    "Name": "InvoiceNumber",
+    "OutputColumns": [
+      {
+        "Name": "last_value",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "last_value",
+        "SourceQualifier": "n",
+        "SourceSchema": "billing",
+        "SourceTable": "invoice_numbers"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: InvoiceNumber, command: one)\nSELECT n.last_value FROM billing.invoice_numbers AS n;",
+    "Template": "SELECT ⟨c0:n.last_value⟩ FROM billing.invoice_numbers AS n;"
+  },
+  {
+    "Command": "many",
+    "Filename": "derived.sql",
+    "Line": 13,
+    "Name": "ListInvoices",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "i",
+        "SourceSchema": "billing",
+        "SourceTable": "invoices"
+      },
+      {
+        "Name": "total",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        },
+        "SourceColumn": "total",
+        "SourceQualifier": "i",
+        "SourceSchema": "billing",
+        "SourceTable": "invoices"
+      },
+      {
+        "Name": "view_total",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        },
+        "SourceColumn": "total",
+        "SourceQualifier": "t",
+        "SourceSchema": "billing",
+        "SourceTable": "invoice_totals"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListInvoices, command: many)\nSELECT i.id, i.total, t.total AS view_total FROM billing.invoices AS i JOIN billing.invoice_totals AS t ON t.id = i.id;",
+    "Template": "SELECT ⟨c0:i.id⟩, ⟨c1:i.total⟩, ⟨c2 aliased:t.total⟩ AS view_total FROM billing.invoices AS i JOIN billing.invoice_totals AS t ON t.id = i.id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "derived.sql",
+    "Line": 16,
+    "Name": "ListPayments",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "p",
+        "SourceSchema": "billing",
+        "SourceTable": "payments"
+      },
+      {
+        "Name": "refund_id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "r",
+        "SourceSchema": "billing",
+        "SourceTable": "refunds"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListPayments, command: many)\nSELECT p.id, r.id AS refund_id FROM billing.payments AS p LEFT JOIN billing.refunds AS r ON r.payment_id = p.id;",
+    "Template": "SELECT ⟨c0:p.id⟩, ⟨c1 aliased:r.id⟩ AS refund_id FROM billing.payments AS p LEFT JOIN billing.refunds AS r ON r.payment_id = p.id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "derived.sql",
+    "Line": 19,
+    "Name": "ListNoticesAndAudits",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "n",
+        "SourceTable": "notices"
+      },
+      {
+        "Name": "audit_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "a",
+        "SourceTable": "audit_events"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListNoticesAndAudits, command: many)\nSELECT n.id, a.id AS audit_id FROM notices AS n JOIN audit_events AS a ON a.id = n.id;",
+    "Template": "SELECT ⟨c0:n.id⟩, ⟨c1 aliased:a.id⟩ AS audit_id FROM notices AS n JOIN audit_events AS a ON a.id = n.id;"
+  }
+]

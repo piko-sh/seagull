@@ -1,0 +1,9 @@
+{
+  "description": "RETURNING on INSERT, UPDATE and DELETE is rejected with Q052 because MySQL has no RETURNING clause; the SELECT beside them is unaffected.",
+  "expectedDiagnosticCount": 3,
+  "diagnostics": [
+    { "severity": "error", "code": "Q052", "messageContains": "CreateArticle" },
+    { "severity": "error", "code": "Q052", "messageContains": "RenameArticle" },
+    { "severity": "error", "code": "Q052", "messageContains": "DeleteArticle" }
+  ]
+}

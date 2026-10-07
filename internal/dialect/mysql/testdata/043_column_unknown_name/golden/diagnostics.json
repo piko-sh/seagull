@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q036",
+    "Column": 15,
+    "EndColumn": 29,
+    "EndLine": 2,
+    "Filename": "users.sql",
+    "Line": 2,
+    "Message": "sgl.column references unknown output column \"does_not_exist\"",
+    "Severity": "error"
+  }
+]

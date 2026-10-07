@@ -1,0 +1,1 @@
+{"description": "DDL replays as MariaDB applies it: ADD COLUMN IF NOT EXISTS of a column the table has, and DROP, MODIFY or CHANGE COLUMN IF EXISTS of one it lacks, change nothing; ALTER TABLE IF EXISTS of a missing table is no error; a repeated CREATE VIEW IF NOT EXISTS keeps the first view; and MODIFY ... FIRST moves the column"}

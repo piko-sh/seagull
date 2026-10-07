@@ -1,0 +1,87 @@
+# sgl init writes a starter project: sgl.yaml, a first migration, a seed and a query.
+# In an empty directory:
+$ mkdir starter
+# exit 0
+$ cd starter
+# exit 0
+$ sgl init --dialect sqlite
+created sgl.yaml
+created db/migrations/0001_init.up.sql
+created db/migrations/0001_init.down.sql
+created db/queries/example.sql
+created db/seeds/0001_authors.sql
+
+Next: edit the migration and queries, then run `sgl generate`.
+# exit 0
+$ cd ..
+# exit 0
+
+# This project grew from such a start into two migrations and two seeds. migrate.dsn in
+# sgl.yaml names file:library.db, which does not exist yet.
+$ sgl migrate status
+VERSION  NAME     STATE    APPLIED
+1        authors  pending  -
+2        books    pending  -
+# exit 0
+
+# up applies every pending migration in order, each in its own transaction.
+$ sgl migrate up
+up 1 authors
+up 2 books
+2 applied
+# exit 0
+$ sgl migrate status
+VERSION  NAME     STATE    APPLIED
+1        authors  applied  YYYY-MM-DD hh:mm:ss
+2        books    applied  YYYY-MM-DD hh:mm:ss
+# exit 0
+
+# down rolls back the latest migration with its .down.sql; down N rolls back N.
+$ sgl migrate down
+down 2 books
+1 rolled back
+# exit 0
+
+# to moves up or down to a version.
+$ sgl migrate to 2
+up 2 books
+1 applied
+# exit 0
+
+# validate checks that no applied migration's file has changed since it ran.
+$ sgl migrate validate
+migrations are valid
+# exit 0
+
+# Seeds are data, applied once each and recorded like migrations.
+$ sgl seed status
+VERSION  NAME     STATE    APPLIED
+1        authors  pending  -
+2        books    pending  -
+# exit 0
+$ sgl seed apply
+2 applied
+# exit 0
+$ sgl seed status
+VERSION  NAME     STATE    APPLIED
+1        authors  applied  YYYY-MM-DD hh:mm:ss
+2        books    applied  YYYY-MM-DD hh:mm:ss
+# exit 0
+$ sgl seed apply
+0 applied
+# exit 0
+
+# The next change starts with migrate new, which numbers the files after the last.
+$ sgl migrate new add_isbn
+created db/migrations/0003_add_isbn.up.sql
+created db/migrations/0003_add_isbn.down.sql
+# exit 0
+$ cat db/migrations/0003_add_isbn.up.sql
+-- 0003_add_isbn: write the up migration here.
+# exit 0
+$ sgl migrate status
+VERSION  NAME      STATE    APPLIED
+1        authors   applied  YYYY-MM-DD hh:mm:ss
+2        books     applied  YYYY-MM-DD hh:mm:ss
+3        add_isbn  pending  -
+# exit 0

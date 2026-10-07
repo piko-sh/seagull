@@ -1,0 +1,106 @@
+[
+  {
+    "Command": "many",
+    "Filename": "vectors.sql",
+    "Line": 1,
+    "Name": "Nearest",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "distance",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "cosine",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "inner_product",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "unknown",
+          "EngineName": "vector"
+        }
+      },
+      {
+        "Context": "limit",
+        "Kind": "none",
+        "Name": "limit",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Nearest, command: many)\nSELECT id, embedding \u003c-\u003e $1::vector AS distance, embedding \u003c=\u003e $1::vector AS cosine, embedding \u003c#\u003e $1::vector AS inner_product\nFROM items ORDER BY embedding \u003c-\u003e $1::vector LIMIT $2::int;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:embedding \u003c-\u003e ⟨p0⟩::vector⟩ AS distance, ⟨c2 aliased:embedding \u003c=\u003e ⟨p0⟩::vector⟩ AS cosine, ⟨c3 aliased:embedding \u003c#\u003e ⟨p0⟩::vector⟩ AS inner_product\\nFROM items ORDER BY embedding \u003c-\u003e ⟨p0⟩::vector LIMIT ⟨p1⟩::int;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "vectors.sql",
+    "Line": 5,
+    "Name": "Labelled",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "label",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "label",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Labelled, command: many)\nSELECT id, label FROM items UNION ALL VALUES (0, 'none');",
+    "Template": "SELECT id, label FROM items UNION ALL VALUES (0, 'none');"
+  }
+]

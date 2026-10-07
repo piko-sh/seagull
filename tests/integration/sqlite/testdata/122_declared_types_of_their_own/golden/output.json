@@ -1,0 +1,20 @@
+{
+  "add_thing": "added",
+  "stored_classes": "text,text,text,text,blob,real",
+  "thing_by_uuid": {
+    "external_id": "0b9f8e2c-6d1a-4f3e-9a7b-5c4d3e2f1a0b",
+    "id": 1,
+    "label": "42 labels",
+    "other_id": "7d444840-9dc0-11d1-b245-5ffdce74fad2",
+    "price": "12.5",
+    "raw": "AP8Q",
+    "span": "1 day 02:00:00",
+    "starts_at": "09:30:00",
+    "zoned": "2024-03-01 12:00:00+01:00"
+  },
+  "thing_text": {
+    "converted": "42",
+    "either": "09:30:00",
+    "lowered": "0b9f8e2c-6d1a-4f3e-9a7b-5c4d3e2f1a0b"
+  }
+}

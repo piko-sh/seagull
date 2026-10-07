@@ -1,0 +1,40 @@
+[
+  {
+    "Command": "many",
+    "Filename": "get_case.sql",
+    "Line": 1,
+    "Name": "GetOrderStatus",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "effective_amount",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "size_label",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: GetOrderStatus, command: many)\nSELECT\n  id,\n  CASE status WHEN 'active' THEN amount WHEN 'discounted' THEN discount ELSE 0 END as effective_amount,\n  CASE WHEN amount \u003e 100 THEN 'large' WHEN amount \u003e 50 THEN 'medium' END as size_label\nFROM orders",
+    "Template": "SELECT\\n  id,\\n  CASE status WHEN 'active' THEN amount WHEN 'discounted' THEN discount ELSE 0 END as effective_amount,\\n  CASE WHEN amount \u003e 100 THEN 'large' WHEN amount \u003e 50 THEN 'medium' END as size_label\\nFROM orders"
+  }
+]

@@ -1,0 +1,23 @@
+[
+  {
+    "Command": "many",
+    "Filename": "values_cte.sql",
+    "Line": 1,
+    "Name": "ValuesCTE",
+    "OutputColumns": [
+      {
+        "Name": "status",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "column1",
+        "SourceQualifier": "statuses",
+        "SourceTable": "statuses"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ValuesCTE, command: many)\nWITH statuses AS (VALUES ('active'), ('inactive'), ('pending'))\nSELECT column1 AS status FROM statuses;",
+    "Template": "WITH statuses AS (VALUES ('active'), ('inactive'), ('pending'))\\nSELECT ⟨c0 aliased:column1⟩ AS status FROM statuses;"
+  }
+]

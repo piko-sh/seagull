@@ -1,0 +1,1212 @@
+// Copyright 2026 PolitePixels Limited
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// This project stands against fascism, authoritarianism, and all forms of
+// oppression. We built this to empower people, not to enable those who would
+// strip others of their rights and dignity.
+
+package facade_test
+
+import (
+	"bytes"
+	"context"
+	"errors"
+	"io/fs"
+	"log/slog"
+	"math"
+	"slices"
+	"strings"
+	"testing"
+	"testing/fstest"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"seagull.sh/seagull"
+	"seagull.sh/seagull/internal/testkit/fakedialect"
+	"seagull.sh/seagull/sdk/dialect"
+	"seagull.sh/seagull/sdk/dialect/dialect_engine_mysql"
+	"seagull.sh/seagull/sdk/dialect/dialect_engine_postgres"
+	"seagull.sh/seagull/sdk/dialect/dialect_engine_sqlite"
+	"seagull.sh/seagull/sdk/dialect/dialect_engine_timescaledb"
+	"seagull.sh/seagull/sdk/dialect/dialect_registry"
+	"seagull.sh/seagull/sdk/emit"
+	"seagull.sh/seagull/sdk/emit/emit_driver_pgx"
+	"seagull.sh/seagull/sdk/observe"
+	"seagull.sh/seagull/sdk/schema/schema_source_postgres"
+	"seagull.sh/seagull/sdk/schema/schema_source_sqlite"
+)
+
+const (
+	tasksMigration = `CREATE TABLE tasks (
+    id         INTEGER PRIMARY KEY,
+    title      TEXT    NOT NULL,
+    completed  INTEGER NOT NULL DEFAULT 0
+);`
+
+	tasksQueries = `-- sgl.query(ListTasks, many)
+SELECT id, title, completed FROM tasks ORDER BY id;
+
+-- sgl.query(CreateTask, one)
+INSERT INTO tasks (title) VALUES (?) RETURNING id, title, completed;
+`
+)
+
+var (
+	_ seagull.SchemaSourcePort = schema_source_postgres.New(nil, nil)
+	_ seagull.SchemaSourcePort = schema_source_sqlite.New(nil, nil)
+)
+
+var tasksInput = seagull.Input{
+	Package:      "store",
+	Migrations:   tasksProject(),
+	MigrationDir: "db/migrations",
+	QueryDir:     "db/queries",
+}
+
+type recordingObserver struct {
+	stages []observe.Stage
+}
+
+func (o *recordingObserver) Start(ctx context.Context, stage observe.Stage, _ ...slog.Attr) (context.Context, func(error)) {
+	o.stages = append(o.stages, stage)
+	return ctx, func(error) {}
+}
+
+type staticClock struct {
+	now time.Time
+}
+
+func (c staticClock) Now() time.Time {
+	return c.now
+}
+
+type staticSchema struct {
+	catalogue *dialect.Catalogue
+}
+
+func (s staticSchema) BuildCatalogue(context.Context) (*dialect.Catalogue, []seagull.SourceError, error) {
+	return s.catalogue, nil, nil
+}
+
+type emitterFunc func(context.Context, *emit.Request) ([]emit.GeneratedFile, error)
+
+func (function emitterFunc) Emit(ctx context.Context, request *emit.Request) ([]emit.GeneratedFile, error) {
+	return function(ctx, request)
+}
+
+type sharedSchema struct {
+	catalogue *dialect.Catalogue
+}
+
+func (s *sharedSchema) BuildCatalogue(context.Context) (*dialect.Catalogue, []seagull.SourceError, error) {
+	return s.catalogue, nil, nil
+}
+
+var moodProject = fstest.MapFS{
+	"migrations/0001_init.up.sql": &fstest.MapFile{Data: []byte(
+		"CREATE SCHEMA audit;\n" +
+			"CREATE TYPE mood AS ENUM ('happy', 'sad');\n" +
+			"CREATE TYPE audit.mood AS ENUM ('logged');\n" +
+			"CREATE TABLE people (id int PRIMARY KEY, current mood NOT NULL, previous public.mood, logged audit.mood);\n")},
+	"queries/people.sql": &fstest.MapFile{Data: []byte(
+		"-- sgl.query(ListPeople, many)\nSELECT id, current, previous, logged FROM people WHERE current = $1;\n\n" +
+			"-- sgl.query(SetPrevious, exec)\n-- $1 as sgl.param(feeling, type: mood)\nUPDATE people SET previous = $1::text::mood;\n")},
+}
+
+func tasksProject() fstest.MapFS {
+	return fstest.MapFS{
+		"db/migrations/0001_init.up.sql": &fstest.MapFile{Data: []byte(tasksMigration)},
+		"db/queries/tasks.sql":           &fstest.MapFile{Data: []byte(tasksQueries)},
+	}
+}
+
+func fileNames(files []emit.GeneratedFile) []string {
+	names := make([]string, 0, len(files))
+	for _, file := range files {
+		names = append(names, file.Name)
+	}
+	return names
+}
+
+func fileContent(t *testing.T, files []emit.GeneratedFile, name string) string {
+	t.Helper()
+	index := slices.IndexFunc(files, func(file emit.GeneratedFile) bool { return file.Name == name })
+	require.GreaterOrEqual(t, index, 0, "no generated file %s among %v", name, fileNames(files))
+	return string(files[index].Content)
+}
+
+func TestGenerateProducesGoForSQLite(t *testing.T) {
+	t.Parallel()
+
+	generator, err := seagull.New(dialect_engine_sqlite.New())
+	require.NoError(t, err)
+
+	result, err := generator.Generate(t.Context(), tasksInput)
+	require.NoError(t, err)
+	require.NoError(t, result.Err())
+
+	assert.Equal(t, 2, result.QueryCount)
+	assert.Equal(t, "// Code generated by sgl. DO NOT EDIT.", result.Header)
+	assert.Contains(t, fileNames(result.Files), "tasks.sql.go")
+	assert.Contains(t, fileNames(result.Files), "models.go")
+	for _, file := range result.Files {
+		assert.Truef(t, strings.HasPrefix(string(file.Content), result.Header), "%s starts with the header", file.Name)
+	}
+	queries := fileContent(t, result.Files, "tasks.sql.go")
+	assert.Contains(t, queries, "func (queries *Queries) ListTasks(ctx context.Context)")
+	assert.Contains(t, queries, "func (queries *Queries) CreateTask(ctx context.Context, title string)")
+}
+
+func TestGenerateReportsTheMethodThatRunsEachQuery(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name        string
+		queries     string
+		wantMethods map[string]string
+	}{
+		{name: "a query named as its method", queries: tasksQueries,
+			wantMethods: map[string]string{"ListTasks": "ListTasks", "CreateTask": "CreateTask"}},
+		{name: "a snake_case query", queries: "-- sgl.query(list_open_tasks, many)\nSELECT id FROM tasks WHERE completed = 0;\n",
+			wantMethods: map[string]string{"list_open_tasks": "ListOpenTasks"}},
+		{name: "a query whose method would meet a generated one", queries: "-- sgl.query(WithTx, many)\nSELECT id FROM tasks;\n",
+			wantMethods: map[string]string{"WithTx": "WithTx2"}},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			project := tasksProject()
+			project["db/queries/tasks.sql"] = &fstest.MapFile{Data: []byte(testCase.queries)}
+			generator, err := seagull.New(dialect_engine_sqlite.New())
+			require.NoError(t, err)
+
+			result, err := generator.Generate(t.Context(), seagull.Input{
+				Package: "store", Migrations: project, MigrationDir: "db/migrations", QueryDir: "db/queries",
+			})
+
+			require.NoError(t, err)
+			require.NoError(t, result.Err())
+			require.Equal(t, testCase.wantMethods, result.Methods)
+		})
+	}
+}
+
+func TestGenerateReportsErrorDiagnosticsThroughResult(t *testing.T) {
+	t.Parallel()
+
+	project := tasksProject()
+	project["db/queries/broken.sql"] = &fstest.MapFile{Data: []byte("-- sgl.query(name: Broken, command: invalid)\nSELECT id FROM tasks;\n")}
+	generator, err := seagull.New(dialect_engine_sqlite.New())
+	require.NoError(t, err)
+
+	result, err := generator.Generate(t.Context(), seagull.Input{
+		Package: "store", Migrations: project, MigrationDir: "db/migrations", QueryDir: "db/queries",
+	})
+	require.NoError(t, err, "error diagnostics are not fatal")
+	assert.Empty(t, fileNames(result.Files))
+
+	diagnosticsErr := result.Err()
+	require.Error(t, diagnosticsErr)
+	assert.ErrorIs(t, diagnosticsErr, seagull.ErrDiagnostics)
+	typed, isDiagnosticsError := errors.AsType[*seagull.DiagnosticsError](diagnosticsErr)
+	require.True(t, isDiagnosticsError)
+	assert.Equal(t, result.Diagnostics, typed.Diagnostics)
+	assert.Contains(t, diagnosticsErr.Error(), "broken.sql")
+}
+
+func TestVetAnalysesWithoutEmitting(t *testing.T) {
+	t.Parallel()
+
+	generator, err := seagull.New(dialect_engine_sqlite.New())
+	require.NoError(t, err)
+
+	input := tasksInput
+	input.Package = ""
+	report, err := generator.Vet(t.Context(), input)
+	require.NoError(t, err)
+	require.NoError(t, report.Err())
+	require.Len(t, report.Queries, 2)
+	assert.Equal(t, "ListTasks", report.Queries[0].Name)
+	assert.Len(t, report.Queries[1].Parameters, 1)
+}
+
+func TestVetReportsWhatTheEmitterWouldRefuse(t *testing.T) {
+	t.Parallel()
+
+	generator, err := seagull.New(dialect_engine_postgres.New(), seagull.WithEmitter(emit_driver_pgx.New()))
+	require.NoError(t, err)
+	project := fstest.MapFS{
+		"migrations/0001_items.up.sql": &fstest.MapFile{Data: []byte("CREATE TABLE items (id bigint PRIMARY KEY, name text NOT NULL);")},
+		"queries/items.sql": &fstest.MapFile{Data: []byte("-- sgl.query(CopyItems, copyfrom)\n" +
+			"INSERT INTO items (id, name) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING;\n")},
+	}
+	input := seagull.Input{Migrations: project, Package: "store", MigrationDir: "migrations", QueryDir: "queries"}
+
+	report, err := generator.Vet(t.Context(), input)
+	require.NoError(t, err)
+	require.Error(t, report.Err())
+	codes := make([]string, 0, len(report.Diagnostics))
+	for _, diagnostic := range report.Diagnostics {
+		codes = append(codes, diagnostic.Code)
+	}
+	require.Equal(t, []string{seagull.CodeBatchShape}, codes)
+
+	result, err := generator.Generate(t.Context(), input)
+	require.NoError(t, err)
+	require.Equal(t, report.Diagnostics, result.Diagnostics)
+
+	input.Package = ""
+	unnamed, err := generator.Vet(t.Context(), input)
+	require.NoError(t, err)
+	require.NoError(t, unnamed.Err())
+}
+
+func TestCatalogueReplaysMigrations(t *testing.T) {
+	t.Parallel()
+
+	generator, err := seagull.New(dialect_engine_sqlite.New())
+	require.NoError(t, err)
+
+	catalogue, diagnostics, err := generator.Catalogue(t.Context(), tasksInput)
+	require.NoError(t, err)
+	assert.Empty(t, diagnostics)
+	require.Contains(t, catalogue.Schemas, "main")
+	assert.Contains(t, catalogue.Schemas["main"].Tables, "tasks")
+}
+
+func TestSeparateQueryFileSystem(t *testing.T) {
+	t.Parallel()
+
+	generator, err := seagull.New(dialect_engine_sqlite.New())
+	require.NoError(t, err)
+
+	result, err := generator.Generate(t.Context(), seagull.Input{
+		Package:    "store",
+		Migrations: fstest.MapFS{"0001_init.up.sql": &fstest.MapFile{Data: []byte(tasksMigration)}},
+		Queries:    fstest.MapFS{"tasks.sql": &fstest.MapFile{Data: []byte(tasksQueries)}},
+	})
+	require.NoError(t, err)
+	require.NoError(t, result.Err())
+	assert.Equal(t, 2, result.QueryCount)
+}
+
+func TestNewRejectsUnusableConfiguration(t *testing.T) {
+	t.Parallel()
+
+	badPreset := seagull.DefaultPreset()
+	badPreset.Header = "// generated"
+
+	tests := []struct {
+		name    string
+		build   func() (*seagull.Generator, error)
+		wantErr error
+	}{
+		{name: "nil dialect", build: func() (*seagull.Generator, error) { return seagull.New(dialect.Dialect{}) }, wantErr: seagull.ErrNoSource},
+		{name: "nil emitter", build: func() (*seagull.Generator, error) {
+			return seagull.New(dialect_engine_sqlite.New(), seagull.WithEmitter(nil))
+		}, wantErr: seagull.ErrInvalidConfig},
+		{name: "nil schema source", build: func() (*seagull.Generator, error) {
+			return seagull.New(dialect_engine_sqlite.New(), seagull.WithSchemaSource(nil))
+		}, wantErr: seagull.ErrInvalidConfig},
+		{name: "bad preset", build: func() (*seagull.Generator, error) {
+			return seagull.New(dialect_engine_sqlite.New(), seagull.WithPreset(badPreset))
+		}, wantErr: seagull.ErrInvalidConfig},
+		{name: "bad directive prefix", build: func() (*seagull.Generator, error) {
+			return seagull.New(dialect_engine_sqlite.New(), seagull.WithDirectivePrefixes("Bad"))
+		}, wantErr: seagull.ErrInvalidPrefix},
+		{name: "repeated directive prefix", build: func() (*seagull.Generator, error) {
+			return seagull.New(dialect_engine_sqlite.New(), seagull.WithDirectivePrefixes("acme", "acme"))
+		}, wantErr: seagull.ErrInvalidPrefix},
+		{name: "zero file limit", build: func() (*seagull.Generator, error) {
+			return seagull.New(dialect_engine_sqlite.New(), seagull.WithMaxFileBytes(0))
+		}, wantErr: seagull.ErrInvalidConfig},
+		{name: "zero file count", build: func() (*seagull.Generator, error) {
+			return seagull.New(dialect_engine_sqlite.New(), seagull.WithMaxFiles(0))
+		}, wantErr: seagull.ErrInvalidConfig},
+		{name: "zero query count", build: func() (*seagull.Generator, error) {
+			return seagull.New(dialect_engine_sqlite.New(), seagull.WithMaxQueries(-1))
+		}, wantErr: seagull.ErrInvalidConfig},
+		{name: "zero total bytes", build: func() (*seagull.Generator, error) {
+			return seagull.New(dialect_engine_sqlite.New(), seagull.WithMaxTotalBytes(0))
+		}, wantErr: seagull.ErrInvalidConfig},
+		{name: "zero diagnostic count", build: func() (*seagull.Generator, error) {
+			return seagull.New(dialect_engine_sqlite.New(), seagull.WithMaxDiagnostics(0))
+		}, wantErr: seagull.ErrInvalidConfig},
+		{name: "file limit above the ceiling", build: func() (*seagull.Generator, error) {
+			return seagull.New(dialect_engine_sqlite.New(), seagull.WithMaxFileBytes(math.MaxInt64))
+		}, wantErr: seagull.ErrInvalidConfig},
+		{name: "nil option", build: func() (*seagull.Generator, error) { return seagull.New(dialect_engine_sqlite.New(), nil) }, wantErr: seagull.ErrInvalidConfig},
+		{name: "nil option among others", build: func() (*seagull.Generator, error) {
+			return seagull.New(dialect_engine_sqlite.New(), seagull.WithMaxQueries(10), nil)
+		}, wantErr: seagull.ErrInvalidConfig},
+		{name: "empty runtime table name", build: func() (*seagull.Generator, error) {
+			return seagull.New(dialect_engine_sqlite.New(), seagull.WithRuntimeTables("sgl_migrations", ""))
+		}, wantErr: seagull.ErrInvalidConfig},
+		{name: "type override with neither a Go type nor an element choice", build: func() (*seagull.Generator, error) {
+			return seagull.New(dialect_engine_sqlite.New(), seagull.WithTypeOverrides(seagull.TypeOverride{Column: "tasks.title"}))
+		}, wantErr: seagull.ErrInvalidConfig},
+		{name: "custom function without a return type", build: func() (*seagull.Generator, error) {
+			return seagull.New(dialect_engine_sqlite.New(), seagull.WithCustomFunctions(seagull.CustomFunction{Name: "slugify"}))
+		}, wantErr: seagull.ErrInvalidConfig},
+		{name: "custom function with an unknown nullable behaviour", build: func() (*seagull.Generator, error) {
+			return seagull.New(dialect_engine_sqlite.New(), seagull.WithCustomFunctions(seagull.CustomFunction{Name: "slugify", ReturnType: "text", Nullable: "sometimes"}))
+		}, wantErr: seagull.ErrInvalidConfig},
+		{name: "custom function with an unknown data access", build: func() (*seagull.Generator, error) {
+			return seagull.New(dialect_engine_sqlite.New(), seagull.WithCustomFunctions(seagull.CustomFunction{Name: "slugify", ReturnType: "text", DataAccess: "volatile"}))
+		}, wantErr: seagull.ErrInvalidConfig},
+	}
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			generator, err := testCase.build()
+			require.Error(t, err)
+			assert.ErrorIs(t, err, testCase.wantErr)
+			assert.Nil(t, generator)
+		})
+	}
+}
+
+func TestNewNamesTheUnusableCustomFunction(t *testing.T) {
+	t.Parallel()
+
+	_, err := seagull.New(dialect_engine_sqlite.New(), seagull.WithCustomFunctions(
+		seagull.CustomFunction{Name: "similarity", ReturnType: "real"},
+		seagull.CustomFunction{Name: "slugify", ReturnType: ""},
+	))
+	require.ErrorIs(t, err, seagull.ErrInvalidConfig)
+	assert.Contains(t, err.Error(), "custom function 1 (slugify)")
+}
+
+func TestSentinelHierarchy(t *testing.T) {
+	t.Parallel()
+
+	assert.ErrorIs(t, seagull.ErrNoSource, seagull.ErrInvalidConfig)
+	assert.ErrorIs(t, seagull.ErrInvalidPrefix, seagull.ErrInvalidConfig)
+	assert.ErrorIs(t, seagull.ErrFileTooLarge, seagull.ErrLimit)
+	assert.ErrorIs(t, seagull.ErrMalformedSQL, seagull.ErrParse)
+	assert.NotErrorIs(t, seagull.ErrDiagnostics, seagull.ErrInvalidConfig)
+}
+
+func TestGenerateFatalInputProblems(t *testing.T) {
+	t.Parallel()
+
+	generator, err := seagull.New(dialect_engine_sqlite.New(), seagull.WithMaxFileBytes(8))
+	require.NoError(t, err)
+
+	_, err = generator.Generate(t.Context(), tasksInput)
+	require.ErrorIs(t, err, seagull.ErrFileTooLarge)
+	assert.ErrorIs(t, err, seagull.ErrLimit)
+
+	unlimited, err := seagull.New(dialect_engine_sqlite.New(), seagull.WithMaxQueries(1), seagull.WithMaxFiles(10))
+	require.NoError(t, err)
+	_, err = unlimited.Generate(t.Context(), tasksInput)
+	require.ErrorIs(t, err, seagull.ErrLimit)
+
+	_, err = unlimited.Generate(t.Context(), seagull.Input{Package: "store"})
+	require.ErrorIs(t, err, seagull.ErrNoSource)
+
+	missing := tasksInput
+	missing.QueryDir = "db/absent"
+	_, err = unlimited.Generate(t.Context(), missing)
+	require.ErrorIs(t, err, fs.ErrNotExist)
+}
+
+func TestGenerateStopsWhenTheFilesTogetherExceedTheTotalByteCap(t *testing.T) {
+	t.Parallel()
+
+	migrationOnly, err := seagull.New(dialect_engine_sqlite.New(), seagull.WithMaxTotalBytes(int64(len(tasksMigration))))
+	require.NoError(t, err)
+	_, err = migrationOnly.Generate(t.Context(), tasksInput)
+	require.ErrorIs(t, err, seagull.ErrLimit)
+	require.NotErrorIs(t, err, seagull.ErrFileTooLarge)
+
+	_, _, err = migrationOnly.Catalogue(t.Context(), tasksInput)
+	require.NoError(t, err)
+
+	roomy, err := seagull.New(dialect_engine_sqlite.New(), seagull.WithMaxTotalBytes(1<<20))
+	require.NoError(t, err)
+	_, err = roomy.Generate(t.Context(), tasksInput)
+	require.NoError(t, err)
+}
+
+func TestDirectivePrefixOptions(t *testing.T) {
+	t.Parallel()
+
+	project := fstest.MapFS{
+		"migrations/0001_init.up.sql": &fstest.MapFile{Data: []byte(tasksMigration)},
+		"queries/tasks.sql": &fstest.MapFile{Data: []byte("-- acme.query(ListTasks, many)\nSELECT id FROM tasks;\n" +
+			"-- sgl.query(Ignored, many)\nSELECT title FROM tasks;\n")},
+	}
+	input := seagull.Input{Package: "store", Migrations: project, MigrationDir: "migrations", QueryDir: "queries"}
+
+	generator, err := seagull.New(dialect_engine_sqlite.New(),
+		seagull.WithForeignDirectivePrefixes("sgl"),
+		seagull.WithDirectivePrefixes("acme"),
+	)
+	require.NoError(t, err)
+
+	report, err := generator.Vet(t.Context(), input)
+	require.NoError(t, err)
+	names := make([]string, 0, len(report.Queries))
+	for _, query := range report.Queries {
+		names = append(names, query.Name)
+	}
+	assert.Contains(t, names, "ListTasks")
+	assert.NotContains(t, names, "Ignored")
+	found := false
+	for _, diagnostic := range report.Diagnostics {
+		if diagnostic.Code == seagull.CodeForeignPrefix {
+			found = true
+		}
+	}
+	assert.True(t, found, "a directive with a foreign prefix is reported, got %+v", report.Diagnostics)
+}
+
+func TestTypeOverridesAndCustomFunctions(t *testing.T) {
+	t.Parallel()
+
+	project := tasksProject()
+	project["db/queries/similar.sql"] = &fstest.MapFile{Data: []byte(
+		"-- sgl.query(Similar, many)\nSELECT similarity(title, ?) AS score FROM tasks;\n")}
+
+	generator, err := seagull.New(dialect_engine_sqlite.New(),
+		seagull.WithCustomFunctions(seagull.CustomFunction{Name: "similarity", ReturnType: "real", Arguments: []string{"text", "text"}}),
+		seagull.WithTypeOverrides(seagull.TypeOverride{SQLTypeName: "text", GoPackage: "example.com/app/text", GoName: "Text"}),
+	)
+	require.NoError(t, err)
+
+	result, err := generator.Generate(t.Context(), seagull.Input{
+		Package: "store", Migrations: project, MigrationDir: "db/migrations", QueryDir: "db/queries",
+	})
+	require.NoError(t, err)
+	require.NoError(t, result.Err())
+	assert.Contains(t, fileContent(t, result.Files, "models.go"), "text.Text")
+	assert.Contains(t, fileContent(t, result.Files, "similar.sql.go"), "Score")
+}
+
+func TestColumnTypeOverrides(t *testing.T) {
+	t.Parallel()
+
+	project := tasksProject()
+	project["db/migrations/0002_notes.up.sql"] = &fstest.MapFile{Data: []byte(
+		"-- sgl.column(notes.body, go_type: example.com/app/body.Body)\n" +
+			"CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT NOT NULL, summary TEXT);\n")}
+	project["db/queries/notes.sql"] = &fstest.MapFile{Data: []byte(
+		"-- sgl.query(ListNotes, many)\nSELECT id, body, summary FROM notes;\n")}
+	input := seagull.Input{Package: "store", Migrations: project, MigrationDir: "db/migrations", QueryDir: "db/queries"}
+
+	generator, err := seagull.New(dialect_engine_sqlite.New(), seagull.WithTypeOverrides(
+		seagull.TypeOverride{Column: "tasks.title", GoPackage: "example.com/app/title", GoName: "Title"},
+		seagull.TypeOverride{Column: "main.notes.summary", GoPackage: "example.com/app/summary", GoName: "Summary"},
+		seagull.TypeOverride{Column: "notes.body", GoPackage: "example.com/app/ignored", GoName: "Ignored"},
+	))
+	require.NoError(t, err)
+
+	result, err := generator.Generate(t.Context(), input)
+	require.NoError(t, err)
+	require.NoError(t, result.Err())
+	tasks := fileContent(t, result.Files, "tasks.sql.go")
+	assert.Contains(t, tasks, "title.Title")
+	notes := fileContent(t, result.Files, "notes.sql.go")
+	assert.Contains(t, notes, "*summary.Summary")
+	assert.Contains(t, notes, "body.Body")
+	assert.NotContains(t, notes, "ignored.Ignored")
+
+	unknown, err := seagull.New(dialect_engine_sqlite.New(), seagull.WithTypeOverrides(
+		seagull.TypeOverride{Column: "tasks.titel", GoPackage: "example.com/app/title", GoName: "Title"},
+	))
+	require.NoError(t, err)
+	report, err := unknown.Vet(t.Context(), input)
+	require.NoError(t, err)
+	require.Error(t, report.Err())
+	require.NotEmpty(t, report.Diagnostics)
+	assert.Equal(t, seagull.CodeUnknownOverrideMigrationColumn, report.Diagnostics[0].Code)
+	assert.Equal(t, "tasks.title", report.Diagnostics[0].Suggestion)
+}
+
+func TestColumnTypeOverridesRejectedByNew(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		override seagull.TypeOverride
+	}{
+		{name: "both", override: seagull.TypeOverride{SQLTypeName: "text", Column: "tasks.title", GoName: "string"}},
+		{name: "neither", override: seagull.TypeOverride{GoName: "string"}},
+		{name: "no go type", override: seagull.TypeOverride{Column: "tasks.title"}},
+		{name: "one part", override: seagull.TypeOverride{Column: "title", GoName: "string"}},
+		{name: "four parts", override: seagull.TypeOverride{Column: "a.b.c.d", GoName: "string"}},
+		{name: "empty part", override: seagull.TypeOverride{Column: "tasks.", GoName: "string"}},
+	}
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			generator, err := seagull.New(dialect_engine_sqlite.New(), seagull.WithTypeOverrides(testCase.override))
+			require.ErrorIs(t, err, seagull.ErrInvalidConfig)
+			assert.Nil(t, generator)
+		})
+	}
+}
+
+func TestEmitterLoggerObserverClockAndSchemaSource(t *testing.T) {
+	t.Parallel()
+
+	var logs bytes.Buffer
+	observer := &recordingObserver{}
+	schema, _, err := mustGenerator(t).Catalogue(t.Context(), tasksInput)
+	require.NoError(t, err)
+
+	generator, err := seagull.New(dialect_engine_sqlite.New(),
+		seagull.WithEmitter(emit_driver_pgx.New()),
+		seagull.WithLogger(slog.New(slog.NewTextHandler(&logs, &slog.HandlerOptions{Level: slog.Level(-8)}))),
+		seagull.WithObserver(observer),
+		seagull.WithClock(staticClock{now: time.Unix(0, 0)}),
+		seagull.WithSchemaSource(staticSchema{catalogue: schema}),
+	)
+	require.NoError(t, err)
+
+	input := tasksInput
+	input.Migrations = nil
+	input.Queries = tasksProject()
+	result, err := generator.Generate(t.Context(), input)
+	require.NoError(t, err)
+	require.NoError(t, result.Err())
+	assert.Contains(t, fileContent(t, result.Files, "querier.go"), "pgx")
+	assert.Equal(t, observe.StageGenerate, observer.stages[0])
+	assert.Contains(t, logs.String(), "generation complete")
+}
+
+func TestContextWithLogger(t *testing.T) {
+	t.Parallel()
+
+	var logs bytes.Buffer
+	logger := slog.New(slog.NewTextHandler(&logs, &slog.HandlerOptions{Level: slog.Level(-8)}))
+	ctx := seagull.ContextWithLogger(t.Context(), logger)
+
+	_, err := mustGenerator(t).Generate(ctx, tasksInput)
+	require.NoError(t, err)
+	assert.Contains(t, logs.String(), "generation complete")
+}
+
+func TestWithEmitterReceivesTheDialect(t *testing.T) {
+	t.Parallel()
+
+	var request *emit.Request
+	emitter := emitterFunc(func(_ context.Context, received *emit.Request) ([]emit.GeneratedFile, error) {
+		request = received
+		return nil, nil
+	})
+	generator, err := seagull.New(dialect_engine_postgres.New(dialect_engine_postgres.WithName("custom")), seagull.WithEmitter(emitter))
+	require.NoError(t, err)
+
+	_, err = generator.Generate(t.Context(), seagull.Input{
+		Package:    "store",
+		Migrations: fstest.MapFS{"0001_t.up.sql": &fstest.MapFile{Data: []byte("CREATE TABLE t (id int);")}},
+		Queries:    fstest.MapFS{"t.sql": &fstest.MapFile{Data: []byte("-- sgl.query(ListT, many)\nSELECT id FROM t;\n")}},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, request)
+	assert.Equal(t, "custom", request.Dialect.Name)
+	assert.Equal(t, "postgres", request.Dialect.Family)
+	assert.Equal(t, "store", request.Package)
+}
+
+func mustGenerator(t *testing.T) *seagull.Generator {
+	t.Helper()
+	generator, err := seagull.New(dialect_engine_sqlite.New())
+	require.NoError(t, err)
+	return generator
+}
+
+func scoredProject() fstest.MapFS {
+	project := tasksProject()
+	project["db/migrations/0002_scored.up.sql"] = &fstest.MapFile{Data: []byte(
+		"CREATE VIEW scored AS SELECT id, similarity(title, 'x') AS score FROM tasks;\n")}
+	project["db/queries/scored.sql"] = &fstest.MapFile{Data: []byte(
+		"-- sgl.query(ListScored, many)\nSELECT id, score FROM scored;\n")}
+	return project
+}
+
+func findQuery(t *testing.T, queries []*emit.AnalysedQuery, name string) *emit.AnalysedQuery {
+	t.Helper()
+	index := slices.IndexFunc(queries, func(query *emit.AnalysedQuery) bool { return query.Name == name })
+	require.GreaterOrEqual(t, index, 0, "no query %s", name)
+	return queries[index]
+}
+
+func TestCustomFunctionsReachViews(t *testing.T) {
+	t.Parallel()
+
+	generator, err := seagull.New(dialect_engine_sqlite.New(), seagull.WithCustomFunctions(
+		seagull.CustomFunction{Name: "similarity", ReturnType: "real", Arguments: []string{"text", "text"}, Nullable: "never_null"}))
+	require.NoError(t, err)
+
+	report, err := generator.Vet(t.Context(), seagull.Input{
+		Migrations: scoredProject(), MigrationDir: "db/migrations", QueryDir: "db/queries",
+	})
+	require.NoError(t, err)
+	assert.Empty(t, report.Diagnostics)
+	query := findQuery(t, report.Queries, "ListScored")
+	require.Len(t, query.OutputColumns, 2)
+	assert.Equal(t, dialect.TypeCategoryFloat, query.OutputColumns[1].SQLType.Category)
+	assert.False(t, query.OutputColumns[1].Nullable)
+	assert.True(t, query.ReadOnly)
+}
+
+func TestUnknownFunctionInViewIsReported(t *testing.T) {
+	t.Parallel()
+
+	report, err := mustGenerator(t).Vet(t.Context(), seagull.Input{
+		Migrations: scoredProject(), MigrationDir: "db/migrations", QueryDir: "db/queries",
+	})
+	require.NoError(t, err)
+	var unknown []seagull.SourceError
+	for _, diagnostic := range report.Diagnostics {
+		if diagnostic.Code == seagull.CodeUnknownFunction {
+			unknown = append(unknown, diagnostic)
+		}
+	}
+	require.Len(t, unknown, 1, "diagnostics: %+v", report.Diagnostics)
+	assert.Equal(t, "0002_scored.up.sql", unknown[0].Filename)
+	assert.Equal(t, 1, unknown[0].Line)
+	assert.Contains(t, unknown[0].Message, "similarity")
+}
+
+func TestColumnTypeOverridesReachViews(t *testing.T) {
+	t.Parallel()
+
+	project := tasksProject()
+	project["db/migrations/0002_notes.up.sql"] = &fstest.MapFile{Data: []byte(
+		"-- sgl.column(notes.body, go_type: example.com/app/body.Body)\n" +
+			"CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT NOT NULL);\n" +
+			"CREATE VIEW note_bodies AS SELECT id, body FROM notes;\n")}
+	project["db/migrations/0003_titles.up.sql"] = &fstest.MapFile{Data: []byte(
+		"CREATE VIEW task_titles AS SELECT id, title FROM tasks;\n" +
+			"CREATE VIEW task_titles_again AS SELECT id, title FROM task_titles;\n")}
+	project["db/queries/views.sql"] = &fstest.MapFile{Data: []byte(
+		"-- sgl.query(ListNoteBodies, many)\nSELECT id, body FROM note_bodies;\n\n" +
+			"-- sgl.query(ListTaskTitles, many)\nSELECT id, title FROM task_titles_again;\n")}
+
+	generator, err := seagull.New(dialect_engine_sqlite.New(), seagull.WithTypeOverrides(
+		seagull.TypeOverride{Column: "tasks.title", GoPackage: "example.com/app/title", GoName: "Title"},
+	))
+	require.NoError(t, err)
+
+	result, err := generator.Generate(t.Context(), seagull.Input{
+		Package: "store", Migrations: project, MigrationDir: "db/migrations", QueryDir: "db/queries",
+	})
+	require.NoError(t, err)
+	require.NoError(t, result.Err())
+	views := fileContent(t, result.Files, "views.sql.go")
+	assert.Contains(t, views, "body.Body")
+	assert.Contains(t, views, "title.Title")
+}
+
+func sharedSchemaInput(t *testing.T) (*sharedSchema, seagull.Input) {
+	t.Helper()
+	schema, _, err := mustGenerator(t).Catalogue(t.Context(), tasksInput)
+	require.NoError(t, err)
+	project := tasksProject()
+	project["db/queries/similar.sql"] = &fstest.MapFile{Data: []byte(
+		"-- sgl.query(Similar, many)\nSELECT similarity(title, ?) AS score FROM tasks;\n")}
+	return &sharedSchema{catalogue: schema}, seagull.Input{Package: "store", Queries: project, QueryDir: "db/queries"}
+}
+
+func TestSchemaSourceCatalogueIsLeftUnchanged(t *testing.T) {
+	t.Parallel()
+
+	source, input := sharedSchemaInput(t)
+	generator, err := seagull.New(dialect_engine_sqlite.New(),
+		seagull.WithSchemaSource(source),
+		seagull.WithCustomFunctions(seagull.CustomFunction{Name: "similarity", ReturnType: "real", Arguments: []string{"text", "text"}}),
+		seagull.WithTypeOverrides(seagull.TypeOverride{Column: "tasks.title", GoPackage: "example.com/app/title", GoName: "Title"}),
+	)
+	require.NoError(t, err)
+
+	outputs := make([]string, 0, 3)
+	for range 3 {
+		result, err := generator.Generate(t.Context(), input)
+		require.NoError(t, err)
+		require.NoError(t, result.Err())
+		outputs = append(outputs, fileContent(t, result.Files, "similar.sql.go")+fileContent(t, result.Files, "tasks.sql.go"))
+	}
+	assert.Equal(t, outputs[0], outputs[1])
+	assert.Equal(t, outputs[0], outputs[2])
+	assert.Contains(t, outputs[0], "title.Title")
+
+	schema := source.catalogue.Schemas["main"]
+	assert.NotContains(t, schema.Functions, "similarity")
+	assert.Nil(t, schema.Tables["tasks"].Columns[1].GoTypeOverride)
+}
+
+func TestConcurrentRunsShareOneSchemaSource(t *testing.T) {
+	t.Parallel()
+
+	source, input := sharedSchemaInput(t)
+	generator, err := seagull.New(dialect_engine_sqlite.New(),
+		seagull.WithSchemaSource(source),
+		seagull.WithCustomFunctions(seagull.CustomFunction{Name: "similarity", ReturnType: "real", Arguments: []string{"text", "text"}}),
+		seagull.WithTypeOverrides(seagull.TypeOverride{Column: "tasks.title", GoPackage: "example.com/app/title", GoName: "Title"}),
+	)
+	require.NoError(t, err)
+
+	const runs = 4
+	outcomes := make(chan error, runs)
+	for range runs {
+		go func() {
+			result, err := generator.Generate(t.Context(), input)
+			if err == nil {
+				err = result.Err()
+			}
+			outcomes <- err
+		}()
+	}
+	for range runs {
+		require.NoError(t, <-outcomes)
+	}
+}
+
+func TestColumnTypeOverridesReachModelsAndParameters(t *testing.T) {
+	t.Parallel()
+
+	project := tasksProject()
+	project["db/migrations/0002_notes.up.sql"] = &fstest.MapFile{Data: []byte(
+		"-- sgl.column(notes.body, go_type: example.com/app/body.Body)\n" +
+			"CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT NOT NULL, summary TEXT);\n")}
+	project["db/queries/notes.sql"] = &fstest.MapFile{Data: []byte(
+		"-- sgl.query(FindNotes, many)\nSELECT id FROM notes WHERE body = ?;\n\n" +
+			"-- sgl.query(AddNote, exec)\nINSERT INTO notes (body, summary) VALUES (?, ?);\n\n" +
+			"-- sgl.query(RenameTask, exec)\nUPDATE tasks SET title = ? WHERE title = ?;\n\n" +
+			"-- sgl.query(FindNotesLike, many)\nSELECT id FROM notes WHERE body LIKE ?;\n\n" +
+			"-- sgl.query(FindNotesTyped, many)\n-- ?1 as sgl.param(raw, type: text)\nSELECT id FROM notes WHERE body = ?1;\n")}
+
+	generator, err := seagull.New(dialect_engine_sqlite.New(), seagull.WithTypeOverrides(
+		seagull.TypeOverride{Column: "tasks.title", GoPackage: "example.com/app/title", GoName: "Title"},
+	))
+	require.NoError(t, err)
+
+	result, err := generator.Generate(t.Context(), seagull.Input{
+		Package: "store", Migrations: project, MigrationDir: "db/migrations", QueryDir: "db/queries",
+	})
+	require.NoError(t, err)
+	require.NoError(t, result.Err(), "%+v", result.Diagnostics)
+
+	models := fileContent(t, result.Files, "models.go")
+	assert.Regexp(t, `Body\s+body\.Body`, models)
+	assert.Regexp(t, `Title\s+title\.Title`, models)
+
+	notes := fileContent(t, result.Files, "notes.sql.go")
+	assert.Contains(t, notes, "FindNotes(ctx context.Context, body2 body.Body)")
+	assert.Regexp(t, `type AddNoteParams struct \{\s+Body\s+body\.Body\s+Summary\s+\*string`, notes)
+	assert.Contains(t, notes, "FindNotesLike(ctx context.Context, bodyLike string)")
+	assert.Contains(t, notes, "FindNotesTyped(ctx context.Context, raw string)")
+	assert.Regexp(t, `type RenameTaskParams struct \{\s+Title\s+title\.Title\s+Title2\s+title\.Title`, notes)
+}
+
+func TestSQLTypeOverridesMapEnums(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name         string
+		sqlType      string
+		wantMapped   []string
+		wantUnmapped []string
+	}{
+		{name: "unqualified follows the search path", sqlType: "mood",
+			wantMapped:   []string{`Current\s+mood\.Mood`, `Previous\s+\*mood\.Mood`, `SetPrevious\(ctx context\.Context, feeling mood\.Mood\)`},
+			wantUnmapped: []string{`Logged\s+\*AuditMood`, `type AuditMood string`}},
+		{name: "qualified by the search path schema", sqlType: "public.mood",
+			wantMapped:   []string{`Current\s+mood\.Mood`, `Previous\s+\*mood\.Mood`},
+			wantUnmapped: []string{`Logged\s+\*AuditMood`}},
+		{name: "qualified by another schema", sqlType: "audit.mood",
+			wantMapped:   []string{`Logged\s+\*mood\.Mood`},
+			wantUnmapped: []string{`Current\s+Mood`, `Previous\s+\*Mood`, `MoodHappy\s+Mood = "happy"`}},
+	}
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			generator, err := seagull.New(dialect_engine_postgres.New(), seagull.WithTypeOverrides(
+				seagull.TypeOverride{SQLTypeName: testCase.sqlType, GoPackage: "example.com/app/mood", GoName: "Mood"}))
+			require.NoError(t, err)
+			result, err := generator.Generate(t.Context(), seagull.Input{
+				Package: "store", Migrations: moodProject, MigrationDir: "migrations", QueryDir: "queries",
+			})
+			require.NoError(t, err)
+			require.NoError(t, result.Err())
+			generated := fileContent(t, result.Files, "models.go") + fileContent(t, result.Files, "people.sql.go")
+			for _, pattern := range append(testCase.wantMapped, testCase.wantUnmapped...) {
+				assert.Regexp(t, pattern, generated)
+			}
+		})
+	}
+}
+
+func TestFunctionCallsRouteByDataAccessWhereverTheyAppear(t *testing.T) {
+	t.Parallel()
+
+	project := fstest.MapFS{
+		"migrations/0001_init.up.sql": &fstest.MapFile{Data: []byte("CREATE TABLE items (id int PRIMARY KEY, name text NOT NULL);\n")},
+		"queries/items.sql": &fstest.MapFile{Data: []byte(
+			"-- sgl.query(SelectRead, many)\nSELECT id, similarity(name, $1) AS score FROM items;\n\n" +
+				"-- sgl.query(WhereRead, many)\nSELECT id FROM items WHERE similarity(name, $1) > 0.5;\n\n" +
+				"-- sgl.query(SelectWrite, many)\nSELECT id, touch(name) AS touched FROM items;\n\n" +
+				"-- sgl.query(WhereWrite, many)\nSELECT id FROM items WHERE touch(name) > 0;\n\n" +
+				"-- sgl.query(SelectUnknown, many)\nSELECT id, mystery(name) AS m FROM items;\n\n" +
+				"-- sgl.query(WhereUnknown, many)\nSELECT id FROM items WHERE mystery(name) > 0;\n\n" +
+				"-- sgl.query(OrderUnknown, many)\nSELECT id FROM items ORDER BY mystery(name);\n")},
+	}
+	generator, err := seagull.New(dialect_engine_postgres.New(), seagull.WithCustomFunctions(
+		seagull.CustomFunction{Name: "similarity", ReturnType: "real", Arguments: []string{"text", "text"}},
+		seagull.CustomFunction{Name: "touch", ReturnType: "integer", Arguments: []string{"text"}, DataAccess: "modifies_data"},
+	))
+	require.NoError(t, err)
+
+	report, err := generator.Vet(t.Context(), seagull.Input{Migrations: project, MigrationDir: "migrations", QueryDir: "queries"})
+	require.NoError(t, err)
+	readOnly := map[string]bool{}
+	for _, query := range report.Queries {
+		readOnly[query.Name] = query.ReadOnly
+	}
+	assert.Equal(t, map[string]bool{
+		"SelectRead": true, "WhereRead": true,
+		"SelectWrite": false, "WhereWrite": false,
+		"SelectUnknown": false, "WhereUnknown": false, "OrderUnknown": false,
+	}, readOnly)
+}
+
+func TestUnparsableQueriesReportOnlyTheParseError(t *testing.T) {
+	t.Parallel()
+
+	project := tasksProject()
+	project["db/queries/broken.sql"] = &fstest.MapFile{Data: []byte(
+		"-- sgl.query(Unterminated, one)\nSELECT id FROM tasks WHERE title = 'open;\n")}
+	project["db/queries/unfinished.sql"] = &fstest.MapFile{Data: []byte(
+		"-- sgl.query(Unfinished, many)\nWITH recent AS (SELECT id FROM tasks) SELEC id FROM recent;\n")}
+
+	for _, dialectName := range []string{"postgres", "sqlite", "mysql", "duckdb", "clickhouse"} {
+		t.Run(dialectName, func(t *testing.T) {
+			t.Parallel()
+
+			engine, err := dialect_registry.New(dialectName, dialect_registry.Options{})
+			require.NoError(t, err)
+			generator, err := seagull.New(engine)
+			require.NoError(t, err)
+			result, err := generator.Generate(t.Context(), seagull.Input{
+				Package: "store", Migrations: project, MigrationDir: "db/migrations", QueryDir: "db/queries",
+			})
+			require.NoError(t, err, "unparsable SQL is a diagnostic, not a fatal error")
+			codes := map[string][]string{}
+			for _, diagnostic := range result.Diagnostics {
+				if diagnostic.Filename == "broken.sql" || diagnostic.Filename == "unfinished.sql" {
+					codes[diagnostic.Filename] = append(codes[diagnostic.Filename], diagnostic.Code)
+				}
+			}
+			assert.Equal(t, []string{seagull.CodeParseError}, codes["broken.sql"])
+			assert.Equal(t, []string{seagull.CodeParseError}, codes["unfinished.sql"])
+			require.ErrorIs(t, result.Err(), seagull.ErrParse)
+		})
+	}
+}
+
+func TestTimescaleFirstAndLastReturnTheValuesType(t *testing.T) {
+	t.Parallel()
+
+	project := fstest.MapFS{
+		"migrations/0001_init.up.sql": &fstest.MapFile{Data: []byte(
+			"CREATE TABLE readings (taken_at timestamptz NOT NULL, price double precision NOT NULL, volume bigint NOT NULL, note text);\n")},
+		"queries/readings.sql": &fstest.MapFile{Data: []byte(
+			"-- sgl.query(Opening, one)\nSELECT first(price, taken_at) AS price, last(volume, taken_at) AS volume, first(note, taken_at) AS note FROM readings;\n")},
+	}
+	generator, err := seagull.New(dialect_engine_timescaledb.New())
+	require.NoError(t, err)
+	report, err := generator.Vet(t.Context(), seagull.Input{Migrations: project, MigrationDir: "migrations", QueryDir: "queries"})
+	require.NoError(t, err)
+	query := findQuery(t, report.Queries, "Opening")
+	require.Len(t, query.OutputColumns, 3)
+	assert.Equal(t, "float8", query.OutputColumns[0].SQLType.EngineName)
+	assert.Equal(t, "int8", query.OutputColumns[1].SQLType.EngineName)
+	assert.Equal(t, "text", query.OutputColumns[2].SQLType.EngineName)
+}
+
+func TestAnUnknownComparedColumnIsReportedAtItsName(t *testing.T) {
+	t.Parallel()
+
+	project := fstest.MapFS{
+		"migrations/0001_init.up.sql": &fstest.MapFile{Data: []byte("CREATE TABLE tasks (id int PRIMARY KEY, title text NOT NULL);\n")},
+		"queries/tasks.sql":           &fstest.MapFile{Data: []byte("-- sgl.query(FindTask, many)\nSELECT id\nFROM tasks\nWHERE titel = $1;\n")},
+	}
+	generator, err := seagull.New(dialect_engine_postgres.New())
+	require.NoError(t, err)
+	report, err := generator.Vet(t.Context(), seagull.Input{Migrations: project, MigrationDir: "migrations", QueryDir: "queries"})
+	require.NoError(t, err)
+
+	var unknown []seagull.SourceError
+	for _, diagnostic := range report.Diagnostics {
+		if diagnostic.Code == seagull.CodeUnknownColumn {
+			unknown = append(unknown, diagnostic)
+		}
+	}
+	require.Len(t, unknown, 1, "%+v", report.Diagnostics)
+	assert.Equal(t, 4, unknown[0].Line)
+	assert.Equal(t, 7, unknown[0].Column)
+	assert.Equal(t, "title", unknown[0].Suggestion)
+}
+
+func TestVetReportsEachDiagnosticOnce(t *testing.T) {
+	t.Parallel()
+
+	project := tasksProject()
+	project["db/queries/articles.sql"] = &fstest.MapFile{Data: []byte(
+		"-- sgl.query(CreateArticle, one)\nINSERT INTO articles (title, body, summary) VALUES (?, ?, ?) RETURNING id;\n")}
+	report, err := mustGenerator(t).Vet(t.Context(), seagull.Input{
+		Migrations: project, MigrationDir: "db/migrations", QueryDir: "db/queries",
+	})
+	require.NoError(t, err)
+
+	seen := make(map[seagull.SourceError]bool, len(report.Diagnostics))
+	articles := 0
+	for _, diagnostic := range report.Diagnostics {
+		identity := diagnostic
+		identity.Suggestion = ""
+		assert.False(t, seen[identity], "reported more than once: %+v", diagnostic)
+		seen[identity] = true
+		if diagnostic.Filename == "articles.sql" {
+			articles++
+		}
+	}
+	assert.NotZero(t, articles, "the unknown table is reported: %+v", report.Diagnostics)
+}
+
+func TestGenerateRefusesMigrationsTheRunnerWouldNotApply(t *testing.T) {
+	t.Parallel()
+
+	project := fstest.MapFS{
+		"db/migrations/0001_init.sql": &fstest.MapFile{Data: []byte(tasksMigration)},
+		"db/queries/tasks.sql":        &fstest.MapFile{Data: []byte(tasksQueries)},
+	}
+	result, err := mustGenerator(t).Generate(t.Context(), seagull.Input{
+		Package: "store", Migrations: project, MigrationDir: "db/migrations", QueryDir: "db/queries",
+	})
+	require.NoError(t, err)
+	require.ErrorIs(t, result.Err(), seagull.ErrDiagnostics)
+	assert.Empty(t, result.Files)
+
+	var ignored []seagull.SourceError
+	for _, diagnostic := range result.Diagnostics {
+		if diagnostic.Code == seagull.CodeIgnoredMigrationFile {
+			ignored = append(ignored, diagnostic)
+		}
+	}
+	require.Len(t, ignored, 1, "%+v", result.Diagnostics)
+	assert.Equal(t, seagull.SeverityError, ignored[0].Severity)
+	assert.Equal(t, "0001_init.sql", ignored[0].Filename)
+	assert.Contains(t, ignored[0].Message, `"db/migrations"`)
+	assert.Equal(t, "rename 0001_init.sql to 0001_init.up.sql", ignored[0].Suggestion)
+}
+
+func introspectedViewsSchema() staticSchema {
+	declared := dialect_engine_sqlite.New().NormaliseTypeName
+	mainSchema := &dialect.Schema{
+		Name: "main",
+		Tables: map[string]*dialect.Table{"tasks": {Name: "tasks", Schema: "main", Columns: []dialect.Column{
+			dialect.NewColumn("id", declared("INTEGER"), false),
+			dialect.NewColumn("title", declared("TEXT"), false),
+			dialect.NewColumn("done_at", declared("TEXT"), true),
+		}}},
+	}
+	addView(mainSchema, "task_counts", "SELECT title, count(*) AS total, max(done_at) AS last_done FROM tasks GROUP BY title",
+		dialect.NewColumn("title", declared("TEXT"), true),
+		dialect.NewColumn("total", declared(""), true),
+		dialect.NewColumn("last_done", declared(""), true),
+	)
+	addView(mainSchema, "busy_titles", "SELECT title, total FROM task_counts WHERE total > 1",
+		dialect.NewColumn("title", declared("TEXT"), true),
+		dialect.NewColumn("total", declared(""), true),
+	)
+	return staticSchema{catalogue: &dialect.Catalogue{Schemas: map[string]*dialect.Schema{"main": mainSchema}}}
+}
+
+func addView(target *dialect.Schema, name, definition string, columns ...dialect.Column) {
+	views, view := withNewEntry(target.Views, name)
+	view.Name, view.Schema, view.Definition, view.Columns = name, target.Name, definition, columns
+	target.Views = views
+}
+
+func withNewEntry[Entries ~map[string]*Entry, Entry any](entries Entries, key string) (Entries, *Entry) {
+	if entries == nil {
+		entries = make(Entries)
+	}
+	entry := new(Entry)
+	entries[key] = entry
+	return entries, entry
+}
+
+func TestSchemaSourceViewsAreTypedFromTheirDefinitions(t *testing.T) {
+	t.Parallel()
+
+	source := introspectedViewsSchema()
+	generator, err := seagull.New(dialect_engine_sqlite.New(), seagull.WithSchemaSource(source))
+	require.NoError(t, err)
+	queries := fstest.MapFS{"busy.sql": &fstest.MapFile{Data: []byte("-- sgl.query(ListBusyTitles, many)\nSELECT title, total FROM busy_titles;\n")}}
+
+	catalogue, _, err := generator.Catalogue(t.Context(), seagull.Input{Queries: queries})
+	require.NoError(t, err)
+	counts := catalogue.Schemas["main"].Views["task_counts"].Columns
+	assert.False(t, counts[0].Nullable, "tasks.title is NOT NULL")
+	assert.Equal(t, dialect.TypeCategoryInteger, counts[1].SQLType.Category, "an expression's declared blob gives way to its analysed type")
+	assert.False(t, counts[1].Nullable, "count(*) is never NULL")
+	assert.Equal(t, dialect.TypeCategoryText, counts[2].SQLType.Category)
+	assert.True(t, counts[2].Nullable, "max over a nullable column can be NULL")
+
+	report, err := generator.Vet(t.Context(), seagull.Input{Queries: queries})
+	require.NoError(t, err)
+	require.NoError(t, report.Err())
+	query := findQuery(t, report.Queries, "ListBusyTitles")
+	require.Len(t, query.OutputColumns, 2)
+	assert.False(t, query.OutputColumns[0].Nullable, "a view over a view is typed once the view below is")
+	assert.Equal(t, dialect.TypeCategoryInteger, query.OutputColumns[1].SQLType.Category)
+	assert.False(t, query.OutputColumns[1].Nullable)
+
+	assert.True(t, source.catalogue.Schemas["main"].Views["task_counts"].Columns[1].Nullable, "the source's own catalogue is left unchanged")
+}
+
+func TestAnUnknownUnqualifiedTableIsNamedWhateverTheDialect(t *testing.T) {
+	t.Parallel()
+
+	project := fstest.MapFS{
+		"migrations/0001_init.up.sql": &fstest.MapFile{Data: []byte("CREATE TABLE tasks (id INT PRIMARY KEY);\n")},
+		"queries/articles.sql":        &fstest.MapFile{Data: []byte("-- sgl.query(ListArticles, many)\nSELECT id FROM articles;\n")},
+	}
+	tests := []struct {
+		name    string
+		dialect dialect.Dialect
+	}{
+		{name: "mysql", dialect: dialect_engine_mysql.New()},
+		{name: "postgres", dialect: dialect_engine_postgres.New()},
+		{name: "sqlite", dialect: dialect_engine_sqlite.New()},
+	}
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			generator, err := seagull.New(testCase.dialect)
+			require.NoError(t, err)
+			report, err := generator.Vet(t.Context(), seagull.Input{Migrations: project, MigrationDir: "migrations", QueryDir: "queries"})
+			require.NoError(t, err)
+
+			var unknown []seagull.SourceError
+			for _, diagnostic := range report.Diagnostics {
+				if diagnostic.Code == seagull.CodeUnknownTable {
+					unknown = append(unknown, diagnostic)
+				}
+			}
+			require.Len(t, unknown, 1, "%+v", report.Diagnostics)
+			assert.Contains(t, unknown[0].Message, `unknown table or view "articles"`)
+			assert.NotContains(t, unknown[0].Message, `schema ""`)
+		})
+	}
+}
+
+func TestNewRecoversAPanicInTheDialectsInfo(t *testing.T) {
+	t.Parallel()
+
+	var logs bytes.Buffer
+	generator, err := seagull.New(fakedialect.InfoPanics(dialect_engine_sqlite.New(), "no info"), seagull.WithLogger(slog.New(slog.NewTextHandler(&logs, nil))))
+	require.ErrorIs(t, err, seagull.ErrPanic)
+	assert.ErrorContains(t, err, "dialect Info: panic: no info")
+	assert.Nil(t, generator)
+	assert.Equal(t, 1, strings.Count(logs.String(), "recovered a panic"))
+}
+
+func TestAGeneratorNotMadeByNewRefusesToRun(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		generator *seagull.Generator
+	}{
+		{name: "a nil generator", generator: nil},
+		{name: "a zero generator", generator: &seagull.Generator{}},
+	}
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			result, err := testCase.generator.Generate(t.Context(), tasksInput)
+			require.ErrorIs(t, err, seagull.ErrInvalidConfig)
+			assert.Nil(t, result)
+
+			detailed, err := testCase.generator.GenerateDetailed(t.Context(), tasksInput)
+			require.ErrorIs(t, err, seagull.ErrInvalidConfig)
+			assert.Nil(t, detailed)
+
+			report, err := testCase.generator.Vet(t.Context(), tasksInput)
+			require.ErrorIs(t, err, seagull.ErrInvalidConfig)
+			assert.Nil(t, report)
+
+			catalogue, diagnostics, err := testCase.generator.Catalogue(t.Context(), tasksInput)
+			require.ErrorIs(t, err, seagull.ErrInvalidConfig)
+			assert.Nil(t, catalogue)
+			assert.Nil(t, diagnostics)
+		})
+	}
+}
+
+func TestWithMaxFileBytesReadsWholeFilesUpToTheCeiling(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		limit int64
+	}{
+		{name: "the default", limit: 4 << 20},
+		{name: "the ceiling", limit: 1 << 40},
+	}
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			generator, err := seagull.New(dialect_engine_sqlite.New(), seagull.WithMaxFileBytes(testCase.limit))
+			require.NoError(t, err)
+			result, err := generator.Generate(t.Context(), tasksInput)
+			require.NoError(t, err)
+			assert.Equal(t, 2, result.QueryCount)
+			assert.NotEmpty(t, result.Files)
+		})
+	}
+}
+
+func TestWithMaxDiagnosticsSummarisesTheDiagnosticsPastTheCap(t *testing.T) {
+	t.Parallel()
+
+	project := tasksProject()
+	project["db/queries/broken.sql"] = &fstest.MapFile{Data: []byte(strings.Repeat("-- sgl.query(\n", 5))}
+	generator, err := seagull.New(dialect_engine_sqlite.New(), seagull.WithMaxDiagnostics(2))
+	require.NoError(t, err)
+
+	result, err := generator.Generate(t.Context(), seagull.Input{Package: "store", Migrations: project, MigrationDir: "db/migrations", QueryDir: "db/queries"})
+	require.NoError(t, err)
+	require.Len(t, result.Diagnostics, 3)
+	notice := result.Diagnostics[2]
+	assert.Equal(t, seagull.CodeDiagnosticLimit, notice.Code)
+	assert.Equal(t, seagull.SeverityError, notice.Severity)
+	require.ErrorIs(t, result.Err(), seagull.ErrDiagnostics)
+	assert.Empty(t, result.Files)
+}

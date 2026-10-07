@@ -1,0 +1,28 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: Beach huts found and booked by passing Go slices as {name:Array(T)} parameters, including an empty slice and a slice after a scalar.
+differs:
+  - "IN {beaches:Array(String)} takes the whole slice as one array parameter, so no kind: slice is needed and nothing is rewritten at call time"
+  - "An empty slice is an empty array, so IN [] matches nothing"
+  - "No bind-variable limit applies, as the slice is one value"
+  - "Q017 and Q018 do not arise, since an Array parameter is not expanded"
+  - "ALTER TABLE ... UPDATE reports no changed rows, so BookHuts is asyncexec and the example counts booked huts before and after"
+entry: {file: db/queries/huts.sql, query: HutsOnBeaches}
+live: "no"
+test: integration

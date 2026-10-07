@@ -1,0 +1,27 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: sgl fmt lists, checks and rewrites directives written with the seagull. alias, require_canonical turns the alias into Q050 hints, a directive with another tool's prefix draws Q051 until a one-off configuration adopts it, and --rewrite-prefix switches spelling.
+differs:
+  - "directives.prefixes: [sgl, seagull] makes sgl canonical and seagull an alias; require_canonical: true reports each alias"
+  - "fmt -l and --check list files; -w rewrites them; without either fmt prints the formatted file"
+  - "adopt.yaml lists the other tool's prefix as an alias, so sgl -c adopt.yaml fmt -w rewrites it to sgl"
+entry: {file: db/queries/customers.sql}
+live: "no"
+test: transcript
+expected_diagnostics: [Q050, Q051]

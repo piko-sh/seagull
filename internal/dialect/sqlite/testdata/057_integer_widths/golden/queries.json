@@ -1,0 +1,139 @@
+[
+  {
+    "Command": "many",
+    "Filename": "books.sql",
+    "Line": 1,
+    "Name": "BooksByAuthor",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "books",
+        "SourceTable": "books"
+      },
+      {
+        "Name": "author_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "author_id",
+        "SourceQualifier": "books",
+        "SourceTable": "books"
+      },
+      {
+        "Name": "pages",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "pages",
+        "SourceQualifier": "books",
+        "SourceTable": "books"
+      },
+      {
+        "Name": "copies",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "smallint",
+          "Width": 64
+        },
+        "SourceColumn": "copies",
+        "SourceQualifier": "books",
+        "SourceTable": "books"
+      },
+      {
+        "Name": "rowid",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "rowid",
+        "SourceQualifier": "books",
+        "SourceTable": "books"
+      },
+      {
+        "Name": "total",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "author_id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "limit",
+        "Kind": "none",
+        "Name": "limit",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(BooksByAuthor, many)\nSELECT id, author_id, pages, copies, rowid, COUNT(*) OVER () AS total\nFROM books\nWHERE author_id = ?\nLIMIT ?;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:author_id⟩, ⟨c2:pages⟩, ⟨c3:copies⟩, ⟨c4:rowid⟩, ⟨c5 aliased:COUNT(*) OVER ()⟩ AS total\\nFROM books\\nWHERE author_id = ⟨p0⟩\\nLIMIT ⟨p1⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "books.sql",
+    "Line": 7,
+    "Name": "BookTitles",
+    "OutputColumns": [
+      {
+        "Name": "title",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown",
+          "EngineName": "any"
+        }
+      },
+      {
+        "Name": "tags",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "json"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(BookTitles, many)\nSELECT doc -\u003e\u003e '$.title' AS title,\n       doc -\u003e '$.tags' AS tags\nFROM books\nWHERE doc -\u003e\u003e '$.title' = ?;",
+    "Template": "SELECT ⟨c0 aliased:doc -\u003e\u003e '$.title'⟩ AS title,\\n       ⟨c1 aliased:doc -\u003e '$.tags'⟩ AS tags\\nFROM books\\nWHERE doc -\u003e\u003e '$.title' = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

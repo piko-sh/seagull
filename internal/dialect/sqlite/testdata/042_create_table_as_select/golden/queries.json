@@ -1,0 +1,46 @@
+[
+  {
+    "Command": "many",
+    "Filename": "source.sql",
+    "Line": 1,
+    "Name": "ListSource",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "source",
+        "SourceTable": "source"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "source",
+        "SourceTable": "source"
+      },
+      {
+        "Name": "value",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        },
+        "SourceColumn": "value",
+        "SourceQualifier": "source",
+        "SourceTable": "source"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListSource, command: many)\nSELECT id, name, value FROM source ORDER BY id;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:value⟩ FROM source ORDER BY id;"
+  }
+]

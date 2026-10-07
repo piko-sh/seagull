@@ -1,0 +1,5 @@
+{
+  "description": "List and map parameters on DuckDB bind plain elements and values: duckdb-go panics on a NULL element, or a pointer to one, of a list or map parameter, so DuckDB parameters keep plain elements whatever D5 makes of its columns, and a parameter declaring them nullable is refused (Q059) at generation; elements the SQL writes NULL read back as nil through the table's model. Rows read into a table's model: model: notes in another column order, and the whole-row ListNotes under reuse_models; and a row type two queries share, AuthorSummary, declared once.",
+  "expectedDiagnostics": [],
+  "reuseModels": true
+}

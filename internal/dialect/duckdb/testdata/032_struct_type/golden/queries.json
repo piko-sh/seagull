@@ -1,0 +1,72 @@
+[
+  {
+    "Command": "many",
+    "Filename": "sensors.sql",
+    "Line": 1,
+    "Name": "ListSensors",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "sensors",
+        "SourceTable": "sensors"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "sensors",
+        "SourceTable": "sensors"
+      },
+      {
+        "Name": "location",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "struct",
+          "StructFields": [
+            {
+              "Name": "latitude",
+              "SQLType": {
+                "Category": "float",
+                "EngineName": "float8",
+                "Nullable": true,
+                "Width": 64
+              }
+            },
+            {
+              "Name": "longitude",
+              "SQLType": {
+                "Category": "float",
+                "EngineName": "float8",
+                "Nullable": true,
+                "Width": 64
+              }
+            },
+            {
+              "Name": "label",
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Nullable": true
+              }
+            }
+          ]
+        },
+        "SourceColumn": "location",
+        "SourceQualifier": "sensors",
+        "SourceTable": "sensors"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListSensors, command: many)\nSELECT id, name, location FROM sensors;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:location⟩ FROM sensors;"
+  }
+]

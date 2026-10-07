@@ -1,0 +1,195 @@
+[
+  {
+    "Command": "one",
+    "Filename": "accounts.sql",
+    "Line": 1,
+    "Name": "GetAccount",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "balance",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        },
+        "SourceColumn": "balance",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetAccount, command: one)\nSELECT id, name, balance FROM accounts WHERE id = $1;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:balance⟩ FROM accounts WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "accounts.sql",
+    "Line": 4,
+    "Name": "LockAccount",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "balance",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        },
+        "SourceColumn": "balance",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: LockAccount, command: one)\nSELECT id, name, balance FROM accounts WHERE id = $1 FOR UPDATE;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:balance⟩ FROM accounts WHERE id = ⟨p0⟩ FOR UPDATE;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "accounts.sql",
+    "InsertColumns": [
+      "name",
+      "balance"
+    ],
+    "InsertTarget": {
+      "Name": "accounts"
+    },
+    "Line": 7,
+    "Name": "CreateAccount",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "balance",
+        "Number": 2,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: CreateAccount, command: one)\nINSERT INTO accounts (name, balance) VALUES ($1, $2) RETURNING id;",
+    "Template": "INSERT INTO accounts (name, balance) VALUES ⟨values:(⟨p0⟩, ⟨p1⟩)⟩ RETURNING ⟨c0:id⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "accounts.sql",
+    "Line": 10,
+    "Name": "ArchiveAccount",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "deleted",
+        "SourceTable": "deleted"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: ArchiveAccount, command: exec)\nWITH deleted AS (\n    DELETE FROM accounts WHERE id = $1 RETURNING id\n)\nSELECT id FROM deleted;",
+    "Template": "WITH deleted AS (\\n    DELETE FROM accounts WHERE id = ⟨p0⟩ RETURNING id\\n)\\nSELECT ⟨c0:id⟩ FROM deleted;⟨arguments p0⟩"
+  }
+]

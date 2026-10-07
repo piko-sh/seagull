@@ -1,0 +1,4 @@
+{
+  "description": "A recursive CTE takes its column types from the anchor member as ClickHouse does: 0 AS generation stays UInt8 and never NULL, although the recursive member's generation + 1 would widen it.",
+  "expectedDiagnosticCount": 0
+}

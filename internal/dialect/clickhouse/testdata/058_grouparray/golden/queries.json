@@ -1,0 +1,36 @@
+[
+  {
+    "Command": "many",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "GroupedVals",
+    "OutputColumns": [
+      {
+        "Name": "cat",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "cat",
+        "SourceQualifier": "t",
+        "SourceTable": "t"
+      },
+      {
+        "Name": "vals",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "UInt64",
+            "Unsigned": true,
+            "Width": 64
+          },
+          "EngineName": "Array"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(GroupedVals, many)\nSELECT cat, groupArray(val) AS vals FROM t GROUP BY cat;",
+    "Template": "SELECT ⟨c0:cat⟩, ⟨c1 aliased:groupArray(val)⟩ AS vals FROM t GROUP BY cat;"
+  }
+]

@@ -1,0 +1,101 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "public": {
+      "Functions": {
+        "calls_known_pure": [
+          {
+            "Arguments": [
+              {
+                "Name": "val",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int4",
+                  "Width": 32
+                }
+              }
+            ],
+            "BodySQL": " SELECT val + 1; ",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "calls_known_pure",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 2
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int4",
+              "Width": 32
+            }
+          }
+        ],
+        "calls_unknown": [
+          {
+            "BodySQL": " SELECT some_extension_function(42); ",
+            "DataAccess": "modifies-data",
+            "Language": "sql",
+            "Name": "calls_unknown",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 1
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int4",
+              "Width": 32
+            }
+          }
+        ]
+      },
+      "Name": "public",
+      "Tables": {
+        "records": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "data",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            }
+          ],
+          "Name": "records",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

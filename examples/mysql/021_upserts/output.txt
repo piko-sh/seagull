@@ -1,0 +1,8 @@
+cod      delivery 1: +10, now 10 in stock (inserted)
+potatoes delivery 1: +40, now 40 in stock (inserted)
+cod      delivery 2: +5, now 15 in stock (updated)
+added peas with no stock yet
+cod is already stocked, nothing changed
+cod      15
+peas      0
+potatoes 40

@@ -1,0 +1,161 @@
+[
+  {
+    "Command": "many",
+    "Filename": "harbours.sql",
+    "Line": 1,
+    "Name": "HarbourDocuments",
+    "OutputColumns": [
+      {
+        "Name": "row_document",
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "json"
+        }
+      },
+      {
+        "Name": "document",
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "json"
+        }
+      },
+      {
+        "Name": "binary_document",
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: HarbourDocuments, command: many)\nSELECT row_to_json(harbours) AS row_document, to_json(harbours) AS document, to_jsonb(harbours) AS binary_document\nFROM harbours;",
+    "Template": "SELECT ⟨c0 aliased:row_to_json(harbours)⟩ AS row_document, ⟨c1 aliased:to_json(harbours)⟩ AS document, ⟨c2 aliased:to_jsonb(harbours)⟩ AS binary_document\\nFROM harbours;"
+  },
+  {
+    "Command": "many",
+    "Filename": "harbours.sql",
+    "Line": 5,
+    "Name": "HarbourRows",
+    "OutputColumns": [
+      {
+        "Name": "harbours",
+        "SQLType": {
+          "Category": "composite",
+          "EngineName": "harbours",
+          "Schema": "public"
+        }
+      },
+      {
+        "Name": "berths",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "composite",
+          "EngineName": "berths",
+          "Nullable": true,
+          "Schema": "public"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: HarbourRows, command: many)\nSELECT harbours, berths\nFROM harbours\nLEFT JOIN berths ON berths.harbour_id = harbours.id\nWHERE harbours IS NOT NULL\nORDER BY harbours;",
+    "Template": "SELECT ⟨c0:harbours⟩, ⟨c1:berths⟩\\nFROM harbours\\nLEFT JOIN berths ON berths.harbour_id = harbours.id\\nWHERE harbours IS NOT NULL\\nORDER BY harbours;"
+  },
+  {
+    "Command": "one",
+    "Filename": "harbours.sql",
+    "Line": 12,
+    "Name": "AllHarbours",
+    "OutputColumns": [
+      {
+        "Name": "harbours",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "json"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AllHarbours, command: one)\nSELECT json_agg(h) AS harbours FROM harbours h;",
+    "Template": "SELECT ⟨c0 aliased:json_agg(h)⟩ AS harbours FROM harbours h;"
+  },
+  {
+    "Command": "many",
+    "Filename": "harbours.sql",
+    "Line": 15,
+    "Name": "NamedHarbours",
+    "OutputColumns": [
+      {
+        "Name": "v",
+        "SQLType": {
+          "Category": "composite",
+          "EngineName": "harbour_names",
+          "Schema": "public"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: NamedHarbours, command: many)\nSELECT v FROM harbour_names v;",
+    "Template": "SELECT ⟨c0:v⟩ FROM harbour_names v;"
+  },
+  {
+    "Command": "many",
+    "Filename": "harbours.sql",
+    "Line": 18,
+    "Name": "CountedRows",
+    "OutputColumns": [
+      {
+        "Name": "counted",
+        "SQLType": {
+          "Category": "composite",
+          "EngineName": "record"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CountedRows, command: many)\nSELECT counted FROM (SELECT harbour_id, count(*) AS total FROM berths GROUP BY harbour_id) counted;",
+    "Template": "SELECT ⟨c0:counted⟩ FROM (SELECT harbour_id, count(*) AS total FROM berths GROUP BY harbour_id) counted;"
+  },
+  {
+    "Command": "many",
+    "Filename": "harbours.sql",
+    "Line": 21,
+    "Name": "PlanItems",
+    "OutputColumns": [
+      {
+        "Name": "item",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb",
+          "Nullable": true
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: PlanItems, command: many)\nSELECT item FROM berths, jsonb_array_elements(berths.plan) AS item;",
+    "Template": "SELECT ⟨c0:item⟩ FROM berths, jsonb_array_elements(berths.plan) AS item;"
+  },
+  {
+    "Command": "many",
+    "Filename": "harbours.sql",
+    "Line": 24,
+    "Name": "MooringCounts",
+    "OutputColumns": [
+      {
+        "Name": "moorings",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "moorings",
+        "SourceQualifier": "moorings",
+        "SourceTable": "moorings"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: MooringCounts, command: many)\nSELECT moorings FROM moorings;",
+    "Template": "SELECT ⟨c0:moorings⟩ FROM moorings;"
+  }
+]

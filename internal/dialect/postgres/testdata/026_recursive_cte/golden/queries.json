@@ -1,0 +1,45 @@
+[
+  {
+    "Command": "many",
+    "Filename": "category_tree.sql",
+    "Line": 1,
+    "Name": "CategoryTree",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "category_tree",
+        "SourceTable": "category_tree"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "category_tree",
+        "SourceTable": "category_tree"
+      },
+      {
+        "Name": "depth",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "depth",
+        "SourceQualifier": "category_tree",
+        "SourceTable": "category_tree"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CategoryTree, command: many)\nWITH RECURSIVE category_tree AS (\n    SELECT id, name, parent_id, 0 AS depth\n    FROM categories\n    WHERE parent_id IS NULL\n    UNION ALL\n    SELECT c.id, c.name, c.parent_id, ct.depth + 1\n    FROM categories c\n    INNER JOIN category_tree ct ON ct.id = c.parent_id\n)\nSELECT id, name, depth FROM category_tree ORDER BY depth, name;",
+    "Template": "WITH RECURSIVE category_tree AS (\\n    SELECT id, name, parent_id, 0 AS depth\\n    FROM categories\\n    WHERE parent_id IS NULL\\n    UNION ALL\\n    SELECT c.id, c.name, c.parent_id, ct.depth + 1\\n    FROM categories c\\n    INNER JOIN category_tree ct ON ct.id = c.parent_id\\n)\\nSELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:depth⟩ FROM category_tree ORDER BY depth, name;"
+  }
+]

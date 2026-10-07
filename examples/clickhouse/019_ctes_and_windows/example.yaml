@@ -1,0 +1,28 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: A gull colony read through a recursive CTE, a CTE feeding rank() and sum() window functions, and a view, with types and nullability carried through each.
+differs:
+  - "WITH RECURSIVE needs ClickHouse 24.4 or later, with the analyser that is on by default"
+  - "join_use_nulls = 1 makes the LEFT JOINs give NULL, as in SQL, instead of default values"
+  - "rank() OVER is a UInt64, and sum() OVER of a UInt64 is a UInt64 that sums no rows to 0, not NULL, so BeachRank and BeachThefts are plain uint64"
+  - "Seagull types the recursive CTE's generation from generation + 1, a UInt16, so it is uint16; the server keeps the first SELECT's UInt8, and database/sql converts each value"
+  - "count and uniqExact map to uint64 and max(Date) to *time.Time"
+entry: {file: db/queries/gulls.sql, query: TheftLeague}
+live: "no"
+test: integration

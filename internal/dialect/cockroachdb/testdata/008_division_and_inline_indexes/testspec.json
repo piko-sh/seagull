@@ -1,0 +1,1 @@
+{"description": "CockroachDB divides integers exactly and gives the number of days between two dates as INT8; the INDEX, UNIQUE INDEX, INVERTED INDEX and FAMILY elements of a CREATE TABLE declare no columns, so SELECT * reads only the real ones"}

@@ -1,0 +1,318 @@
+[
+  {
+    "Command": "many",
+    "Filename": "rows_from.sql",
+    "Line": 1,
+    "Name": "SeriesBesideLetters",
+    "OutputColumns": [
+      {
+        "Name": "n",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "n",
+        "SourceQualifier": "x"
+      },
+      {
+        "Name": "s",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "s",
+        "SourceQualifier": "x"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(SeriesBesideLetters, many)\nSELECT n, s FROM ROWS FROM (generate_series(1, 3), unnest(ARRAY['a', 'b'])) AS x(n, s);",
+    "Template": "SELECT ⟨c0:n⟩, ⟨c1:s⟩ FROM ROWS FROM (generate_series(1, 3), unnest(ARRAY['a', 'b'])) AS x(n, s);"
+  },
+  {
+    "Command": "many",
+    "Filename": "rows_from.sql",
+    "Line": 4,
+    "Name": "TracksBesideSettings",
+    "OutputColumns": [
+      {
+        "Name": "track",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "track",
+        "SourceQualifier": "x"
+      },
+      {
+        "Name": "key",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "key",
+        "SourceQualifier": "x"
+      },
+      {
+        "Name": "value",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        },
+        "SourceColumn": "value",
+        "SourceQualifier": "x"
+      },
+      {
+        "Name": "position",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "position",
+        "SourceQualifier": "x"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(TracksBesideSettings, many)\nSELECT x.*\nFROM playlists p, LATERAL ROWS FROM (unnest(p.tracks), jsonb_each(p.settings)) WITH ORDINALITY AS x(track, key, value, position)\nWHERE p.id = $1;",
+    "Template": "SELECT ⟨star written 0=x.track 1=x.key 2=x.value 3=x.position:x.*⟩\\nFROM playlists p, LATERAL ROWS FROM (unnest(p.tracks), jsonb_each(p.settings)) WITH ORDINALITY AS x(track, key, value, position)\\nWHERE p.id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "rows_from.sql",
+    "Line": 9,
+    "Name": "UnaliasedSeries",
+    "OutputColumns": [
+      {
+        "Name": "generate_series",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "generate_series",
+        "SourceQualifier": "generate_series"
+      },
+      {
+        "Name": "generate_series",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "generate_series",
+        "SourceQualifier": "generate_series"
+      },
+      {
+        "Name": "ordinality",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "ordinality",
+        "SourceQualifier": "generate_series"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(UnaliasedSeries, many)\nSELECT * FROM ROWS FROM (generate_series(1, 3), generate_series(10, 11)) WITH ORDINALITY;",
+    "Template": "SELECT ⟨star written 0=generate_series.generate_series 1=generate_series.generate_series 2=generate_series.ordinality:*⟩ FROM ROWS FROM (generate_series(1, 3), generate_series(10, 11)) WITH ORDINALITY;"
+  },
+  {
+    "Command": "many",
+    "Filename": "rows_from.sql",
+    "Line": 12,
+    "Name": "RecordBesideSeries",
+    "OutputColumns": [
+      {
+        "Name": "a",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "a",
+        "SourceQualifier": "r"
+      },
+      {
+        "Name": "b",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "b",
+        "SourceQualifier": "r"
+      },
+      {
+        "Name": "generate_series",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "generate_series",
+        "SourceQualifier": "r"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(RecordBesideSeries, many)\nSELECT a, b, generate_series\nFROM ROWS FROM (json_to_record('{\"a\": 1, \"b\": \"x\"}') AS (a integer, b text), generate_series(1, 2)) AS r;",
+    "Template": "SELECT ⟨c0:a⟩, ⟨c1:b⟩, ⟨c2:generate_series⟩\\nFROM ROWS FROM (json_to_record('{\"a\": 1, \"b\": \"x\"}') AS (a integer, b text), generate_series(1, 2)) AS r;"
+  },
+  {
+    "Command": "many",
+    "Filename": "rows_from.sql",
+    "Line": 16,
+    "Name": "OneFunction",
+    "OutputColumns": [
+      {
+        "Name": "g",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "g",
+        "SourceQualifier": "g"
+      },
+      {
+        "Name": "ordinality",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "ordinality",
+        "SourceQualifier": "g"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(OneFunction, many)\nSELECT g, ordinality FROM ROWS FROM (generate_series(1, 3)) WITH ORDINALITY AS g;",
+    "Template": "SELECT ⟨c0:g⟩, ⟨c1:ordinality⟩ FROM ROWS FROM (generate_series(1, 3)) WITH ORDINALITY AS g;"
+  },
+  {
+    "Command": "many",
+    "Filename": "rows_from.sql",
+    "Line": 19,
+    "Name": "RowsAsValues",
+    "OutputColumns": [
+      {
+        "Name": "r",
+        "SQLType": {
+          "Category": "composite",
+          "EngineName": "record"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(RowsAsValues, many)\nSELECT r FROM ROWS FROM (generate_series(1, 2), unnest(ARRAY['a'])) AS r;",
+    "Template": "SELECT ⟨c0:r⟩ FROM ROWS FROM (generate_series(1, 2), unnest(ARRAY['a'])) AS r;"
+  },
+  {
+    "Command": "many",
+    "Filename": "rows_from.sql",
+    "Line": 22,
+    "Name": "TracksBesideRatings",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "p",
+        "SourceTable": "playlists"
+      },
+      {
+        "Name": "track",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "track",
+        "SourceQualifier": "u"
+      },
+      {
+        "Name": "rating",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "rating",
+        "SourceQualifier": "u"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(TracksBesideRatings, many)\nSELECT p.id, u.track, u.rating\nFROM playlists p, unnest(p.tracks, p.ratings) AS u(track, rating);",
+    "Template": "SELECT ⟨c0:p.id⟩, ⟨c1:u.track⟩, ⟨c2:u.rating⟩\\nFROM playlists p, unnest(p.tracks, p.ratings) AS u(track, rating);"
+  },
+  {
+    "Command": "many",
+    "Filename": "rows_from.sql",
+    "Line": 26,
+    "Name": "TracksBesideRatingsInOrder",
+    "OutputColumns": [
+      {
+        "Name": "unnest",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "unnest",
+        "SourceQualifier": "u"
+      },
+      {
+        "Name": "unnest",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "unnest",
+        "SourceQualifier": "u"
+      },
+      {
+        "Name": "ordinality",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "ordinality",
+        "SourceQualifier": "u"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(TracksBesideRatingsInOrder, many)\nSELECT u.* FROM playlists p, unnest(p.tracks, p.ratings) WITH ORDINALITY AS u;",
+    "Template": "SELECT ⟨star written 0=u.unnest 1=u.unnest 2=u.ordinality:u.*⟩ FROM playlists p, unnest(p.tracks, p.ratings) WITH ORDINALITY AS u;"
+  }
+]

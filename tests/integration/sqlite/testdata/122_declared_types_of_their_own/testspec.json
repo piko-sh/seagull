@@ -1,0 +1,4 @@
+{
+  "description": "SQLite gives UUID, TIME, TIMESTAMPTZ and BYTEA the numeric affinity and INTERVAL the integer one, but stores a value that reads as no number as it is written, and both drivers return it so: a UUID column reads as a uuid.UUID, which binds its text and reads it back, a lookup by the UUID finds the row, TIME, TIMESTAMPTZ and INTERVAL read as text, BYTEA as bytes, and MONEY, whose values are numbers, as a decimal. lower() takes a UUID as text, and a CAST to UUID converts by the numeric affinity, so it reads as a decimal. The same golden holds for modernc.org/sqlite and, through sqlite_cgo, mattn/go-sqlite3.",
+  "expectedDiagnostics": []
+}

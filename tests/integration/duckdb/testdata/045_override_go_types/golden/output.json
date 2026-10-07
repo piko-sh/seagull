@@ -1,0 +1,168 @@
+{
+  "cells": {
+    "batch": "ok",
+    "exec": "ok",
+    "parameter amount": "ok",
+    "parameter flag": "ok",
+    "parameter label": "ok",
+    "parameter note": "ok",
+    "parameter optional label": "ok",
+    "parameter payload": "ok",
+    "parameter ratio": "ok",
+    "parameter tags": "ok",
+    "scan amount": "ok",
+    "scan flag": "ok",
+    "scan keyed": "ok",
+    "scan label": "ok",
+    "scan note": "ok",
+    "scan optional amount": "ok",
+    "scan optional amount null": "ok",
+    "scan optional label": "ok",
+    "scan optional label null": "ok",
+    "scan pair": "ok",
+    "scan payload": "ok",
+    "scan ratio": "ok",
+    "scan row": "ok",
+    "scan tags": "ok",
+    "written note": "ok"
+  },
+  "probes": [
+    {
+      "amount": 7,
+      "flag": true,
+      "id": 1,
+      "keyed": {
+        "alpha": 1
+      },
+      "label": "alpha",
+      "note": {
+        "n": 1
+      },
+      "optional_amount": 9,
+      "optional_label": "beta",
+      "pair": {
+        "name": "alpha",
+        "rank": 1
+      },
+      "payload": "AQ==",
+      "ratio": 2.5,
+      "tags": [
+        "x",
+        "y"
+      ]
+    },
+    {
+      "amount": 8,
+      "flag": false,
+      "id": 2,
+      "keyed": {
+        "gamma": 2
+      },
+      "label": "gamma",
+      "note": {
+        "n": 2
+      },
+      "optional_amount": 9,
+      "optional_label": "beta",
+      "pair": {
+        "name": "gamma",
+        "rank": 2
+      },
+      "payload": "Ag==",
+      "ratio": 3.5,
+      "tags": [
+        "z"
+      ]
+    },
+    {
+      "amount": 9,
+      "flag": true,
+      "id": 3,
+      "keyed": {
+        "delta": 3
+      },
+      "label": "delta",
+      "note": {
+        "n": 3
+      },
+      "optional_amount": null,
+      "optional_label": null,
+      "pair": {
+        "name": "delta",
+        "rank": 3
+      },
+      "payload": "Aw==",
+      "ratio": 4.5,
+      "tags": []
+    },
+    {
+      "amount": 110,
+      "flag": true,
+      "id": 11,
+      "keyed": {
+        "w": 11
+      },
+      "label": "written 11",
+      "note": {
+        "n": 11
+      },
+      "optional_amount": 90,
+      "optional_label": "theta",
+      "pair": {
+        "name": "written",
+        "rank": 11
+      },
+      "payload": "Cw==",
+      "ratio": 11.25,
+      "tags": [
+        "w",
+        "11"
+      ]
+    },
+    {
+      "amount": 120,
+      "flag": true,
+      "id": 12,
+      "keyed": {
+        "w": 12
+      },
+      "label": "written 12",
+      "note": {
+        "n": 12
+      },
+      "optional_amount": 90,
+      "optional_label": "theta",
+      "pair": {
+        "name": "written",
+        "rank": 12
+      },
+      "payload": "DA==",
+      "ratio": 12.25,
+      "tags": [
+        "w",
+        "12"
+      ]
+    },
+    {
+      "amount": 130,
+      "flag": true,
+      "id": 13,
+      "keyed": {
+        "w": 13
+      },
+      "label": "written 13",
+      "note": {
+        "n": 13
+      },
+      "optional_amount": null,
+      "optional_label": null,
+      "pair": {
+        "name": "written",
+        "rank": 13
+      },
+      "payload": "DQ==",
+      "ratio": 13.25,
+      "tags": []
+    }
+  ]
+}

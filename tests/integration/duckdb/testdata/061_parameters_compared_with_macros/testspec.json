@@ -1,0 +1,4 @@
+{
+  "description": "A parameter compared with a macro over a column takes the type of the macro's body, not the column's: year_of(visited) = $1 binds an int64 year, shout(visitor) = $1 a string, doubled(stays) = $1 an int32, and kept(stays) = $1 (coalesce) a plain int32. Each parameter keeps the name of the column inside the call.",
+  "expectedDiagnostics": []
+}

@@ -1,0 +1,337 @@
+{
+  "$id": "https://seagull.sh/sgl.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "databases": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "custom_functions": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "aggregate": {
+                  "type": "boolean"
+                },
+                "args": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "data_access": {
+                  "enum": [
+                    "read_only",
+                    "modifies_data"
+                  ],
+                  "type": "string"
+                },
+                "min_args": {
+                  "type": "integer"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "nullable": {
+                  "enum": [
+                    "null_on_null",
+                    "never_null",
+                    "called_on_null"
+                  ],
+                  "type": "string"
+                },
+                "returns": {
+                  "type": "string"
+                },
+                "variadic": {
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "dialect": {
+            "examples": [
+              "clickhouse",
+              "cockroachdb",
+              "duckdb",
+              "mariadb",
+              "mysql",
+              "postgres",
+              "sqlite",
+              "timescaledb"
+            ],
+            "type": "string"
+          },
+          "dialect_options": {
+            "additionalProperties": false,
+            "properties": {
+              "ansi_quotes": {
+                "type": "boolean"
+              },
+              "group_by_use_nulls": {
+                "type": "boolean"
+              },
+              "join_use_nulls": {
+                "type": "boolean"
+              },
+              "max_parse_depth": {
+                "maximum": 4096,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "max_tokens_per_statement": {
+                "maximum": 1000000,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "max_type_parse_depth": {
+                "maximum": 64,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "returning": {
+                "type": "boolean"
+              },
+              "search_path": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          },
+          "go": {
+            "additionalProperties": false,
+            "properties": {
+              "doc_comments": {
+                "type": "boolean"
+              },
+              "driver": {
+                "examples": [
+                  "database/sql",
+                  "pgx",
+                  "clickhouse"
+                ],
+                "type": "string"
+              },
+              "empty_slices": {
+                "type": "boolean"
+              },
+              "interface": {
+                "additionalProperties": false,
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "json_tags": {
+                "additionalProperties": false,
+                "properties": {
+                  "case": {
+                    "enum": [
+                      "snake",
+                      "camel",
+                      "pascal"
+                    ],
+                    "type": "string"
+                  },
+                  "omit": {
+                    "type": "boolean"
+                  },
+                  "omitempty": {
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              },
+              "keep_stars": {
+                "type": "boolean"
+              },
+              "legacy_headers": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "out": {
+                "type": "string"
+              },
+              "package": {
+                "type": "string"
+              },
+              "prepared": {
+                "type": "boolean"
+              },
+              "query_names": {
+                "additionalProperties": false,
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "file": {
+                    "type": "string"
+                  },
+                  "func": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "reuse_models": {
+                "type": "boolean"
+              },
+              "struct_tags": {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              "types": {
+                "additionalProperties": false,
+                "properties": {
+                  "bigint": {
+                    "type": "string"
+                  },
+                  "decimal": {
+                    "type": "string"
+                  },
+                  "enum": {
+                    "type": "string"
+                  },
+                  "interval": {
+                    "type": "string"
+                  },
+                  "ip_address": {
+                    "type": "string"
+                  },
+                  "json": {
+                    "type": "string"
+                  },
+                  "money": {
+                    "type": "string"
+                  },
+                  "non_null_elements": {
+                    "type": "boolean"
+                  },
+                  "overrides": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "column": {
+                          "type": "string"
+                        },
+                        "go": {
+                          "type": "string"
+                        },
+                        "non_null_elements": {
+                          "type": "boolean"
+                        },
+                        "sql": {
+                          "type": "string"
+                        },
+                        "struct_tags": {
+                          "additionalProperties": {
+                            "type": "string"
+                          },
+                          "type": "object"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "package_names": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "type": "object"
+                  },
+                  "time_of_day": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "wrap_errors": {
+                "type": "boolean"
+              }
+            },
+            "type": "object"
+          },
+          "migrate": {
+            "additionalProperties": false,
+            "properties": {
+              "dsn": {
+                "type": "string"
+              },
+              "history_table": {
+                "type": "string"
+              },
+              "lock": {
+                "enum": [
+                  "advisory",
+                  "table",
+                  "none"
+                ],
+                "type": "string"
+              },
+              "namespace": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "migrations": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "queries": {
+            "type": "string"
+          },
+          "schema_from": {
+            "type": "string"
+          },
+          "seeds": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "directives": {
+      "additionalProperties": false,
+      "properties": {
+        "prefixes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "require_canonical": {
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "version": {
+      "type": "integer"
+    }
+  },
+  "title": "sgl.yaml",
+  "type": "object"
+}

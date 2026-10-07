@@ -1,0 +1,12 @@
+red:
+  #1 red umbrella, found at the pier, held 40 days
+  #3 red bucket and spade, found at the beach, held 3 days
+held 30 days or more, longest first:
+  #1 red umbrella, found at the pier, held 40 days
+  #4 blue umbrella, found at the cafe, held 33 days
+unclaimed umbrellas: 2
+items named ' OR '1'='1: 0, as the value is bound, not run
+refused a column the query does not select: sgl: unknown column in runtime query filter
+refused SQL in a column name: sgl: unknown column in runtime query filter
+refused an operator outside the allow-list: sgl: unknown operator in runtime query filter
+refused a direction outside the allow-list: sgl: unknown sort direction in runtime query order

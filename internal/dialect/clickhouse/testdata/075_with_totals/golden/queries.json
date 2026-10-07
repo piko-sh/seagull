@@ -1,0 +1,32 @@
+[
+  {
+    "Command": "many",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "SumByCat",
+    "OutputColumns": [
+      {
+        "Name": "cat",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "cat",
+        "SourceQualifier": "t",
+        "SourceTable": "t"
+      },
+      {
+        "Name": "s",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(SumByCat, many)\nSELECT cat, sum(val) AS s FROM t GROUP BY cat WITH TOTALS;",
+    "Template": "SELECT ⟨c0:cat⟩, ⟨c1 aliased:sum(val)⟩ AS s FROM t GROUP BY cat WITH TOTALS;"
+  }
+]

@@ -1,0 +1,8 @@
+start-up: applied 2 migrations
+  1 Kittiwake of Padstow
+start-up: applied 0 migrations
+  1 Kittiwake of Padstow
+  2 Puffin    of Padstow
+history in sgl_migrations:
+  0001 boats           applied=true
+  0002 boat_home_port  applied=true

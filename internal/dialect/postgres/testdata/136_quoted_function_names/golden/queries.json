@@ -1,0 +1,228 @@
+[
+  {
+    "Command": "one",
+    "Filename": "functions.sql",
+    "Line": 1,
+    "Name": "QuotedLabel",
+    "OutputColumns": [
+      {
+        "Name": "doubled",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: QuotedLabel, command: one)\nSELECT \"Label\"(2) AS doubled;",
+    "Template": "SELECT ⟨c0 aliased:\"Label\"(2)⟩ AS doubled;"
+  },
+  {
+    "Command": "one",
+    "Filename": "functions.sql",
+    "Line": 4,
+    "Name": "UnquotedLabel",
+    "OutputColumns": [
+      {
+        "Name": "labelled",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: UnquotedLabel, command: one)\nSELECT label(2) AS labelled;",
+    "Template": "SELECT ⟨c0 aliased:label(2)⟩ AS labelled;"
+  },
+  {
+    "Command": "one",
+    "Filename": "functions.sql",
+    "Line": 7,
+    "Name": "UpperCaseLabel",
+    "OutputColumns": [
+      {
+        "Name": "shouted",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: UpperCaseLabel, command: one)\nSELECT LABEL(2) AS shouted;",
+    "Template": "SELECT ⟨c0 aliased:LABEL(2)⟩ AS shouted;"
+  },
+  {
+    "Command": "one",
+    "Filename": "functions.sql",
+    "Line": 10,
+    "Name": "QuotedScale",
+    "OutputColumns": [
+      {
+        "Name": "scaled",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "factor",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: QuotedScale, command: one)\nSELECT \"Scale\"($1) AS scaled;",
+    "Template": "SELECT ⟨c0 aliased:\"Scale\"(⟨p0⟩)⟩ AS scaled;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "functions.sql",
+    "Line": 13,
+    "Name": "UnquotedScale",
+    "OutputColumns": [
+      {
+        "Name": "scaled",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "factor",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: UnquotedScale, command: one)\nSELECT scale($1) AS scaled;",
+    "Template": "SELECT ⟨c0 aliased:scale(⟨p0⟩)⟩ AS scaled;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "functions.sql",
+    "Line": 16,
+    "Name": "QuotedSeries",
+    "OutputColumns": [
+      {
+        "Name": "quoted_value",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "quoted_value",
+        "SourceQualifier": "Series"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: QuotedSeries, command: many)\nSELECT * FROM \"Series\"();",
+    "Template": "SELECT ⟨star written 0=Series.quoted_value:*⟩ FROM \"Series\"();"
+  },
+  {
+    "Command": "many",
+    "Filename": "functions.sql",
+    "Line": 19,
+    "Name": "UnquotedSeries",
+    "OutputColumns": [
+      {
+        "Name": "plain_value",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "plain_value",
+        "SourceQualifier": "series"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: UnquotedSeries, command: many)\nSELECT * FROM series();",
+    "Template": "SELECT ⟨star written 0=series.plain_value:*⟩ FROM series();"
+  },
+  {
+    "Command": "one",
+    "Filename": "functions.sql",
+    "Line": 22,
+    "Name": "QuotedPurge",
+    "OutputColumns": [
+      {
+        "Name": "purged",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: QuotedPurge, command: one)\nSELECT \"Purge\"() AS purged;",
+    "Template": "SELECT ⟨c0 aliased:\"Purge\"()⟩ AS purged;"
+  },
+  {
+    "Command": "one",
+    "Filename": "functions.sql",
+    "Line": 25,
+    "Name": "UnquotedPurge",
+    "OutputColumns": [
+      {
+        "Name": "remaining",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: UnquotedPurge, command: one)\nSELECT purge() AS remaining;",
+    "Template": "SELECT ⟨c0 aliased:purge()⟩ AS remaining;"
+  },
+  {
+    "Command": "one",
+    "Filename": "functions.sql",
+    "Line": 28,
+    "Name": "Counted",
+    "OutputColumns": [
+      {
+        "Name": "remaining",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Counted, command: one)\nSELECT counted() AS remaining;",
+    "Template": "SELECT ⟨c0 aliased:counted()⟩ AS remaining;"
+  }
+]

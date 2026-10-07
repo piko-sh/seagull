@@ -1,0 +1,33 @@
+[
+  {
+    "Command": "many",
+    "Filename": "tags_by_category.sql",
+    "Line": 1,
+    "Name": "TagsByCategory",
+    "OutputColumns": [
+      {
+        "Name": "category_id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "category_id",
+        "SourceQualifier": "tags",
+        "SourceTable": "tags"
+      },
+      {
+        "Name": "tag_list",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: TagsByCategory, command: many)\nSELECT category_id, string_agg(name, ', ') AS tag_list FROM tags GROUP BY category_id;",
+    "Template": "SELECT ⟨c0:category_id⟩, ⟨c1 aliased:string_agg(name, ', ')⟩ AS tag_list FROM tags GROUP BY category_id;"
+  }
+]

@@ -1,0 +1,47 @@
+[
+  {
+    "Command": "many",
+    "Filename": "prolific_authors.sql",
+    "Line": 1,
+    "Name": "ProlificAuthors",
+    "OutputColumns": [
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "a",
+        "SourceTable": "authors"
+      },
+      {
+        "Name": "book_count",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "book_count",
+        "SourceQualifier": "bc",
+        "SourceTable": "bc"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "book_count",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ProlificAuthors, command: many)\nWITH book_counts AS (\n    SELECT author_id, COUNT(*) AS book_count\n    FROM books\n    GROUP BY author_id\n)\nSELECT a.name, bc.book_count\nFROM authors a\nJOIN book_counts bc ON bc.author_id = a.id\nWHERE bc.book_count \u003e $1\nORDER BY bc.book_count DESC;",
+    "Template": "WITH book_counts AS (\\n    SELECT author_id, COUNT(*) AS book_count\\n    FROM books\\n    GROUP BY author_id\\n)\\nSELECT ⟨c0:a.name⟩, ⟨c1:bc.book_count⟩\\nFROM authors a\\nJOIN book_counts bc ON bc.author_id = a.id\\nWHERE bc.book_count \u003e ⟨p0⟩\\nORDER BY bc.book_count DESC;⟨arguments p0⟩"
+  }
+]

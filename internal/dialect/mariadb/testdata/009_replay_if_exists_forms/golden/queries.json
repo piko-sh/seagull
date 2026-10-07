@@ -1,0 +1,80 @@
+[
+  {
+    "Command": "many",
+    "Filename": "items.sql",
+    "Line": 1,
+    "Name": "ListItems",
+    "OutputColumns": [
+      {
+        "Name": "price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "price",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListItems, command: many)\nSELECT * FROM items;",
+    "Template": "SELECT ⟨star 0=items.price 1=items.id 2=items.name:*⟩ FROM items;"
+  },
+  {
+    "Command": "many",
+    "Filename": "items.sql",
+    "Line": 4,
+    "Name": "ListItemView",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "item_view",
+        "SourceTable": "item_view"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "item_view",
+        "SourceTable": "item_view"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListItemView, command: many)\nSELECT * FROM item_view;",
+    "Template": "SELECT ⟨star 0=item_view.id 1=item_view.name:*⟩ FROM item_view;"
+  }
+]

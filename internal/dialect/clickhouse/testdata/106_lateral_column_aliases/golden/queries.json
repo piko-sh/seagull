@@ -1,0 +1,66 @@
+[
+  {
+    "Command": "many",
+    "Filename": "gulls.sql",
+    "Line": 1,
+    "Name": "LateralAliases",
+    "OutputColumns": [
+      {
+        "Name": "next_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "doubled",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "loud",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Name": "shout",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Name": "span",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "Float64",
+          "Width": 64
+        },
+        "SourceColumn": "wingspan",
+        "SourceQualifier": "gulls",
+        "SourceTable": "gulls"
+      },
+      {
+        "Name": "half_span",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "Float64",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(LateralAliases, many)\nSELECT id + 1 AS next_id, next_id * 2 AS doubled, upper(name) AS loud, concat(loud, '!') AS shout,\n    wingspan AS span, span / 2 AS half_span\nFROM gulls ORDER BY id;",
+    "Template": "SELECT id + 1 AS next_id, ⟨c1 aliased:next_id * 2⟩ AS doubled, upper(name) AS loud, ⟨c3 aliased:concat(loud, '!')⟩ AS shout,\\n    wingspan AS span, ⟨c5 aliased:span / 2⟩ AS half_span\\nFROM gulls ORDER BY id;"
+  }
+]

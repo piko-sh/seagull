@@ -1,0 +1,7 @@
+CREATE TABLE things (
+  id INTEGER PRIMARY KEY,
+  flag TEXT NOT NULL,
+  doc TEXT NOT NULL,
+  label TEXT NOT NULL,
+  amount TEXT NOT NULL
+);

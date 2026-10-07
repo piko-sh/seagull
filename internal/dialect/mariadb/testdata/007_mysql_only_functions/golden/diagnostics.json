@@ -1,0 +1,112 @@
+[
+  {
+    "Code": "Q005",
+    "Column": 5,
+    "EndColumn": 14,
+    "EndLine": 4,
+    "Filename": "readings.sql",
+    "Line": 4,
+    "Message": "unknown function \"any_value\"",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q005",
+    "Column": 5,
+    "EndColumn": 16,
+    "EndLine": 5,
+    "Filename": "readings.sql",
+    "Line": 5,
+    "Message": "unknown function \"regexp_like\"",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q005",
+    "Column": 5,
+    "EndColumn": 16,
+    "EndLine": 6,
+    "Filename": "readings.sql",
+    "Line": 6,
+    "Message": "unknown function \"bin_to_uuid\"",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q005",
+    "Column": 5,
+    "EndColumn": 12,
+    "EndLine": 7,
+    "Filename": "readings.sql",
+    "Line": 7,
+    "Message": "unknown function \"is_uuid\"",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q005",
+    "Column": 5,
+    "EndColumn": 16,
+    "EndLine": 8,
+    "Filename": "readings.sql",
+    "Line": 8,
+    "Message": "unknown function \"uuid_to_bin\"",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q005",
+    "Column": 5,
+    "EndColumn": 22,
+    "EndLine": 9,
+    "Filename": "readings.sql",
+    "Line": 9,
+    "Message": "unknown function \"json_storage_size\"",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q005",
+    "Column": 5,
+    "EndColumn": 13,
+    "EndLine": 10,
+    "Filename": "readings.sql",
+    "Line": 10,
+    "Message": "unknown function \"grouping\"",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q005",
+    "Column": 5,
+    "EndColumn": 17,
+    "EndLine": 27,
+    "Filename": "readings.sql",
+    "Line": 27,
+    "Message": "no matching overload for function \"regexp_instr\" with 3 arguments",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q005",
+    "Column": 5,
+    "EndColumn": 18,
+    "EndLine": 28,
+    "Filename": "readings.sql",
+    "Line": 28,
+    "Message": "no matching overload for function \"regexp_substr\" with 4 arguments",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q005",
+    "Column": 5,
+    "EndColumn": 19,
+    "EndLine": 29,
+    "Filename": "readings.sql",
+    "Line": 29,
+    "Message": "no matching overload for function \"regexp_replace\" with 5 arguments",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q005",
+    "Column": 5,
+    "EndColumn": 8,
+    "EndLine": 30,
+    "Filename": "readings.sql",
+    "Line": 30,
+    "Message": "no matching overload for function \"lag\" with 3 arguments",
+    "Severity": "warning"
+  }
+]

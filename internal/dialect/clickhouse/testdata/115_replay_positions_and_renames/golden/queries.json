@@ -1,0 +1,123 @@
+[
+  {
+    "Command": "many",
+    "Filename": "replay.sql",
+    "Line": 1,
+    "Name": "ListPlaced",
+    "OutputColumns": [
+      {
+        "Name": "c",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "c",
+        "SourceQualifier": "placed",
+        "SourceTable": "placed"
+      },
+      {
+        "Name": "z",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int32",
+          "Width": 32
+        },
+        "SourceColumn": "z",
+        "SourceQualifier": "placed",
+        "SourceTable": "placed"
+      },
+      {
+        "Name": "a",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int32",
+          "Width": 32
+        },
+        "SourceColumn": "a",
+        "SourceQualifier": "placed",
+        "SourceTable": "placed"
+      },
+      {
+        "Name": "m",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int32",
+          "Width": 32
+        },
+        "SourceColumn": "m",
+        "SourceQualifier": "placed",
+        "SourceTable": "placed"
+      },
+      {
+        "Name": "b",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int32",
+          "Width": 32
+        },
+        "SourceColumn": "b",
+        "SourceQualifier": "placed",
+        "SourceTable": "placed"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListPlaced, command: many)\nSELECT * FROM placed;",
+    "Template": "SELECT ⟨star 0=placed.c 1=placed.z 2=placed.a 3=placed.m 4=placed.b:*⟩ FROM placed;"
+  },
+  {
+    "Command": "many",
+    "Filename": "replay.sql",
+    "Line": 4,
+    "Name": "ListRenamed",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "new_view",
+        "SourceTable": "new_view"
+      },
+      {
+        "Name": "label",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "label",
+        "SourceQualifier": "new_view",
+        "SourceTable": "new_view"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListRenamed, command: many)\nSELECT * FROM new_view;",
+    "Template": "SELECT ⟨star 0=new_view.id 1=new_view.label:*⟩ FROM new_view;"
+  },
+  {
+    "Command": "many",
+    "Filename": "replay.sql",
+    "Line": 7,
+    "Name": "ListMoved",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "moved",
+        "SourceSchema": "archive",
+        "SourceTable": "moved"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListMoved, command: many)\nSELECT id FROM archive.moved;",
+    "Template": "SELECT ⟨c0:id⟩ FROM archive.moved;"
+  }
+]

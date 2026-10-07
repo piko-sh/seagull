@@ -1,0 +1,89 @@
+[
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 1,
+    "Name": "SortedLists",
+    "OutputColumns": [
+      {
+        "Name": "sorted",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "varchar",
+            "Nullable": true
+          },
+          "EngineName": "varchar[]"
+        }
+      },
+      {
+        "Name": "descending",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "varchar",
+            "Nullable": true
+          },
+          "EngineName": "varchar[]"
+        }
+      },
+      {
+        "Name": "ascending",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int4",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "int4[]"
+        }
+      },
+      {
+        "Name": "reversed",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int4",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "int4[]"
+        }
+      },
+      {
+        "Name": "reversed_tags",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "varchar",
+            "Nullable": true
+          },
+          "EngineName": "varchar[]"
+        }
+      },
+      {
+        "Name": "distinct_tags",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "varchar",
+            "Nullable": true
+          },
+          "EngineName": "varchar[]"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: SortedLists, command: many)\nSELECT\n    list_sort(tags) AS sorted,\n    array_sort(tags, 'DESC') AS descending,\n    list_sort(scores, 'ASC', 'NULLS LAST') AS ascending,\n    list_reverse_sort(scores) AS reversed,\n    array_reverse_sort(tags, 'NULLS FIRST') AS reversed_tags,\n    list_distinct(tags) AS distinct_tags\nFROM boats;",
+    "Template": "SELECT\\n    ⟨c0 aliased:list_sort(tags)⟩ AS sorted,\\n    ⟨c1 aliased:array_sort(tags, 'DESC')⟩ AS descending,\\n    ⟨c2 aliased:list_sort(scores, 'ASC', 'NULLS LAST')⟩ AS ascending,\\n    ⟨c3 aliased:list_reverse_sort(scores)⟩ AS reversed,\\n    ⟨c4 aliased:array_reverse_sort(tags, 'NULLS FIRST')⟩ AS reversed_tags,\\n    ⟨c5 aliased:list_distinct(tags)⟩ AS distinct_tags\\nFROM boats;"
+  }
+]

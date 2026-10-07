@@ -1,0 +1,209 @@
+{
+  "DefaultSchema": "default",
+  "Identifiers": {
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "default": {
+      "Name": "default",
+      "Tables": {
+        "sightings": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt64",
+                "Unsigned": true,
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Hidden": true,
+              "Name": "legs",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "array",
+                "ElementType": {
+                  "Category": "struct",
+                  "EngineName": "Tuple",
+                  "StructFields": [
+                    {
+                      "Name": "colony",
+                      "SQLType": {
+                        "Category": "text",
+                        "EngineName": "String"
+                      }
+                    },
+                    {
+                      "Name": "minutes",
+                      "SQLType": {
+                        "Category": "integer",
+                        "EngineName": "UInt16",
+                        "Nullable": true,
+                        "Unsigned": true,
+                        "Width": 16
+                      }
+                    }
+                  ]
+                },
+                "EngineName": "Array"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "legs.colony",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "array",
+                "ElementType": {
+                  "Category": "text",
+                  "EngineName": "String"
+                },
+                "EngineName": "Array"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "legs.minutes",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "array",
+                "ElementType": {
+                  "Category": "integer",
+                  "EngineName": "UInt16",
+                  "Nullable": true,
+                  "Unsigned": true,
+                  "Width": 16
+                },
+                "EngineName": "Array"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "tags",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "array",
+                "ElementType": {
+                  "Category": "text",
+                  "EngineName": "String"
+                },
+                "EngineName": "Array"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "counts",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "array",
+                "ElementType": {
+                  "Category": "integer",
+                  "EngineName": "Int32",
+                  "Nullable": true,
+                  "Width": 32
+                },
+                "EngineName": "Array"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "nests",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "array",
+                "ElementType": {
+                  "Category": "struct",
+                  "EngineName": "Tuple",
+                  "StructFields": [
+                    {
+                      "Name": "colony",
+                      "SQLType": {
+                        "Category": "text",
+                        "EngineName": "String"
+                      }
+                    },
+                    {
+                      "Name": "eggs",
+                      "SQLType": {
+                        "Category": "integer",
+                        "EngineName": "UInt8",
+                        "Unsigned": true,
+                        "Width": 8
+                      }
+                    }
+                  ]
+                },
+                "EngineName": "Array"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "pairs",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "array",
+                "ElementType": {
+                  "Category": "struct",
+                  "EngineName": "Tuple",
+                  "StructFields": [
+                    {
+                      "Name": "_1",
+                      "Positional": true,
+                      "SQLType": {
+                        "Category": "integer",
+                        "EngineName": "UInt8",
+                        "Unsigned": true,
+                        "Width": 8
+                      }
+                    },
+                    {
+                      "Name": "_2",
+                      "Positional": true,
+                      "SQLType": {
+                        "Category": "text",
+                        "EngineName": "String"
+                      }
+                    }
+                  ]
+                },
+                "EngineName": "Array"
+              }
+            }
+          ],
+          "Name": "sightings",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "default"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "default"
+  ]
+}

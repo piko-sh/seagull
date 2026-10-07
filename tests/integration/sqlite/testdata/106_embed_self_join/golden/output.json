@@ -1,0 +1,50 @@
+{
+  "first_report_name": "Grace",
+  "reporting_lines": [
+    {
+      "Manager": {
+        "id": 1,
+        "name": "Ada"
+      },
+      "Report": {
+        "id": 2,
+        "name": "Grace"
+      }
+    },
+    {
+      "Manager": {
+        "id": 2,
+        "name": "Grace"
+      },
+      "Report": {
+        "id": 3,
+        "name": "Linus"
+      }
+    }
+  ],
+  "second_manager_name": "Ada",
+  "top_level_has_no_manager": true,
+  "with_manager": [
+    {
+      "Manager": null,
+      "id": 1,
+      "name": "Ada"
+    },
+    {
+      "Manager": {
+        "id": 1,
+        "name": "Ada"
+      },
+      "id": 2,
+      "name": "Grace"
+    },
+    {
+      "Manager": {
+        "id": 2,
+        "name": "Grace"
+      },
+      "id": 3,
+      "name": "Linus"
+    }
+  ]
+}

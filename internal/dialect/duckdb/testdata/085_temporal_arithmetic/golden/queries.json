@@ -1,0 +1,133 @@
+[
+  {
+    "Command": "many",
+    "Filename": "shipments.sql",
+    "Line": 1,
+    "Name": "ShippingTimes",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "shipments",
+        "SourceTable": "shipments"
+      },
+      {
+        "Name": "took",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "interval",
+          "Temporal": "interval"
+        }
+      },
+      {
+        "Name": "since_midnight",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "interval",
+          "Temporal": "interval"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ShippingTimes, command: many)\nSELECT id, shipped_at - ordered_at AS took, ordered_at - ordered_on AS since_midnight\nFROM shipments;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:shipped_at - ordered_at⟩ AS took, ⟨c2 aliased:ordered_at - ordered_on⟩ AS since_midnight\\nFROM shipments;"
+  },
+  {
+    "Command": "many",
+    "Filename": "shipments.sql",
+    "Line": 5,
+    "Name": "DaysToDue",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "shipments",
+        "SourceTable": "shipments"
+      },
+      {
+        "Name": "days",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: DaysToDue, command: many)\nSELECT id, due_on - ordered_on AS days\nFROM shipments;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:due_on - ordered_on⟩ AS days\\nFROM shipments;"
+  },
+  {
+    "Command": "many",
+    "Filename": "shipments.sql",
+    "Line": 9,
+    "Name": "Deadlines",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "shipments",
+        "SourceTable": "shipments"
+      },
+      {
+        "Name": "reminder_on",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        }
+      },
+      {
+        "Name": "last_day",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        }
+      },
+      {
+        "Name": "ready_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp",
+          "Temporal": "timestamp"
+        }
+      },
+      {
+        "Name": "day_before",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp",
+          "Temporal": "timestamp"
+        }
+      },
+      {
+        "Name": "doubled",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "interval",
+          "Temporal": "interval"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Deadlines, command: many)\nSELECT id, ordered_on + 7 AS reminder_on, due_on - 1 AS last_day, ordered_on + handling AS ready_at,\n       ordered_at - INTERVAL 1 DAY AS day_before, handling * 2 AS doubled\nFROM shipments;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:ordered_on + 7⟩ AS reminder_on, ⟨c2 aliased:due_on - 1⟩ AS last_day, ⟨c3 aliased:ordered_on + handling⟩ AS ready_at,\\n       ⟨c4 aliased:ordered_at - INTERVAL 1 DAY⟩ AS day_before, ⟨c5 aliased:handling * 2⟩ AS doubled\\nFROM shipments;"
+  }
+]

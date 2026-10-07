@@ -1,0 +1,29 @@
+{
+  "add_apps": "added",
+  "app_items": [
+    {
+      "app_id": 1,
+      "master_item_id": 2
+    },
+    {
+      "app_id": 1,
+      "master_item_id": 7
+    },
+    {
+      "app_id": 1,
+      "master_item_id": 9
+    },
+    {
+      "app_id": 2,
+      "master_item_id": 7
+    },
+    {
+      "app_id": 2,
+      "master_item_id": 9
+    }
+  ],
+  "first_app_items": 2,
+  "item_counts": 1,
+  "missing_app_items": 2,
+  "missing_app_items_again": 0
+}

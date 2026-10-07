@@ -1,0 +1,84 @@
+{
+  "cells": {
+    "batch": "ok",
+    "exec": "ok",
+    "exec interpolated": "ok",
+    "exec null": "ok",
+    "literal": "ok",
+    "parameter": "ok",
+    "read 1": "exact",
+    "read 11": "exact",
+    "read 12": "exact",
+    "read 21": "null",
+    "read 31": "exact",
+    "storage": "ok"
+  },
+  "found": {
+    "literal": [
+      {
+        "id": 1
+      },
+      {
+        "id": 11
+      },
+      {
+        "id": 12
+      },
+      {
+        "id": 31
+      }
+    ],
+    "parameter": [
+      {
+        "id": 1
+      },
+      {
+        "id": 11
+      },
+      {
+        "id": 12
+      },
+      {
+        "id": 31
+      }
+    ],
+    "storage": [
+      {
+        "extracted": "\u003cé \u0026 😀\u003e",
+        "id": 1,
+        "storage": "OBJECT",
+        "stored_text": "{\"b\": [1, 2.50], \"a\": \"\u003cé \u0026 😀\u003e\"}"
+      },
+      {
+        "extracted": "\u003cé \u0026 😀\u003e",
+        "id": 11,
+        "storage": "OBJECT",
+        "stored_text": "{\"b\": [1, 2.50], \"a\": \"\u003cé \u0026 😀\u003e\"}"
+      },
+      {
+        "extracted": "\u003cé \u0026 😀\u003e",
+        "id": 12,
+        "storage": "OBJECT",
+        "stored_text": "{\"b\": [1, 2.50], \"a\": \"\u003cé \u0026 😀\u003e\"}"
+      },
+      {
+        "extracted": null,
+        "id": 13,
+        "storage": null,
+        "stored_text": null
+      },
+      {
+        "extracted": null,
+        "id": 21,
+        "storage": null,
+        "stored_text": null
+      },
+      {
+        "extracted": "\u003cé \u0026 😀\u003e",
+        "id": 31,
+        "storage": "OBJECT",
+        "stored_text": "{\"b\": [1, 2.50], \"a\": \"\u003cé \u0026 😀\u003e\"}"
+      }
+    ]
+  }
+}

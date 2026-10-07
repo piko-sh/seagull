@@ -1,0 +1,241 @@
+[
+  {
+    "Command": "many",
+    "Filename": "bookings.sql",
+    "Line": 1,
+    "Name": "ReadStringDates",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "bookings",
+        "SourceTable": "bookings"
+      },
+      {
+        "Name": "literal_year",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "text_month",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "days_since",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "next_day",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "previous_day",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "following_date",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        }
+      },
+      {
+        "Name": "later_opening",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "time",
+          "Temporal": "time"
+        }
+      },
+      {
+        "Name": "earlier_text",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "stamped_next_day",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "days_after",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "formatted",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "literal_epoch",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal"
+        }
+      },
+      {
+        "Name": "epoch",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "precise_epoch",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal"
+        }
+      },
+      {
+        "Name": "literal_hour",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "literal_date",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        }
+      },
+      {
+        "Name": "text_timestamp",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        }
+      },
+      {
+        "Name": "month_end",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        }
+      },
+      {
+        "Name": "number_year",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "extracted_year",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ReadStringDates, command: many)\nSELECT\n    id,\n    YEAR('2024-01-01') AS literal_year,\n    MONTH(raw_date) AS text_month,\n    DATEDIFF(NOW(), '2024-01-01') AS days_since,\n    DATE_ADD('2024-01-01', INTERVAL 1 DAY) AS next_day,\n    DATE_SUB(raw_date, INTERVAL 1 DAY) AS previous_day,\n    ADDDATE(starts_on, 1) AS following_date,\n    ADDTIME(opens, '01:00:00') AS later_opening,\n    SUBTIME('10:00:00', '01:00:00') AS earlier_text,\n    TIMESTAMPADD(DAY, 1, '2024-01-01') AS stamped_next_day,\n    TIMESTAMPDIFF(DAY, '2024-01-01', starts_at) AS days_after,\n    DATE_FORMAT('2024-01-01', '%Y') AS formatted,\n    UNIX_TIMESTAMP('2024-01-01') AS literal_epoch,\n    UNIX_TIMESTAMP(starts_at) AS epoch,\n    UNIX_TIMESTAMP(stamped_at) AS precise_epoch,\n    HOUR('10:00:00') AS literal_hour,\n    DATE('2024-01-01 10:00:00') AS literal_date,\n    TIMESTAMP(raw_date) AS text_timestamp,\n    LAST_DAY(raw_date) AS month_end,\n    YEAR(20240101) AS number_year,\n    EXTRACT(YEAR FROM raw_date) AS extracted_year\nFROM bookings\nWHERE starts_on \u003e '2024-01-01'\n    AND starts_at BETWEEN '2024-01-01' AND '2024-12-31'\n    AND starts_on IN ('2024-01-01', '2024-01-02')\n    AND opens \u003c '18:00:00';",
+    "Template": "SELECT\\n    ⟨c0:id⟩,\\n    ⟨c1 aliased:YEAR('2024-01-01')⟩ AS literal_year,\\n    ⟨c2 aliased:MONTH(raw_date)⟩ AS text_month,\\n    ⟨c3 aliased:DATEDIFF(NOW(), '2024-01-01')⟩ AS days_since,\\n    ⟨c4 aliased:DATE_ADD('2024-01-01', INTERVAL 1 DAY)⟩ AS next_day,\\n    ⟨c5 aliased:DATE_SUB(raw_date, INTERVAL 1 DAY)⟩ AS previous_day,\\n    ⟨c6 aliased:ADDDATE(starts_on, 1)⟩ AS following_date,\\n    ⟨c7 aliased:ADDTIME(opens, '01:00:00')⟩ AS later_opening,\\n    ⟨c8 aliased:SUBTIME('10:00:00', '01:00:00')⟩ AS earlier_text,\\n    ⟨c9 aliased:TIMESTAMPADD(DAY, 1, '2024-01-01')⟩ AS stamped_next_day,\\n    ⟨c10 aliased:TIMESTAMPDIFF(DAY, '2024-01-01', starts_at)⟩ AS days_after,\\n    ⟨c11 aliased:DATE_FORMAT('2024-01-01', '%Y')⟩ AS formatted,\\n    ⟨c12 aliased:UNIX_TIMESTAMP('2024-01-01')⟩ AS literal_epoch,\\n    ⟨c13 aliased:UNIX_TIMESTAMP(starts_at)⟩ AS epoch,\\n    ⟨c14 aliased:UNIX_TIMESTAMP(stamped_at)⟩ AS precise_epoch,\\n    ⟨c15 aliased:HOUR('10:00:00')⟩ AS literal_hour,\\n    ⟨c16 aliased:DATE('2024-01-01 10:00:00')⟩ AS literal_date,\\n    ⟨c17 aliased:TIMESTAMP(raw_date)⟩ AS text_timestamp,\\n    ⟨c18 aliased:LAST_DAY(raw_date)⟩ AS month_end,\\n    ⟨c19 aliased:YEAR(20240101)⟩ AS number_year,\\n    ⟨c20 aliased:EXTRACT(YEAR FROM raw_date)⟩ AS extracted_year\\nFROM bookings\\nWHERE starts_on \u003e '2024-01-01'\\n    AND starts_at BETWEEN '2024-01-01' AND '2024-12-31'\\n    AND starts_on IN ('2024-01-01', '2024-01-02')\\n    AND opens \u003c '18:00:00';"
+  },
+  {
+    "Command": "many",
+    "Filename": "bookings.sql",
+    "Line": 30,
+    "Name": "BookingsInYear",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "bookings",
+        "SourceTable": "bookings"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "starts_at",
+        "Number": 2,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: BookingsInYear, command: many)\nSELECT id\nFROM bookings\nWHERE YEAR(starts_on) = ? AND DATE_ADD(?, INTERVAL 1 DAY) \u003e starts_at;",
+    "Template": "SELECT ⟨c0:id⟩\\nFROM bookings\\nWHERE YEAR(starts_on) = ⟨p0⟩ AND DATE_ADD(⟨p1⟩, INTERVAL 1 DAY) \u003e starts_at;⟨arguments p0 p1⟩"
+  }
+]

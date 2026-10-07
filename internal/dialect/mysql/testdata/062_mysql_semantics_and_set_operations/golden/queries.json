@@ -1,0 +1,608 @@
+[
+  {
+    "Command": "many",
+    "Filename": "aliases.sql",
+    "Line": 1,
+    "Name": "BusyNames",
+    "OutputColumns": [
+      {
+        "Name": "first_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 50
+        },
+        "SourceColumn": "first_name",
+        "SourceQualifier": "people",
+        "SourceTable": "people"
+      },
+      {
+        "Name": "total",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "visit_total",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "total",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "p2",
+        "Number": 2,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: BusyNames, command: many)\nSELECT first_name, count(*) AS total, sum(visits) AS visit_total\nFROM people\nGROUP BY first_name\nHAVING total \u003e ? AND visit_total * 2 \u003e ?\nORDER BY total * 2 DESC;",
+    "Template": "SELECT ⟨c0:first_name⟩, ⟨c1 aliased:count(*)⟩ AS total, ⟨c2 aliased:sum(visits)⟩ AS visit_total\\nFROM people\\nGROUP BY first_name\\nHAVING total \u003e ⟨p0⟩ AND visit_total * 2 \u003e ⟨p1⟩\\nORDER BY total * 2 DESC;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "operators.sql",
+    "Line": 1,
+    "Name": "Ratios",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "people",
+        "SourceTable": "people"
+      },
+      {
+        "Name": "per_visit",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Scale": 6
+        }
+      },
+      {
+        "Name": "remainder",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "whole",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "half",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Scale": 6
+        }
+      },
+      {
+        "Name": "third",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Ratios, command: many)\nSELECT id, spend / visits AS per_visit, visits % 7 AS remainder, visits DIV visits AS whole, spend / 2 AS half,\n    visits MOD 3 AS third\nFROM people;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:spend / visits⟩ AS per_visit, ⟨c2 aliased:visits % 7⟩ AS remainder, ⟨c3 aliased:visits DIV visits⟩ AS whole, ⟨c4 aliased:spend / 2⟩ AS half,\\n    ⟨c5 aliased:visits MOD 3⟩ AS third\\nFROM people;"
+  },
+  {
+    "Command": "many",
+    "Filename": "operators.sql",
+    "Line": 6,
+    "Name": "Dates",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "people",
+        "SourceTable": "people"
+      },
+      {
+        "Name": "parsed",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        }
+      },
+      {
+        "Name": "cast_date",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        },
+        "SourceColumn": "born",
+        "SourceQualifier": "people",
+        "SourceTable": "people"
+      },
+      {
+        "Name": "converted",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "born",
+        "SourceQualifier": "people",
+        "SourceTable": "people"
+      },
+      {
+        "Name": "signed_up_day",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        },
+        "SourceColumn": "signed_up",
+        "SourceQualifier": "people",
+        "SourceTable": "people"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Dates, command: many)\nSELECT id, STR_TO_DATE(born, '%Y-%m-%d') AS parsed, CAST(born AS DATE) AS cast_date, CONVERT(born, DATETIME) AS converted,\n    CAST(signed_up AS DATE) AS signed_up_day\nFROM people;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:STR_TO_DATE(born, '%Y-%m-%d')⟩ AS parsed, ⟨c2 aliased:CAST(born AS DATE)⟩ AS cast_date, ⟨c3 aliased:CONVERT(born, DATETIME)⟩ AS converted,\\n    ⟨c4 aliased:CAST(signed_up AS DATE)⟩ AS signed_up_day\\nFROM people;"
+  },
+  {
+    "Command": "many",
+    "Filename": "operators.sql",
+    "Line": 11,
+    "Name": "SearchPipes",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "people",
+        "SourceTable": "people"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "tinyint"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: SearchPipes, command: many)\nSELECT id FROM people WHERE first_name LIKE '%' || ? || '%';",
+    "Template": "SELECT ⟨c0:id⟩ FROM people WHERE first_name LIKE '%' || ⟨p0⟩ || '%';⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "quotes.sql",
+    "Line": 1,
+    "Name": "Labels",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "people",
+        "SourceTable": "people"
+      },
+      {
+        "Name": "label",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "kind",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "joined",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "visit_count",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "visits",
+        "SourceQualifier": "people",
+        "SourceTable": "people"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Labels, command: many)\nSELECT id, CONCAT(first_name, \":\", last_name) AS label, \"member\" AS kind, 'a' \"b\" AS joined, visits 'visit_count'\nFROM people\nWHERE \"x\" = ?;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:CONCAT(first_name, \":\", last_name)⟩ AS label, ⟨c2 aliased:\"member\"⟩ AS kind, ⟨c3 aliased:'a' \"b\"⟩ AS joined, ⟨c4 aliased:visits⟩ 'visit_count'\\nFROM people\\nWHERE \"x\" = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "set_operations.sql",
+    "Line": 1,
+    "Name": "NewestAndOldest",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "people",
+        "SourceTable": "people"
+      },
+      {
+        "Name": "first_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 50
+        },
+        "SourceColumn": "first_name",
+        "SourceQualifier": "people",
+        "SourceTable": "people"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "visits",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: NewestAndOldest, command: many)\n(SELECT id, first_name FROM people WHERE visits \u003e ? ORDER BY id DESC LIMIT 1)\nUNION ALL\n(SELECT id, first_name FROM archived_people ORDER BY id LIMIT 1)\nORDER BY id;",
+    "Template": "(SELECT id, first_name FROM people WHERE visits \u003e ⟨p0⟩ ORDER BY id DESC LIMIT 1)\\nUNION ALL\\n(SELECT id, first_name FROM archived_people ORDER BY id LIMIT 1)\\nORDER BY id;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "set_operations.sql",
+    "Line": 7,
+    "Name": "WithDefaults",
+    "OutputColumns": [
+      {
+        "Name": "column1",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "column2",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: WithDefaults, command: many)\nVALUES ROW(0, 'nobody') UNION ALL SELECT id, first_name FROM people WHERE id = ?;",
+    "Template": "VALUES ROW(0, 'nobody') UNION ALL SELECT id, first_name FROM people WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "set_operations.sql",
+    "Line": 10,
+    "Name": "Countdown",
+    "OutputColumns": [
+      {
+        "Name": "n",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "n",
+        "SourceQualifier": "countdown",
+        "SourceTable": "countdown"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Countdown, command: many)\nWITH RECURSIVE countdown (n) AS (VALUES ROW(3) UNION ALL SELECT n - 1 FROM countdown WHERE n \u003e 1)\nSELECT n FROM countdown;",
+    "Template": "WITH RECURSIVE countdown (n) AS (VALUES ROW(3) UNION ALL SELECT n - 1 FROM countdown WHERE n \u003e 1)\\nSELECT ⟨c0:n⟩ FROM countdown;"
+  },
+  {
+    "Command": "many",
+    "Filename": "set_operations.sql",
+    "Line": 14,
+    "Name": "Everyone",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "everyone"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Everyone, command: many)\nSELECT everyone.id FROM ((SELECT id FROM people) UNION (SELECT id FROM archived_people)) AS everyone\nWHERE everyone.id \u003e ?;",
+    "Template": "SELECT ⟨c0:everyone.id⟩ FROM ((SELECT id FROM people) UNION (SELECT id FROM archived_people)) AS everyone\\nWHERE everyone.id \u003e ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "set_operations.sql",
+    "Line": 18,
+    "Name": "FromTheView",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "newest_and_oldest",
+        "SourceTable": "newest_and_oldest"
+      },
+      {
+        "Name": "first_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 50
+        },
+        "SourceColumn": "first_name",
+        "SourceQualifier": "newest_and_oldest",
+        "SourceTable": "newest_and_oldest"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FromTheView, command: many)\nSELECT id, first_name FROM newest_and_oldest;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:first_name⟩ FROM newest_and_oldest;"
+  },
+  {
+    "Command": "many",
+    "Filename": "show.sql",
+    "Line": 1,
+    "Name": "Warnings",
+    "OutputColumns": [
+      {
+        "Name": "Level",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "Level"
+      },
+      {
+        "Name": "Code",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int unsigned",
+          "Unsigned": true,
+          "Width": 32
+        },
+        "SourceColumn": "Code"
+      },
+      {
+        "Name": "Message",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "Message"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Warnings, command: many)\nSHOW WARNINGS;",
+    "Template": "SHOW WARNINGS;"
+  },
+  {
+    "Command": "one",
+    "Filename": "show.sql",
+    "Line": 4,
+    "Name": "WarningCount",
+    "OutputColumns": [
+      {
+        "Name": "@@session.warning_count",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint unsigned",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "@@session.warning_count"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: WarningCount, command: one)\nSHOW COUNT(*) WARNINGS;",
+    "Template": "SHOW COUNT(*) WARNINGS;"
+  },
+  {
+    "Command": "many",
+    "Filename": "show.sql",
+    "Line": 7,
+    "Name": "Setting",
+    "OutputColumns": [
+      {
+        "Name": "Variable_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "Variable_name"
+      },
+      {
+        "Name": "Value",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "Value"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Setting, command: many)\nSHOW SESSION VARIABLES LIKE 'sql_mode';",
+    "Template": "SHOW SESSION VARIABLES LIKE 'sql_mode';"
+  },
+  {
+    "Command": "many",
+    "Filename": "show.sql",
+    "Line": 10,
+    "Name": "Tables",
+    "OutputColumns": [
+      {
+        "Name": "Tables_in_app",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "Tables_in_app"
+      },
+      {
+        "Name": "Table_type",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "Table_type"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Tables, command: many)\nSHOW FULL TABLES FROM app;",
+    "Template": "SHOW FULL TABLES FROM app;"
+  },
+  {
+    "Command": "one",
+    "Filename": "show.sql",
+    "Line": 13,
+    "Name": "Definition",
+    "OutputColumns": [
+      {
+        "Name": "Table",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "Table"
+      },
+      {
+        "Name": "Create Table",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "Create Table"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Definition, command: one)\nSHOW CREATE TABLE people;",
+    "Template": "SHOW CREATE TABLE people;"
+  }
+]

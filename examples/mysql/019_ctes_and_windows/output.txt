@@ -1,0 +1,16 @@
+Steven's family:
+  generation 0  Steven   parent NULL
+  generation 1  Gwen     parent Steven
+  generation 1  Jago     parent Steven
+  generation 2  Kerensa  parent Gwen
+theft league:
+  Gwithian      #1 Morwenna 0 of 0
+  Porthmeor     #1 Steven   3 of 4
+  Porthmeor     #2 Gwen     1 of 4
+  Porthmeor     #3 Kerensa  0 of 4
+  Porthminster  #1 Jago     2 of 3
+  Porthminster  #2 Tristan  1 of 3
+beach records:
+  Gwithian      gulls 1, thefts 0, last theft NULL
+  Porthmeor     gulls 3, thefts 4, last theft 2026-07-04
+  Porthminster  gulls 2, thefts 3, last theft 2026-07-05

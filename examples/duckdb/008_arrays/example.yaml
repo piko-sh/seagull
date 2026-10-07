@@ -1,0 +1,29 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: Fishing voyages with VARCHAR[] and INTEGER[] list columns read back as typed Go slices, searched with ANY and grouped with array_agg.
+differs:
+  - "DuckDB calls arrays lists: VARCHAR[] and INTEGER[] declare them, and they count from 1"
+  - "DuckDB can hold NULL in any list, so rows read the elements as pointers, []*string and []*int32, while parameters take plain []string and []int32; non_null_elements: true opts out where the data never holds a NULL element"
+  - "The generated SQL selects list columns as written, and the generated code reads the lists duckdb-go returns into the slices, where PostgreSQL on database/sql reads arrays through to_json()"
+  - "duckdb-go binds a nil slice as an empty list, so the generated code converts a nullable list parameter and binds nil as NULL: voyage 2's sightings come back NULL, voyage 3's empty"
+  - "array_length(ports) counts the elements; DuckDB's cardinality works on maps only"
+  - "$1 = ANY(ports) needs sgl.param(port, type: varchar), as inference leaves it as any"
+entry: {file: db/queries/voyages.sql, query: ListVoyages}
+live: "no"
+test: cgo

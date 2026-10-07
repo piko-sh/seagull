@@ -1,0 +1,33 @@
+[
+  {
+    "Command": "many",
+    "Filename": "list_users_with_posts.sql",
+    "Line": 1,
+    "Name": "ListUsersWithPosts",
+    "OutputColumns": [
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "u",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "title",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "p",
+        "SourceTable": "posts"
+      }
+    ],
+    "SQL": "-- sgl.query(name: ListUsersWithPosts, command: many)\nSELECT u.name, p.title FROM users u LEFT JOIN posts p ON p.author_id = u.id",
+    "Template": "SELECT u.name, p.title FROM users u LEFT JOIN posts p ON p.author_id = u.id"
+  }
+]

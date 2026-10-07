@@ -1,0 +1,3 @@
+{
+  "description": "JSON parameter wire form: the generated JSON type is written by exec and batch and read back, and the stored document is described with the engine's own functions, compared with the same text as a literal and found by the document as a parameter; the document holds spacing, key order, a trailing zero, HTML characters and two- and four-byte UTF-8. MySQL normalises a JSON document (sorted keys, 2.5), compares a JSON column with a string as a JSON string, so the comparison with the same text needs CAST(... AS JSON) and the lookup by the document as a parameter finds nothing (a known limitation of the engine). A second connection interpolates parameters (interpolateParams=true): Value returns the text."
+}

@@ -1,0 +1,104 @@
+{
+  "DefaultSchema": "main",
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "main": {
+      "Functions": {
+        "add_label": [
+          {
+            "Arguments": [
+              {
+                "Name": "v",
+                "Type": {
+                  "Category": "unknown"
+                }
+              }
+            ],
+            "BodySQL": "'result: ' || CAST(v AS VARCHAR)",
+            "DataAccess": "read-only",
+            "MinArguments": 1,
+            "Name": "add_label",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 2
+            },
+            "ReturnType": {
+              "Category": "text",
+              "EngineName": "varchar"
+            }
+          }
+        ],
+        "double_value": [
+          {
+            "Arguments": [
+              {
+                "Name": "x",
+                "Type": {
+                  "Category": "unknown"
+                }
+              }
+            ],
+            "BodySQL": "x * 2",
+            "DataAccess": "read-only",
+            "MinArguments": 1,
+            "Name": "double_value",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 1
+            },
+            "ReturnType": {
+              "Category": "unknown"
+            }
+          }
+        ]
+      },
+      "Name": "main",
+      "Tables": {
+        "measurements": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "value",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "float",
+                "EngineName": "float8",
+                "Width": 64
+              }
+            }
+          ],
+          "Name": "measurements",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "main"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "main"
+  ]
+}

@@ -1,0 +1,29 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: One landing of fish read back column by column, printing the Go type each DuckDB column type became, from unsigned and 128-bit integers to UUIDs.
+differs:
+  - Every column has an exact type, so the mapping follows the declared type directly
+  - REAL is a 4-byte float and maps to float32; DOUBLE maps to float64
+  - Unsigned types map to Go unsigned integers, e.g. UTINYINT to uint8
+  - HUGEINT maps to *big.Int, the type duckdb-go returns, even when the column is NOT NULL
+  - DATE and TIMESTAMP map to time.Time, and UUID to uuid.UUID
+  - "DECIMAL and INTERVAL are left out: their default Go types, apd.Decimal and string, do not round-trip through duckdb-go yet, which returns an INTERVAL as its own duckdb.Interval"
+entry: {file: db/queries/landings.sql, query: GetLanding}
+live: "no"
+test: cgo

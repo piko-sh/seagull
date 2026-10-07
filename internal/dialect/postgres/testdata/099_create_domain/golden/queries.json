@@ -1,0 +1,132 @@
+[
+  {
+    "Command": "many",
+    "Filename": "people.sql",
+    "Line": 1,
+    "Name": "ListPeople",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "people",
+        "SourceTable": "people"
+      },
+      {
+        "Name": "email",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "people",
+        "SourceTable": "people"
+      },
+      {
+        "Name": "backup_email",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "backup_email",
+        "SourceQualifier": "people",
+        "SourceTable": "people"
+      },
+      {
+        "Name": "nickname",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 40
+        },
+        "SourceColumn": "nickname",
+        "SourceQualifier": "people",
+        "SourceTable": "people"
+      },
+      {
+        "Name": "balance",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "balance",
+        "SourceQualifier": "people",
+        "SourceTable": "people"
+      },
+      {
+        "Name": "labels",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "text",
+            "Nullable": true
+          },
+          "EngineName": "text[]"
+        },
+        "SourceColumn": "labels",
+        "SourceQualifier": "people",
+        "SourceTable": "people"
+      },
+      {
+        "Name": "current_feeling",
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "happy",
+            "sad"
+          ],
+          "Schema": "public"
+        },
+        "SourceColumn": "current_feeling",
+        "SourceQualifier": "people",
+        "SourceTable": "people"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListPeople, command: many)\nSELECT id, email, backup_email, nickname, balance, labels, current_feeling FROM people;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:email⟩, ⟨c2:backup_email⟩, ⟨c3:nickname⟩, ⟨c4:balance⟩, ⟨c5:labels⟩, ⟨c6:current_feeling⟩ FROM people;"
+  },
+  {
+    "Command": "many",
+    "Filename": "people.sql",
+    "Line": 4,
+    "Name": "FindByEmail",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "people",
+        "SourceTable": "people"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "email",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FindByEmail, command: many)\nSELECT id FROM people WHERE email = $1::email_address;",
+    "Template": "SELECT ⟨c0:id⟩ FROM people WHERE email = ⟨p0⟩::email_address;⟨arguments p0⟩"
+  }
+]

@@ -1,0 +1,4 @@
+{
+  "description": "Nullability and parameter typing against PostgreSQL through database/sql: comparisons, BETWEEN, IN, NOT and OR over a NULL price read as NULL booleans while IS NULL and IS DISTINCT FROM do not; a CTE before a RIGHT join and a derived table in a FULL join read NULL ids where they have no row; a count subquery without GROUP BY reads 0, never NULL, and array_agg over a column never NULL reads plain elements; a parameter inside now() + $4 * interval '1 day' takes a number and one in a VALUES subquery takes the author's name; SET tags[$1] = $2 takes an index and an element; a row comparison types its parameters; an ANY comparison in the select list keeps its parameter.",
+  "expectedDiagnostics": []
+}

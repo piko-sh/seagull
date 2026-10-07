@@ -1,0 +1,479 @@
+[
+  {
+    "Command": "many",
+    "Filename": "hosts.sql",
+    "Line": 1,
+    "Name": "CompareAddresses",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "hosts",
+        "SourceTable": "hosts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "GoTypeOverride": {
+          "Name": "Addr",
+          "Package": "net/netip"
+        },
+        "Kind": "none",
+        "Name": "addr",
+        "Number": 1,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "inet",
+          "Network": "prefix"
+        }
+      },
+      {
+        "Context": "cast",
+        "GoTypeOverride": {
+          "Name": "Addr",
+          "Package": "net/netip"
+        },
+        "Kind": "none",
+        "Name": "addr_2",
+        "Number": 2,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "inet",
+          "Network": "prefix"
+        }
+      },
+      {
+        "Context": "cast",
+        "GoTypeOverride": {
+          "Name": "Addr",
+          "Package": "net/netip"
+        },
+        "Kind": "none",
+        "Name": "addr_3",
+        "Number": 3,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "inet",
+          "Network": "prefix"
+        }
+      },
+      {
+        "Context": "unknown",
+        "GoTypeOverride": {
+          "Name": "Addr",
+          "Package": "net/netip"
+        },
+        "Kind": "none",
+        "Name": "addr_4",
+        "Number": 4,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "inet",
+          "Network": "prefix"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "addr_5",
+        "Number": 5,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "cidr",
+          "Network": "prefix"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CompareAddresses, command: many)\nSELECT id FROM hosts WHERE addr = $1::inet OR addr \u003c\u003e CAST($2 AS inet) OR $3::inet = addr OR $4 = addr OR addr = $5::cidr;",
+    "Template": "SELECT ⟨c0:id⟩ FROM hosts WHERE addr = ⟨p0⟩::inet OR addr \u003c\u003e CAST(⟨p1⟩ AS inet) OR ⟨p2⟩::inet = addr OR ⟨p3⟩ = addr OR addr = ⟨p4⟩::cidr;⟨arguments p0 p1 p2 p3 p4⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "hosts.sql",
+    "Line": 4,
+    "Name": "ListAddresses",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "hosts",
+        "SourceTable": "hosts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "in-list",
+        "GoTypeOverride": {
+          "Name": "Addr",
+          "Package": "net/netip"
+        },
+        "Kind": "none",
+        "Name": "addr",
+        "Number": 1,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "inet",
+          "Network": "prefix"
+        }
+      },
+      {
+        "Context": "cast",
+        "GoTypeOverride": {
+          "Name": "Addr",
+          "Package": "net/netip"
+        },
+        "Kind": "none",
+        "Name": "addr_2",
+        "Number": 2,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "inet",
+          "Network": "prefix"
+        }
+      },
+      {
+        "Context": "in-list",
+        "GoTypeOverride": {
+          "Name": "Addr",
+          "Package": "net/netip"
+        },
+        "Kind": "none",
+        "Name": "addr_3",
+        "Number": 3,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "inet",
+          "Network": "prefix"
+        }
+      },
+      {
+        "Context": "in-list",
+        "Kind": "none",
+        "Name": "addr_4",
+        "Number": 4,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "cidr",
+          "Network": "prefix"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListAddresses, command: many)\nSELECT id FROM hosts WHERE addr IN ($1::inet, CAST($2 AS inet), $3) OR addr NOT IN ($4::cidr);",
+    "Template": "SELECT ⟨c0:id⟩ FROM hosts WHERE addr IN (⟨p0⟩::inet, CAST(⟨p1⟩ AS inet), ⟨p2⟩) OR addr NOT IN (⟨p3⟩::cidr);⟨arguments p0 p1 p2 p3⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "hosts.sql",
+    "Line": 7,
+    "Name": "BoundAddresses",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "hosts",
+        "SourceTable": "hosts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "GoTypeOverride": {
+          "Name": "Addr",
+          "Package": "net/netip"
+        },
+        "Kind": "none",
+        "Name": "addr_from",
+        "Number": 1,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "inet",
+          "Network": "prefix"
+        }
+      },
+      {
+        "Context": "cast",
+        "GoTypeOverride": {
+          "Name": "Addr",
+          "Package": "net/netip"
+        },
+        "Kind": "none",
+        "Name": "addr_to",
+        "Number": 2,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "inet",
+          "Network": "prefix"
+        }
+      },
+      {
+        "Context": "unknown",
+        "GoTypeOverride": {
+          "Name": "Addr",
+          "Package": "net/netip"
+        },
+        "Kind": "none",
+        "Name": "addr_from_2",
+        "Number": 3,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "inet",
+          "Network": "prefix"
+        }
+      },
+      {
+        "Context": "unknown",
+        "GoTypeOverride": {
+          "Name": "Addr",
+          "Package": "net/netip"
+        },
+        "Kind": "none",
+        "Name": "addr_to_2",
+        "Number": 4,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "inet",
+          "Network": "prefix"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: BoundAddresses, command: many)\nSELECT id FROM hosts WHERE addr BETWEEN $1::inet AND CAST($2 AS inet) OR addr BETWEEN $3 AND $4;",
+    "Template": "SELECT ⟨c0:id⟩ FROM hosts WHERE addr BETWEEN ⟨p0⟩::inet AND CAST(⟨p1⟩ AS inet) OR addr BETWEEN ⟨p2⟩ AND ⟨p3⟩;⟨arguments p0 p1 p2 p3⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "hosts.sql",
+    "Line": 10,
+    "Name": "MatchLabels",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "hosts",
+        "SourceTable": "hosts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "GoTypeOverride": {
+          "Name": "HTML",
+          "Package": "html/template"
+        },
+        "Kind": "none",
+        "Name": "label",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "like",
+        "Kind": "none",
+        "Name": "label_like",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "label_2",
+        "Number": 3,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "label_3",
+        "Number": 4,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "comparison",
+        "GoTypeOverride": {
+          "Name": "URL",
+          "Package": "html/template"
+        },
+        "Kind": "none",
+        "Name": "code",
+        "Number": 5,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "code_2",
+        "Number": 6,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 4
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: MatchLabels, command: many)\nSELECT id FROM hosts WHERE label = $1::text OR label LIKE $2 OR lower(label) = $3 OR length(label) \u003e $4 OR code = $5::varchar OR code = $6::varchar(4);",
+    "Template": "SELECT ⟨c0:id⟩ FROM hosts WHERE label = ⟨p0⟩::text OR label LIKE ⟨p1⟩ OR lower(label) = ⟨p2⟩ OR length(label) \u003e ⟨p3⟩ OR code = ⟨p4⟩::varchar OR code = ⟨p5⟩::varchar(4);⟨arguments p0 p1 p2 p3 p4 p5⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "hosts.sql",
+    "InsertColumns": [
+      "id",
+      "addr",
+      "label",
+      "code"
+    ],
+    "InsertTarget": {
+      "Name": "hosts"
+    },
+    "Line": 13,
+    "Name": "InsertHost",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "assignment",
+        "GoTypeOverride": {
+          "Name": "Addr",
+          "Package": "net/netip"
+        },
+        "Kind": "none",
+        "Name": "addr",
+        "Number": 2,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "inet",
+          "Network": "prefix"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "label",
+        "Number": 3,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "code",
+        "Number": 4,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: InsertHost, command: exec)\nINSERT INTO hosts (id, addr, label, code) VALUES ($1, CAST($2 AS inet), CAST($3 AS varchar), $4::text);",
+    "Template": "INSERT INTO hosts (id, addr, label, code) VALUES ⟨values:(⟨p0⟩, CAST(⟨p1⟩ AS inet), CAST(⟨p2⟩ AS varchar), ⟨p3⟩::text)⟩;⟨arguments p0 p1 p2 p3⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "hosts.sql",
+    "Line": 16,
+    "Name": "UpdateHost",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "GoTypeOverride": {
+          "Name": "Addr",
+          "Package": "net/netip"
+        },
+        "Kind": "none",
+        "Name": "addr",
+        "Number": 1,
+        "SQLType": {
+          "Category": "network",
+          "EngineName": "inet",
+          "Network": "prefix"
+        }
+      },
+      {
+        "Context": "assignment",
+        "GoTypeOverride": {
+          "Name": "HTML",
+          "Package": "html/template"
+        },
+        "Kind": "none",
+        "Name": "label",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "code",
+        "Number": 3,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 4,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: UpdateHost, command: exec)\nUPDATE hosts SET addr = CAST($1 AS inet), label = $2::text, code = CAST($3 AS text) WHERE id = $4;",
+    "Template": "UPDATE hosts SET addr = CAST(⟨p0⟩ AS inet), label = ⟨p1⟩::text, code = CAST(⟨p2⟩ AS text) WHERE id = ⟨p3⟩;⟨arguments p0 p1 p2 p3⟩"
+  }
+]

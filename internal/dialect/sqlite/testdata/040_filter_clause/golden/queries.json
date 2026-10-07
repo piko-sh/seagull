@@ -1,0 +1,48 @@
+[
+  {
+    "Command": "many",
+    "Filename": "sales.sql",
+    "Line": 1,
+    "Name": "GetCategorySummary",
+    "OutputColumns": [
+      {
+        "Name": "category",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "category",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "total_count",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "north_count",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "south_total",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetCategorySummary, command: many)\nSELECT\n  category,\n  COUNT(*) AS total_count,\n  COUNT(*) FILTER (WHERE region = 'north') AS north_count,\n  SUM(amount) FILTER (WHERE region = 'south') AS south_total\nFROM sales\nGROUP BY category\nORDER BY category;",
+    "Template": "SELECT\\n  ⟨c0:category⟩,\\n  ⟨c1 aliased:COUNT(*)⟩ AS total_count,\\n  ⟨c2 aliased:COUNT(*) FILTER (WHERE region = 'north')⟩ AS north_count,\\n  ⟨c3 aliased:SUM(amount) FILTER (WHERE region = 'south')⟩ AS south_total\\nFROM sales\\nGROUP BY category\\nORDER BY category;"
+  }
+]

@@ -1,0 +1,56 @@
+{
+  "days_to_due": [
+    {
+      "days": 10,
+      "id": 1
+    },
+    {
+      "days": 2,
+      "id": 2
+    }
+  ],
+  "deadlines": [
+    {
+      "closes_at": "12:00:00",
+      "id": 1,
+      "last_day": "2024-01-10T00:00:00Z",
+      "opens": "2024-01-01T09:00:00Z",
+      "ready_at": "2024-01-03T03:00:00Z",
+      "reminder_on": "2024-01-08T00:00:00Z",
+      "started_at": "2023-12-31T05:00:00Z"
+    },
+    {
+      "closes_at": "19:15:00",
+      "id": 2,
+      "last_day": "2024-02-29T00:00:00Z",
+      "opens": "2024-02-28T18:30:00Z",
+      "ready_at": "2024-02-28T00:45:00Z",
+      "reminder_on": "2024-03-06T00:00:00Z",
+      "started_at": "2024-02-28T23:15:00Z"
+    }
+  ],
+  "scaled_handling": [
+    {
+      "doubled": "4 days 06:00:00",
+      "id": 1,
+      "quarter": "12:45:00"
+    },
+    {
+      "doubled": "01:30:00",
+      "id": 2,
+      "quarter": "00:11:15"
+    }
+  ],
+  "shipping_times": [
+    {
+      "id": 1,
+      "since_order": "1 day 08:00:00",
+      "took": "2 days 02:30:00"
+    },
+    {
+      "id": 2,
+      "since_order": "1 day",
+      "took": null
+    }
+  ]
+}

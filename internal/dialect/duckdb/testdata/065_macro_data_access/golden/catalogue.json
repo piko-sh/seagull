@@ -1,0 +1,244 @@
+{
+  "DefaultSchema": "main",
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "main": {
+      "CompositeTypes": {
+        "__sgl_udf_harbour_landings__unknown_c18__row": {
+          "Fields": [
+            {
+              "GeneratedKind": "none",
+              "Name": "species",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 5
+              },
+              "SQLType": {
+                "Category": "unknown"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "kg",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 5
+              },
+              "SQLType": {
+                "Category": "unknown"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "grade",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 5
+              },
+              "SQLType": {
+                "Category": "unknown"
+              }
+            }
+          ],
+          "Name": "__sgl_udf_harbour_landings__unknown_c18__row",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 5
+          },
+          "Schema": "main"
+        }
+      },
+      "Functions": {
+        "harbour_landings": [
+          {
+            "Arguments": [
+              {
+                "Name": "name",
+                "Type": {
+                  "Category": "unknown"
+                }
+              }
+            ],
+            "BodySQL": "SELECT species, kg, grade FROM landings WHERE harbour = name",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "harbour_landings",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 5
+            },
+            "ReturnType": {
+              "Category": "composite",
+              "EngineName": "__sgl_udf_harbour_landings__unknown_c18__row",
+              "Schema": "main"
+            },
+            "ReturnsSet": true
+          }
+        ],
+        "next_landing_id": [
+          {
+            "BodySQL": "nextval('landing_ids')",
+            "DataAccess": "modifies-data",
+            "Name": "next_landing_id",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 4
+            },
+            "ReturnType": {
+              "Category": "unknown"
+            }
+          }
+        ],
+        "shout": [
+          {
+            "Arguments": [
+              {
+                "Name": "word",
+                "Type": {
+                  "Category": "unknown"
+                }
+              }
+            ],
+            "BodySQL": "upper(word) || '!'",
+            "DataAccess": "read-only",
+            "MinArguments": 1,
+            "Name": "shout",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 3
+            },
+            "ReturnType": {
+              "Category": "text",
+              "EngineName": "varchar"
+            }
+          }
+        ],
+        "tonnes": [
+          {
+            "Arguments": [
+              {
+                "Name": "kg",
+                "Type": {
+                  "Category": "unknown"
+                }
+              }
+            ],
+            "BodySQL": "kg / 1000.0",
+            "DataAccess": "read-only",
+            "MinArguments": 1,
+            "Name": "tonnes",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 2
+            },
+            "ReturnType": {
+              "Category": "unknown"
+            }
+          }
+        ]
+      },
+      "Name": "main",
+      "Sequences": {
+        "landing_ids": {
+          "Name": "landing_ids",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "Schema": "main"
+        }
+      },
+      "Tables": {
+        "landings": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "harbour",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "species",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "kg",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "grade",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar"
+              }
+            }
+          ],
+          "Name": "landings",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 1
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "main"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "main"
+  ]
+}

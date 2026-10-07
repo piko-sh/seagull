@@ -1,0 +1,110 @@
+{
+  "buckets": [
+    {
+      "events": 1,
+      "month_start": "2024-03-01T00:00:00Z",
+      "quarter_hour": "2024-03-05T10:00:00Z",
+      "tick": "2024-03-05T10:07:00.2Z"
+    },
+    {
+      "events": 1,
+      "month_start": "2024-03-01T00:00:00Z",
+      "quarter_hour": "2024-03-05T10:15:00Z",
+      "tick": "2024-03-05T10:20:00.9Z"
+    },
+    {
+      "events": 1,
+      "month_start": "2024-03-01T00:00:00Z",
+      "quarter_hour": "2024-03-06T23:45:00Z",
+      "tick": "2024-03-06T23:59:59Z"
+    }
+  ],
+  "calendar": [
+    {
+      "days_left": 26,
+      "five_minutes": "2024-03-05T10:05:00Z",
+      "id": 1,
+      "month_end": "2024-03-31T00:00:00Z",
+      "month_key": 202403,
+      "next_hour": "2024-03-05T11:07:00Z",
+      "week_start": "2024-03-04T00:00:00Z",
+      "whole_second": "2024-03-05T10:07:00Z",
+      "year": 2024
+    },
+    {
+      "days_left": 26,
+      "five_minutes": "2024-03-05T10:20:00Z",
+      "id": 2,
+      "month_end": "2024-03-31T00:00:00Z",
+      "month_key": 202403,
+      "next_hour": "2024-03-05T11:20:00Z",
+      "week_start": "2024-03-04T00:00:00Z",
+      "whole_second": "2024-03-05T10:20:00Z",
+      "year": 2024
+    },
+    {
+      "days_left": 25,
+      "five_minutes": "2024-03-06T23:55:00Z",
+      "id": 3,
+      "month_end": "2024-03-31T00:00:00Z",
+      "month_key": 202403,
+      "next_hour": "2024-03-07T00:59:59Z",
+      "week_start": "2024-03-04T00:00:00Z",
+      "whole_second": "2024-03-06T23:59:59Z",
+      "year": 2024
+    }
+  ],
+  "labels": [
+    {
+      "id": 1,
+      "label": "Viewed",
+      "segments": [
+        "",
+        "a",
+        "b"
+      ],
+      "size": "1.50 KiB",
+      "slug": "-a-b"
+    },
+    {
+      "id": 2,
+      "label": "Bought",
+      "segments": [
+        "",
+        "c"
+      ],
+      "size": "2.00 KiB",
+      "slug": "-c"
+    },
+    {
+      "id": 3,
+      "label": "Other",
+      "segments": [
+        "",
+        "d",
+        "e",
+        "f"
+      ],
+      "size": "10.00 B",
+      "slug": "-d-e-f"
+    }
+  ],
+  "per_user": [
+    {
+      "common_flags": 2,
+      "median_bytes": 2048,
+      "median_duration": 1.5,
+      "reached": 2,
+      "retained": "AQE=",
+      "user_id": 7
+    },
+    {
+      "common_flags": 1,
+      "median_bytes": 10,
+      "median_duration": 4,
+      "reached": 0,
+      "retained": "AAA=",
+      "user_id": 8
+    }
+  ]
+}

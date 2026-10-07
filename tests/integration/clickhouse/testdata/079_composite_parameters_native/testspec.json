@@ -1,0 +1,4 @@
+{
+  "description": "Native clickhouse-go ClickHouse composite parameters: a named Tuple binds as a tuple in its declared field order, a Map and an Array(Map) as the driver's own composites, each round-tripping through an insert and an equality filter.",
+  "emitter": "native"
+}

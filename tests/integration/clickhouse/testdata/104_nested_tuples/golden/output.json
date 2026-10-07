@@ -1,0 +1,155 @@
+{
+  "elements": [
+    {
+      "id": 1,
+      "inner_first": "gull",
+      "inner_pair": [
+        "tern",
+        4
+      ],
+      "inner_second": 2
+    },
+    {
+      "id": 2,
+      "inner_first": "skua",
+      "inner_pair": [
+        "kite",
+        25
+      ],
+      "inner_second": 23
+    }
+  ],
+  "named": [
+    {
+      "all_named": {
+        "a": 3,
+        "b": {
+          "n": 4,
+          "s": "tern"
+        }
+      },
+      "id": 1,
+      "inner_named": [
+        1,
+        {
+          "n": 2,
+          "s": "gull"
+        }
+      ]
+    },
+    {
+      "all_named": {
+        "a": 24,
+        "b": {
+          "n": 25,
+          "s": "kite"
+        }
+      },
+      "id": 2,
+      "inner_named": [
+        22,
+        {
+          "n": 23,
+          "s": "skua"
+        }
+      ]
+    }
+  ],
+  "readable": [
+    {
+      "field_list_in_pair": [
+        16,
+        [
+          {
+            "n": 17,
+            "s": "puffin"
+          }
+        ]
+      ],
+      "fields_in_pair": [
+        5,
+        {
+          "n": 6,
+          "s": "auk"
+        }
+      ],
+      "id": 1,
+      "keyed_lists": {
+        "ling": [
+          [
+            18,
+            "c"
+          ]
+        ]
+      },
+      "keyed_pairs_in_fields": {
+        "a": 9,
+        "b": {
+          "eel": [
+            "few",
+            10
+          ]
+        }
+      },
+      "keyed_pairs_in_pair": [
+        7,
+        {
+          "cod": [
+            "many",
+            8
+          ]
+        }
+      ],
+      "listed_lists": [
+        [
+          [
+            14,
+            "a"
+          ],
+          [
+            15,
+            "b"
+          ]
+        ],
+        []
+      ],
+      "numbers_in_pair": [
+        19,
+        [
+          20,
+          21
+        ],
+        "tide"
+      ]
+    },
+    {
+      "field_list_in_pair": [
+        31,
+        []
+      ],
+      "fields_in_pair": [
+        26,
+        {
+          "n": 27,
+          "s": "wren"
+        }
+      ],
+      "id": 2,
+      "keyed_lists": {},
+      "keyed_pairs_in_fields": {
+        "a": 29,
+        "b": {}
+      },
+      "keyed_pairs_in_pair": [
+        28,
+        {}
+      ],
+      "listed_lists": [],
+      "numbers_in_pair": [
+        32,
+        [],
+        null
+      ]
+    }
+  ]
+}

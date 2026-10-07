@@ -1,0 +1,18 @@
+[
+  {
+    "Code": "Q009",
+    "Column": 1,
+    "Filename": "exec_with_select.sql",
+    "Line": 1,
+    "Message": "query \"ExecWithSelect\" uses command \"exec\" but produces 2 output columns",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q009",
+    "Column": 1,
+    "Filename": "one_with_insert.sql",
+    "Line": 1,
+    "Message": "query \"OneWithInsert\" uses command \"one\" but produces no output columns",
+    "Severity": "warning"
+  }
+]

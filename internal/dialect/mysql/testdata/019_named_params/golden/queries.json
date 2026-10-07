@@ -1,0 +1,81 @@
+[
+  {
+    "Command": "one",
+    "Filename": "find_user.sql",
+    "Line": 1,
+    "Name": "FindUser",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "email",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "active",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "tinyint",
+          "Width": 8
+        },
+        "SourceColumn": "active",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "param",
+        "Name": "name",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "param",
+        "Name": "email",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FindUser, command: one)\n-- :name as sgl.param\n-- :email as sgl.param\nSELECT id, name, email, active FROM users WHERE name = :name AND email = :email;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:email⟩, ⟨c3:active⟩ FROM users WHERE name = ⟨p0⟩ AND email = ⟨p1⟩;⟨arguments p0 p1⟩"
+  }
+]

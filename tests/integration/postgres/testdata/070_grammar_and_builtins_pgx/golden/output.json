@@ -1,0 +1,86 @@
+{
+  "every_mark": [
+    {
+      "id": 1,
+      "row": 7
+    },
+    {
+      "id": 2,
+      "row": 8
+    },
+    {
+      "id": 3,
+      "row": 7
+    }
+  ],
+  "everyday": {
+    "row": {
+      "asked": "hi harbour?",
+      "characters": 7,
+      "day": "2025-03-01T00:00:00Z",
+      "first_byte": 0,
+      "greeting": "hi harbour!",
+      "octets": 2,
+      "ones": 3,
+      "over": true,
+      "tomorrow": "2025-03-02T10:00:00Z",
+      "transaction": 0,
+      "trimmed": [
+        "a"
+      ],
+      "trimmed_body": "Bw=="
+    },
+    "transaction_assigned": true
+  },
+  "extremes": [
+    {
+      "id": 1
+    },
+    {
+      "id": 3
+    }
+  ],
+  "labels": [
+    {
+      "column1": 0,
+      "column2": "none"
+    },
+    {
+      "column1": 1,
+      "column2": "harbour"
+    },
+    {
+      "column1": 2,
+      "column2": "quay"
+    },
+    {
+      "column1": 3,
+      "column2": "pier"
+    }
+  ],
+  "mark_rows": [
+    {
+      "id": 1,
+      "row": 7
+    },
+    {
+      "id": 3,
+      "row": 7
+    }
+  ],
+  "nearest": {
+    "distance": 1.4142135623730951,
+    "id": 3
+  },
+  "page": [
+    {
+      "id": 3
+    }
+  ],
+  "renamed": [
+    {
+      "key": 2,
+      "title": "quay"
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+[
+  {
+    "Command": "many",
+    "Filename": "shipments.sql",
+    "Line": 1,
+    "Name": "Differences",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "shipments",
+        "SourceTable": "shipments"
+      },
+      {
+        "Name": "days_number",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "shipped_number",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Scale": 3
+        }
+      },
+      {
+        "Name": "age_number",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Differences, command: many)\nSELECT id, due_on - ordered_on AS days_number, shipped_at - ordered_at AS shipped_number, NOW() - ordered_at AS age_number\nFROM shipments;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:due_on - ordered_on⟩ AS days_number, ⟨c2 aliased:shipped_at - ordered_at⟩ AS shipped_number, ⟨c3 aliased:NOW() - ordered_at⟩ AS age_number\\nFROM shipments;"
+  },
+  {
+    "Command": "many",
+    "Filename": "shipments.sql",
+    "Line": 5,
+    "Name": "Shifted",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "shipments",
+        "SourceTable": "shipments"
+      },
+      {
+        "Name": "follow_up",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        }
+      },
+      {
+        "Name": "day_before",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Shifted, command: many)\nSELECT id, ordered_at + INTERVAL 1 DAY AS follow_up, ordered_on - INTERVAL 1 DAY AS day_before\nFROM shipments;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:ordered_at + INTERVAL 1 DAY⟩ AS follow_up, ⟨c2 aliased:ordered_on - INTERVAL 1 DAY⟩ AS day_before\\nFROM shipments;"
+  }
+]

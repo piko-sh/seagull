@@ -1,0 +1,49 @@
+[
+  {
+    "Command": "many",
+    "Filename": "category_stats.sql",
+    "Line": 1,
+    "Name": "GetCategoryStats",
+    "OutputColumns": [
+      {
+        "Name": "category",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "category",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "item_count",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "category_lower",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "average_price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetCategoryStats, command: many)\nSELECT\n  category,\n  count(*) AS item_count,\n  lower(category) AS category_lower,\n  avg(price) AS average_price\nFROM items\nGROUP BY category",
+    "Template": "SELECT\\n  ⟨c0:category⟩,\\n  ⟨c1 aliased:count(*)⟩ AS item_count,\\n  ⟨c2 aliased:lower(category)⟩ AS category_lower,\\n  ⟨c3 aliased:avg(price)⟩ AS average_price\\nFROM items\\nGROUP BY category"
+  }
+]

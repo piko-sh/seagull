@@ -1,0 +1,4 @@
+{
+  "description": "MAP {..}, map(keys, values) and map_from_entries carry their key and value types, as DuckDB 1.5 types them (the values' common type, NULL-able when a value may be NULL), so a map reads into a typed Go map, and a map whose values are STRUCTs without field names, which duckdb-go cannot read, is refused with Q059 at its select-list item",
+  "expectedDiagnosticCount": 3
+}

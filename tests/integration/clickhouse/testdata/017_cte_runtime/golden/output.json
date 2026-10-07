@@ -1,0 +1,16 @@
+{
+  "counts": [
+    {
+      "c": 3,
+      "kind": "click"
+    },
+    {
+      "c": 2,
+      "kind": "view"
+    },
+    {
+      "c": 1,
+      "kind": "purchase"
+    }
+  ]
+}

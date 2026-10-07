@@ -1,0 +1,128 @@
+[
+  {
+    "Command": "many",
+    "Filename": "items.sql",
+    "Line": 1,
+    "Name": "ListItems",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "label",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "label",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 10,
+          "Scale": 2
+        },
+        "SourceColumn": "price",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListItems, command: many)\nSELECT * FROM items;",
+    "Template": "SELECT ⟨star 0=items.id 1=items.label 2=items.price:*⟩ FROM items;"
+  },
+  {
+    "Command": "many",
+    "Filename": "items.sql",
+    "Line": 4,
+    "Name": "ListCopies",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "item_copies",
+        "SourceTable": "item_copies"
+      },
+      {
+        "Name": "label",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "label",
+        "SourceQualifier": "item_copies",
+        "SourceTable": "item_copies"
+      },
+      {
+        "Name": "price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 10,
+          "Scale": 2
+        },
+        "SourceColumn": "price",
+        "SourceQualifier": "item_copies",
+        "SourceTable": "item_copies"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListCopies, command: many)\nSELECT id, label, price FROM item_copies;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:label⟩, ⟨c2:price⟩ FROM item_copies;"
+  },
+  {
+    "Command": "many",
+    "Filename": "items.sql",
+    "Line": 7,
+    "Name": "ListTotals",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "item_totals",
+        "SourceTable": "item_totals"
+      },
+      {
+        "Name": "price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 10,
+          "Scale": 2
+        },
+        "SourceColumn": "price",
+        "SourceQualifier": "item_totals",
+        "SourceTable": "item_totals"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListTotals, command: many)\nSELECT id, price FROM item_totals;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:price⟩ FROM item_totals;"
+  }
+]

@@ -1,0 +1,4 @@
+{
+  "description": "Native ClickHouse tuples whose elements carry AS names: tuple(1 AS x, 'a' AS y), (a AS x, b AS y), one with a single element and one with a Nullable element, an Array and a Map of them, are the unnamed tuples ClickHouse 25.4 returns and scan into []any by position, which the native driver requires (it cannot scan a tuple into an interface value), a CAST to a named Tuple reads into a struct, and AS names on arguments and array elements leave their types as they are",
+  "emitter": "native"
+}

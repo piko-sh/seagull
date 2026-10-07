@@ -1,0 +1,93 @@
+[
+  {
+    "Command": "many",
+    "Filename": "gulls.sql",
+    "Line": 1,
+    "Name": "LateralAliases",
+    "OutputColumns": [
+      {
+        "Name": "next_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "doubled",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "loud",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "shout",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "span",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        },
+        "SourceColumn": "wingspan",
+        "SourceQualifier": "gulls",
+        "SourceTable": "gulls"
+      },
+      {
+        "Name": "half_span",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(LateralAliases, many)\nSELECT id + 1 AS next_id, next_id * 2 AS doubled, upper(name) AS loud, loud || '!' AS shout,\n    wingspan AS span, span / 2 AS half_span\nFROM gulls ORDER BY id;",
+    "Template": "SELECT id + 1 AS next_id, ⟨c1 aliased:next_id * 2⟩ AS doubled, upper(name) AS loud, ⟨c3 aliased:loud || '!'⟩ AS shout,\\n    wingspan AS span, ⟨c5 aliased:span / 2⟩ AS half_span\\nFROM gulls ORDER BY id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "gulls.sql",
+    "Line": 6,
+    "Name": "ColumnBeforeAlias",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "gulls",
+        "SourceTable": "gulls"
+      },
+      {
+        "Name": "next_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ColumnBeforeAlias, many)\nSELECT name AS id, id + 1 AS next_id FROM gulls ORDER BY next_id;",
+    "Template": "SELECT ⟨c0 aliased:name⟩ AS id, ⟨c1 aliased:id + 1⟩ AS next_id FROM gulls ORDER BY next_id;"
+  }
+]

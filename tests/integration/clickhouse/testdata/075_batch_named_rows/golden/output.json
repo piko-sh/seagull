@@ -1,0 +1,29 @@
+{
+  "batched": [
+    {
+      "day": "2024-03-05",
+      "host": "alpha",
+      "id": 1,
+      "note": null
+    },
+    {
+      "day": "2024-03-06",
+      "host": "beta",
+      "id": 2,
+      "note": "with\\backslash"
+    },
+    {
+      "day": "2024-03-07",
+      "host": "gamma",
+      "id": 3,
+      "note": null
+    }
+  ],
+  "copied": {
+    "highest": 1599,
+    "hosts": 7,
+    "lowest": 1000,
+    "total": 600,
+    "without_note": 300
+  }
+}

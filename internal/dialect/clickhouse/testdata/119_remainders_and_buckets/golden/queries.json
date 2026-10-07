@@ -1,0 +1,125 @@
+[
+  {
+    "Command": "many",
+    "Filename": "remainders.sql",
+    "Line": 1,
+    "Name": "Remainders",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Unsigned": true,
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "positive",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "positive_wide",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "positive_small",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt16",
+          "Unsigned": true,
+          "Width": 16
+        }
+      },
+      {
+        "Name": "signed_remainder",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int32",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "operator_remainder",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int32",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "remainder_or_zero",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int16",
+          "Width": 16
+        }
+      },
+      {
+        "Name": "positive_float",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "Float64",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Remainders, command: many)\nSELECT id, positiveModulo(sensor, slot) AS positive, pmod(sensor, sensor) AS positive_wide,\n    positive_modulo(wide, small) AS positive_small, modulo(wide, small) AS signed_remainder, wide % small AS operator_remainder,\n    moduloOrZero(sensor, slot) AS remainder_or_zero, positiveModulo(level, slot) AS positive_float\nFROM readings;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:positiveModulo(sensor, slot)⟩ AS positive, ⟨c2 aliased:pmod(sensor, sensor)⟩ AS positive_wide,\\n    ⟨c3 aliased:positive_modulo(wide, small)⟩ AS positive_small, ⟨c4 aliased:modulo(wide, small)⟩ AS signed_remainder, ⟨c5 aliased:wide % small⟩ AS operator_remainder,\\n    ⟨c6 aliased:moduloOrZero(sensor, slot)⟩ AS remainder_or_zero, ⟨c7 aliased:positiveModulo(level, slot)⟩ AS positive_float\\nFROM readings;"
+  },
+  {
+    "Command": "many",
+    "Filename": "remainders.sql",
+    "Line": 7,
+    "Name": "Buckets",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Unsigned": true,
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "bucket",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt16",
+          "Unsigned": true,
+          "Width": 16
+        }
+      },
+      {
+        "Name": "wide_bucket",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Buckets, command: many)\nSELECT id, widthBucket(level, 0, 100, buckets) AS bucket, width_bucket(level, 0, 100, toUInt32(buckets)) AS wide_bucket FROM readings;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:widthBucket(level, 0, 100, buckets)⟩ AS bucket, ⟨c2 aliased:width_bucket(level, 0, 100, toUInt32(buckets))⟩ AS wide_bucket FROM readings;"
+  }
+]

@@ -1,0 +1,4 @@
+{
+  "description": "A map literal {key: value} is read in the rows of INSERT ... VALUES beside {name:Type} placeholders (ClickHouse 25.4 reads it there as Map data): with string keys holding a brace, empty, inside an array, a tuple or another map, over several rows and in a batch row, and inline JSON rows after FORMAT keep their braces, rather than each brace being read as a malformed placeholder",
+  "expectedDiagnosticCount": 0
+}

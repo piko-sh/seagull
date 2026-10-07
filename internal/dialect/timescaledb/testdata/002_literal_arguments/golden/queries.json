@@ -1,0 +1,155 @@
+[
+  {
+    "Command": "many",
+    "Filename": "buckets.sql",
+    "Line": 1,
+    "Name": "Hourly",
+    "OutputColumns": [
+      {
+        "Name": "bucket",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "device_id",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "device_id",
+        "SourceQualifier": "conditions",
+        "SourceTable": "conditions"
+      },
+      {
+        "Name": "peak",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Hourly, command: many)\nSELECT time_bucket('1 hour', time) AS bucket, device_id, max(temperature) AS peak\nFROM conditions\nGROUP BY bucket, device_id\nORDER BY bucket;",
+    "Template": "SELECT ⟨c0 aliased:time_bucket('1 hour', time)⟩ AS bucket, ⟨c1:device_id⟩, ⟨c2 aliased:max(temperature)⟩ AS peak\\nFROM conditions\\nGROUP BY bucket, device_id\\nORDER BY bucket;"
+  },
+  {
+    "Command": "many",
+    "Filename": "buckets.sql",
+    "Line": 7,
+    "Name": "Aligned",
+    "OutputColumns": [
+      {
+        "Name": "bucket",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "readings",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Aligned, command: many)\nSELECT time_bucket('15 minutes', time, '2000-01-01 00:07:00+00') AS bucket, count(*) AS readings\nFROM conditions\nGROUP BY bucket;",
+    "Template": "SELECT ⟨c0 aliased:time_bucket('15 minutes', time, '2000-01-01 00:07:00+00')⟩ AS bucket, ⟨c1 aliased:count(*)⟩ AS readings\\nFROM conditions\\nGROUP BY bucket;"
+  },
+  {
+    "Command": "many",
+    "Filename": "buckets.sql",
+    "Line": 12,
+    "Name": "Daily",
+    "OutputColumns": [
+      {
+        "Name": "bucket",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "bucket",
+        "SourceQualifier": "conditions_daily",
+        "SourceTable": "conditions_daily"
+      },
+      {
+        "Name": "device_id",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "device_id",
+        "SourceQualifier": "conditions_daily",
+        "SourceTable": "conditions_daily"
+      },
+      {
+        "Name": "avg_temp",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        },
+        "SourceColumn": "avg_temp",
+        "SourceQualifier": "conditions_daily",
+        "SourceTable": "conditions_daily"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Daily, command: many)\nSELECT bucket, device_id, avg_temp FROM conditions_daily WHERE bucket \u003e now() - interval '7 days';",
+    "Template": "SELECT ⟨c0:bucket⟩, ⟨c1:device_id⟩, ⟨c2:avg_temp⟩ FROM conditions_daily WHERE bucket \u003e now() - interval '7 days';"
+  },
+  {
+    "Command": "one",
+    "Filename": "buckets.sql",
+    "Line": 15,
+    "Name": "Percentiles",
+    "OutputColumns": [
+      {
+        "Name": "p95",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "median",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "device_id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Percentiles, command: one)\nSELECT approx_percentile(0.95, percentile_agg(temperature)) AS p95,\n       approx_percentile(0.5, uddsketch(100, 0.01, temperature)) AS median\nFROM conditions\nWHERE device_id = $1;",
+    "Template": "SELECT ⟨c0 aliased:approx_percentile(0.95, percentile_agg(temperature))⟩ AS p95,\\n       ⟨c1 aliased:approx_percentile(0.5, uddsketch(100, 0.01, temperature))⟩ AS median\\nFROM conditions\\nWHERE device_id = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

@@ -1,0 +1,3 @@
+{
+  "description": "A runtime builder, whose values both drivers format into the statement's text themselves through database/sql, binds a nil nullable parameter as NULL whatever its type: a nil *uuid.UUID, *decimal.Decimal or *string matches no row, a value matches its row, and an INSERT and a batch write and read back the nil ones as NULL."
+}

@@ -1,0 +1,4 @@
+{
+  "description": "Both SQLite drivers read a column as a time.Time only when its declared type is exactly DATE, DATETIME or TIMESTAMP, and a CAST to those names converts by the numeric affinity: a TIMESTAMP(3), DATETIME(6) or DATE(10) column reads and binds as the text it stores, a lookup by that text finds the row, a DATETIME column still reads as a time.Time, and CAST(x AS DATETIME), CAST(x AS DATE) and CAST(x AS TIMESTAMP(3)) read as the decimal SQLite gives (2024 for a date's text, 12.5 for '12.5'). The same golden holds for modernc.org/sqlite and, through sqlite_cgo, mattn/go-sqlite3.",
+  "expectedDiagnostics": []
+}

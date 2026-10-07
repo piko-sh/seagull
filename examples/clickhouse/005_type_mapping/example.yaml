@@ -1,0 +1,30 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: One landing of fish read back column by column, printing the Go type each ClickHouse type became, from unsigned integers to UUID, Decimal and DateTime('UTC').
+differs:
+  - "Integer widths and signs are exact: UInt16, UInt32 and UInt64 map to uint16, uint32 and uint64, Int64 to int64"
+  - Float32 maps to float32, keeping its width like the integers, and Bool maps to bool
+  - "UUID maps to uuid.UUID (github.com/google/uuid) and Decimal(P, S) to decimal.Decimal (github.com/shopspring/decimal), the types clickhouse-go scans into"
+  - "The example passes the UUID and decimal as String and converts them with toUUID and toDecimal32, so example.go needs only the standard library"
+  - "DateTime('UTC') maps to time.Time; a time parameter is sent as Unix seconds, so its moment is kept whatever the server's zone, and the column's zone makes it read back in UTC"
+  - "No BLOB: String and FixedString(N) hold any bytes and map to string"
+  - Nullable(String) maps to *string; every other column is NOT NULL
+entry: {file: db/queries/landings.sql, query: GetLanding}
+live: "no"
+test: integration

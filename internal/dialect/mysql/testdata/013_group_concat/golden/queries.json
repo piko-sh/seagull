@@ -1,0 +1,32 @@
+[
+  {
+    "Command": "many",
+    "Filename": "tags_per_item.sql",
+    "Line": 1,
+    "Name": "TagsPerItem",
+    "OutputColumns": [
+      {
+        "Name": "item_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "item_id",
+        "SourceQualifier": "tags",
+        "SourceTable": "tags"
+      },
+      {
+        "Name": "all_tags",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: TagsPerItem, command: many)\nSELECT\n    item_id,\n    GROUP_CONCAT(tag_name ORDER BY tag_name SEPARATOR ', ') AS all_tags\nFROM tags\nGROUP BY item_id;",
+    "Template": "SELECT\\n    ⟨c0:item_id⟩,\\n    ⟨c1 aliased:GROUP_CONCAT(tag_name ORDER BY tag_name SEPARATOR ', ')⟩ AS all_tags\\nFROM tags\\nGROUP BY item_id;"
+  }
+]

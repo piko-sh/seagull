@@ -1,0 +1,338 @@
+[
+  {
+    "Command": "many",
+    "Filename": "forms.sql",
+    "Line": 1,
+    "Name": "FromFirst",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FromFirst, command: many)\nFROM boats SELECT id, name WHERE id = $1;",
+    "Template": "FROM boats SELECT id, name WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "forms.sql",
+    "Line": 4,
+    "Name": "HarbourTotals",
+    "OutputColumns": [
+      {
+        "Name": "harbour",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "harbour",
+        "SourceQualifier": "landings",
+        "SourceTable": "landings"
+      },
+      {
+        "Name": "total",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "hugeint",
+          "Width": 128
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: HarbourTotals, command: many)\nSELECT harbour, sum(kg) AS total FROM landings GROUP BY ALL ORDER BY ALL;",
+    "Template": "SELECT ⟨c0:harbour⟩, ⟨c1 aliased:sum(kg)⟩ AS total FROM landings GROUP BY ALL ORDER BY ALL;"
+  },
+  {
+    "Command": "many",
+    "Filename": "forms.sql",
+    "Line": 7,
+    "Name": "BiggestLandingPerHarbour",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "landings",
+        "SourceTable": "landings"
+      },
+      {
+        "Name": "harbour",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "harbour",
+        "SourceQualifier": "landings",
+        "SourceTable": "landings"
+      },
+      {
+        "Name": "kg",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "kg",
+        "SourceQualifier": "landings",
+        "SourceTable": "landings"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: BiggestLandingPerHarbour, command: many)\nSELECT id, harbour, kg FROM landings QUALIFY row_number() OVER (PARTITION BY harbour ORDER BY kg DESC) = 1;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:harbour⟩, ⟨c2:kg⟩ FROM landings QUALIFY row_number() OVER (PARTITION BY harbour ORDER BY kg DESC) = 1;"
+  },
+  {
+    "Command": "many",
+    "Filename": "forms.sql",
+    "Line": 10,
+    "Name": "PricedLandings",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "l",
+        "SourceTable": "landings"
+      },
+      {
+        "Name": "price_per_kg",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        },
+        "SourceColumn": "price_per_kg",
+        "SourceQualifier": "p",
+        "SourceTable": "prices"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: PricedLandings, command: many)\nSELECT l.id, p.price_per_kg FROM landings l ASOF LEFT JOIN prices p ON l.harbour = p.harbour AND l.landed_at \u003e= p.set_at;",
+    "Template": "SELECT ⟨c0:l.id⟩, ⟨c1:p.price_per_kg⟩ FROM landings l ASOF LEFT JOIN prices p ON l.harbour = p.harbour AND l.landed_at \u003e= p.set_at;"
+  },
+  {
+    "Command": "many",
+    "Filename": "forms.sql",
+    "Line": 13,
+    "Name": "BoatsThatLanded",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "b",
+        "SourceTable": "boats"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "b",
+        "SourceTable": "boats"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "harbour",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: BoatsThatLanded, command: many)\nSELECT b.id, b.name FROM boats b SEMI JOIN landings l ON l.boat_id = b.id AND l.harbour = $1;",
+    "Template": "SELECT ⟨c0:b.id⟩, ⟨c1:b.name⟩ FROM boats b SEMI JOIN landings l ON l.boat_id = b.id AND l.harbour = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "forms.sql",
+    "Line": 16,
+    "Name": "AllNames",
+    "OutputColumns": [
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AllNames, command: many)\nSELECT name FROM boats UNION ALL BY NAME SELECT harbour AS name FROM landings;",
+    "Template": "SELECT name FROM boats UNION ALL BY NAME SELECT harbour AS name FROM landings;"
+  },
+  {
+    "Command": "many",
+    "Filename": "forms.sql",
+    "Line": 19,
+    "Name": "OtherBoats",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "in-list",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "in-list",
+        "Kind": "none",
+        "Name": "id_2",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: OtherBoats, command: many)\nSELECT id FROM boats WHERE id NOT IN ($1, $2);",
+    "Template": "SELECT ⟨c0:id⟩ FROM boats WHERE id NOT IN (⟨p0⟩, ⟨p1⟩);⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "forms.sql",
+    "Line": 22,
+    "Name": "BoatCards",
+    "OutputColumns": [
+      {
+        "Name": "card",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "struct",
+          "StructFields": [
+            {
+              "Name": "id",
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Nullable": true,
+                "Width": 32
+              }
+            },
+            {
+              "Name": "name",
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Nullable": true
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: BoatCards, command: many)\nSELECT {'id': id, 'name': name} AS card FROM boats;",
+    "Template": "SELECT ⟨c0 aliased:{'id': id, 'name': name}⟩ AS card FROM boats;"
+  },
+  {
+    "Command": "many",
+    "Filename": "forms.sql",
+    "Line": 25,
+    "Name": "SamePrice",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "landings",
+        "SourceTable": "landings"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "price",
+        "Nullable": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: SamePrice, command: many)\nSELECT id FROM landings WHERE price IS NOT DISTINCT FROM $1;",
+    "Template": "SELECT ⟨c0:id⟩ FROM landings WHERE price IS NOT DISTINCT FROM ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

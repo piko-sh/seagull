@@ -1,0 +1,4 @@
+{
+  "description": "ClickHouse: positiveModulo, pmod and positive_modulo are unsigned at the divisor's width, modulo, % and moduloOrZero of a signed dividend take the next width above the divisor's, and widthBucket is unsigned at twice the bucket count's width, as ClickHouse 25.4 types them.",
+  "expectedDiagnosticCount": 0
+}

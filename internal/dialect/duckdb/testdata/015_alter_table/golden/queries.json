@@ -1,0 +1,57 @@
+[
+  {
+    "Command": "many",
+    "Filename": "products.sql",
+    "Line": 1,
+    "Name": "GetAllProducts",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      },
+      {
+        "Name": "price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        },
+        "SourceColumn": "price",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      },
+      {
+        "Name": "active",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        },
+        "SourceColumn": "active",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetAllProducts, command: many)\nSELECT id, name, price, active FROM products;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:price⟩, ⟨c3:active⟩ FROM products;"
+  }
+]

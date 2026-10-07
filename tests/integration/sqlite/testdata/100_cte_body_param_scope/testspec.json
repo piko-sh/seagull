@@ -1,0 +1,4 @@
+{
+  "description": "A CTE body's unqualified parameter column (id < ?1) resolves in the CTE's own single-table scope, where id is unambiguous, even though the outer query reads several relations exposing id. The query analyses without diagnostics and the generated code selects the correct version row.",
+  "expectedDiagnostics": []
+}

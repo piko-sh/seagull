@@ -1,0 +1,161 @@
+[
+  {
+    "Command": "one",
+    "Filename": "complete_task.sql",
+    "Line": 1,
+    "Name": "CompleteTask",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "tasks",
+        "SourceTable": "tasks"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "tasks",
+        "SourceTable": "tasks"
+      },
+      {
+        "Name": "done",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "done",
+        "SourceQualifier": "tasks",
+        "SourceTable": "tasks"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: CompleteTask, command: one)\nUPDATE tasks SET done = 1 WHERE id = ? RETURNING id, title, done",
+    "Template": "UPDATE tasks SET done = 1 WHERE id = ⟨p0⟩ RETURNING ⟨c0:id⟩, ⟨c1:title⟩, ⟨c2:done⟩⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "create_task.sql",
+    "InsertColumns": [
+      "title"
+    ],
+    "InsertTarget": {
+      "Name": "tasks"
+    },
+    "Line": 1,
+    "Name": "CreateTask",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "tasks",
+        "SourceTable": "tasks"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "tasks",
+        "SourceTable": "tasks"
+      },
+      {
+        "Name": "done",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "done",
+        "SourceQualifier": "tasks",
+        "SourceTable": "tasks"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "title",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: CreateTask, command: one)\nINSERT INTO tasks (title) VALUES (?) RETURNING id, title, done",
+    "Template": "INSERT INTO tasks (title) VALUES ⟨values:(⟨p0⟩)⟩ RETURNING ⟨c0:id⟩, ⟨c1:title⟩, ⟨c2:done⟩⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "delete_task.sql",
+    "Line": 1,
+    "Name": "DeleteTask",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "tasks",
+        "SourceTable": "tasks"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "tasks",
+        "SourceTable": "tasks"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: DeleteTask, command: one)\nDELETE FROM tasks WHERE id = ? RETURNING id, title",
+    "Template": "DELETE FROM tasks WHERE id = ⟨p0⟩ RETURNING ⟨c0:id⟩, ⟨c1:title⟩⟨arguments p0⟩"
+  }
+]

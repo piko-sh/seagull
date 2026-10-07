@@ -1,0 +1,1 @@
+{"description": "DDL replays as TimescaleDB, PostgreSQL underneath, applies it: a repeated CREATE TABLE IF NOT EXISTS and ADD COLUMN IF NOT EXISTS change nothing, a table-level primary key makes its columns NOT NULL, and a view defined with SELECT * holds the table's columns under its declared names"}

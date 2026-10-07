@@ -1,0 +1,204 @@
+{
+  "aliased_join": [
+    {
+      "author_id": 1,
+      "id": 1,
+      "id2": 1,
+      "name": "Agatha",
+      "price": 12,
+      "title": "The Murder at the Vicarage"
+    },
+    {
+      "author_id": 1,
+      "id": 1,
+      "id2": 2,
+      "name": "Agatha",
+      "price": null,
+      "title": "Nemesis"
+    },
+    {
+      "author_id": 2,
+      "id": 2,
+      "id2": 3,
+      "name": "Dorothy",
+      "price": 9,
+      "title": "Gaudy Night"
+    }
+  ],
+  "aliased_join_columns": [
+    {
+      "title": "Gaudy Night",
+      "writer": "Dorothy"
+    },
+    {
+      "title": "The Murder at the Vicarage",
+      "writer": "Agatha"
+    }
+  ],
+  "author_titles": [
+    {
+      "author_id": 1,
+      "book_count": 2
+    },
+    {
+      "author_id": 2,
+      "book_count": 1
+    }
+  ],
+  "authors_above_count": [
+    {
+      "id": 1
+    }
+  ],
+  "authors_with_first_title": [
+    {
+      "id": 1,
+      "title": "The Murder at the Vicarage",
+      "top_price": 12
+    },
+    {
+      "id": 2,
+      "title": "Gaudy Night",
+      "top_price": 9
+    }
+  ],
+  "cte_inside_a_derived_union": [
+    {
+      "id": 1,
+      "name": "Agatha"
+    },
+    {
+      "id": 1,
+      "name": "Agatha"
+    },
+    {
+      "id": 2,
+      "name": "Dorothy"
+    },
+    {
+      "id": 2,
+      "name": "Dorothy"
+    }
+  ],
+  "derived_table_in_a_later_arm": [
+    {
+      "id": 1,
+      "name": "Agatha"
+    },
+    {
+      "id": 2,
+      "name": "Dorothy"
+    },
+    {
+      "id": 3,
+      "name": "Gaudy Night"
+    },
+    {
+      "id": 2,
+      "name": "Nemesis"
+    },
+    {
+      "id": 1,
+      "name": "The Murder at the Vicarage"
+    }
+  ],
+  "joined_earlier_cte": [
+    {
+      "name": "Dorothy",
+      "title": "Gaudy Night"
+    },
+    {
+      "name": "Agatha",
+      "title": "Nemesis"
+    },
+    {
+      "name": "Agatha",
+      "title": "The Murder at the Vicarage"
+    }
+  ],
+  "lateral_inside_a_cte": [
+    {
+      "name": "Agatha",
+      "title": "Nemesis"
+    },
+    {
+      "name": "Dorothy",
+      "title": "Gaudy Night"
+    }
+  ],
+  "nested_with": [
+    {
+      "id": 1,
+      "name": "Agatha"
+    },
+    {
+      "id": 2,
+      "name": "Dorothy"
+    }
+  ],
+  "null_in_the_first_branch": [
+    {
+      "name": null
+    },
+    {
+      "name": "Agatha"
+    },
+    {
+      "name": "Dorothy"
+    }
+  ],
+  "partly_renamed_cte": [
+    {
+      "book": 1,
+      "title": "The Murder at the Vicarage"
+    },
+    {
+      "book": 2,
+      "title": "Nemesis"
+    },
+    {
+      "book": 3,
+      "title": "Gaudy Night"
+    }
+  ],
+  "renamed_derived_table": [
+    {
+      "book": 1,
+      "writer": 1
+    },
+    {
+      "book": 2,
+      "writer": 1
+    }
+  ],
+  "renamed_star_cte": [
+    {
+      "key": 1,
+      "label": "Agatha"
+    },
+    {
+      "key": 2,
+      "label": "Dorothy"
+    }
+  ],
+  "renamed_values": [
+    {
+      "label": "one",
+      "n": 1
+    },
+    {
+      "label": "two",
+      "n": 2
+    }
+  ],
+  "star_of_an_earlier_cte": [
+    {
+      "id": 1,
+      "name": "Agatha"
+    },
+    {
+      "id": 2,
+      "name": "Dorothy"
+    }
+  ]
+}

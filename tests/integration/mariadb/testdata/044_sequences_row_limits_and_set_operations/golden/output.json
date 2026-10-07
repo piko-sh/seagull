@@ -1,0 +1,107 @@
+{
+  "fewest_and_most": [
+    {
+      "id": 2001,
+      "items": 2
+    },
+    {
+      "id": 2002,
+      "items": 4
+    }
+  ],
+  "invoice_ids": [
+    {
+      "id": 2001
+    },
+    {
+      "id": 2002
+    },
+    {
+      "id": 2003
+    }
+  ],
+  "invoice_page": [
+    {
+      "id": 2002,
+      "shop": "north"
+    }
+  ],
+  "last_invoice_number": {
+    "previous_number": null
+  },
+  "most_items": [
+    {
+      "id": 2002,
+      "items": 4
+    },
+    {
+      "id": 2003,
+      "items": 4
+    }
+  ],
+  "move_back": {
+    "moved_to": null
+  },
+  "move_invoice_numbers": {
+    "moved_to": 2000
+  },
+  "next_invoice_numbers": {
+    "after_that": 1001,
+    "last_number": 1001,
+    "next_number": 1000
+  },
+  "per_item": [
+    {
+      "id": 2001,
+      "issued_on": "2024-01-02T00:00:00Z",
+      "label": "north:2001",
+      "per_item": null
+    },
+    {
+      "id": 2002,
+      "issued_on": null,
+      "label": "north:2002",
+      "per_item": 2
+    },
+    {
+      "id": 2003,
+      "issued_on": "2024-03-04T00:00:00Z",
+      "label": "south:2003",
+      "per_item": 2
+    }
+  ],
+  "shop_medians": [
+    {
+      "continuous": 3,
+      "discrete": 4,
+      "id": 2001,
+      "median_items": 3
+    },
+    {
+      "continuous": 3,
+      "discrete": 4,
+      "id": 2002,
+      "median_items": 3
+    },
+    {
+      "continuous": 4,
+      "discrete": 4,
+      "id": 2003,
+      "median_items": 4
+    }
+  ],
+  "shops_with_default": [
+    {
+      "column1": "none",
+      "column2": 0
+    },
+    {
+      "column1": "north",
+      "column2": 4
+    },
+    {
+      "column1": "south",
+      "column2": 4
+    }
+  ]
+}

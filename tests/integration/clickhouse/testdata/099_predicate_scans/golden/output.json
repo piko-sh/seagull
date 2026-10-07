@@ -1,0 +1,28 @@
+{
+  "predicates": [
+    {
+      "id": 1,
+      "listed": 1,
+      "long_and_ringed": true,
+      "long_wing": 1,
+      "marked": true,
+      "present": 1,
+      "short_wing": 0,
+      "typical": 1,
+      "unmeasured": 0,
+      "wide": 0
+    },
+    {
+      "id": 2,
+      "listed": 0,
+      "long_and_ringed": false,
+      "long_wing": 0,
+      "marked": true,
+      "present": 1,
+      "short_wing": 1,
+      "typical": null,
+      "unmeasured": 1,
+      "wide": null
+    }
+  ]
+}

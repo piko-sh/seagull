@@ -1,0 +1,64 @@
+[
+  {
+    "Command": "one",
+    "Filename": "insert_do_nothing.sql",
+    "InsertColumns": [
+      "slug",
+      "payload"
+    ],
+    "InsertTarget": {
+      "Name": "events"
+    },
+    "Line": 1,
+    "Name": "InsertEventDoNothing",
+    "Optional": true,
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "slug",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "slug",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "slug",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "payload",
+        "Nullable": true,
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: InsertEventDoNothing, command: one, optional: true)\nINSERT INTO events (slug, payload)\nVALUES ($1, $2)\nON CONFLICT (slug) WHERE archived = false DO NOTHING\nRETURNING id, slug;",
+    "Template": "INSERT INTO events (slug, payload)\\nVALUES ⟨values:(⟨p0⟩, ⟨p1⟩)⟩\\nON CONFLICT (slug) WHERE archived = false DO NOTHING\\nRETURNING ⟨c0:id⟩, ⟨c1:slug⟩;⟨arguments p0 p1⟩"
+  }
+]

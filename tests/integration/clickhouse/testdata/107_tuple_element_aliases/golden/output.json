@@ -1,0 +1,75 @@
+{
+  "aliased": {
+    "doubled": 6,
+    "next": 3,
+    "pair": "AQI="
+  },
+  "built": [
+    {
+      "called": [
+        1,
+        "gull"
+      ],
+      "id": 1,
+      "parenthesised": [
+        1,
+        "herring"
+      ],
+      "partly": [
+        1.4,
+        "herring"
+      ],
+      "single": [
+        1
+      ]
+    },
+    {
+      "called": [
+        1,
+        "gull"
+      ],
+      "id": 2,
+      "parenthesised": [
+        2,
+        "kittiwake"
+      ],
+      "partly": [
+        null,
+        "kittiwake"
+      ],
+      "single": [
+        2
+      ]
+    }
+  ],
+  "labels": [
+    "herring",
+    "gull",
+    "herring"
+  ],
+  "nested": [
+    {
+      "keyed": {
+        "herring": [
+          1,
+          "gull"
+        ]
+      },
+      "listed": [
+        [
+          1,
+          "herring"
+        ]
+      ],
+      "named": {
+        "key": 1,
+        "label": "herring"
+      }
+    }
+  ],
+  "sum": 10,
+  "widths": [
+    7,
+    7
+  ]
+}

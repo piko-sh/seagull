@@ -1,0 +1,24 @@
+[
+  {
+    "Command": "many",
+    "Filename": "union_widen.sql",
+    "Line": 1,
+    "Name": "UnionWiden",
+    "OutputColumns": [
+      {
+        "Name": "val",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "val",
+        "SourceQualifier": "narrow",
+        "SourceTable": "narrow"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: UnionWiden, command: many)\nSELECT val FROM narrow\nUNION ALL\nSELECT val FROM wide;",
+    "Template": "SELECT val FROM narrow\\nUNION ALL\\nSELECT val FROM wide;"
+  }
+]

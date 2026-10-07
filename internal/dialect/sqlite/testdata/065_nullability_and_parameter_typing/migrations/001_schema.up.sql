@@ -1,0 +1,2 @@
+CREATE TABLE authors (id INTEGER PRIMARY KEY, name TEXT NOT NULL, nickname TEXT);
+CREATE TABLE books (id INTEGER PRIMARY KEY, author_id INTEGER, title TEXT NOT NULL, price REAL, published TEXT NOT NULL);

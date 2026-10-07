@@ -1,0 +1,31 @@
+{
+  "add_visit_1": "added",
+  "add_visit_2": "added",
+  "add_visit_3": "added",
+  "visits_by_shout": [
+    {
+      "id": 2
+    }
+  ],
+  "visits_in_2024": [
+    {
+      "id": 1
+    },
+    {
+      "id": 3
+    }
+  ],
+  "visits_with_doubled_stays": [
+    {
+      "id": 1
+    }
+  ],
+  "visits_with_kept_stays": [
+    {
+      "id": 2
+    },
+    {
+      "id": 3
+    }
+  ]
+}

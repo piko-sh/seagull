@@ -1,0 +1,463 @@
+// Copyright 2026 PolitePixels Limited
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// This project stands against fascism, authoritarianism, and all forms of
+// oppression. We built this to empower people, not to enable those who would
+// strip others of their rights and dignity.
+
+package store
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
+	"reflect"
+	"testing"
+)
+
+type fakeRows struct {
+	pgx.Rows
+	n, i     int
+	failAt   int
+	endError error
+	closed   bool
+	data     [][]any
+}
+
+func (r *fakeRows) Next() bool { r.i++; return r.i <= r.n }
+func (r *fakeRows) Scan(dest ...any) error {
+	if r.i == r.failAt {
+		return errors.New("scan failed")
+	}
+	if len(dest) == 1 {
+		return dest[0].(*SelfReferencing).Scan(int64(r.i))
+	}
+	if r.data != nil {
+		for index, value := range r.data[(r.i-1)%len(r.data)] {
+			field := reflect.ValueOf(dest[index]).Elem()
+			if value == nil {
+				field.SetZero()
+				continue
+			}
+			if field.Kind() == reflect.Pointer {
+				field.Set(reflect.New(field.Type().Elem()))
+				field = field.Elem()
+			}
+			source := reflect.ValueOf(value)
+			if source.Type() != field.Type() {
+				source = source.Convert(field.Type())
+			}
+			field.Set(source)
+		}
+		return nil
+	}
+	*(dest[0].(*int64)) = int64(r.i)
+	*(dest[1].(*string)) = "Alice"
+	*(dest[2].(*int32)) = 42
+	return nil
+}
+func (r *fakeRows) Close()     { r.closed = true }
+func (r *fakeRows) Err() error { return r.endError }
+
+type fakeDB struct {
+	DBTX
+	rows   fakeRows
+	copied [][]any
+	batch  *pgx.Batch
+}
+
+func (d *fakeDB) Query(context.Context, string, ...any) (pgx.Rows, error) {
+	d.rows.i = 0
+	d.rows.closed = false
+	return &d.rows, nil
+}
+func (d *fakeDB) QueryRow(context.Context, string, ...any) pgx.Row { d.rows.i = 1; return &d.rows }
+func (d *fakeDB) Exec(context.Context, string, ...any) (pgconn.CommandTag, error) {
+	return pgconn.CommandTag{}, nil
+}
+
+var resultSink []ListUsersRow
+var oneSink GetUserRow
+var intSink int64
+var sqlSink string
+var argsSink []any
+
+func BenchmarkRows(b *testing.B) {
+	ctx := context.Background()
+	db := &fakeDB{}
+	q := New(db)
+	for _, n := range []int{0, 1, 100, 1000} {
+		db.rows.n = n
+		for _, test := range []struct {
+			name string
+			run  func(context.Context) ([]ListUsersRow, error)
+		}{{"Generated", q.ListUsers}} {
+			b.Run(fmt.Sprintf("%s/N%d", test.name, n), func(b *testing.B) {
+				b.ReportAllocs()
+				for b.Loop() {
+					var err error
+					resultSink, err = test.run(ctx)
+					if err != nil {
+						b.Fatal(err)
+					}
+				}
+			})
+		}
+		b.Run(fmt.Sprintf("Stream/N%d", n), func(b *testing.B) {
+			b.ReportAllocs()
+			for b.Loop() {
+				var sum int64
+				for row, err := range q.StreamUsers(ctx) {
+					if err != nil {
+						b.Fatal(err)
+					}
+					sum += row.ID
+				}
+				intSink = sum
+			}
+		})
+	}
+	b.Run("One", func(b *testing.B) {
+		b.ReportAllocs()
+		for b.Loop() {
+			var err error
+			oneSink, err = q.GetUser(ctx, 1000)
+			if err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
+	b.Run("Exec", func(b *testing.B) {
+		b.ReportAllocs()
+		for b.Loop() {
+			if err := q.DeleteUser(ctx, 1000); err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
+}
+func BenchmarkBuilder(b *testing.B) {
+	q := New(&fakeDB{})
+	for _, test := range []struct {
+		name string
+		make func() *SearchUsersBuilder
+	}{
+		{"Empty", func() *SearchUsersBuilder { return q.SearchUsers() }},
+		{"OneWhere", func() *SearchUsersBuilder { return q.SearchUsers().Where("id", "=", int64(1000)) }},
+		{"WhereOrderPage", func() *SearchUsersBuilder {
+			return q.SearchUsers().Where("age", ">", int32(25)).OrderBy("name", "ASC").Limit(20).Offset(40)
+		}},
+		{"In100", func() *SearchUsersBuilder { return q.SearchUsers().Where("id", "IN", ids) }},
+	} {
+		b.Run(test.name, func(b *testing.B) {
+			b.ReportAllocs()
+			for b.Loop() {
+				var err error
+				sqlSink, argsSink, err = test.make().buildQuery()
+				if err != nil {
+					b.Fatal(err)
+				}
+			}
+		})
+	}
+	b.Run("ResolveColumn", func(b *testing.B) {
+		b.ReportAllocs()
+		for b.Loop() {
+			var ok bool
+			sqlSink, ok = sglResolveColumn("id", searchUsersAllowedColumns)
+			if !ok {
+				b.Fatal("no column")
+			}
+		}
+	})
+	b.Run("ResolveColumnDirect", func(b *testing.B) {
+		b.ReportAllocs()
+		for b.Loop() {
+			var ok bool
+			sqlSink, ok = searchUsersAllowedColumns["id"]
+			if !ok {
+				b.Fatal("no column")
+			}
+		}
+	})
+}
+
+var ids = func() []int64 {
+	v := make([]int64, 100)
+	for i := range v {
+		v[i] = int64(i + 1000)
+	}
+	return v
+}()
+
+func TestRowsOwnTheirValues(t *testing.T) {
+	db := &fakeDB{rows: fakeRows{n: 1000}}
+	q := New(db)
+	rows, err := q.ListUsers(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i, row := range rows {
+		if row.ID != int64(i+1) {
+			t.Fatalf("row %d changed: %+v", i, row)
+		}
+	}
+	if !db.rows.closed {
+		t.Fatal("rows not closed")
+	}
+	rows[0].Name = "changed"
+	if rows[1].Name != "Alice" {
+		t.Fatal("rows share storage")
+	}
+	var streamed []StreamUsersRow
+	for row, err := range q.StreamUsers(t.Context()) {
+		if err != nil {
+			t.Fatal(err)
+		}
+		streamed = append(streamed, row)
+	}
+	for i, row := range streamed {
+		if row.ID != int64(i+1) {
+			t.Fatal("streamed row changed")
+		}
+	}
+	items, err := q.SearchUsers().All(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i, row := range items {
+		if row.ID != int64(i+1) {
+			t.Fatal("builder row changed")
+		}
+	}
+}
+func TestStreamAdvancesAfterScanErrorAndClosesEarly(t *testing.T) {
+	db := &fakeDB{rows: fakeRows{n: 3, failAt: 2}}
+	q := New(db)
+	values, failures := 0, 0
+	for row, err := range q.StreamUsers(t.Context()) {
+		if err != nil {
+			failures++
+			if row != (StreamUsersRow{}) {
+				t.Fatal("error row not zero")
+			}
+			continue
+		}
+		values++
+	}
+	if values != 2 || failures != 1 || !db.rows.closed {
+		t.Fatalf("values=%d failures=%d closed=%v", values, failures, db.rows.closed)
+	}
+	for range q.StreamUsers(t.Context()) {
+		break
+	}
+	if !db.rows.closed || db.rows.i != 1 {
+		t.Fatal("early stop did not close after first row")
+	}
+	db.rows.failAt = 0
+	db.rows.endError = errors.New("iteration failed")
+	if _, err := q.ListUsers(t.Context()); !errors.Is(err, db.rows.endError) {
+		t.Fatal(err)
+	}
+}
+func TestScalarAllocationBudgets(t *testing.T) {
+	db := &fakeDB{}
+	q := New(db)
+	ctx := context.Background()
+	for _, c := range []struct {
+		rows  int
+		limit float64
+	}{{0, 0}, {1, 3}, {1000, 20}} {
+		db.rows.n = c.rows
+		count := testing.AllocsPerRun(20, func() {
+			var err error
+			resultSink, err = q.ListUsers(ctx)
+			if err != nil {
+				panic(err)
+			}
+		})
+		if count > c.limit {
+			t.Fatalf("%d rows: %.0f allocations, budget %.0f", c.rows, count, c.limit)
+		}
+		count = testing.AllocsPerRun(20, func() {
+			for row, err := range q.StreamUsers(ctx) {
+				if err != nil {
+					panic(err)
+				}
+				intSink = row.ID
+			}
+		})
+		limit := float64(2)
+		if c.rows == 0 {
+			limit = 0
+		}
+		if count > limit {
+			t.Fatalf("stream %d rows: %.0f allocations, budget %.0f", c.rows, count, limit)
+		}
+	}
+}
+
+type SelfReferencing struct {
+	Value int64
+	Self  *SelfReferencing
+}
+
+func (s *SelfReferencing) Scan(value any) error { s.Value = value.(int64); s.Self = s; return nil }
+
+func TestCustomScannerKeepsIndependentReceivers(t *testing.T) {
+	db := &fakeDB{rows: fakeRows{n: 3}}
+	q := New(db)
+	rows, err := q.ListCustom(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for index, row := range rows {
+		if row.ID.Self.Value != int64(index+1) {
+			t.Fatal("custom scanner reused its receiver")
+		}
+	}
+}
+
+func TestGroupedRowsPreserveOrderAndMissingDetails(t *testing.T) {
+	db := &fakeDB{rows: fakeRows{n: 4, data: [][]any{{2, "second", 20, 21, "first detail", 1}, {1, "first", 10, 11, "another", 1}, {2, "second", 20, 22, "last detail", 2}, {3, "third", 0, nil, nil, nil}}}}
+	rows, err := New(db).ListOrdersWithItems(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rows) != 3 || rows[0].Orders.ID != 2 || rows[1].Orders.ID != 1 || rows[2].Orders.ID != 3 {
+		t.Fatalf("unexpected group order: %+v", rows)
+	}
+	if len(rows[0].OrderItems) != 2 || *rows[0].OrderItems[0].ID != 21 || *rows[0].OrderItems[1].ID != 22 {
+		t.Fatal("details lost or reordered")
+	}
+	if rows[2].OrderItems != nil {
+		t.Fatal("missing detail was not nil")
+	}
+	db.rows.n = 0
+	rows, err = New(db).ListOrdersWithItems(t.Context())
+	if err != nil || rows == nil || len(rows) != 0 {
+		t.Fatal("empty grouped result changed")
+	}
+}
+
+func (db *fakeDB) CopyFrom(_ context.Context, _ pgx.Identifier, _ []string, source pgx.CopyFromSource) (int64, error) {
+	var buffer *any
+	for source.Next() {
+		values, err := source.Values()
+		if err != nil {
+			return 0, err
+		}
+		if buffer != nil && buffer != &values[0] {
+			return 0, errors.New("CopyFrom allocated another row buffer")
+		}
+		buffer = &values[0]
+		db.copied = append(db.copied, append([]any(nil), values...))
+	}
+	return int64(len(db.copied)), source.Err()
+}
+
+type fakeBatchResults struct{ pgx.BatchResults }
+
+func (fakeBatchResults) Exec() (pgconn.CommandTag, error) { return pgconn.CommandTag{}, nil }
+func (fakeBatchResults) Close() error                     { return nil }
+func (db *fakeDB) SendBatch(_ context.Context, batch *pgx.Batch) pgx.BatchResults {
+	db.batch = batch
+	return fakeBatchResults{}
+}
+
+func TestBulkOperationsPreserveEachRowsArguments(t *testing.T) {
+	db := &fakeDB{}
+	q := New(db)
+	count, err := q.CopyUsers(t.Context(), []CopyUsersParams{{ID: 1, Name: "first", Age: 10}, {ID: 2, Name: "second", Age: 20}})
+	if err != nil || count != 2 || db.copied[0][0] != int64(1) || db.copied[1][0] != int64(2) {
+		t.Fatalf("copy: %v %v", db.copied, err)
+	}
+	err = q.BatchUsers(t.Context(), []BatchUsersParams{{ID: 1, Name: "first", Age: 10}, {ID: 2, Name: "second", Age: 20}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cap(db.batch.QueuedQueries) != 2 || len(db.batch.QueuedQueries) != 2 {
+		t.Fatal("batch capacity differs from input")
+	}
+	if db.batch.QueuedQueries[0].Arguments[0] != int64(1) || db.batch.QueuedQueries[1].Arguments[0] != int64(2) {
+		t.Fatal("queued rows share arguments")
+	}
+}
+
+func TestBuilderResultsSurviveSubsequentBuilds(t *testing.T) {
+	builder := New(&fakeDB{}).SearchUsers().Where("age", ">", 20).Limit(5)
+	text, args, err := builder.buildQuery()
+	if err != nil {
+		t.Fatal(err)
+	}
+	earlierText := text
+	earlierArgs := append([]any(nil), args...)
+	builder.Where("name", "=", "Alice").Offset(10)
+	_, _, err = builder.buildQuery()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if text != earlierText || !reflect.DeepEqual(args, earlierArgs) {
+		t.Fatal("building again changed previous results")
+	}
+}
+
+func TestOptionalEmbedsAllocateOnlyForPresentRows(t *testing.T) {
+	db := &fakeDB{rows: fakeRows{n: 3, data: [][]any{{1, "first", 10, 11, "one", 1}, {2, "second", 20, nil, nil, nil}, {3, "third", 30, 33, "three", 3}}}}
+	q := New(db)
+	rows, err := q.ListOrderRows(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rows[0].OrderItems == nil || rows[1].OrderItems != nil || rows[2].OrderItems == nil || *rows[0].OrderItems.ID != 11 || *rows[2].OrderItems.ID != 33 {
+		t.Fatalf("optional embed changed: %+v", rows)
+	}
+	var streamed []StreamOrderRowsRow
+	for row, err := range q.StreamOrderRows(t.Context()) {
+		if err != nil {
+			t.Fatal(err)
+		}
+		streamed = append(streamed, row)
+	}
+	if streamed[1].OrderItems != nil || *streamed[0].OrderItems.ID != 11 {
+		t.Fatal("streamed embed aliases later storage")
+	}
+	db.rows.data = [][]any{{int64(1), "first", int32(10), nil, nil, nil}}
+	db.rows.n = 1000
+	count := testing.AllocsPerRun(20, func() {
+		var err error
+		optionalRowsSink, err = q.ListOrderRows(context.Background())
+		if err != nil {
+			panic(err)
+		}
+	})
+	if count > 25 {
+		t.Fatalf("absent embeds allocated per row: %.0f allocations", count)
+	}
+	db.rows.n = 0
+	count = testing.AllocsPerRun(20, func() {
+		var err error
+		optionalRowsSink, err = q.ListOrderRows(context.Background())
+		if err != nil {
+			panic(err)
+		}
+	})
+	if count != 0 {
+		t.Fatalf("empty optional rows allocated scratch: %.0f", count)
+	}
+}
+
+var optionalRowsSink []ListOrderRowsRow

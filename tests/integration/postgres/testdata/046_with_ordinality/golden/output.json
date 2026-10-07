@@ -1,0 +1,50 @@
+{
+  "numbered_series": [
+    {
+      "p": 1,
+      "v": 10
+    },
+    {
+      "p": 2,
+      "v": 11
+    },
+    {
+      "p": 3,
+      "v": 12
+    }
+  ],
+  "optional_ratings": [
+    {
+      "id": 1,
+      "ordinality": 1,
+      "rating": 5
+    },
+    {
+      "id": 1,
+      "ordinality": 2,
+      "rating": 3
+    },
+    {
+      "id": 2,
+      "ordinality": null,
+      "rating": null
+    }
+  ],
+  "tracks_in_order": [
+    {
+      "id": 1,
+      "position": 1,
+      "track": "intro"
+    },
+    {
+      "id": 1,
+      "position": 2,
+      "track": "verse"
+    },
+    {
+      "id": 1,
+      "position": 3,
+      "track": "outro"
+    }
+  ]
+}

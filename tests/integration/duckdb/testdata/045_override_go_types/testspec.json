@@ -1,0 +1,15 @@
+{
+  "description": "Override contract: column overrides to defined types over basic kinds (Label string, Count int64, Ratio float64, Flag bool, Blob []byte) and json.RawMessage on a text column, nullable columns read and written as pointers, and a SQL type override on VARCHAR reaching a VARCHAR[] column's elements; seeded rows are read back and found by each value as a parameter, and rows written by exec and batch are found and listed. Parameters whose Go type an override chose bind through sglDriverText (text) or sglDriverComposite (others), as the predeclared type of their kind, and reads go through sglScanOverride. A SQL type override on BIGINT and the one on VARCHAR also reach a STRUCT's fields and a MAP's keys and values, which read through the driver-composite scan adapter and bind through sglDriverComposite.",
+  "typeOverrides": [
+    {"SQLTypeName": "VARCHAR", "Column": "", "GoPackage": "case_runner/kinds", "GoName": "Label"},
+    {"SQLTypeName": "BIGINT", "Column": "", "GoPackage": "case_runner/kinds", "GoName": "Count"},
+    {"SQLTypeName": "", "Column": "probes.label", "GoPackage": "case_runner/kinds", "GoName": "Label"},
+    {"SQLTypeName": "", "Column": "probes.amount", "GoPackage": "case_runner/kinds", "GoName": "Count"},
+    {"SQLTypeName": "", "Column": "probes.ratio", "GoPackage": "case_runner/kinds", "GoName": "Ratio"},
+    {"SQLTypeName": "", "Column": "probes.flag", "GoPackage": "case_runner/kinds", "GoName": "Flag"},
+    {"SQLTypeName": "", "Column": "probes.note", "GoPackage": "encoding/json", "GoName": "RawMessage"},
+    {"SQLTypeName": "", "Column": "probes.payload", "GoPackage": "case_runner/kinds", "GoName": "Blob"},
+    {"SQLTypeName": "", "Column": "probes.optional_label", "GoPackage": "case_runner/kinds", "GoName": "Label"},
+    {"SQLTypeName": "", "Column": "probes.optional_amount", "GoPackage": "case_runner/kinds", "GoName": "Count"}
+  ]
+}

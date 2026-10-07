@@ -1,0 +1,1 @@
+DROP INDEX CONCURRENTLY IF EXISTS menu_price_idx;

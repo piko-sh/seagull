@@ -1,0 +1,4 @@
+{
+  "description": "array_length, array_lower, array_upper and array_position read NULL for an empty array or a missing element, and sum, avg, percentile_cont, percentile_disc and mode over intervals read back as intervals.",
+  "expectedDiagnostics": []
+}

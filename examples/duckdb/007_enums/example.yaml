@@ -1,0 +1,28 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: A chip shop menu with two DuckDB enum columns, read back as the named enum types Seagull generates and, through a SQL type override and sgl.column, as the shop's own Go types.
+differs:
+  - "CREATE TYPE ... AS ENUM declares the enum; ORDER BY sorts its values in declaration order"
+  - "Each enum becomes a named string type in models.go, named after the enum type, with a constant per value (store.SectionFish) and a Valid method"
+  - "A types.overrides entry with sql: naming the enum type gives every column of that enum, and the parameters bound to them, your own type, and the generated package declares none for it"
+  - "sgl.column(section, go_type: ...) changes only the column ItemsInSection returns; its parameter stays the generated store.Section"
+  - "DuckDB refuses a value the enum does not list, with an error naming its UINT8 storage type"
+entry: {file: db/queries/menu.sql, query: ItemsInSection}
+live: "no"
+test: cgo

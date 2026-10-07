@@ -1,0 +1,3 @@
+out of date: driver_composites.go, driver_values.go, models.go, notes.sql.go, prepared.go, querier.go, value_reading.go
+wrote 7 files for 2 queries
+up to date

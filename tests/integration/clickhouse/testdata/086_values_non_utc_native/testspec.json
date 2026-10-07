@@ -1,0 +1,4 @@
+{
+  "description": "Native clickhouse-go ClickHouse values on a session whose time zone is not UTC: every value binds as the text the server parses, written by the same helper as the database/sql emitter: a DateTime and a DateTime64 as Unix seconds, a Date as the calendar date in the time's own location, each array level quoted or bare as its type reads it, text with every escape, a named Tuple, a Map with its entries in a fixed order; a kind: slice parameter binds whole as Array(T); a batch whose row holds an expression is written as a multi-row INSERT, and a batch without rows prepares nothing.",
+  "emitter": "native"
+}

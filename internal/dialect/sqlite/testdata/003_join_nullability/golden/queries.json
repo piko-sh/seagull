@@ -1,0 +1,57 @@
+[
+  {
+    "Command": "many",
+    "Filename": "authors_with_books.sql",
+    "Line": 1,
+    "Name": "ListAuthorsWithBooks",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "a",
+        "SourceTable": "authors"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "a",
+        "SourceTable": "authors"
+      },
+      {
+        "Name": "id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "b",
+        "SourceTable": "books"
+      },
+      {
+        "Name": "title",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "b",
+        "SourceTable": "books"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListAuthorsWithBooks, command: many)\nSELECT a.id, a.name, b.id, b.title\nFROM authors a\nLEFT JOIN books b ON b.author_id = a.id",
+    "Template": "SELECT ⟨c0:a.id⟩, ⟨c1:a.name⟩, ⟨c2:b.id⟩, ⟨c3:b.title⟩\\nFROM authors a\\nLEFT JOIN books b ON b.author_id = a.id"
+  }
+]

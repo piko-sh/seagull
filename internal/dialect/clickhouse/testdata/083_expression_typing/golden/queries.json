@@ -1,0 +1,206 @@
+[
+  {
+    "Command": "many",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "Typed",
+    "OutputColumns": [
+      {
+        "Name": "one",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "wide",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt16",
+          "Unsigned": true,
+          "Width": 16
+        }
+      },
+      {
+        "Name": "negative",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int8",
+          "Width": 8
+        }
+      },
+      {
+        "Name": "fraction",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "Float64",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "hex",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "doubled",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "Float64",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "next_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "previous",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "halved",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "Float64",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "whole",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "half",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "Float64",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "lowered",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Name": "described",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Name": "still_nullable",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Name": "portions",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "tag_count",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "first_tag",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Name": "cod",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Unsigned": true,
+          "Width": 32
+        }
+      },
+      {
+        "Name": "total_weight",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "reversed",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "String"
+          },
+          "EngineName": "Array"
+        }
+      },
+      {
+        "Name": "distinct_orders",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "position",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "positive",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(Typed, many)\nSELECT 1 AS one, 300 AS wide, -1 AS negative, 1.5 AS fraction, 0x1E AS hex,\n       price * 2 AS doubled, id + 1 AS next_id, qty - 1 AS previous, qty / 2 AS halved, intDiv(qty, 2) AS whole, multiply(price, 0.5) AS half,\n       lower(basket) AS lowered, coalesce(note, 'none') AS described, ifNull(note, note) AS still_nullable,\n       JSONExtractInt(basket, 'portions') AS portions, length(tags) AS tag_count, tags[1] AS first_tag, counts['cod'] AS cod,\n       arraySum(weights) AS total_weight, arrayReverse(tags) AS reversed,\n       count(DISTINCT orders.id) OVER () AS distinct_orders, rank() OVER (ORDER BY id) AS position,\n       CASE WHEN qty \u003e 0 THEN qty ELSE 0 END AS positive\nFROM orders;",
+    "Template": "SELECT ⟨c0 aliased:1⟩ AS one, ⟨c1 aliased:300⟩ AS wide, ⟨c2 aliased:-1⟩ AS negative, ⟨c3 aliased:1.5⟩ AS fraction, ⟨c4 aliased:0x1E⟩ AS hex,\\n       ⟨c5 aliased:price * 2⟩ AS doubled, ⟨c6 aliased:id + 1⟩ AS next_id, ⟨c7 aliased:qty - 1⟩ AS previous, ⟨c8 aliased:qty / 2⟩ AS halved, ⟨c9 aliased:intDiv(qty, 2)⟩ AS whole, ⟨c10 aliased:multiply(price, 0.5)⟩ AS half,\\n       ⟨c11 aliased:lower(basket)⟩ AS lowered, ⟨c12 aliased:coalesce(note, 'none')⟩ AS described, ⟨c13 aliased:ifNull(note, note)⟩ AS still_nullable,\\n       ⟨c14 aliased:JSONExtractInt(basket, 'portions')⟩ AS portions, ⟨c15 aliased:length(tags)⟩ AS tag_count, ⟨c16 aliased:tags[1]⟩ AS first_tag, ⟨c17 aliased:counts['cod']⟩ AS cod,\\n       ⟨c18 aliased:arraySum(weights)⟩ AS total_weight, ⟨c19 aliased:arrayReverse(tags)⟩ AS reversed,\\n       ⟨c20 aliased:count(DISTINCT orders.id) OVER ()⟩ AS distinct_orders, ⟨c21 aliased:rank() OVER (ORDER BY id)⟩ AS position,\\n       ⟨c22 aliased:CASE WHEN qty \u003e 0 THEN qty ELSE 0 END⟩ AS positive\\nFROM orders;"
+  }
+]

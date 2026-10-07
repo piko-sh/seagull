@@ -1,0 +1,41 @@
+[
+  {
+    "Command": "one",
+    "Filename": "records.sql",
+    "Line": 1,
+    "Name": "UseUnknownCallee",
+    "OutputColumns": [
+      {
+        "Name": "result",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: UseUnknownCallee, command: one)\nSELECT calls_unknown() AS result;",
+    "Template": "SELECT ⟨c0 aliased:calls_unknown()⟩ AS result;"
+  },
+  {
+    "Command": "one",
+    "Filename": "records.sql",
+    "Line": 4,
+    "Name": "UseKnownPure",
+    "OutputColumns": [
+      {
+        "Name": "result",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: UseKnownPure, command: one)\nSELECT calls_known_pure(10) AS result;",
+    "Template": "SELECT ⟨c0 aliased:calls_known_pure(10)⟩ AS result;"
+  }
+]

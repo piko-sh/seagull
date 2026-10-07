@@ -1,0 +1,45 @@
+[
+  {
+    "Command": "many",
+    "Filename": "grouped.sql",
+    "Line": 1,
+    "Name": "GroupedUserPosts",
+    "OutputColumns": [
+      {
+        "Name": "name",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "u",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "email",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "u",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "title",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "p",
+        "SourceTable": "posts"
+      }
+    ],
+    "SQL": "-- sgl.query(name: GroupedUserPosts, command: many)\nSELECT u.name, u.email, p.title FROM users u FULL OUTER JOIN posts p ON p.author_id = u.id GROUP BY u.id, p.id",
+    "Template": "SELECT u.name, u.email, p.title FROM users u FULL OUTER JOIN posts p ON p.author_id = u.id GROUP BY u.id, p.id"
+  }
+]

@@ -1,0 +1,35 @@
+[
+  {
+    "Command": "many",
+    "Filename": "combined.sql",
+    "Line": 1,
+    "Name": "AllLabels",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "recent",
+        "SourceTable": "recent"
+      },
+      {
+        "Name": "label",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "label",
+        "SourceQualifier": "recent",
+        "SourceTable": "recent"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(AllLabels, many)\nSELECT id, label FROM recent\nUNION ALL\nSELECT id, label FROM archived\nORDER BY id;",
+    "Template": "SELECT id, label FROM recent\\nUNION ALL\\nSELECT id, label FROM archived\\nORDER BY id;"
+  }
+]

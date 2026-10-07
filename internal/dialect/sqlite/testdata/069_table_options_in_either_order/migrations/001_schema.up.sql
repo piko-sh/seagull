@@ -1,0 +1,9 @@
+CREATE TABLE settings (
+    name TEXT PRIMARY KEY,
+    level INT NOT NULL
+) STRICT, WITHOUT ROWID;
+
+CREATE TABLE flags (
+    name TEXT PRIMARY KEY,
+    enabled INT NOT NULL
+) WITHOUT ROWID, STRICT;

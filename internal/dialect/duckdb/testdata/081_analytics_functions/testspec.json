@@ -1,0 +1,4 @@
+{
+  "description": "The aggregates and scalar functions an analytics query reaches for resolve without a false Q005, typed as DuckDB 1.5 types them: any_value, first, last, arbitrary, arg_min/arg_max and their aliases (a list with a count), the statistical, regression and approximate aggregates, quantiles with a DECIMAL fraction literal, the date part extractors, date_diff, time_bucket, typed literals such as DATE '2024-12-31', string splitting and similarity, list helpers and list aggregates, JSON functions over a VARCHAR document, and a JSON document passed to a VARCHAR function",
+  "expectedDiagnosticCount": 0
+}

@@ -1,0 +1,54 @@
+[
+  {
+    "Command": "many",
+    "Filename": "list_posts.sql",
+    "Line": 1,
+    "Name": "ListPosts",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "posts",
+        "SourceTable": "posts"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "posts",
+        "SourceTable": "posts"
+      },
+      {
+        "Name": "published",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        },
+        "SourceColumn": "published",
+        "SourceQualifier": "posts",
+        "SourceTable": "posts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "author_id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: ListPosts, command: many)\nSELECT id, title, published FROM posts WHERE author_id = $1",
+    "Template": "SELECT id, title, published FROM posts WHERE author_id = $1"
+  }
+]

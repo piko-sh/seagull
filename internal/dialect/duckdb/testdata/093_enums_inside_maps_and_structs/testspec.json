@@ -1,0 +1,4 @@
+{
+  "description": "An enum named inside a MAP, STRUCT or UNION column (a map's keys or values, a struct's fields, a list inside a struct, a struct inside a list, a union's member) takes the enum's type, so the column reads into the enum's Go type, and a parameter compared with such a field or map value (entry.feeling, entry['feeling'], struct_extract(entry, 'feeling'), moods['morning']) takes the enum type; a MAP or STRUCT parameter holding the enum, which duckdb-go cannot bind, is typed here and refused by the database/sql emitter with Q059 (9B-8)",
+  "expectedDiagnosticCount": 0
+}

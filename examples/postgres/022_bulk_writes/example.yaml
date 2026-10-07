@@ -1,0 +1,29 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: A batch query takes a slice of Params and writes it as multi-row INSERTs, 16383 four-column rows a statement to stay under PostgreSQL's 65535 bind variables.
+differs:
+  - database/sql has no batch protocol, so batch becomes chunked multi-row INSERT statements
+  - "the generated method renumbers each chunk's placeholders $1 to $N"
+  - "chunks are sized for 65535 bind variables, the PostgreSQL protocol's limit, so the example writes a week of readings to need two statements where SQLite needed twelve for a day"
+  - copyfrom generates the same chunked INSERTs as batch; only the pgx driver uses COPY (see the pgx variant)
+  - the method returns only error, and an empty slice sends nothing
+  - "readings are keyed by (station, minute), so no id is generated per row, and the integer columns are BIGINT, so the Go types are the same on CockroachDB"
+entry: {file: db/queries/readings.sql, query: RecordReadings}
+live: "no"
+test: integration

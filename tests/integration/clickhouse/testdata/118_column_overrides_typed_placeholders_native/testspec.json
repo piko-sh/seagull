@@ -1,0 +1,9 @@
+{
+  "description": "A placeholder declaring its column's own type takes the column override wherever it is compared with, listed against, bounds or is assigned to the column, so net.IP and json.RawMessage values bind through every native path (exec, copyfrom, a batch of lone placeholders, comparisons, an IN list, BETWEEN, a Nullable(IPv4) comparison and an ALTER TABLE UPDATE) and round-trip",
+  "emitter": "native",
+  "typeOverrides": [
+    {"SQLTypeName": "", "Column": "devices.addr", "GoPackage": "net", "GoName": "IP"},
+    {"SQLTypeName": "", "Column": "devices.previous", "GoPackage": "net", "GoName": "IP"},
+    {"SQLTypeName": "", "Column": "devices.label", "GoPackage": "encoding/json", "GoName": "RawMessage"}
+  ]
+}

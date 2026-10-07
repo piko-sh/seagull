@@ -1,0 +1,32 @@
+{
+  "advance": "ok",
+  "create_session_0": "ok",
+  "create_session_1": "ok",
+  "create_session_2": "ok",
+  "current": {
+    "value": 42
+  },
+  "distinct_pairs": {
+    "pairs": 3
+  },
+  "list_sessions": [
+    {
+      "session_id": "6ccd780c-baba-1026-9564-5b8c656024dc",
+      "user_id": 1,
+      "v4": 0,
+      "v6": 1
+    },
+    {
+      "session_id": "6ccd780c-baba-1026-9564-5b8c656024db",
+      "user_id": 1,
+      "v4": 1,
+      "v6": 0
+    },
+    {
+      "session_id": "6ccd780c-baba-1026-9564-5b8c656024dd",
+      "user_id": 2,
+      "v4": 0,
+      "v6": 0
+    }
+  ]
+}

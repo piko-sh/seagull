@@ -1,0 +1,35 @@
+[
+  {
+    "Command": "many",
+    "Filename": "list_logs.sql",
+    "Line": 1,
+    "Name": "ListLogs",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "logs",
+        "SourceTable": "logs"
+      },
+      {
+        "Name": "level_text",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "level",
+        "SourceQualifier": "logs",
+        "SourceTable": "logs"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListLogs, command: many)\nSELECT id, level::TEXT AS level_text FROM logs;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:level::TEXT⟩ AS level_text FROM logs;"
+  }
+]

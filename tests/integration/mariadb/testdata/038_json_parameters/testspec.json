@@ -1,0 +1,3 @@
+{
+  "description": "JSON parameter wire form: the generated JSON type is written by exec and batch and read back, and the stored document is described with the engine's own functions, compared with the same text as a literal and found by the document as a parameter; the document holds spacing, key order, a trailing zero, HTML characters and two- and four-byte UTF-8. MariaDB keeps JSON as text, byte for byte. A second connection interpolates parameters (interpolateParams=true)."
+}

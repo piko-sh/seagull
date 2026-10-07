@@ -1,0 +1,34 @@
+{
+  "labelled": [
+    {
+      "id": 0,
+      "label": "none"
+    },
+    {
+      "id": 1,
+      "label": "east"
+    },
+    {
+      "id": 2,
+      "label": "north"
+    },
+    {
+      "id": 3,
+      "label": "up"
+    }
+  ],
+  "nearest": [
+    {
+      "cosine": 0,
+      "distance": 0,
+      "id": 1,
+      "inner_product": -1
+    },
+    {
+      "cosine": 1,
+      "distance": 1.4142135623730951,
+      "id": 2,
+      "inner_product": -0
+    }
+  ]
+}

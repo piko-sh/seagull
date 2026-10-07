@@ -1,0 +1,32 @@
+[
+  {
+    "Code": "Q003",
+    "Column": 1,
+    "EndColumn": 46,
+    "EndLine": 2,
+    "Filename": "unknown_table.sql",
+    "Line": 2,
+    "Message": "unknown table or view \"nonexistent\" on the search path \"main\", \"temp\"",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q001",
+    "Column": 8,
+    "EndColumn": 10,
+    "EndLine": 2,
+    "Filename": "unknown_table.sql",
+    "Line": 2,
+    "Message": "unknown column \"id\"",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q001",
+    "Column": 12,
+    "EndColumn": 16,
+    "EndLine": 2,
+    "Filename": "unknown_table.sql",
+    "Line": 2,
+    "Message": "unknown column \"name\"",
+    "Severity": "warning"
+  }
+]

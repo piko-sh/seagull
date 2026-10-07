@@ -1,0 +1,46 @@
+[
+  {
+    "Command": "many",
+    "Filename": "list_qualified.sql",
+    "Line": 1,
+    "Name": "ListProfilesForUserQualified",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "profiles",
+        "SourceTable": "profiles"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "profiles",
+        "SourceTable": "profiles"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "user_id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: ListProfilesForUserQualified, command: many)\nSELECT id, name\nFROM profiles\nWHERE id IN (SELECT profile_id FROM user_profiles WHERE user_profiles.user_id = $1);",
+    "Template": "SELECT id, name\\nFROM profiles\\nWHERE id IN (SELECT profile_id FROM user_profiles WHERE user_profiles.user_id = $1);"
+  }
+]

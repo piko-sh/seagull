@@ -1,0 +1,12 @@
+{
+  "widget": {
+    "id": 1,
+    "name": "Sprocket",
+    "weight": 2.5
+  },
+  "widget_qualified": {
+    "id": 1,
+    "name": "Sprocket",
+    "weight": 2.5
+  }
+}

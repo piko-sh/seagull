@@ -1,0 +1,90 @@
+[
+  {
+    "Code": "Q059",
+    "Column": 8,
+    "EndColumn": 18,
+    "EndLine": 2,
+    "Filename": "readings.sql",
+    "Line": 2,
+    "Message": "column \"keyed_wide\" cannot be read: it holds a Map whose keys or values are 128- or 256-bit integers that cannot be NULL, which clickhouse-go cannot read: both the native driver and database/sql panic reading such a Map",
+    "Severity": "error",
+    "Suggestion": "make the Map's values Nullable, as CAST(m AS Map(String, Nullable(Int128))) does, or select mapKeys(m) and mapValues(m), arrays clickhouse-go reads"
+  },
+  {
+    "Code": "Q059",
+    "Column": 20,
+    "EndColumn": 30,
+    "EndLine": 2,
+    "Filename": "readings.sql",
+    "Line": 2,
+    "Message": "column \"wide_keyed\" cannot be read: it holds a Map whose keys or values are 128- or 256-bit integers that cannot be NULL, which clickhouse-go cannot read: both the native driver and database/sql panic reading such a Map",
+    "Severity": "error",
+    "Suggestion": "make the Map's values Nullable, as CAST(m AS Map(String, Nullable(Int128))) does, or select mapKeys(m) and mapValues(m), arrays clickhouse-go reads"
+  },
+  {
+    "Code": "Q059",
+    "Column": 32,
+    "EndColumn": 49,
+    "EndLine": 2,
+    "Filename": "readings.sql",
+    "Line": 2,
+    "Message": "column \"listed_keyed_wide\" cannot be read: it holds a Map whose keys or values are 128- or 256-bit integers that cannot be NULL, which clickhouse-go cannot read: both the native driver and database/sql panic reading such a Map",
+    "Severity": "error",
+    "Suggestion": "make the Map's values Nullable, as CAST(m AS Map(String, Nullable(Int128))) does, or select mapKeys(m) and mapValues(m), arrays clickhouse-go reads"
+  },
+  {
+    "Code": "Q059",
+    "Column": 51,
+    "EndColumn": 66,
+    "EndLine": 2,
+    "Filename": "readings.sql",
+    "Line": 2,
+    "Message": "column \"held_keyed_wide\" cannot be read: it holds a Map whose keys or values are 128- or 256-bit integers that cannot be NULL, which clickhouse-go cannot read: both the native driver and database/sql panic reading such a Map",
+    "Severity": "error",
+    "Suggestion": "make the Map's values Nullable, as CAST(m AS Map(String, Nullable(Int128))) does, or select mapKeys(m) and mapValues(m), arrays clickhouse-go reads"
+  },
+  {
+    "Code": "Q059",
+    "Column": 68,
+    "EndColumn": 81,
+    "EndLine": 2,
+    "Filename": "readings.sql",
+    "Line": 2,
+    "Message": "column \"address_keyed\" cannot be read: it holds a Map keyed by an IPv4 or IPv6 address, which clickhouse-go cannot read: it fails to decode the block, whatever the column is read into",
+    "Severity": "error",
+    "Suggestion": "key the Map by the address's text, as CAST(m AS Map(String, String)) does, or select mapKeys(m) and mapValues(m), arrays clickhouse-go reads"
+  },
+  {
+    "Code": "Q059",
+    "Column": 83,
+    "EndColumn": 92,
+    "EndLine": 2,
+    "Filename": "readings.sql",
+    "Line": 2,
+    "Message": "column \"wide_pair\" cannot be read: it holds a Tuple with unnamed elements, one of them a 128- or 256-bit integer that cannot be NULL, which clickhouse-go cannot read: the native driver fails, and database/sql fails or returns NULL",
+    "Severity": "error",
+    "Suggestion": "name the tuple's elements, as CAST(x AS Tuple(a UInt8, b Int128)) does, or make the integer Nullable"
+  },
+  {
+    "Code": "Q059",
+    "Column": 94,
+    "EndColumn": 111,
+    "EndLine": 2,
+    "Filename": "readings.sql",
+    "Line": 2,
+    "Message": "column \"listed_wide_pairs\" cannot be read: it holds a Tuple with unnamed elements, one of them a 128- or 256-bit integer that cannot be NULL, which clickhouse-go cannot read: the native driver fails, and database/sql fails or returns NULL",
+    "Severity": "error",
+    "Suggestion": "name the tuple's elements, as CAST(x AS Tuple(a UInt8, b Int128)) does, or make the integer Nullable"
+  },
+  {
+    "Code": "Q059",
+    "Column": 113,
+    "EndColumn": 129,
+    "EndLine": 2,
+    "Filename": "readings.sql",
+    "Line": 2,
+    "Message": "column \"keyed_wide_pairs\" cannot be read: it holds a Tuple with unnamed elements, one of them a 128- or 256-bit integer that cannot be NULL, which clickhouse-go cannot read: the native driver fails, and database/sql fails or returns NULL",
+    "Severity": "error",
+    "Suggestion": "name the tuple's elements, as CAST(x AS Tuple(a UInt8, b Int128)) does, or make the integer Nullable"
+  }
+]

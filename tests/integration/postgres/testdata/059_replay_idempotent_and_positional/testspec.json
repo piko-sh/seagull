@@ -1,0 +1,4 @@
+{
+  "description": "DDL replays as PostgreSQL applies it, so SELECT * scans every table and view: a repeated CREATE TABLE IF NOT EXISTS and ADD COLUMN IF NOT EXISTS change nothing and ALTER TABLE IF EXISTS of a missing table is no error; ADD VALUE IF NOT EXISTS of a value the enum holds adds no second constant, BEFORE places a new one and a renamed enum keeps its columns; a table-level or later primary key makes its columns NOT NULL; a child of INHERITS takes its parent's columns first, merged with its own, and a column added to the parent later; LIKE copies columns where it stands; views defined with SELECT * or a qualified star hold the star's columns, under any declared names; and a renamed materialised view is known by its new name.",
+  "expectedDiagnostics": []
+}

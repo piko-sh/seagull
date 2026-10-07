@@ -1,0 +1,73 @@
+[
+  {
+    "Command": "many",
+    "Filename": "feeds.sql",
+    "Line": 1,
+    "Name": "RecentFeeds",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "feeds",
+        "SourceTable": "feeds"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "feeds",
+        "SourceTable": "feeds"
+      },
+      {
+        "Name": "published",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "published",
+        "SourceQualifier": "feeds",
+        "SourceTable": "feeds"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "limit",
+        "Kind": "none",
+        "Name": "page_size",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Unsigned": true,
+          "Width": 32
+        }
+      },
+      {
+        "Context": "offset",
+        "Kind": "none",
+        "Name": "page_offset",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Unsigned": true,
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(RecentFeeds, many)\nSELECT id, title, published\nFROM feeds\nORDER BY published DESC\nLIMIT {page_size:UInt32} OFFSET {page_offset:UInt32};",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:title⟩, ⟨c2:published⟩\\nFROM feeds\\nORDER BY published DESC\\nLIMIT ⟨p0 UInt32⟩ OFFSET ⟨p1 UInt32⟩;⟨arguments p0 p1⟩"
+  }
+]

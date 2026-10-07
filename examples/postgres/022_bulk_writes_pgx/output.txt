@@ -1,0 +1,5 @@
+sending one pgx.Batch of 10080 INSERT statements
+harbour: the batch recorded 10080 readings
+pier: COPY loaded 10080 readings
+harbour  10080 readings, 168 with a note
+pier     10080 readings, 168 with a note

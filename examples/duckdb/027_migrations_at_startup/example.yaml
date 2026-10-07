@@ -1,0 +1,28 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: The migration files are embedded in the binary, and each start-up runs migrate.NewMigrator with the DuckDB backend and Up, which applies only what the database lacks.
+differs:
+  - migrate_backend_duckdb.New() runs each migration in a transaction with its history row, since DuckDB DDL is transactional
+  - "The backend binds its own queries with $N placeholders and takes no lock: DuckDB has none, and one process at a time opens a database file for writing"
+  - "DuckDB cannot add a NOT NULL column to an existing table, so 0002 adds home_port with a default and it maps to *string"
+  - the history lives in the sgl_migrations table of the same database
+  - "The program uses an in-memory database by default; -db keeps it in a file so a second run finds nothing to migrate"
+entry: {file: db/migrations/0002_boat_home_port.up.sql}
+live: "no"
+test: cgo

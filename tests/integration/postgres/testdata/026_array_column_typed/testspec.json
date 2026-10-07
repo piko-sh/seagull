@@ -1,0 +1,3 @@
+{
+  "description": "Array columns are wrapped in to_json() and decoded into []*string; a NULL array scans to nil."
+}

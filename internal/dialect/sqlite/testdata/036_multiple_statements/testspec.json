@@ -1,0 +1,7 @@
+{
+  "description": "Query file contains two SQL statements separated by a semicolon. Produces a Q012 error, since the generated method would send both statements but only the last is analysed.",
+  "expectedDiagnosticCount": 1,
+  "diagnostics": [
+    { "severity": "error", "code": "Q012", "messageContains": "2 statements" }
+  ]
+}

@@ -1,0 +1,4 @@
+{
+  "description": "A table function written WITH ORDINALITY gains a trailing column numbering its rows, BIGINT and never NULL, named ordinality unless the alias column list names it (unnest(...) WITH ORDINALITY AS u(score, position) reads u.position), as DuckDB gives it; the function's own columns keep their names, so range(3) WITH ORDINALITY AS r reads range and ordinality.",
+  "expectedDiagnosticCount": 0
+}

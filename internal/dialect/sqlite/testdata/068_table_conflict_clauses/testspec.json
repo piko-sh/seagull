@@ -1,0 +1,4 @@
+{
+  "description": "A table-level UNIQUE or PRIMARY KEY constraint may end in an ON CONFLICT clause, which replays as the constraint.",
+  "expectedDiagnosticCount": 0
+}

@@ -1,0 +1,4 @@
+{
+  "description": "WITH ORDINALITY appends a bigint ordinality column, never NULL, after a table function's columns, named ordinality unless the alias column list names it by position; a column list may follow an alias written without AS.",
+  "expectedDiagnosticCount": 0
+}

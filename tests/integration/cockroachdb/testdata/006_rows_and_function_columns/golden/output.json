@@ -1,0 +1,88 @@
+{
+  "berth_rows_outer_joined": [
+    {
+      "berth": "(10,1,north)",
+      "berth_document": {
+        "harbour_id": 1,
+        "id": 10,
+        "label": "north"
+      },
+      "id": 1
+    },
+    {
+      "berth": "(11,1,)",
+      "berth_document": {
+        "harbour_id": 1,
+        "id": 11,
+        "label": null
+      },
+      "id": 1
+    },
+    {
+      "berth": "(,,)",
+      "berth_document": {
+        "harbour_id": null,
+        "id": null,
+        "label": null
+      },
+      "id": 2
+    }
+  ],
+  "facilities_in_order": [
+    {
+      "f": "fuel",
+      "id": 1,
+      "ordinality": 1
+    },
+    {
+      "f": "crane",
+      "id": 1,
+      "ordinality": 2
+    }
+  ],
+  "facility_elements": [
+    {
+      "facility": "crane",
+      "id": 1
+    },
+    {
+      "facility": "fuel",
+      "id": 1
+    }
+  ],
+  "harbour_rows": [
+    {
+      "document": {
+        "facilities": [
+          "fuel",
+          "crane"
+        ],
+        "id": 1,
+        "name": "Leith"
+      },
+      "harbour": "(1,Leith,\"[\"\"fuel\"\", \"\"crane\"\"]\")"
+    },
+    {
+      "document": {
+        "facilities": [],
+        "id": 2,
+        "name": "Oban"
+      },
+      "harbour": "(2,Oban,[])"
+    }
+  ],
+  "numbered_series": [
+    {
+      "position": 1,
+      "value": 1
+    },
+    {
+      "position": 2,
+      "value": 2
+    },
+    {
+      "position": 3,
+      "value": 3
+    }
+  ]
+}

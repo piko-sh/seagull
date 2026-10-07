@@ -1,0 +1,101 @@
+[
+  {
+    "Command": "many",
+    "Filename": "employees.sql",
+    "Line": 1,
+    "Name": "GetTopLevelEmployees",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "top_level",
+        "SourceTable": "top_level"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "top_level",
+        "SourceTable": "top_level"
+      },
+      {
+        "Name": "manager_id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "manager_id",
+        "SourceQualifier": "top_level",
+        "SourceTable": "top_level"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetTopLevelEmployees, command: many)\nWITH top_level AS (\n    SELECT id, name, manager_id FROM employees WHERE manager_id IS NULL\n)\nSELECT id, name, manager_id FROM top_level;",
+    "Template": "WITH top_level AS (\\n    SELECT id, name, manager_id FROM employees WHERE manager_id IS NULL\\n)\\nSELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:manager_id⟩ FROM top_level;"
+  },
+  {
+    "Command": "many",
+    "Filename": "employees.sql",
+    "Line": 7,
+    "Name": "GetEmployeeHierarchy",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "hierarchy",
+        "SourceTable": "hierarchy"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "hierarchy",
+        "SourceTable": "hierarchy"
+      },
+      {
+        "Name": "manager_id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "manager_id",
+        "SourceQualifier": "hierarchy",
+        "SourceTable": "hierarchy"
+      },
+      {
+        "Name": "depth",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "depth",
+        "SourceQualifier": "hierarchy",
+        "SourceTable": "hierarchy"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetEmployeeHierarchy, command: many)\nWITH RECURSIVE hierarchy AS (\n    SELECT id, name, manager_id, 0 AS depth FROM employees WHERE manager_id IS NULL\n    UNION ALL\n    SELECT e.id, e.name, e.manager_id, h.depth + 1 FROM employees e INNER JOIN hierarchy h ON e.manager_id = h.id\n)\nSELECT id, name, manager_id, depth FROM hierarchy;",
+    "Template": "WITH RECURSIVE hierarchy AS (\\n    SELECT id, name, manager_id, 0 AS depth FROM employees WHERE manager_id IS NULL\\n    UNION ALL\\n    SELECT e.id, e.name, e.manager_id, h.depth + 1 FROM employees e INNER JOIN hierarchy h ON e.manager_id = h.id\\n)\\nSELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:manager_id⟩, ⟨c3:depth⟩ FROM hierarchy;"
+  }
+]

@@ -1,0 +1,3 @@
+{
+  "description": "Slice parameters in IN clauses: a kind: slice parameter expands to numbered $N placeholders at runtime"
+}

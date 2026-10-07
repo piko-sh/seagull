@@ -1,0 +1,22 @@
+[
+  {
+    "Code": "Q001",
+    "Column": 8,
+    "EndColumn": 13,
+    "EndLine": 8,
+    "Filename": "settings.sql",
+    "Line": 8,
+    "Message": "unknown column \"rowid\"",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q001",
+    "Column": 8,
+    "EndColumn": 13,
+    "EndLine": 11,
+    "Filename": "settings.sql",
+    "Line": 11,
+    "Message": "unknown column \"rowid\"",
+    "Severity": "warning"
+  }
+]

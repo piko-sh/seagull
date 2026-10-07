@@ -1,0 +1,25 @@
+[
+  {
+    "Command": "many",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "ReadAfterFlush",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "t",
+        "SourceTable": "t"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ReadAfterFlush, many)\nSELECT id FROM t;",
+    "Template": "SELECT ⟨c0:id⟩ FROM t;"
+  }
+]

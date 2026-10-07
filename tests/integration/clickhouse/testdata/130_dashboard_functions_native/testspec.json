@@ -1,0 +1,5 @@
+{
+  "description": "The standard ClickHouse dashboard functions read back through the native emitter, which scans each value into the Go type of its exact ClickHouse type: medianExact of an Int64 is an Int64, BIT_AND of a UInt32 a UInt32 and quantileTDigest a Float32, as ClickHouse returns them, besides the buckets, calendar keys, aliases, transform, formatReadableSize, windowFunnel and retention.",
+  "emitter": "native",
+  "expectedDiagnostics": []
+}

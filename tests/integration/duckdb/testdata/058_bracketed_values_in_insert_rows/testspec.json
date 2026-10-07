@@ -1,0 +1,4 @@
+{
+  "description": "A value written with brackets or braces inside an INSERT's VALUES row, as [1, 2], {'a': [1, 2], 'b': 3}.a, [[1, 2], [3]][1], [6] || [7] or MAP {'e': 1, 'f': 2} inside a call, or inside an UPDATE's row assignment SET (scores, label, flagged) = ([8, 9], $1, $2), is one value: the parameters after it take the columns at their own positions, label as string and flagged as bool, in one row and in a second row, and DuckDB stores them there.",
+  "expectedDiagnostics": []
+}

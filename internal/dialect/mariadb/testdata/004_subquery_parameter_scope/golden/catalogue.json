@@ -1,0 +1,102 @@
+{
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "": {
+      "Tables": {
+        "profiles": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_init.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Origin": {
+                "Filename": "001_init.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Length": 100
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "role",
+              "Origin": {
+                "Filename": "001_init.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Length": 50
+              }
+            }
+          ],
+          "Name": "profiles",
+          "Origin": {
+            "Filename": "001_init.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ]
+        },
+        "user_profiles": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "user_id",
+              "Origin": {
+                "Filename": "001_init.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "profile_id",
+              "Origin": {
+                "Filename": "001_init.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            }
+          ],
+          "Name": "user_profiles",
+          "Origin": {
+            "Filename": "001_init.up.sql",
+            "Statement": 1
+          },
+          "PrimaryKey": [
+            "user_id",
+            "profile_id"
+          ]
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    ""
+  ]
+}

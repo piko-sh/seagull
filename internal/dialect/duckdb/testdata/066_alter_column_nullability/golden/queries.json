@@ -1,0 +1,55 @@
+[
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 1,
+    "Name": "ListBoats",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      },
+      {
+        "Name": "skipper",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "skipper",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      },
+      {
+        "Name": "berth",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "berth",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListBoats, command: many)\nSELECT id, name, skipper, berth FROM boats;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:skipper⟩, ⟨c3:berth⟩ FROM boats;"
+  }
+]

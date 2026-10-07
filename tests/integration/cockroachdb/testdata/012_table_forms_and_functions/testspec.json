@@ -1,0 +1,4 @@
+{
+  "description": "CockroachDB's own table forms and functions: a hash-sharded primary key, inline UNIQUE, INVERTED and partial indexes with STORING, column families, computed columns written AS (expression) STORED or VIRTUAL and a NOT VISIBLE column build the catalogue, so SELECT * reads the visible columns, the computed and hidden shard columns aside, and an INSERT leaves the computed columns out; gen_random_ulid, levenshtein, soundex and array_cat_agg read as CockroachDB returns them, and sha256 as hexadecimal text.",
+  "expectedDiagnostics": []
+}

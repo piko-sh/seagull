@@ -1,0 +1,128 @@
+[
+  {
+    "Command": "many",
+    "Filename": "settings.sql",
+    "Line": 1,
+    "Name": "SettingLevels",
+    "OutputColumns": [
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "settings",
+        "SourceTable": "settings"
+      },
+      {
+        "Name": "level",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "level",
+        "SourceQualifier": "settings",
+        "SourceTable": "settings"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "level",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(SettingLevels, many)\nSELECT name, level FROM settings WHERE level \u003e ?;",
+    "Template": "SELECT ⟨c0:name⟩, ⟨c1:level⟩ FROM settings WHERE level \u003e ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "settings.sql",
+    "Line": 4,
+    "Name": "EnabledFlags",
+    "OutputColumns": [
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "flags",
+        "SourceTable": "flags"
+      },
+      {
+        "Name": "enabled",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "enabled",
+        "SourceQualifier": "flags",
+        "SourceTable": "flags"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "enabled",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(EnabledFlags, many)\nSELECT name, enabled FROM flags WHERE enabled = ?;",
+    "Template": "SELECT ⟨c0:name⟩, ⟨c1:enabled⟩ FROM flags WHERE enabled = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "settings.sql",
+    "Line": 7,
+    "Name": "SettingRowIDs",
+    "OutputColumns": [
+      {
+        "Name": "rowid",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(SettingRowIDs, many)\nSELECT rowid FROM settings;",
+    "Template": "SELECT ⟨c0:rowid⟩ FROM settings;"
+  },
+  {
+    "Command": "many",
+    "Filename": "settings.sql",
+    "Line": 10,
+    "Name": "FlagRowIDs",
+    "OutputColumns": [
+      {
+        "Name": "rowid",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(FlagRowIDs, many)\nSELECT rowid FROM flags;",
+    "Template": "SELECT ⟨c0:rowid⟩ FROM flags;"
+  }
+]

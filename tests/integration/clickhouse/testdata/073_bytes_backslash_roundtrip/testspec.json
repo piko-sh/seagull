@@ -1,0 +1,10 @@
+{
+  "description": "Byte-slice parameters: a []byte bound to a {name:String} parameter whose bytes hold backslashes, tabs and quotes arrives unchanged, because the generated formatter doubles backslashes for byte slices as it does for strings.",
+  "typeOverrides": [
+    {
+      "SQLTypeName": "String",
+      "GoPackage": "",
+      "GoName": "[]byte"
+    }
+  ]
+}

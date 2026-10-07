@@ -1,0 +1,68 @@
+{
+  "add_full_ledger": "added",
+  "add_sparse_ledger": "added",
+  "full_ledger": {
+    "amounts": [
+      "1.50",
+      "-7"
+    ],
+    "blobs": [
+      "AQL/",
+      ""
+    ],
+    "closes": "18:30:00-05",
+    "days": [
+      "2024-01-02T00:00:00Z"
+    ],
+    "flags": "101",
+    "id": 1,
+    "ident": "0b9f8e2c-6d1a-4f3e-9a7b-5c4d3e2f1a0b",
+    "mask": "1011",
+    "moments": [
+      "2024-01-02T03:04:05.123456Z",
+      "2024-01-02T00:00:00Z"
+    ],
+    "opens": "09:15:00+02",
+    "price": "$12.50",
+    "rates": [
+      "0.125",
+      "3"
+    ],
+    "refund": "$1.25",
+    "span": "1 day 02:03:04"
+  },
+  "ledger_by_ident": {
+    "id": 1
+  },
+  "ledgers_priced_at": [
+    {
+      "id": 1,
+      "price": "$12.50"
+    },
+    {
+      "id": 2,
+      "price": "$12.50"
+    }
+  ],
+  "rates_after_update": [
+    "9.99",
+    "-0.5"
+  ],
+  "set_rates": "set",
+  "sparse_ledger": {
+    "amounts": [],
+    "blobs": null,
+    "closes": null,
+    "days": null,
+    "flags": "000",
+    "id": 2,
+    "ident": "7d3c2b1a-0f9e-4d8c-8b7a-6f5e4d3c2b1a",
+    "mask": null,
+    "moments": [],
+    "opens": "00:00:00+00",
+    "price": "$12.50",
+    "rates": [],
+    "refund": null,
+    "span": "00:00:01"
+  }
+}

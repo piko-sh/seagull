@@ -1,0 +1,15 @@
+{
+  "first_extras": {
+    "skipper": "Morwenna"
+  },
+  "first_fees": {
+    "August": 350,
+    "July": 300
+  },
+  "matching_fleet_count": 1,
+  "matching_fleet_id": 2,
+  "second_extras_null": true,
+  "second_fees": {
+    "July": 120
+  }
+}

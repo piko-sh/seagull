@@ -1,0 +1,70 @@
+[
+  {
+    "Command": "many",
+    "Filename": "search_spatial.sql",
+    "Line": 1,
+    "Name": "SearchSpatial",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "spatial_idx",
+        "SourceTable": "spatial_idx"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "min_x",
+        "Number": 1,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "max_x",
+        "Number": 2,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "min_y",
+        "Number": 3,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "max_y",
+        "Number": 4,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: SearchSpatial, command: many)\nSELECT id FROM spatial_idx WHERE min_x \u003e= ? AND max_x \u003c= ? AND min_y \u003e= ? AND max_y \u003c= ?",
+    "Template": "SELECT ⟨c0:id⟩ FROM spatial_idx WHERE min_x \u003e= ⟨p0⟩ AND max_x \u003c= ⟨p1⟩ AND min_y \u003e= ⟨p2⟩ AND max_y \u003c= ⟨p3⟩⟨arguments p0 p1 p2 p3⟩"
+  }
+]

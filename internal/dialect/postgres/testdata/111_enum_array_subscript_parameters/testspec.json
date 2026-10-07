@@ -1,0 +1,4 @@
+{
+  "description": "A parameter compared with an element of an enum array takes the enum type, so a slice parameter compared through IN with a subscript of the array lists enum values, and one compared inside a subquery is typed in the subquery's scope.",
+  "expectedDiagnosticCount": 0
+}

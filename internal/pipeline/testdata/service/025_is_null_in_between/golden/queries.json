@@ -1,0 +1,62 @@
+[
+  {
+    "Command": "many",
+    "Filename": "get_filtered.sql",
+    "Line": 1,
+    "Name": "GetFilteredItems",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "is_uncategorised",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "boolean"
+        }
+      },
+      {
+        "Name": "has_name",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "boolean"
+        }
+      },
+      {
+        "Name": "is_popular_category",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "boolean"
+        }
+      },
+      {
+        "Name": "is_mid_range",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "boolean"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: GetFilteredItems, command: many)\nSELECT\n  id,\n  name,\n  category IS NULL as is_uncategorised,\n  name IS NOT NULL as has_name,\n  category IN ('electronics', 'books', 'toys') as is_popular_category,\n  price BETWEEN 10 AND 100 as is_mid_range\nFROM items",
+    "Template": "SELECT\\n  id,\\n  name,\\n  category IS NULL as is_uncategorised,\\n  name IS NOT NULL as has_name,\\n  category IN ('electronics', 'books', 'toys') as is_popular_category,\\n  price BETWEEN 10 AND 100 as is_mid_range\\nFROM items"
+  }
+]

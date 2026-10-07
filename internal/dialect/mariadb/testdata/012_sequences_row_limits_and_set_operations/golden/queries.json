@@ -1,0 +1,399 @@
+[
+  {
+    "Command": "many",
+    "Filename": "row_limits.sql",
+    "Line": 1,
+    "Name": "InvoicePage",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "invoices",
+        "SourceTable": "invoices"
+      },
+      {
+        "Name": "shop",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 20
+        },
+        "SourceColumn": "shop",
+        "SourceQualifier": "invoices",
+        "SourceTable": "invoices"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "offset",
+        "Kind": "none",
+        "Name": "offset",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "limit",
+        "Kind": "none",
+        "Name": "limit",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: InvoicePage, command: many)\nSELECT id, shop FROM invoices ORDER BY id OFFSET ? ROWS FETCH NEXT ? ROWS ONLY;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:shop⟩ FROM invoices ORDER BY id OFFSET ⟨p0⟩ ROWS FETCH NEXT ⟨p1⟩ ROWS ONLY;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "row_limits.sql",
+    "Line": 4,
+    "Name": "TopInvoices",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "invoices",
+        "SourceTable": "invoices"
+      },
+      {
+        "Name": "amount",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 10,
+          "Scale": 2
+        },
+        "SourceColumn": "amount",
+        "SourceQualifier": "invoices",
+        "SourceTable": "invoices"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: TopInvoices, command: many)\nSELECT id, amount FROM invoices ORDER BY amount DESC FETCH FIRST 3 ROWS WITH TIES;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:amount⟩ FROM invoices ORDER BY amount DESC FETCH FIRST 3 ROWS WITH TIES;"
+  },
+  {
+    "Command": "one",
+    "Filename": "sequences.sql",
+    "Line": 1,
+    "Name": "NextInvoiceNumbers",
+    "OutputColumns": [
+      {
+        "Name": "next_number",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "after_that",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "previous_number",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "last_number",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: NextInvoiceNumbers, command: one)\nSELECT NEXT VALUE FOR invoice_numbers AS next_number, NEXTVAL(invoice_numbers) AS after_that,\n    PREVIOUS VALUE FOR invoice_numbers AS previous_number, LASTVAL(invoice_numbers) AS last_number;",
+    "Template": "SELECT ⟨c0 aliased:NEXT VALUE FOR invoice_numbers⟩ AS next_number, ⟨c1 aliased:NEXTVAL(invoice_numbers)⟩ AS after_that,\\n    ⟨c2 aliased:PREVIOUS VALUE FOR invoice_numbers⟩ AS previous_number, ⟨c3 aliased:LASTVAL(invoice_numbers)⟩ AS last_number;"
+  },
+  {
+    "Command": "one",
+    "Filename": "sequences.sql",
+    "Line": 5,
+    "Name": "MoveInvoiceNumbers",
+    "OutputColumns": [
+      {
+        "Name": "moved_to",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "moved_unused",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: MoveInvoiceNumbers, command: one)\nSELECT SETVAL(invoice_numbers, 5000) AS moved_to, SETVAL(invoice_numbers, 6000, 0, 1) AS moved_unused;",
+    "Template": "SELECT ⟨c0 aliased:SETVAL(invoice_numbers, 5000)⟩ AS moved_to, ⟨c1 aliased:SETVAL(invoice_numbers, 6000, 0, 1)⟩ AS moved_unused;"
+  },
+  {
+    "Command": "exec",
+    "Filename": "sequences.sql",
+    "InsertColumns": [
+      "id",
+      "shop",
+      "amount",
+      "items",
+      "issued"
+    ],
+    "InsertTarget": {
+      "Name": "invoices"
+    },
+    "Line": 8,
+    "Name": "AddInvoice",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "shop",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 20
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "amount",
+        "Number": 2,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 10,
+          "Scale": 2
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "items",
+        "Number": 3,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "issued",
+        "Number": 4,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 20
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: AddInvoice, command: exec)\nINSERT INTO invoices (id, shop, amount, items, issued) VALUES (NEXT VALUE FOR invoice_numbers, ?, ?, ?, ?);",
+    "Template": "INSERT INTO invoices (id, shop, amount, items, issued) VALUES ⟨values:(NEXT VALUE FOR invoice_numbers, ⟨p0⟩, ⟨p1⟩, ⟨p2⟩, ⟨p3⟩)⟩;⟨arguments p0 p1 p2 p3⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "set_operations.sql",
+    "Line": 1,
+    "Name": "ShopsWithDefault",
+    "OutputColumns": [
+      {
+        "Name": "column1",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "column2",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "items",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ShopsWithDefault, command: many)\nVALUES ('none', 0) UNION ALL SELECT shop, items FROM invoices WHERE items \u003e ?;",
+    "Template": "VALUES ('none', 0) UNION ALL SELECT shop, items FROM invoices WHERE items \u003e ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "set_operations.sql",
+    "Line": 4,
+    "Name": "CheapestAndDearest",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "invoices",
+        "SourceTable": "invoices"
+      },
+      {
+        "Name": "amount",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 10,
+          "Scale": 2
+        },
+        "SourceColumn": "amount",
+        "SourceQualifier": "invoices",
+        "SourceTable": "invoices"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CheapestAndDearest, command: many)\n(SELECT id, amount FROM invoices ORDER BY amount LIMIT 1) UNION ALL (SELECT id, amount FROM invoices ORDER BY amount DESC LIMIT 1);",
+    "Template": "(SELECT id, amount FROM invoices ORDER BY amount LIMIT 1) UNION ALL (SELECT id, amount FROM invoices ORDER BY amount DESC LIMIT 1);"
+  },
+  {
+    "Command": "many",
+    "Filename": "set_operations.sql",
+    "Line": 7,
+    "Name": "PerItem",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "invoices",
+        "SourceTable": "invoices"
+      },
+      {
+        "Name": "per_item",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Scale": 6
+        }
+      },
+      {
+        "Name": "label",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "issued_on",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: PerItem, command: many)\nSELECT id, amount / items AS per_item, CONCAT(shop, \":\", id) AS label, STR_TO_DATE(issued, \"%Y-%m-%d\") AS issued_on\nFROM invoices;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:amount / items⟩ AS per_item, ⟨c2 aliased:CONCAT(shop, \":\", id)⟩ AS label, ⟨c3 aliased:STR_TO_DATE(issued, \"%Y-%m-%d\")⟩ AS issued_on\\nFROM invoices;"
+  },
+  {
+    "Command": "many",
+    "Filename": "windows.sql",
+    "Line": 1,
+    "Name": "ShopMedians",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "invoices",
+        "SourceTable": "invoices"
+      },
+      {
+        "Name": "median_amount",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "double",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "continuous",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "double",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "discrete",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ShopMedians, command: many)\nSELECT id, MEDIAN(amount) OVER (PARTITION BY shop) AS median_amount,\n    PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY amount) OVER (PARTITION BY shop) AS continuous,\n    PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY items DESC) OVER () AS discrete\nFROM invoices;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:MEDIAN(amount) OVER (PARTITION BY shop)⟩ AS median_amount,\\n    ⟨c2 aliased:PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY amount) OVER (PARTITION BY shop)⟩ AS continuous,\\n    ⟨c3 aliased:PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY items DESC) OVER ()⟩ AS discrete\\nFROM invoices;"
+  }
+]

@@ -1,0 +1,427 @@
+[
+  {
+    "Command": "many",
+    "Filename": "aliases.sql",
+    "Line": 1,
+    "Name": "Dearer",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "trips",
+        "SourceTable": "trips"
+      },
+      {
+        "Name": "doubled",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "doubled",
+        "Number": 1,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Dearer, command: many)\nSELECT id, fare * 2 AS doubled FROM trips WHERE doubled \u003e ? ORDER BY doubled DESC;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:fare * 2⟩ AS doubled FROM trips WHERE doubled \u003e ⟨p0⟩ ORDER BY doubled DESC;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "aliases.sql",
+    "Line": 4,
+    "Name": "BusyCities",
+    "OutputColumns": [
+      {
+        "Name": "city",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "city",
+        "SourceQualifier": "trips",
+        "SourceTable": "trips"
+      },
+      {
+        "Name": "total",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "total",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: BusyCities, command: many)\nSELECT city, count(*) AS total FROM trips GROUP BY city HAVING total \u003e ?;",
+    "Template": "SELECT ⟨c0:city⟩, ⟨c1 aliased:count(*)⟩ AS total FROM trips GROUP BY city HAVING total \u003e ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "casts.sql",
+    "Line": 1,
+    "Name": "Tried",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "trips",
+        "SourceTable": "trips"
+      },
+      {
+        "Name": "number",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "attempted",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "whole",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "fare",
+        "SourceQualifier": "trips",
+        "SourceTable": "trips"
+      },
+      {
+        "Name": "triple",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int4",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "int4[]"
+        },
+        "SourceColumn": "doc",
+        "SourceQualifier": "trips",
+        "SourceTable": "trips"
+      },
+      {
+        "Name": "labels",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "map",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int4",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "map",
+          "KeyType": {
+            "Category": "text",
+            "EngineName": "varchar"
+          }
+        },
+        "SourceColumn": "doc",
+        "SourceQualifier": "trips",
+        "SourceTable": "trips"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Tried, command: many)\n-- sgl.column(labels, type: \"MAP(VARCHAR, INTEGER)\")\nSELECT id, TRY_CAST(note AS INTEGER) AS number, try(CAST(note AS INTEGER)) AS attempted, CAST(fare AS INTEGER) AS whole,\n    CAST(doc AS INTEGER[3]) AS triple, doc AS labels\nFROM trips;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:TRY_CAST(note AS INTEGER)⟩ AS number, ⟨c2 aliased:try(CAST(note AS INTEGER))⟩ AS attempted, ⟨c3 aliased:CAST(fare AS INTEGER)⟩ AS whole,\\n    ⟨c4 aliased:CAST(doc AS INTEGER[3])⟩ AS triple, ⟨c5 aliased:doc⟩ AS labels\\nFROM trips;"
+  },
+  {
+    "Command": "many",
+    "Filename": "dates.sql",
+    "Line": 1,
+    "Name": "DaysSince",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "trips",
+        "SourceTable": "trips"
+      },
+      {
+        "Name": "days",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "since",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "interval",
+          "Temporal": "interval"
+        }
+      },
+      {
+        "Name": "bucket",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp",
+          "Temporal": "timestamp"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: DaysSince, command: many)\nSELECT id, date_diff('day', '2024-01-01', day) AS days, age('2024-01-01', day) AS since,\n    time_bucket('1 day', started) AS bucket\nFROM trips;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:date_diff('day', '2024-01-01', day)⟩ AS days, ⟨c2 aliased:age('2024-01-01', day)⟩ AS since,\\n    ⟨c3 aliased:time_bucket('1 day', started)⟩ AS bucket\\nFROM trips;"
+  },
+  {
+    "Command": "many",
+    "Filename": "joins.sql",
+    "Line": 1,
+    "Name": "Riding",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "r"
+      },
+      {
+        "Name": "city",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "city",
+        "SourceQualifier": "r"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "r"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Riding, command: many)\nSELECT r.id, r.city, r.name FROM (trips JOIN riders ON trips.id = riders.trip_id) AS r ORDER BY r.name;",
+    "Template": "SELECT ⟨c0:r.id⟩, ⟨c1:r.city⟩, ⟨c2:r.name⟩ FROM (trips JOIN riders ON trips.id = riders.trip_id) AS r ORDER BY r.name;"
+  },
+  {
+    "Command": "many",
+    "Filename": "joins.sql",
+    "Line": 4,
+    "Name": "RidingUsing",
+    "OutputColumns": [
+      {
+        "Name": "city",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "city",
+        "SourceQualifier": "trips",
+        "SourceTable": "trips"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "riders",
+        "SourceTable": "riders"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: RidingUsing, command: many)\nSELECT trips.city, riders.name FROM (trips JOIN riders USING (id)) AS r;",
+    "Template": "SELECT ⟨c0:trips.city⟩, ⟨c1:riders.name⟩ FROM (trips JOIN riders USING (id)) AS r;"
+  },
+  {
+    "Command": "many",
+    "Filename": "placeholders.sql",
+    "Line": 1,
+    "Name": "TripsFor",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "trips",
+        "SourceTable": "trips"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "city",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "other",
+        "Number": 3,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: TripsFor, command: many)\nSELECT id FROM trips WHERE city = :city AND id \u003e $1 AND city \u003c\u003e :other ORDER BY id;",
+    "Template": "SELECT ⟨c0:id⟩ FROM trips WHERE city = ⟨p1⟩ AND id \u003e ⟨p0⟩ AND city \u003c\u003e ⟨p2⟩ ORDER BY id;⟨arguments p0 p1 p2⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "values.sql",
+    "Line": 1,
+    "Name": "Countdown",
+    "OutputColumns": [
+      {
+        "Name": "n",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "n",
+        "SourceQualifier": "c",
+        "SourceTable": "c"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Countdown, command: many)\nWITH RECURSIVE c(n) AS (VALUES (3) UNION ALL SELECT n - 1 FROM c WHERE n \u003e 1) SELECT n FROM c;",
+    "Template": "WITH RECURSIVE c(n) AS (VALUES (3) UNION ALL SELECT n - 1 FROM c WHERE n \u003e 1) SELECT ⟨c0:n⟩ FROM c;"
+  },
+  {
+    "Command": "many",
+    "Filename": "values.sql",
+    "Line": 4,
+    "Name": "Mixed",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "trips",
+        "SourceTable": "trips"
+      },
+      {
+        "Name": "city",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "city",
+        "SourceQualifier": "trips",
+        "SourceTable": "trips"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Mixed, command: many)\nSELECT id, city FROM trips UNION ALL VALUES (0, 'none') ORDER BY 1;",
+    "Template": "SELECT id, city FROM trips UNION ALL VALUES (0, 'none') ORDER BY 1;"
+  },
+  {
+    "Command": "many",
+    "Filename": "values.sql",
+    "Line": 7,
+    "Name": "Literal",
+    "OutputColumns": [
+      {
+        "Name": "col0",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "col1",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Literal, command: many)\nVALUES (1, 'one'), (2, 'two');",
+    "Template": "VALUES (1, 'one'), (2, 'two');"
+  }
+]

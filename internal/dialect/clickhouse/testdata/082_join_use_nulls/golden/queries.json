@@ -1,0 +1,126 @@
+[
+  {
+    "Command": "many",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "ByDefault",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "g",
+        "SourceTable": "gulls"
+      },
+      {
+        "Name": "beach",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "beach",
+        "SourceQualifier": "s",
+        "SourceTable": "sightings"
+      },
+      {
+        "Name": "note",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "note",
+        "SourceQualifier": "s",
+        "SourceTable": "sightings"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ByDefault, many)\nSELECT g.id, s.beach, s.note FROM gulls AS g LEFT JOIN sightings AS s ON s.gull_id = g.id;",
+    "Template": "SELECT ⟨c0:g.id⟩, ⟨c1:s.beach⟩, ⟨c2:s.note⟩ FROM gulls AS g LEFT JOIN sightings AS s ON s.gull_id = g.id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "q.sql",
+    "Line": 4,
+    "Name": "WithNulls",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "g",
+        "SourceTable": "gulls"
+      },
+      {
+        "Name": "beach",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "beach",
+        "SourceQualifier": "s",
+        "SourceTable": "sightings"
+      },
+      {
+        "Name": "note",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "note",
+        "SourceQualifier": "s",
+        "SourceTable": "sightings"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(WithNulls, many)\nSELECT g.id, s.beach, s.note FROM gulls AS g LEFT JOIN sightings AS s ON s.gull_id = g.id SETTINGS join_use_nulls = 1;",
+    "Template": "SELECT ⟨c0:g.id⟩, ⟨c1:s.beach⟩, ⟨c2:s.note⟩ FROM gulls AS g LEFT JOIN sightings AS s ON s.gull_id = g.id SETTINGS join_use_nulls = 1;"
+  },
+  {
+    "Command": "many",
+    "Filename": "q.sql",
+    "Line": 7,
+    "Name": "FullJoin",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "g",
+        "SourceTable": "gulls"
+      },
+      {
+        "Name": "beach",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "beach",
+        "SourceQualifier": "s",
+        "SourceTable": "sightings"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(FullJoin, many)\nSELECT g.id, s.beach FROM gulls AS g FULL OUTER JOIN sightings AS s ON s.gull_id = g.id SETTINGS join_use_nulls = 1;",
+    "Template": "SELECT ⟨c0:g.id⟩, ⟨c1:s.beach⟩ FROM gulls AS g FULL OUTER JOIN sightings AS s ON s.gull_id = g.id SETTINGS join_use_nulls = 1;"
+  }
+]

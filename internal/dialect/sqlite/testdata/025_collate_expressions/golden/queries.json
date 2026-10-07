@@ -1,0 +1,46 @@
+[
+  {
+    "Command": "many",
+    "Filename": "find_case_insensitive.sql",
+    "Line": 1,
+    "Name": "FindCaseInsensitive",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FindCaseInsensitive, command: many)\nSELECT id, name FROM users WHERE name COLLATE NOCASE = ?",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩ FROM users WHERE name COLLATE NOCASE = ⟨p0⟩⟨arguments p0⟩"
+  }
+]

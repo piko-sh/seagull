@@ -1,0 +1,100 @@
+{
+  "DefaultSchema": "default",
+  "Identifiers": {
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "default": {
+      "Name": "default",
+      "Tables": {
+        "gulls": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_gulls.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt64",
+                "Unsigned": true,
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Origin": {
+                "Filename": "001_gulls.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "String"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "wing",
+              "Origin": {
+                "Filename": "001_gulls.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "Int32",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "span",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_gulls.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "Int32",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "ringed",
+              "Origin": {
+                "Filename": "001_gulls.up.sql"
+              },
+              "SQLType": {
+                "Category": "boolean",
+                "EngineName": "Bool"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "tagged",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_gulls.up.sql"
+              },
+              "SQLType": {
+                "Category": "boolean",
+                "EngineName": "Bool"
+              }
+            }
+          ],
+          "Name": "gulls",
+          "Origin": {
+            "Filename": "001_gulls.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "default"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "default"
+  ]
+}

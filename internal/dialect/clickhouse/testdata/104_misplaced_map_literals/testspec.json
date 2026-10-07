@@ -1,0 +1,4 @@
+{
+  "description": "ClickHouse 25.4 reads '{' outside the rows of INSERT ... VALUES only as a {name:Type} placeholder, so a map literal in a select list, a WHERE condition, an INSERT ... SELECT or a mutation is refused with a message that suggests map(key, value), and so is a placeholder inside a map literal in VALUES, which the server reads as data and does not substitute",
+  "expectedDiagnosticCount": 5
+}

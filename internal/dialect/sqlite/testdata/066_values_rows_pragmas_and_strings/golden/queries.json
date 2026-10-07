@@ -1,0 +1,593 @@
+[
+  {
+    "Command": "many",
+    "Filename": "arithmetic.sql",
+    "Line": 1,
+    "Name": "Shares",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "ledger",
+        "SourceTable": "ledger"
+      },
+      {
+        "Name": "share",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "remainder",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "rate_share",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "half",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "nothing",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Shares, command: many)\nSELECT id, amount / parts AS share, amount % parts AS remainder, rate / parts AS rate_share, amount / 2 AS half,\n    amount % 0.5 AS nothing\nFROM ledger;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:amount / parts⟩ AS share, ⟨c2 aliased:amount % parts⟩ AS remainder, ⟨c3 aliased:rate / parts⟩ AS rate_share, ⟨c4 aliased:amount / 2⟩ AS half,\\n    ⟨c5 aliased:amount % 0.5⟩ AS nothing\\nFROM ledger;"
+  },
+  {
+    "Command": "many",
+    "Filename": "json.sql",
+    "Line": 1,
+    "Name": "Documents",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "settings",
+        "SourceTable": "settings"
+      },
+      {
+        "Name": "doc",
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        },
+        "SourceColumn": "doc",
+        "SourceQualifier": "settings",
+        "SourceTable": "settings"
+      },
+      {
+        "Name": "raw",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        },
+        "SourceColumn": "raw",
+        "SourceQualifier": "settings",
+        "SourceTable": "settings"
+      },
+      {
+        "Name": "label",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "label",
+        "SourceQualifier": "settings",
+        "SourceTable": "settings"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Documents, command: many)\nSELECT id, doc, raw, label FROM settings;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:doc⟩, ⟨c2:raw⟩, ⟨c3:label⟩ FROM settings;"
+  },
+  {
+    "Command": "many",
+    "Filename": "json.sql",
+    "Line": 4,
+    "Name": "BlobFields",
+    "OutputColumns": [
+      {
+        "Name": "a",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      },
+      {
+        "Name": "doc",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "kind",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: BlobFields, command: many)\nSELECT json_extract(blob_doc, '$.a') AS a, json(blob_doc) AS doc, json_type(blob_doc) AS kind FROM settings;",
+    "Template": "SELECT ⟨c0 aliased:json_extract(blob_doc, '$.a')⟩ AS a, ⟨c1 aliased:json(blob_doc)⟩ AS doc, ⟨c2 aliased:json_type(blob_doc)⟩ AS kind FROM settings;"
+  },
+  {
+    "Command": "exec",
+    "Filename": "json.sql",
+    "InsertColumns": [
+      "id",
+      "doc",
+      "label"
+    ],
+    "InsertTarget": {
+      "Name": "settings"
+    },
+    "Line": 7,
+    "Name": "StoreBinary",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "doc",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "label",
+        "Number": 3,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: StoreBinary, command: exec)\nINSERT INTO settings (id, doc, label) VALUES (?, jsonb(?), ?);",
+    "Template": "INSERT INTO settings (id, doc, label) VALUES ⟨values:(⟨p0⟩, jsonb(⟨p1⟩), ⟨p2⟩)⟩;⟨arguments p0 p1 p2⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "pragmas.sql",
+    "Line": 1,
+    "Name": "SchemaVersion",
+    "OutputColumns": [
+      {
+        "Name": "user_version",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "user_version"
+      }
+    ],
+    "SQL": "-- sgl.query(name: SchemaVersion, command: one)\nPRAGMA user_version;",
+    "Template": "PRAGMA user_version;"
+  },
+  {
+    "Command": "many",
+    "Filename": "pragmas.sql",
+    "Line": 4,
+    "Name": "Columns",
+    "OutputColumns": [
+      {
+        "Name": "cid",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "cid"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name"
+      },
+      {
+        "Name": "type",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "type"
+      },
+      {
+        "Name": "notnull",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "notnull"
+      },
+      {
+        "Name": "dflt_value",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "dflt_value"
+      },
+      {
+        "Name": "pk",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "pk"
+      }
+    ],
+    "SQL": "-- sgl.query(name: Columns, command: many)\nPRAGMA table_info(ledger);",
+    "Template": "PRAGMA table_info(ledger);"
+  },
+  {
+    "Command": "one",
+    "Filename": "pragmas.sql",
+    "Line": 7,
+    "Name": "UseWAL",
+    "OutputColumns": [
+      {
+        "Name": "journal_mode",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "journal_mode"
+      }
+    ],
+    "SQL": "-- sgl.query(name: UseWAL, command: one)\nPRAGMA journal_mode = WAL;",
+    "Template": "PRAGMA journal_mode = WAL;"
+  },
+  {
+    "Command": "exec",
+    "Filename": "pragmas.sql",
+    "Line": 10,
+    "Name": "EnforceKeys",
+    "SQL": "-- sgl.query(name: EnforceKeys, command: exec)\nPRAGMA foreign_keys = ON;",
+    "Template": "PRAGMA foreign_keys = ON;"
+  },
+  {
+    "Command": "many",
+    "Filename": "rows.sql",
+    "Line": 1,
+    "Name": "LedgerAfter",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "ledger",
+        "SourceTable": "ledger"
+      },
+      {
+        "Name": "category",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "category",
+        "SourceQualifier": "ledger",
+        "SourceTable": "ledger"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "category",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: LedgerAfter, command: many)\nSELECT id, category FROM ledger WHERE (category, id) \u003e (?, ?) ORDER BY category, id;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:category⟩ FROM ledger WHERE (category, id) \u003e (⟨p0⟩, ⟨p1⟩) ORDER BY category, id;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "rows.sql",
+    "Line": 4,
+    "Name": "LedgerIn",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "ledger",
+        "SourceTable": "ledger"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "category",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "dir",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: LedgerIn, command: many)\nSELECT id FROM ledger WHERE (category, dir) IN ((?, ?), ('b', 'c'));",
+    "Template": "SELECT ⟨c0:id⟩ FROM ledger WHERE (category, dir) IN ((⟨p0⟩, ⟨p1⟩), ('b', 'c'));⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "rows.sql",
+    "Line": 7,
+    "Name": "MoveLedger",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "category",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "dir",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 3,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: MoveLedger, command: exec)\nUPDATE ledger SET (category, dir) = (?, ?) WHERE id = ?;",
+    "Template": "UPDATE ledger SET (category, dir) = (⟨p0⟩, ⟨p1⟩) WHERE id = ⟨p2⟩;⟨arguments p0 p1 p2⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "strings.sql",
+    "Line": 1,
+    "Name": "Paths",
+    "OutputColumns": [
+      {
+        "Name": "path",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "like",
+        "Kind": "none",
+        "Name": "path_like",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Paths, command: many)\nSELECT category || '/' || dir AS path FROM ledger WHERE path LIKE ? ORDER BY path;",
+    "Template": "SELECT ⟨c0 aliased:category || '/' || dir⟩ AS path FROM ledger WHERE path LIKE ⟨p0⟩ ORDER BY path;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "strings.sql",
+    "Line": 4,
+    "Name": "Patterned",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "ledger",
+        "SourceTable": "ledger"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "like",
+        "Kind": "none",
+        "Name": "category_like",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Patterned, command: many)\nSELECT id FROM ledger WHERE category LIKE concat(\"%\", ?, \"%\");",
+    "Template": "SELECT ⟨c0:id⟩ FROM ledger WHERE category LIKE concat(\"%\", ⟨p0⟩, \"%\");⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "values.sql",
+    "Line": 1,
+    "Name": "Countdown",
+    "OutputColumns": [
+      {
+        "Name": "n",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "n",
+        "SourceQualifier": "c",
+        "SourceTable": "c"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Countdown, command: many)\nWITH RECURSIVE c(n) AS (VALUES (3) UNION ALL SELECT n - 1 FROM c WHERE n \u003e 1) SELECT n FROM c;",
+    "Template": "WITH RECURSIVE c(n) AS (VALUES (3) UNION ALL SELECT n - 1 FROM c WHERE n \u003e 1) SELECT ⟨c0:n⟩ FROM c;"
+  },
+  {
+    "Command": "many",
+    "Filename": "values.sql",
+    "Line": 4,
+    "Name": "Pairs",
+    "OutputColumns": [
+      {
+        "Name": "code",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "code",
+        "SourceQualifier": "pairs",
+        "SourceTable": "pairs"
+      },
+      {
+        "Name": "label",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "label",
+        "SourceQualifier": "pairs",
+        "SourceTable": "pairs"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Pairs, command: many)\nWITH pairs(code, label) AS (VALUES (1, 'one'), (2, 'two')) SELECT code, label FROM pairs;",
+    "Template": "WITH pairs(code, label) AS (VALUES (1, 'one'), (2, 'two')) SELECT ⟨c0:code⟩, ⟨c1:label⟩ FROM pairs;"
+  },
+  {
+    "Command": "many",
+    "Filename": "values.sql",
+    "Line": 7,
+    "Name": "Mixed",
+    "OutputColumns": [
+      {
+        "Name": "column1",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "column2",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Mixed, command: many)\nVALUES (0, 'none') UNION ALL SELECT id, category FROM ledger;",
+    "Template": "VALUES (0, 'none') UNION ALL SELECT id, category FROM ledger;"
+  }
+]

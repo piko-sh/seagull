@@ -1,0 +1,49 @@
+[
+  {
+    "Command": "many",
+    "Filename": "search_articles.sql",
+    "Line": 1,
+    "Name": "SearchArticles",
+    "OutputColumns": [
+      {
+        "Name": "title_highlighted",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "body_snippet",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "relevance",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "like",
+        "Kind": "none",
+        "Name": "articles_fts_like",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: SearchArticles, command: many)\nSELECT highlight(articles_fts, 0, '\u003cb\u003e', '\u003c/b\u003e') AS title_highlighted,\n       snippet(articles_fts, 1, '\u003cb\u003e', '\u003c/b\u003e', '...', 32) AS body_snippet,\n       bm25(articles_fts) AS relevance\nFROM articles_fts WHERE articles_fts MATCH ?",
+    "Template": "SELECT ⟨c0 aliased:highlight(articles_fts, 0, '\u003cb\u003e', '\u003c/b\u003e')⟩ AS title_highlighted,\\n       ⟨c1 aliased:snippet(articles_fts, 1, '\u003cb\u003e', '\u003c/b\u003e', '...', 32)⟩ AS body_snippet,\\n       ⟨c2 aliased:bm25(articles_fts)⟩ AS relevance\\nFROM articles_fts WHERE articles_fts MATCH ⟨p0⟩⟨arguments p0⟩"
+  }
+]

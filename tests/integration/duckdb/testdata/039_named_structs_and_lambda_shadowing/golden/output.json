@@ -1,0 +1,65 @@
+{
+  "boat_structs": [
+    {
+      "listed": [
+        {
+          "score": 1
+        }
+      ],
+      "literal": {
+        "id": 1,
+        "name": "Swift"
+      },
+      "packed": {
+        "id": 1,
+        "name": "Swift"
+      }
+    },
+    {
+      "listed": [
+        {
+          "score": 2
+        }
+      ],
+      "literal": {
+        "id": 2,
+        "name": "Gull"
+      },
+      "packed": {
+        "id": 2,
+        "name": "Gull"
+      }
+    },
+    {
+      "listed": [
+        {
+          "score": 3
+        }
+      ],
+      "literal": {
+        "id": 3,
+        "name": "Tern"
+      },
+      "packed": {
+        "id": 3,
+        "name": "Tern"
+      }
+    }
+  ],
+  "boats_scored_above": [
+    {
+      "id": 1
+    },
+    {
+      "id": 3
+    }
+  ],
+  "high_scoring_boats": [
+    {
+      "id": 1
+    },
+    {
+      "id": 3
+    }
+  ]
+}

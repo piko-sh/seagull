@@ -1,0 +1,29 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: Ringed gulls and their sightings, where Nullable(String) gives a pointer and join_use_nulls decides whether a LEFT JOIN's unmatched row is NULL or each column's default.
+differs:
+  - Columns are NOT NULL unless declared Nullable(T), which maps to *T
+  - "A LEFT JOIN fills an unmatched row with default values (\"\" and 0) unless join_use_nulls = 1, so in ListSightings Place is a plain string, empty for the gull never seen and printed here as (empty)"
+  - "Seagull assumes the server's default, join_use_nulls = 0, unless the query sets it in SETTINGS or the database's ClickHouse dialect options say join_use_nulls: true"
+  - "With the default fill, count(column) counts the unmatched row; SummariseGulls sets join_use_nulls = 1 so count gives 0 and max gives NULL"
+  - count maps to uint64 and max(Date) to *time.Time
+  - No UNIQUE constraint and no auto-increment, so each row's id is a parameter
+entry: {file: db/queries/gulls.sql, query: SummariseGulls}
+live: "no"
+test: integration

@@ -1,0 +1,12 @@
+{
+  "bulk_categories": [
+    {
+      "category": "clothing",
+      "total_quantity": 20
+    },
+    {
+      "category": "electronics",
+      "total_quantity": 15
+    }
+  ]
+}

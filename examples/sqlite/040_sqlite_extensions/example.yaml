@@ -1,0 +1,27 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: A harbour guide searched by FTS5 full text, by R*Tree point-in-box and by json_each over a JSON array, with a generated column SQLite keeps up to date.
+differs:
+  - FTS5 and R*Tree tables are kept in step with the main table by a trigger in the migration
+  - "MATCH names an FTS5 column (places_search.description), and rank orders the results"
+  - "R*Tree coordinates are never NULL, so the point parameters are plain float64 values"
+  - a generated column comes back through RETURNING, and writing to one is Q013
+entry: {file: db/queries/places.sql, query: SearchDescriptions}
+live: "partial"
+test: in-process

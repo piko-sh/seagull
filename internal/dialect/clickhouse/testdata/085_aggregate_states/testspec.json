@@ -1,0 +1,1 @@
+{"description": "AggregateFunction states, including AggregateFunction(count), read back through -Merge as the type of the aggregate that built them, and groupArray collects its argument type."}

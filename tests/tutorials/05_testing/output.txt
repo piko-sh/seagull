@@ -1,0 +1,6 @@
+1 Feed the seagulls
+Bring chips
+missing: true
+Feed the seagulls in Harbour
+priority: 1
+tasks after rollback: 1

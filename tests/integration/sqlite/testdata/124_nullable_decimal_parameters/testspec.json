@@ -1,0 +1,4 @@
+{
+  "description": "A nullable decimal parameter, a *apd.Decimal, binds NULL when nil and the decimal's text otherwise, as a decimal held by value binds, in every position: an INSERT, a batch, a copyfrom, an UPDATE's SET, a comparison, optional filters, a runtime builder's own parameter and COALESCE's fallback; a slice of decimals and a runtime builder's Where value bind, and nullable decimals read back as NULL or their value. The same golden holds for modernc.org/sqlite and, through sqlite_cgo, mattn/go-sqlite3.",
+  "expectedDiagnostics": ["Q022"]
+}

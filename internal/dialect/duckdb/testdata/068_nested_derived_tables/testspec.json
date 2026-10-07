@@ -1,0 +1,4 @@
+{
+  "description": "A derived table that reads another derived table resolves through every level, and a PIVOT over a subquery keeps the subquery's columns, so neither reports Q001 nor drops a column.",
+  "expectedDiagnosticCount": 0
+}

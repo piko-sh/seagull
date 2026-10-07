@@ -1,0 +1,133 @@
+{
+  "DefaultSchema": "main",
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "main": {
+      "Name": "main",
+      "Tables": {
+        "articles": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_create_articles.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "bigint",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "title",
+              "Origin": {
+                "Filename": "001_create_articles.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "body",
+              "Origin": {
+                "Filename": "001_create_articles.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            }
+          ],
+          "Name": "articles",
+          "Origin": {
+            "Filename": "001_create_articles.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "main"
+        },
+        "articles_fts": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "title",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_create_articles.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "body",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_create_articles.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "virtual",
+              "Hidden": true,
+              "IsGenerated": true,
+              "Name": "rank",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_create_articles.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "float",
+                "EngineName": "real",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Hidden": true,
+              "Name": "articles_fts",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_create_articles.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            }
+          ],
+          "IsVirtual": true,
+          "Name": "articles_fts",
+          "Origin": {
+            "Filename": "001_create_articles.up.sql",
+            "Statement": 1
+          },
+          "Schema": "main",
+          "VirtualModuleName": "fts5"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "main",
+    "temp"
+  ]
+}

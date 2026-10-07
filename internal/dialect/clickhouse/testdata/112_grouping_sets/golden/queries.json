@@ -1,0 +1,162 @@
+[
+  {
+    "Command": "many",
+    "Filename": "sales.sql",
+    "Line": 1,
+    "Name": "RevenueRollup",
+    "OutputColumns": [
+      {
+        "Name": "region",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "city",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "city",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "level",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "revenue",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "Decimal128",
+          "Precision": 38,
+          "Scale": 2
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: RevenueRollup, command: many)\nSELECT region, city, grouping(region, city) AS level, sum(amount) AS revenue\nFROM sales\nGROUP BY ROLLUP(region, city)\nORDER BY level, region, city;",
+    "Template": "SELECT ⟨c0:region⟩, ⟨c1:city⟩, ⟨c2 aliased:grouping(region, city)⟩ AS level, ⟨c3 aliased:sum(amount)⟩ AS revenue\\nFROM sales\\nGROUP BY ROLLUP(region, city)\\nORDER BY level, region, city;"
+  },
+  {
+    "Command": "many",
+    "Filename": "sales.sql",
+    "Line": 7,
+    "Name": "RevenueCube",
+    "OutputColumns": [
+      {
+        "Name": "region",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "city",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "city",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "revenue",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "Decimal128",
+          "Precision": 38,
+          "Scale": 2
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: RevenueCube, command: many)\nSELECT region, city, sum(amount) AS revenue\nFROM sales\nGROUP BY region, city WITH CUBE\nORDER BY region, city;",
+    "Template": "SELECT ⟨c0:region⟩, ⟨c1:city⟩, ⟨c2 aliased:sum(amount)⟩ AS revenue\\nFROM sales\\nGROUP BY region, city WITH CUBE\\nORDER BY region, city;"
+  },
+  {
+    "Command": "many",
+    "Filename": "sales.sql",
+    "Line": 13,
+    "Name": "RevenueSets",
+    "OutputColumns": [
+      {
+        "Name": "region",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "city",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "city",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "revenue",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "Decimal128",
+          "Precision": 38,
+          "Scale": 2
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: RevenueSets, command: many)\nSELECT region, city, sum(amount) AS revenue\nFROM sales\nGROUP BY GROUPING SETS ((region, city), (region), ())\nORDER BY region, city;",
+    "Template": "SELECT ⟨c0:region⟩, ⟨c1:city⟩, ⟨c2 aliased:sum(amount)⟩ AS revenue\\nFROM sales\\nGROUP BY GROUPING SETS ((region, city), (region), ())\\nORDER BY region, city;"
+  },
+  {
+    "Command": "many",
+    "Filename": "sales.sql",
+    "Line": 19,
+    "Name": "RevenueRollupWithNulls",
+    "OutputColumns": [
+      {
+        "Name": "region",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "revenue",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "Decimal128",
+          "Precision": 38,
+          "Scale": 2
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: RevenueRollupWithNulls, command: many)\nSELECT region, sum(amount) AS revenue\nFROM sales\nGROUP BY region WITH ROLLUP\nORDER BY region\nSETTINGS group_by_use_nulls = 1;",
+    "Template": "SELECT ⟨c0:region⟩, ⟨c1 aliased:sum(amount)⟩ AS revenue\\nFROM sales\\nGROUP BY region WITH ROLLUP\\nORDER BY region\\nSETTINGS group_by_use_nulls = 1;"
+  }
+]

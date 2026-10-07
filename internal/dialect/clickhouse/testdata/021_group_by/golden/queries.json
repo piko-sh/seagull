@@ -1,0 +1,32 @@
+[
+  {
+    "Command": "many",
+    "Filename": "sales.sql",
+    "Line": 1,
+    "Name": "SalesByRegion",
+    "OutputColumns": [
+      {
+        "Name": "region",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "total",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "Decimal128",
+          "Precision": 38,
+          "Scale": 2
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(SalesByRegion, many)\nSELECT region, sum(amount) AS total\nFROM sales\nGROUP BY region\nORDER BY total DESC;",
+    "Template": "SELECT ⟨c0:region⟩, ⟨c1 aliased:sum(amount)⟩ AS total\\nFROM sales\\nGROUP BY region\\nORDER BY total DESC;"
+  }
+]

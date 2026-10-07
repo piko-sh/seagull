@@ -1,0 +1,122 @@
+{
+  "cells": {
+    "batch": "ok",
+    "binary literal": "ok",
+    "exec": "ok",
+    "exec null": "ok",
+    "exec simple protocol": "ok",
+    "literal": "ok",
+    "parameter": "ok",
+    "read 1": "read {\"a\": \"\u003cé \u0026 😀\u003e\", \"b\": [1, 2.50]}",
+    "read 1 jsonb": "read {\"a\": \"\u003cé \u0026 😀\u003e\", \"b\": [1, 2.50]}",
+    "read 11": "read {\"a\": \"\u003cé \u0026 😀\u003e\", \"b\": [1, 2.50]}",
+    "read 11 jsonb": "read {\"a\": \"\u003cé \u0026 😀\u003e\", \"b\": [1, 2.50]}",
+    "read 12": "read {\"a\": \"\u003cé \u0026 😀\u003e\", \"b\": [1, 2.50]}",
+    "read 12 jsonb": "read {\"a\": \"\u003cé \u0026 😀\u003e\", \"b\": [1, 2.50]}",
+    "read 21": "null",
+    "read 21 jsonb": "null",
+    "read 31": "read {\"a\": \"\u003cé \u0026 😀\u003e\", \"b\": [1, 2.50]}",
+    "read 31 jsonb": "read {\"a\": \"\u003cé \u0026 😀\u003e\", \"b\": [1, 2.50]}",
+    "storage": "ok"
+  },
+  "found": {
+    "binary literal": [
+      {
+        "id": 1
+      },
+      {
+        "id": 11
+      },
+      {
+        "id": 12
+      },
+      {
+        "id": 31
+      }
+    ],
+    "literal": [
+      {
+        "id": 1
+      },
+      {
+        "id": 11
+      },
+      {
+        "id": 12
+      },
+      {
+        "id": 31
+      }
+    ],
+    "parameter": [
+      {
+        "id": 1
+      },
+      {
+        "id": 11
+      },
+      {
+        "id": 12
+      },
+      {
+        "id": 31
+      }
+    ],
+    "storage": [
+      {
+        "binary_extracted": "\u003cé \u0026 😀\u003e",
+        "binary_storage": "object",
+        "binary_stored": "{\"a\": \"\u003cé \u0026 😀\u003e\", \"b\": [1, 2.50]}",
+        "extracted": "\u003cé \u0026 😀\u003e",
+        "id": 1,
+        "storage": "object",
+        "stored": "{\"a\": \"\u003cé \u0026 😀\u003e\", \"b\": [1, 2.50]}"
+      },
+      {
+        "binary_extracted": "\u003cé \u0026 😀\u003e",
+        "binary_storage": "object",
+        "binary_stored": "{\"a\": \"\u003cé \u0026 😀\u003e\", \"b\": [1, 2.50]}",
+        "extracted": "\u003cé \u0026 😀\u003e",
+        "id": 11,
+        "storage": "object",
+        "stored": "{\"a\": \"\u003cé \u0026 😀\u003e\", \"b\": [1, 2.50]}"
+      },
+      {
+        "binary_extracted": "\u003cé \u0026 😀\u003e",
+        "binary_storage": "object",
+        "binary_stored": "{\"a\": \"\u003cé \u0026 😀\u003e\", \"b\": [1, 2.50]}",
+        "extracted": "\u003cé \u0026 😀\u003e",
+        "id": 12,
+        "storage": "object",
+        "stored": "{\"a\": \"\u003cé \u0026 😀\u003e\", \"b\": [1, 2.50]}"
+      },
+      {
+        "binary_extracted": null,
+        "binary_storage": null,
+        "binary_stored": null,
+        "extracted": null,
+        "id": 13,
+        "storage": null,
+        "stored": null
+      },
+      {
+        "binary_extracted": null,
+        "binary_storage": null,
+        "binary_stored": null,
+        "extracted": null,
+        "id": 21,
+        "storage": null,
+        "stored": null
+      },
+      {
+        "binary_extracted": "\u003cé \u0026 😀\u003e",
+        "binary_storage": "object",
+        "binary_stored": "{\"a\": \"\u003cé \u0026 😀\u003e\", \"b\": [1, 2.50]}",
+        "extracted": "\u003cé \u0026 😀\u003e",
+        "id": 31,
+        "storage": "object",
+        "stored": "{\"a\": \"\u003cé \u0026 😀\u003e\", \"b\": [1, 2.50]}"
+      }
+    ]
+  }
+}

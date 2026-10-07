@@ -1,0 +1,94 @@
+[
+  {
+    "Command": "many",
+    "Filename": "readings.sql",
+    "Line": 1,
+    "Name": "ListReadings",
+    "OutputColumns": [
+      {
+        "Name": "device_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "device_id",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "taken_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "taken_at",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "value",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        },
+        "SourceColumn": "value",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListReadings, command: many)\nSELECT * FROM readings;",
+    "Template": "SELECT ⟨star 0=readings.device_id 1=readings.taken_at 2=readings.value:*⟩ FROM readings;"
+  },
+  {
+    "Command": "many",
+    "Filename": "readings.sql",
+    "Line": 4,
+    "Name": "ListReadingView",
+    "OutputColumns": [
+      {
+        "Name": "device",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "device",
+        "SourceQualifier": "reading_view",
+        "SourceTable": "reading_view"
+      },
+      {
+        "Name": "at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "at",
+        "SourceQualifier": "reading_view",
+        "SourceTable": "reading_view"
+      },
+      {
+        "Name": "reading",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        },
+        "SourceColumn": "reading",
+        "SourceQualifier": "reading_view",
+        "SourceTable": "reading_view"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListReadingView, command: many)\nSELECT * FROM reading_view;",
+    "Template": "SELECT ⟨star 0=reading_view.device 1=reading_view.at 2=reading_view.reading:*⟩ FROM reading_view;"
+  }
+]

@@ -1,0 +1,39 @@
+{
+  "insert_plants": "inserted",
+  "plant_list": [
+    {
+      "height": 1.5,
+      "id": 1,
+      "name": "fern"
+    },
+    {
+      "height": null,
+      "id": 2,
+      "name": "moss"
+    }
+  ],
+  "plant_names": [
+    {
+      "height": 1.5,
+      "id": 1,
+      "name": "fern"
+    },
+    {
+      "height": null,
+      "id": 2,
+      "name": "moss"
+    }
+  ],
+  "plant_stack": [
+    {
+      "height": 1.5,
+      "id": 1,
+      "name": "fern"
+    },
+    {
+      "height": null,
+      "id": 2,
+      "name": "moss"
+    }
+  ]
+}

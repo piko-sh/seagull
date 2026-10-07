@@ -1,0 +1,56 @@
+[
+  {
+    "Command": "many",
+    "Filename": "sales.sql",
+    "Line": 1,
+    "Name": "GetLatestSalePerRegion",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "region",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "amount",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        },
+        "SourceColumn": "amount",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "sale_date",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        },
+        "SourceColumn": "sale_date",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetLatestSalePerRegion, command: many)\nSELECT id, region, amount, sale_date\nFROM sales\nQUALIFY row_number() OVER (PARTITION BY region ORDER BY sale_date DESC) = 1;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:region⟩, ⟨c2:amount⟩, ⟨c3:sale_date⟩\\nFROM sales\\nQUALIFY row_number() OVER (PARTITION BY region ORDER BY sale_date DESC) = 1;"
+  }
+]

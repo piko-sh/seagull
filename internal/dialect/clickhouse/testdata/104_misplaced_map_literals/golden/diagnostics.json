@@ -1,0 +1,52 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 8,
+    "EndColumn": 9,
+    "EndLine": 2,
+    "Filename": "stock.sql",
+    "Line": 2,
+    "Message": "failed to analyse query \"LiteralInSelect\": syntax error near \"{\": a map literal {key: value} is read only in the rows of INSERT ... VALUES; elsewhere ClickHouse reads '{' as a {name:Type} placeholder, so write map(key, value, ...) instead",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 37,
+    "EndColumn": 38,
+    "EndLine": 5,
+    "Filename": "stock.sql",
+    "Line": 5,
+    "Message": "failed to analyse query \"LiteralInWhere\": syntax error near \"{\": a map literal {key: value} is read only in the rows of INSERT ... VALUES; elsewhere ClickHouse reads '{' as a {name:Type} placeholder, so write map(key, value, ...) instead",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 52,
+    "EndColumn": 53,
+    "EndLine": 8,
+    "Filename": "stock.sql",
+    "Line": 8,
+    "Message": "failed to analyse query \"LiteralInInsertSelect\": syntax error near \"{\": a map literal {key: value} is read only in the rows of INSERT ... VALUES; elsewhere ClickHouse reads '{' as a {name:Type} placeholder, so write map(key, value, ...) instead",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 35,
+    "EndColumn": 36,
+    "EndLine": 11,
+    "Filename": "stock.sql",
+    "Line": 11,
+    "Message": "failed to analyse query \"LiteralInMutation\": syntax error near \"{\": a map literal {key: value} is read only in the rows of INSERT ... VALUES; elsewhere ClickHouse reads '{' as a {name:Type} placeholder, so write map(key, value, ...) instead",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 63,
+    "EndColumn": 77,
+    "EndLine": 14,
+    "Filename": "stock.sql",
+    "Line": 14,
+    "Message": "failed to analyse query \"PlaceholderInLiteral\": syntax error near \"{kiwis:UInt32}\": ClickHouse reads a map literal {key: value} as data and substitutes no placeholder inside it: write map(key, value, ...) around it, or bind the whole map as one {name:Map(K, V)} placeholder",
+    "Severity": "error"
+  }
+]

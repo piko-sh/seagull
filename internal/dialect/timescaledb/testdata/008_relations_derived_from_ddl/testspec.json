@@ -1,0 +1,4 @@
+{
+  "description": "TimescaleDB replays PostgreSQL's relations derived from DDL: a partition is a table holding its parent's columns, a sequence can be read as a relation, objects created after SET search_path go to the schema it names, and CREATE OR REPLACE TRIGGER replays.",
+  "expectedDiagnosticCount": 0
+}

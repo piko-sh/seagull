@@ -1,0 +1,3 @@
+{
+  "description": "Values the DuckDB driver binds and returns in its own types round-trip: a JSON parameter, a DECIMAL and an INTERVAL in both directions, and a MAP and a STRUCT read into typed Go values"
+}

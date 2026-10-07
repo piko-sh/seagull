@@ -1,0 +1,137 @@
+{
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "": {
+      "Functions": {
+        "add_tax": [
+          {
+            "Arguments": [
+              {
+                "Name": "base_price",
+                "Type": {
+                  "Category": "decimal",
+                  "EngineName": "decimal",
+                  "Precision": 10,
+                  "Scale": 2
+                }
+              },
+              {
+                "Name": "tax_rate",
+                "Type": {
+                  "Category": "decimal",
+                  "EngineName": "decimal",
+                  "Precision": 5,
+                  "Scale": 2
+                }
+              }
+            ],
+            "BodySQL": "base_price + (base_price * tax_rate / 100)",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 2,
+            "Name": "add_tax",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 2
+            },
+            "ReturnType": {
+              "Category": "decimal",
+              "EngineName": "decimal",
+              "Precision": 10,
+              "Scale": 2
+            }
+          }
+        ],
+        "double_price": [
+          {
+            "Arguments": [
+              {
+                "Name": "val",
+                "Type": {
+                  "Category": "decimal",
+                  "EngineName": "decimal",
+                  "Precision": 10,
+                  "Scale": 2
+                }
+              }
+            ],
+            "BodySQL": "val * 2",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "double_price",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 1
+            },
+            "ReturnType": {
+              "Category": "decimal",
+              "EngineName": "decimal",
+              "Precision": 10,
+              "Scale": 2
+            }
+          }
+        ]
+      },
+      "Tables": {
+        "products": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Length": 100
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "price",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "decimal",
+                "EngineName": "decimal",
+                "Precision": 10,
+                "Scale": 2
+              }
+            }
+          ],
+          "Name": "products",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ]
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    ""
+  ]
+}

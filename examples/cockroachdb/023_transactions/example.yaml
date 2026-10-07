@@ -1,0 +1,29 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: The PostgreSQL transfers on CockroachDB, plus what it adds; a read-then-write transaction that loses a race fails with SQLSTATE 40001, and since RunInTx does not retry, a small helper runs it again.
+differs:
+  - INTEGER is INT8 on CockroachDB, so balances and amounts are int64 rather than int32
+  - "the CHECK failure reads failed to satisfy CHECK constraint (balance >= 0:::INT8), SQLSTATE 23514"
+  - transactions use SERIALIZABLE isolation by default, and one whose read went stale before its write fails with SQLSTATE 40001 instead of overwriting the other write
+  - the generated RunInTx does not retry 40001, so retrySerialisable runs the function again in a new transaction, up to three attempts, reading the code through the error's SQLState method
+  - a 40001 message names timestamps and transaction IDs, so the output prints only its SQLSTATE
+  - "$1 and $2 placeholders, with $1 as sgl.param(amount) naming the first; account IDs come from unique_rowid() and are not printed"
+entry: {file: db/queries/accounts.sql, query: SetBalance}
+live: "no"
+test: integration

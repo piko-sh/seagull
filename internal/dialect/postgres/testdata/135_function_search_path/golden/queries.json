@@ -1,0 +1,45 @@
+[
+  {
+    "Command": "many",
+    "Filename": "stats.sql",
+    "Line": 1,
+    "Name": "Stats",
+    "OutputColumns": [
+      {
+        "Name": "b",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "b",
+        "SourceQualifier": "stats"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Stats, command: many)\nSELECT *\nFROM stats();",
+    "Template": "SELECT ⟨star written 0=stats.b:*⟩\\nFROM stats();"
+  },
+  {
+    "Command": "many",
+    "Filename": "stats.sql",
+    "Line": 5,
+    "Name": "AnalyticsStats",
+    "OutputColumns": [
+      {
+        "Name": "a",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "a",
+        "SourceQualifier": "stats"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AnalyticsStats, command: many)\nSELECT a\nFROM analytics.stats();",
+    "Template": "SELECT ⟨c0:a⟩\\nFROM analytics.stats();"
+  }
+]

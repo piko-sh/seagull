@@ -1,0 +1,15 @@
+Kittiwake
+  berth    store.BoatsBerth        pontoon A, berth 12
+  crew     []string                [Morwenna Jago]
+  route    []store.BoatsRouteItem  [50.1,-5.54 50.08,-5.55]
+  fees     map[string]int32        map[August:450 July:300]
+  contact  store.JSON              {"value":"07700 900123","tag":"phone"}, so by phone: 07700 900123
+Salty Chip
+  berth    store.BoatsBerth        pontoon B, berth 3
+  crew     []string                [Gwen]
+  route    []store.BoatsRouteItem  []
+  fees     map[string]int32        map[July:180]
+  contact  store.JSON              {"value":16,"tag":"vhf_channel"}, so by vhf_channel: 16
+summaries:
+  Kittiwake  skipper Morwenna, crew of 2, fees for [August July], August 450
+  Salty Chip skipper Gwen, crew of 1, fees for [July], August none

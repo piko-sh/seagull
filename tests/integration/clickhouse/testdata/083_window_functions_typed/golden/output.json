@@ -1,0 +1,38 @@
+{
+  "beaches": 2,
+  "names": 4,
+  "ranked": [
+    {
+      "beach_number": 1,
+      "beach_rank": 1,
+      "beach_total": 3,
+      "gull_count": 4,
+      "name": "Gerald",
+      "position": 1
+    },
+    {
+      "beach_number": 1,
+      "beach_rank": 2,
+      "beach_total": 3,
+      "gull_count": 4,
+      "name": "Hilda",
+      "position": 2
+    },
+    {
+      "beach_number": 2,
+      "beach_rank": 1,
+      "beach_total": 7,
+      "gull_count": 4,
+      "name": "Ivor",
+      "position": 3
+    },
+    {
+      "beach_number": 2,
+      "beach_rank": 2,
+      "beach_total": 7,
+      "gull_count": 4,
+      "name": "Jean",
+      "position": 4
+    }
+  ]
+}

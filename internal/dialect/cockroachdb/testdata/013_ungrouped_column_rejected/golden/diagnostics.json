@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q062",
+    "Column": 8,
+    "EndColumn": 13,
+    "EndLine": 2,
+    "Filename": "ungrouped.sql",
+    "Line": 2,
+    "Message": "title is read outside every aggregate of a query that aggregates without GROUP BY, which the engine rejects; group by it or read it through an aggregate such as max",
+    "Severity": "error"
+  }
+]

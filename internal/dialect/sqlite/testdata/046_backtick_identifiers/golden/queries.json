@@ -1,0 +1,57 @@
+[
+  {
+    "Command": "one",
+    "Filename": "profiles.sql",
+    "Line": 1,
+    "Name": "GetProfile",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "user_profiles",
+        "SourceTable": "user_profiles"
+      },
+      {
+        "Name": "display_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "display_name",
+        "SourceQualifier": "user_profiles",
+        "SourceTable": "user_profiles"
+      },
+      {
+        "Name": "group",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "group",
+        "SourceQualifier": "user_profiles",
+        "SourceTable": "user_profiles"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetProfile, command: one)\nSELECT `id`, `display_name`, `group` FROM `user_profiles` WHERE `id` = ?;",
+    "Template": "SELECT ⟨c0:`id`⟩, ⟨c1:`display_name`⟩, ⟨c2:`group`⟩ FROM `user_profiles` WHERE `id` = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

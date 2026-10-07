@@ -1,0 +1,13 @@
+[
+  {
+    "Code": "Q001",
+    "Column": 8,
+    "EndColumn": 19,
+    "EndLine": 5,
+    "Filename": "accounts.sql",
+    "Line": 5,
+    "Message": "unknown column \"displayname\"",
+    "Severity": "warning",
+    "Suggestion": "DisplayName"
+  }
+]

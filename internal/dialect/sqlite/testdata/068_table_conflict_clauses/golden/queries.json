@@ -1,0 +1,99 @@
+[
+  {
+    "Command": "many",
+    "Filename": "databases.sql",
+    "Line": 1,
+    "Name": "ListDatabases",
+    "OutputColumns": [
+      {
+        "Name": "account_id",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "account_id",
+        "SourceQualifier": "databases",
+        "SourceTable": "databases"
+      },
+      {
+        "Name": "region",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "databases",
+        "SourceTable": "databases"
+      },
+      {
+        "Name": "arn",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "arn",
+        "SourceQualifier": "databases",
+        "SourceTable": "databases"
+      },
+      {
+        "Name": "name",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "databases",
+        "SourceTable": "databases"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "account_id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListDatabases, command: many)\nSELECT * FROM databases WHERE account_id = ?;",
+    "Template": "SELECT ⟨star 0=databases.account_id 1=databases.region 2=databases.arn 3=databases.name:*⟩ FROM databases WHERE account_id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "databases.sql",
+    "Line": 4,
+    "Name": "ListEngines",
+    "OutputColumns": [
+      {
+        "Name": "engine",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "engine",
+        "SourceQualifier": "engines",
+        "SourceTable": "engines"
+      },
+      {
+        "Name": "version",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "version",
+        "SourceQualifier": "engines",
+        "SourceTable": "engines"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListEngines, command: many)\nSELECT engine, version FROM engines;",
+    "Template": "SELECT ⟨c0:engine⟩, ⟨c1:version⟩ FROM engines;"
+  }
+]

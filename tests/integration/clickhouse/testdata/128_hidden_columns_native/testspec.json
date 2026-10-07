@@ -1,0 +1,5 @@
+{
+  "description": "SELECT * and t.* over a table with ALIAS, MATERIALIZED and EPHEMERAL columns read the columns ClickHouse returns, and a query naming the ALIAS and MATERIALIZED columns reads them, through the native emitter.",
+  "emitter": "native",
+  "expectedDiagnostics": []
+}

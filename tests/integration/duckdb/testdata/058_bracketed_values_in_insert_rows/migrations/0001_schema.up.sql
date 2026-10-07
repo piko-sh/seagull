@@ -1,0 +1,7 @@
+CREATE TABLE readings (
+  id INTEGER PRIMARY KEY,
+  scores INTEGER[] NOT NULL,
+  label VARCHAR NOT NULL,
+  flagged BOOLEAN NOT NULL,
+  tags VARCHAR[] NOT NULL
+);

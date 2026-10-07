@@ -1,0 +1,1 @@
+CREATE TABLE tokens (id INTEGER PRIMARY KEY, owner UUID, label TEXT NOT NULL);

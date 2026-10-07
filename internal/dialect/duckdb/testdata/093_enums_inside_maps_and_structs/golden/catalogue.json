@@ -1,0 +1,245 @@
+{
+  "DefaultSchema": "main",
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "main": {
+      "Enums": {
+        "mood": {
+          "Name": "mood",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "Schema": "main",
+          "Values": [
+            "calm",
+            "stormy"
+          ]
+        }
+      },
+      "Name": "main",
+      "Tables": {
+        "logs": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "moods",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "map",
+                "ElementType": {
+                  "Category": "enum",
+                  "EngineName": "mood",
+                  "EnumValues": [
+                    "calm",
+                    "stormy"
+                  ],
+                  "Nullable": true,
+                  "Schema": "main"
+                },
+                "EngineName": "map",
+                "KeyType": {
+                  "Category": "text",
+                  "EngineName": "varchar"
+                }
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "counts",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "map",
+                "ElementType": {
+                  "Category": "integer",
+                  "EngineName": "int4",
+                  "Nullable": true,
+                  "Width": 32
+                },
+                "EngineName": "map",
+                "KeyType": {
+                  "Category": "enum",
+                  "EngineName": "mood",
+                  "EnumValues": [
+                    "calm",
+                    "stormy"
+                  ],
+                  "Schema": "main"
+                }
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "entry",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "struct",
+                "StructFields": [
+                  {
+                    "Name": "note",
+                    "SQLType": {
+                      "Category": "text",
+                      "EngineName": "varchar",
+                      "Nullable": true
+                    }
+                  },
+                  {
+                    "Name": "feeling",
+                    "SQLType": {
+                      "Category": "enum",
+                      "EngineName": "mood",
+                      "EnumValues": [
+                        "calm",
+                        "stormy"
+                      ],
+                      "Nullable": true,
+                      "Schema": "main"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "history",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "struct",
+                "StructFields": [
+                  {
+                    "Name": "feelings",
+                    "SQLType": {
+                      "Category": "array",
+                      "ElementType": {
+                        "Category": "enum",
+                        "EngineName": "mood",
+                        "EnumValues": [
+                          "calm",
+                          "stormy"
+                        ],
+                        "Nullable": true,
+                        "Schema": "main"
+                      },
+                      "EngineName": "mood[]",
+                      "Nullable": true
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "ArrayDimensions": 1,
+              "GeneratedKind": "none",
+              "IsArray": true,
+              "Name": "entries",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "struct",
+                "Nullable": true,
+                "StructFields": [
+                  {
+                    "Name": "feeling",
+                    "SQLType": {
+                      "Category": "enum",
+                      "EngineName": "mood",
+                      "EnumValues": [
+                        "calm",
+                        "stormy"
+                      ],
+                      "Nullable": true,
+                      "Schema": "main"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "tagged",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "union",
+                "EngineName": "union",
+                "UnionMembers": [
+                  {
+                    "SQLType": {
+                      "Category": "enum",
+                      "EngineName": "mood",
+                      "EnumValues": [
+                        "calm",
+                        "stormy"
+                      ],
+                      "Schema": "main"
+                    },
+                    "Tag": "feeling"
+                  },
+                  {
+                    "SQLType": {
+                      "Category": "text",
+                      "EngineName": "varchar"
+                    },
+                    "Tag": "note"
+                  }
+                ]
+              }
+            }
+          ],
+          "Name": "logs",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 1
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "main"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "main"
+  ]
+}

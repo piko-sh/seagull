@@ -1,0 +1,97 @@
+[
+  {
+    "Command": "one",
+    "Filename": "coordinates.sql",
+    "Line": 1,
+    "Name": "GetCoordinate",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "coordinates",
+        "SourceTable": "coordinates"
+      },
+      {
+        "Name": "point",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "Tuple",
+          "StructFields": [
+            {
+              "Name": "_1",
+              "Positional": true,
+              "SQLType": {
+                "Category": "float",
+                "EngineName": "Float64",
+                "Width": 64
+              }
+            },
+            {
+              "Name": "_2",
+              "Positional": true,
+              "SQLType": {
+                "Category": "float",
+                "EngineName": "Float64",
+                "Width": 64
+              }
+            }
+          ]
+        },
+        "SourceColumn": "point",
+        "SourceQualifier": "coordinates",
+        "SourceTable": "coordinates"
+      },
+      {
+        "Name": "named_point",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "Tuple",
+          "StructFields": [
+            {
+              "Name": "x",
+              "SQLType": {
+                "Category": "float",
+                "EngineName": "Float64",
+                "Width": 64
+              }
+            },
+            {
+              "Name": "y",
+              "SQLType": {
+                "Category": "float",
+                "EngineName": "Float64",
+                "Width": 64
+              }
+            }
+          ]
+        },
+        "SourceColumn": "named_point",
+        "SourceQualifier": "coordinates",
+        "SourceTable": "coordinates"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(GetCoordinate, one)\nSELECT id, point, named_point FROM coordinates WHERE id = {id:UInt64};",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:point⟩, ⟨c2:named_point⟩ FROM coordinates WHERE id = ⟨p0 UInt64⟩;⟨arguments p0⟩"
+  }
+]

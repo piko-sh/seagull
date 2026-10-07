@@ -1,0 +1,3 @@
+{
+  "description": "The DuckDB driver decodes a JSON value, returning a JSON string as an unquoted Go string and a number as a float64; the generated code casts a JSON column to VARCHAR and keeps the document's own text, so a string scalar stays valid JSON, a large integer and 1.10 keep their digits, and a written document reads back as written. Where the query cannot cast the column (a compound query) and inside a list, the driver-composite scan adapter encodes the driver's decoded value again: a string stays valid JSON, but a number beyond 2^53 keeps only the digits the driver's float64 holds (a known limitation); a DECIMAL and an INTERVAL there read as the text DuckDB casts them to."
+}

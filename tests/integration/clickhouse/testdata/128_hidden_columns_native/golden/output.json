@@ -1,0 +1,38 @@
+{
+  "list_computed": [
+    {
+      "doubled": 2,
+      "id": 1,
+      "loud": "START"
+    },
+    {
+      "doubled": 4,
+      "id": 2,
+      "loud": "STOP"
+    }
+  ],
+  "list_events": [
+    {
+      "id": 1,
+      "name": "start",
+      "region": "eu"
+    },
+    {
+      "id": 2,
+      "name": "stop",
+      "region": "eu"
+    }
+  ],
+  "list_qualified_events": [
+    {
+      "id": 1,
+      "name": "start",
+      "region": "eu"
+    },
+    {
+      "id": 2,
+      "name": "stop",
+      "region": "eu"
+    }
+  ]
+}

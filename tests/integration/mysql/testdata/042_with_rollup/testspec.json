@@ -1,0 +1,4 @@
+{
+  "description": "WITH ROLLUP adds subtotal and grand total rows that hold NULL in the keys they do not group by (on MySQL), named directly, by alias or by position; GROUPING reports which.",
+  "expectedDiagnostics": []
+}

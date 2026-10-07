@@ -1,0 +1,4 @@
+{
+  "description": "The standard ClickHouse dashboard functions read back through database/sql: toStartOfInterval by a minute, a month and a millisecond interval, the calendar keys, week and month ends, toDateTime of a DateTime64, the toIntervalUnit functions, the aliases replace, YEAR, date_diff, medianExact and BIT_AND, transform, formatReadableSize, splitByRegexp, the t-digest quantile, windowFunnel and retention.",
+  "expectedDiagnostics": []
+}

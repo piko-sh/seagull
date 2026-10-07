@@ -1,0 +1,1 @@
+{"description": "Numeric literals are typed by their scanned shape: DECIMAL for a fraction, DOUBLE for an exponent and the narrowest integer that holds the value"}

@@ -1,0 +1,19 @@
+{
+  "summary": [
+    {
+      "category": "books",
+      "sales_count": 2,
+      "total": 30
+    },
+    {
+      "category": "films",
+      "sales_count": 1,
+      "total": 60
+    },
+    {
+      "category": "music",
+      "sales_count": 3,
+      "total": 120
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+{
+  "description": "clickhouse-go (v2.48) cannot decode the block of a Map keyed by an Array, a Tuple (named or not) or a Map, whose Go types it cannot key a Go map by, or by a Decimal, whose type name it splits at the comma, so a column holding one, at any depth, is refused (Q059) at its item with a suggestion, for both emitters, as a Map keyed by an IP address already was. Maps keyed by a UUID, a Date and a LowCardinality(String) read, and so do the suggested mapKeys and mapValues arrays and a cast to a Map keyed by String",
+  "expectedDiagnosticCount": 7
+}

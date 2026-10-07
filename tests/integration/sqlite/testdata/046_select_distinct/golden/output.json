@@ -1,0 +1,13 @@
+{
+  "sources": [
+    {
+      "source": "api"
+    },
+    {
+      "source": "auth"
+    },
+    {
+      "source": "db"
+    }
+  ]
+}

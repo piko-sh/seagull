@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q005",
+    "Column": 8,
+    "EndColumn": 29,
+    "EndLine": 8,
+    "Filename": "items.sql",
+    "Line": 8,
+    "Message": "unknown function \"some_unknown_function\"",
+    "Severity": "warning"
+  }
+]

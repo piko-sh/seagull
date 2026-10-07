@@ -1,0 +1,109 @@
+[
+  {
+    "Command": "exec",
+    "Filename": "create_order.sql",
+    "InsertColumns": [
+      "select",
+      "from"
+    ],
+    "InsertTarget": {
+      "Name": "order"
+    },
+    "Line": 1,
+    "Name": "CreateOrder",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "select",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "from",
+        "Nullable": true,
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: CreateOrder, command: exec)\nINSERT INTO `order` (`select`, `from`) VALUES (?, ?);",
+    "Template": "INSERT INTO `order` (`select`, `from`) VALUES ⟨values:(⟨p0⟩, ⟨p1⟩)⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "get_order.sql",
+    "Line": 1,
+    "Name": "GetOrder",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "order",
+        "SourceTable": "order"
+      },
+      {
+        "Name": "select",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        },
+        "SourceColumn": "select",
+        "SourceQualifier": "order",
+        "SourceTable": "order"
+      },
+      {
+        "Name": "from",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "from",
+        "SourceQualifier": "order",
+        "SourceTable": "order"
+      },
+      {
+        "Name": "date",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "date",
+        "SourceQualifier": "order",
+        "SourceTable": "order"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetOrder, command: one)\nSELECT `id`, `select`, `from`, `date` FROM `order` WHERE `id` = ?;",
+    "Template": "SELECT ⟨c0:`id`⟩, ⟨c1:`select`⟩, ⟨c2:`from`⟩, ⟨c3:`date`⟩ FROM `order` WHERE `id` = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

@@ -1,0 +1,4 @@
+{
+  "description": "Native clickhouse-go emitter binding dynamic queries: an optional parameter and a sortable query bind every {p_name:Type} placeholder as clickhouse.Named, the sortable ORDER BY lands before LIMIT/OFFSET, and the runtime builder's Count binds its base parameter positionally like All",
+  "emitter": "native"
+}

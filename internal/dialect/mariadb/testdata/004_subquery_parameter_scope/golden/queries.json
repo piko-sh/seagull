@@ -1,0 +1,59 @@
+[
+  {
+    "Command": "many",
+    "Filename": "list_profiles_for_user.sql",
+    "Line": 1,
+    "Name": "ListProfilesForUser",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "profiles",
+        "SourceTable": "profiles"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "profiles",
+        "SourceTable": "profiles"
+      },
+      {
+        "Name": "role",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 50
+        },
+        "SourceColumn": "role",
+        "SourceQualifier": "profiles",
+        "SourceTable": "profiles"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "user_id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListProfilesForUser, command: many)\nSELECT id, name, role\nFROM profiles\nWHERE id IN (SELECT profile_id FROM user_profiles WHERE user_id = ?)\nORDER BY name;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:role⟩\\nFROM profiles\\nWHERE id IN (SELECT profile_id FROM user_profiles WHERE user_id = ⟨p0⟩)\\nORDER BY name;⟨arguments p0⟩"
+  }
+]

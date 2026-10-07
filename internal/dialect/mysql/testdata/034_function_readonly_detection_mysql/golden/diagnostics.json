@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q005",
+    "Column": 8,
+    "EndColumn": 29,
+    "EndLine": 5,
+    "Filename": "scores.sql",
+    "Line": 5,
+    "Message": "unknown function \"some_unknown_function\"",
+    "Severity": "warning"
+  }
+]

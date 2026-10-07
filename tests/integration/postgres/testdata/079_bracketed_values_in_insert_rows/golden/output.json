@@ -1,0 +1,61 @@
+{
+  "add_joined_reading": "added",
+  "add_reading": "added",
+  "add_reading_pair": "added",
+  "readings": [
+    {
+      "flagged": true,
+      "id": 1,
+      "label": "first",
+      "scores": [
+        1,
+        2
+      ],
+      "tags": [
+        "a",
+        "b"
+      ]
+    },
+    {
+      "flagged": false,
+      "id": 2,
+      "label": "joined",
+      "scores": [
+        1,
+        2,
+        3
+      ],
+      "tags": [
+        "c",
+        "x",
+        "y"
+      ]
+    },
+    {
+      "flagged": true,
+      "id": 3,
+      "label": "third",
+      "scores": [
+        4,
+        5
+      ],
+      "tags": [
+        "d"
+      ]
+    },
+    {
+      "flagged": true,
+      "id": 4,
+      "label": "reset",
+      "scores": [
+        8,
+        9
+      ],
+      "tags": [
+        "e",
+        "f"
+      ]
+    }
+  ],
+  "set_reading": "set"
+}

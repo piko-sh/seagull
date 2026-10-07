@@ -1,0 +1,4 @@
+{
+  "description": "Window functions and count(DISTINCT) are typed from ClickHouse semantics: rank, row_number, dense_rank, sum OVER and count OVER scan as UInt64 through the native driver, which refuses a mismatched destination, and count(DISTINCT beach) is a UInt64.",
+  "emitter": "native"
+}

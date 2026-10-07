@@ -1,0 +1,4 @@
+{
+  "description": "SQLite keeps NULL in the primary key of a rowid table unless the key is the rowid alias or declared NOT NULL, and never in the key of a STRICT or WITHOUT ROWID table, so a NULL key reads back as nil rather than failing the scan; a repeated CREATE TABLE IF NOT EXISTS and CREATE VIEW IF NOT EXISTS change nothing; and a view over SELECT * with declared names holds the table's columns. The same golden holds for modernc.org/sqlite and, through sqlite_cgo, mattn/go-sqlite3.",
+  "expectedDiagnostics": []
+}

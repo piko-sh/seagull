@@ -1,0 +1,1 @@
+{"description": "a function returning a set of a base type names its one column after the FROM alias (unnest, generate_series, a user function returning SETOF a base type), and a colon written directly after an operand is an array slice, not a named parameter"}

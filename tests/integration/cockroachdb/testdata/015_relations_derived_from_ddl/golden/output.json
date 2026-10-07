@@ -1,0 +1,47 @@
+{
+  "add_mark": "added",
+  "add_notes": "added",
+  "add_tag": "added",
+  "keyed_notes": [
+    {
+      "body": "first",
+      "keyed": true
+    },
+    {
+      "body": "second",
+      "keyed": true
+    }
+  ],
+  "labels": null,
+  "marks": [
+    {
+      "keyed": true,
+      "label": "pinned",
+      "rowid": 42
+    }
+  ],
+  "next_note_number": {
+    "number": 1
+  },
+  "note_numbers": {
+    "is_called": true,
+    "last_value": 1,
+    "log_cnt": 0
+  },
+  "notes": [
+    {
+      "body": "first",
+      "kind": 3
+    },
+    {
+      "body": "second",
+      "kind": null
+    }
+  ],
+  "tags": [
+    {
+      "colour": "red",
+      "label": "urgent"
+    }
+  ]
+}

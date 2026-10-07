@@ -1,0 +1,110 @@
+[
+  {
+    "Command": "many",
+    "Filename": "orders.sql",
+    "Line": 1,
+    "Name": "OrderConversions",
+    "OutputColumns": [
+      {
+        "GoTypeOverride": {
+          "Name": "HTML",
+          "Package": "html/template"
+        },
+        "Name": "same_code",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text",
+          "Length": 10
+        },
+        "SourceColumn": "code",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "longer_code",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text",
+          "Length": 20
+        },
+        "SourceColumn": "code",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "wider_price",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 12,
+          "Scale": 4
+        },
+        "SourceColumn": "price",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      },
+      {
+        "Name": "placed_number",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        },
+        "SourceColumn": "placed_at",
+        "SourceQualifier": "orders",
+        "SourceTable": "orders"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "GoTypeOverride": {
+          "Name": "HTML",
+          "Package": "html/template"
+        },
+        "Kind": "none",
+        "Name": "code",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text",
+          "Length": 10
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: OrderConversions, command: many)\nSELECT\n    CAST(code AS VARCHAR(10)) AS same_code,\n    CAST(code AS VARCHAR(20)) AS longer_code,\n    CAST(price AS DECIMAL(12, 4)) AS wider_price,\n    CAST(placed_at AS TIMESTAMP(3)) AS placed_number\nFROM orders\nWHERE code = CAST(? AS VARCHAR(10));",
+    "Template": "SELECT\\n    ⟨c0 aliased:CAST(code AS VARCHAR(10))⟩ AS same_code,\\n    ⟨c1 aliased:CAST(code AS VARCHAR(20))⟩ AS longer_code,\\n    ⟨c2 aliased:CAST(price AS DECIMAL(12, 4))⟩ AS wider_price,\\n    ⟨c3 aliased:CAST(placed_at AS TIMESTAMP(3))⟩ AS placed_number\\nFROM orders\\nWHERE code = CAST(⟨p0⟩ AS VARCHAR(10));⟨arguments p0⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "orders.sql",
+    "Line": 10,
+    "Name": "SetLongerCode",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "code",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text",
+          "Length": 20
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: SetLongerCode, command: exec)\nUPDATE orders SET code = CAST(? AS VARCHAR(20)) WHERE id = ?;",
+    "Template": "UPDATE orders SET code = CAST(⟨p0⟩ AS VARCHAR(20)) WHERE id = ⟨p1⟩;⟨arguments p0 p1⟩"
+  }
+]

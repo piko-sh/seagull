@@ -1,0 +1,3 @@
+{
+  "description": "Prepared statements inside transactions: a Queries built on PreparedDBTX binds its prepared statements to the transaction through WrapDBTX and tx.StmtContext, so RunInTx runs static queries on prepared statements and only the dynamic query directly"
+}

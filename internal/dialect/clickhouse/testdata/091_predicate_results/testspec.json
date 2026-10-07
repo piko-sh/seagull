@@ -1,0 +1,4 @@
+{
+  "description": "Predicate functions return UInt8, 1 or 0, as ClickHouse returns them, the NULL tests never NULL; and, or, xor and not, and the NOT operator, return a Bool when an argument is a Bool and a UInt8 otherwise.",
+  "expectedDiagnosticCount": 0
+}

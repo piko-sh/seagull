@@ -1,0 +1,75 @@
+{
+  "cells": {
+    "batch": "ok",
+    "exec": "ok",
+    "exec null": "ok",
+    "literal": "ok",
+    "parameter": "ok",
+    "read 1": "exact",
+    "read 11": "exact",
+    "read 12": "exact",
+    "read 21": "null",
+    "storage": "ok"
+  },
+  "found": {
+    "literal": [
+      {
+        "id": 1
+      },
+      {
+        "id": 11
+      },
+      {
+        "id": 12
+      }
+    ],
+    "parameter": [
+      {
+        "id": 1
+      },
+      {
+        "id": 11
+      },
+      {
+        "id": 12
+      }
+    ],
+    "storage": [
+      {
+        "extracted": "\u003cé \u0026 😀\u003e",
+        "id": 1,
+        "storage": "text",
+        "stored": "{\"b\": [1, 2.50], \"a\": \"\u003cé \u0026 😀\u003e\"}",
+        "valid": 1
+      },
+      {
+        "extracted": "\u003cé \u0026 😀\u003e",
+        "id": 11,
+        "storage": "text",
+        "stored": "{\"b\": [1, 2.50], \"a\": \"\u003cé \u0026 😀\u003e\"}",
+        "valid": 1
+      },
+      {
+        "extracted": "\u003cé \u0026 😀\u003e",
+        "id": 12,
+        "storage": "text",
+        "stored": "{\"b\": [1, 2.50], \"a\": \"\u003cé \u0026 😀\u003e\"}",
+        "valid": 1
+      },
+      {
+        "extracted": null,
+        "id": 13,
+        "storage": "null",
+        "stored": null,
+        "valid": null
+      },
+      {
+        "extracted": null,
+        "id": 21,
+        "storage": "null",
+        "stored": null,
+        "valid": null
+      }
+    ]
+  }
+}

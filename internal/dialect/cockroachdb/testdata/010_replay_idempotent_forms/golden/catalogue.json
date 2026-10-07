@@ -1,0 +1,141 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "public": {
+      "Enums": {
+        "community_role": {
+          "Name": "community_role",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "Schema": "public",
+          "Values": [
+            "creator",
+            "admin"
+          ]
+        }
+      },
+      "Name": "public",
+      "Tables": {
+        "members": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "community_id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 3
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int8",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "user_id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 3
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int8",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "role",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 3
+              },
+              "SQLType": {
+                "Category": "enum",
+                "EngineName": "community_role",
+                "EnumValues": [
+                  "creator",
+                  "admin"
+                ],
+                "Schema": "public"
+              }
+            }
+          ],
+          "Name": "members",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 3
+          },
+          "PrimaryKey": [
+            "community_id",
+            "user_id"
+          ],
+          "Schema": "public"
+        }
+      },
+      "Views": {
+        "member_view": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "community_id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 7
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int8",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "user_id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 7
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int8",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "role",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 7
+              },
+              "SQLType": {
+                "Category": "enum",
+                "EngineName": "community_role",
+                "EnumValues": [
+                  "creator",
+                  "admin"
+                ],
+                "Schema": "public"
+              }
+            }
+          ],
+          "Name": "member_view",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 7
+          },
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

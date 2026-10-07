@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 19,
+    "EndColumn": 26,
+    "EndLine": 2,
+    "Filename": "landings.sql",
+    "Line": 2,
+    "Message": "failed to analyse query \"PivotFromData\": syntax error near \"species\": a PIVOT ON column without an IN list makes one output column per value in the data, so its columns cannot be known when generating code: list the values to pivot on, such as ON species IN ('cod', 'hake')",
+    "Severity": "error"
+  }
+]

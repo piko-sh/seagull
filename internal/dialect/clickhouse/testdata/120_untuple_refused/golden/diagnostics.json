@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 12,
+    "EndColumn": 19,
+    "EndLine": 2,
+    "Filename": "untuple.sql",
+    "Line": 2,
+    "Message": "failed to analyse query \"Spread\": syntax error near \"untuple\": untuple(...) in a select list gives one column for each element of the tuple, which the analysis cannot type; select the elements instead, as t.1 and t.2 or tupleElement(t, 'name')",
+    "Severity": "error"
+  }
+]

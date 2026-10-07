@@ -1,0 +1,8 @@
+LandCatch    on the writer: catch 1, 12000g of mackerel from the Kittiwake
+LandCatch    on the writer: catch 2, 3500g of crab from the Kittiwake
+LandCatch    on the writer: catch 3, 8000g of pollock from the Puffin
+SpeciesPrice on the reader: crab fetches 1200p a kilo
+SpeciesPrice on the reader: halibut has no price
+BoatHaul     on the reader: the Kittiwake's haul
+  crab        3500g  4200p
+  mackerel   12000g  5400p

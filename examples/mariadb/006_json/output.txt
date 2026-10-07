@@ -1,0 +1,6 @@
+order 1 stored {"fish":"cod","portions":2,"extras":["mushy peas","curry sauce"]}
+decoded: 2 x cod with [mushy peas curry sauce], delivery is NULL: true
+
+cod orders:
+  order 1  Steven    extras ["mushy peas", "curry sauce"]  collecting
+  order 3  Morwenna  extras ["pickled egg"]                to 4 Harbour Row

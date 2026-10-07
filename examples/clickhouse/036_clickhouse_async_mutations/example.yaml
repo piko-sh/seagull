@@ -1,0 +1,28 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: Fishing licences renewed and purged with ALTER TABLE UPDATE and DELETE declared asyncexec, made to wait with mutations_sync, beside a lightweight DELETE declared exec.
+differs:
+  - "ALTER TABLE ... UPDATE and ALTER TABLE ... DELETE queue a mutation; asyncexec gives an error-only method whose doc comment says a nil error means queued"
+  - "Declaring such a query exec works but sgl vet hints Q040; Q041, asyncexec on an engine without asynchronous mutations, cannot arise on ClickHouse"
+  - "mutations_sync=2 on the connection, or SETTINGS mutations_sync = 2 in the statement, makes the server wait until every replica has applied the mutation"
+  - "A lightweight DELETE FROM returns once the rows are marked deleted, so it is a plain exec"
+  - "No mutation reports changed rows"
+entry: {file: db/queries/licences.sql, query: RenewLicence}
+live: "no"
+test: integration

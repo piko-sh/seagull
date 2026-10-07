@@ -1,0 +1,46 @@
+[
+  {
+    "Command": "one",
+    "Filename": "delete_post.sql",
+    "Line": 1,
+    "Name": "DeletePost",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "posts",
+        "SourceTable": "posts"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "posts",
+        "SourceTable": "posts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: DeletePost, command: one)\nDELETE FROM posts WHERE id = $1 RETURNING id, title;",
+    "Template": "DELETE FROM posts WHERE id = ⟨p0⟩ RETURNING ⟨c0:id⟩, ⟨c1:title⟩;⟨arguments p0⟩"
+  }
+]

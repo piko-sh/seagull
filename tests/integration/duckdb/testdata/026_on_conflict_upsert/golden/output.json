@@ -1,0 +1,12 @@
+{
+  "after_insert": {
+    "key": "foo",
+    "value": "bar",
+    "version": 1
+  },
+  "after_upsert": {
+    "key": "foo",
+    "value": "baz",
+    "version": 2
+  }
+}

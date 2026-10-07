@@ -1,0 +1,52 @@
+[
+  {
+    "Command": "many",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "TreePath",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "walk",
+        "SourceTable": "walk"
+      },
+      {
+        "Name": "parent_id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "parent_id",
+        "SourceQualifier": "walk",
+        "SourceTable": "walk"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "root",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(TreePath, many)\nWITH RECURSIVE walk AS (\n    SELECT id, parent_id FROM tree WHERE id = {root:UInt64}\n    UNION ALL\n    SELECT t.id, t.parent_id FROM tree t INNER JOIN walk w ON w.id = t.parent_id\n)\nSELECT id, parent_id FROM walk;",
+    "Template": "WITH RECURSIVE walk AS (\\n    SELECT id, parent_id FROM tree WHERE id = ⟨p0 UInt64⟩\\n    UNION ALL\\n    SELECT t.id, t.parent_id FROM tree t INNER JOIN walk w ON w.id = t.parent_id\\n)\\nSELECT ⟨c0:id⟩, ⟨c1:parent_id⟩ FROM walk;⟨arguments p0⟩"
+  }
+]

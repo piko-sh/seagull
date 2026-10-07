@@ -1,0 +1,3 @@
+{
+  "description": "Functions MariaDB has in its default SQL mode and MySQL lacks are known: NVL is IFNULL, NULL only when both arguments may be; NVL2 and DECODE_ORACLE take the promoted type of their results, DECODE_ORACLE NULL without a default; ADD_MONTHS, TO_CHAR, LENGTHB, SFORMAT, NATURAL_SORT_KEY, CRC32C (an INT UNSIGNED), UUID_V7, JSON_OBJECT_TO_ARRAY and the _ORACLE string functions are typed as MariaDB 11 types them."
+}

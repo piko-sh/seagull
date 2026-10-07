@@ -1,0 +1,147 @@
+[
+  {
+    "Command": "many",
+    "Filename": "accounts.sql",
+    "Line": 1,
+    "Name": "DescribeAccounts",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "accounts",
+        "SourceTable": "accounts"
+      },
+      {
+        "Name": "display_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 40
+        }
+      },
+      {
+        "Name": "overdraft_limit",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "maybe_nickname",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 40,
+          "Nullable": true
+        }
+      },
+      {
+        "Name": "credit",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Nullable": true,
+          "Precision": 10,
+          "Scale": 2
+        }
+      },
+      {
+        "Name": "ordinal",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text",
+          "Nullable": true
+        }
+      },
+      {
+        "Name": "ordinal_or_other",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "renewal_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        }
+      },
+      {
+        "Name": "opened_on",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "name_bytes",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "label",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "sort_key",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "checksum",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int unsigned",
+          "Unsigned": true,
+          "Width": 32
+        }
+      },
+      {
+        "Name": "request_id",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "profile_pairs",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "json"
+        }
+      },
+      {
+        "Name": "trimmed_name",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: DescribeAccounts, command: many)\nSELECT\n    id,\n    NVL(nickname, name) AS display_name,\n    NVL(overdraft, 0) AS overdraft_limit,\n    NVL(nickname, nickname) AS maybe_nickname,\n    NVL2(overdraft, balance, 0) AS credit,\n    DECODE_ORACLE(id, 1, 'first', 2, 'second') AS ordinal,\n    DECODE_ORACLE(id, 1, 'first', 'other') AS ordinal_or_other,\n    ADD_MONTHS(opened_at, 12) AS renewal_at,\n    TO_CHAR(opened_at, 'YYYY-MM-DD') AS opened_on,\n    LENGTHB(name) AS name_bytes,\n    SFORMAT('{} ({})', name, id) AS label,\n    NATURAL_SORT_KEY(name) AS sort_key,\n    CRC32C(name) AS checksum,\n    UUID_V7() AS request_id,\n    JSON_OBJECT_TO_ARRAY(profile) AS profile_pairs,\n    LTRIM_ORACLE(name) AS trimmed_name\nFROM accounts;",
+    "Template": "SELECT\\n    ⟨c0:id⟩,\\n    ⟨c1 aliased:NVL(nickname, name)⟩ AS display_name,\\n    ⟨c2 aliased:NVL(overdraft, 0)⟩ AS overdraft_limit,\\n    ⟨c3 aliased:NVL(nickname, nickname)⟩ AS maybe_nickname,\\n    ⟨c4 aliased:NVL2(overdraft, balance, 0)⟩ AS credit,\\n    ⟨c5 aliased:DECODE_ORACLE(id, 1, 'first', 2, 'second')⟩ AS ordinal,\\n    ⟨c6 aliased:DECODE_ORACLE(id, 1, 'first', 'other')⟩ AS ordinal_or_other,\\n    ⟨c7 aliased:ADD_MONTHS(opened_at, 12)⟩ AS renewal_at,\\n    ⟨c8 aliased:TO_CHAR(opened_at, 'YYYY-MM-DD')⟩ AS opened_on,\\n    ⟨c9 aliased:LENGTHB(name)⟩ AS name_bytes,\\n    ⟨c10 aliased:SFORMAT('{} ({})', name, id)⟩ AS label,\\n    ⟨c11 aliased:NATURAL_SORT_KEY(name)⟩ AS sort_key,\\n    ⟨c12 aliased:CRC32C(name)⟩ AS checksum,\\n    ⟨c13 aliased:UUID_V7()⟩ AS request_id,\\n    ⟨c14 aliased:JSON_OBJECT_TO_ARRAY(profile)⟩ AS profile_pairs,\\n    ⟨c15 aliased:LTRIM_ORACLE(name)⟩ AS trimmed_name\\nFROM accounts;"
+  }
+]

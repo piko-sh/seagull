@@ -1,0 +1,93 @@
+{
+  "books_after_migration": [
+    {
+      "id": 1,
+      "title": "The Murder at the Vicarage"
+    },
+    {
+      "id": 2,
+      "title": "Sequel"
+    },
+    {
+      "id": 3,
+      "title": "Spare"
+    }
+  ],
+  "books_before_migration": [
+    {
+      "id": 1,
+      "title": "The Murder at the Vicarage"
+    },
+    {
+      "id": 2,
+      "title": "Sequel"
+    },
+    {
+      "id": 3,
+      "title": "Spare"
+    }
+  ],
+  "insert_shows": "inserted",
+  "show_with_tags": {
+    "data": {
+      "seasons": 6,
+      "title": "Marple"
+    },
+    "id": 1,
+    "tags": [
+      "crime",
+      "village"
+    ]
+  },
+  "show_without_tags": {
+    "data": {
+      "seasons": 13,
+      "title": "Poirot"
+    },
+    "id": 2,
+    "tags": null
+  },
+  "shows_after_migration": [
+    {
+      "data": {
+        "seasons": 6,
+        "title": "Marple"
+      },
+      "id": 1,
+      "tags": [
+        "crime",
+        "village"
+      ]
+    },
+    {
+      "data": {
+        "seasons": 13,
+        "title": "Poirot"
+      },
+      "id": 2,
+      "tags": null
+    }
+  ],
+  "shows_before_migration": [
+    {
+      "data": {
+        "seasons": 6,
+        "title": "Marple"
+      },
+      "id": 1,
+      "tags": [
+        "crime",
+        "village"
+      ]
+    },
+    {
+      "data": {
+        "seasons": 13,
+        "title": "Poirot"
+      },
+      "id": 2,
+      "tags": null
+    }
+  ],
+  "upsert_books_repeating_a_key": "upserted"
+}

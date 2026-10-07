@@ -1,0 +1,4 @@
+{
+  "description": "A Tuple holding a named Tuple, a Map of unnamed Tuples or an array of plain values, a named Tuple holding an array or a Map of unnamed Tuples, and arrays and Maps of unnamed Tuples are read by clickhouse-go and accepted; a nested unnamed Tuple cast to one with named elements, and the elements of a nested Tuple selected on their own, are accepted too.",
+  "expectedDiagnosticCount": 0
+}

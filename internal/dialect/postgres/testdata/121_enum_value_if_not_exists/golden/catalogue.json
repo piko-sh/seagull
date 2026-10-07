@@ -1,0 +1,98 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "public": {
+      "Enums": {
+        "mood": {
+          "Name": "mood",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "Schema": "public",
+          "Values": [
+            "happy",
+            "angry",
+            "calm",
+            "sad"
+          ]
+        }
+      },
+      "Name": "public",
+      "Tables": {
+        "feelings": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 5
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "mood",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 5
+              },
+              "SQLType": {
+                "Category": "enum",
+                "EngineName": "mood",
+                "EnumValues": [
+                  "happy",
+                  "angry",
+                  "calm",
+                  "sad"
+                ],
+                "Schema": "public"
+              }
+            },
+            {
+              "ArrayDimensions": 1,
+              "GeneratedKind": "none",
+              "IsArray": true,
+              "Name": "moods",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 5
+              },
+              "SQLType": {
+                "Category": "enum",
+                "EngineName": "mood",
+                "EnumValues": [
+                  "happy",
+                  "angry",
+                  "calm",
+                  "sad"
+                ],
+                "Nullable": true,
+                "Schema": "public"
+              }
+            }
+          ],
+          "Name": "feelings",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 5
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

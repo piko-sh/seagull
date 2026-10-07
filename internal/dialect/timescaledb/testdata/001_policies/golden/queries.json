@@ -1,0 +1,106 @@
+[
+  {
+    "Command": "many",
+    "Filename": "conditions.sql",
+    "Line": 1,
+    "Name": "HourlyConditions",
+    "OutputColumns": [
+      {
+        "Name": "bucket",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "bucket",
+        "SourceQualifier": "conditions_hourly",
+        "SourceTable": "conditions_hourly"
+      },
+      {
+        "Name": "device_id",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "device_id",
+        "SourceQualifier": "conditions_hourly",
+        "SourceTable": "conditions_hourly"
+      },
+      {
+        "Name": "avg_temp",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        },
+        "SourceColumn": "avg_temp",
+        "SourceQualifier": "conditions_hourly",
+        "SourceTable": "conditions_hourly"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: HourlyConditions, command: many)\nSELECT bucket, device_id, avg_temp FROM conditions_hourly ORDER BY bucket, device_id;",
+    "Template": "SELECT ⟨c0:bucket⟩, ⟨c1:device_id⟩, ⟨c2:avg_temp⟩ FROM conditions_hourly ORDER BY bucket, device_id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "conditions.sql",
+    "Line": 4,
+    "Name": "RecentConditions",
+    "OutputColumns": [
+      {
+        "Name": "time",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "time",
+        "SourceQualifier": "conditions",
+        "SourceTable": "conditions"
+      },
+      {
+        "Name": "device_id",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "device_id",
+        "SourceQualifier": "conditions",
+        "SourceTable": "conditions"
+      },
+      {
+        "Name": "temperature",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        },
+        "SourceColumn": "temperature",
+        "SourceQualifier": "conditions",
+        "SourceTable": "conditions"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "time",
+        "Number": 1,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: RecentConditions, command: many)\nSELECT time, device_id, temperature FROM conditions WHERE time \u003e $1 ORDER BY time;",
+    "Template": "SELECT ⟨c0:time⟩, ⟨c1:device_id⟩, ⟨c2:temperature⟩ FROM conditions WHERE time \u003e ⟨p0⟩ ORDER BY time;⟨arguments p0⟩"
+  }
+]

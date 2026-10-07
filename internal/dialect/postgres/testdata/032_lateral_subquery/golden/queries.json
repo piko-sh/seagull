@@ -1,0 +1,44 @@
+[
+  {
+    "Command": "many",
+    "Filename": "latest_books.sql",
+    "Line": 1,
+    "Name": "LatestBooks",
+    "OutputColumns": [
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "a",
+        "SourceTable": "authors"
+      },
+      {
+        "Name": "title",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "latest"
+      },
+      {
+        "Name": "published",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        },
+        "SourceColumn": "published",
+        "SourceQualifier": "latest"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: LatestBooks, command: many)\nSELECT a.name, latest.title, latest.published\nFROM authors a\nLEFT JOIN LATERAL (\n    SELECT b.title, b.published\n    FROM books b\n    WHERE b.author_id = a.id\n    ORDER BY b.published DESC\n    LIMIT 1\n) latest ON TRUE;",
+    "Template": "SELECT ⟨c0:a.name⟩, ⟨c1:latest.title⟩, ⟨c2:latest.published⟩\\nFROM authors a\\nLEFT JOIN LATERAL (\\n    SELECT b.title, b.published\\n    FROM books b\\n    WHERE b.author_id = a.id\\n    ORDER BY b.published DESC\\n    LIMIT 1\\n) latest ON TRUE;"
+  }
+]

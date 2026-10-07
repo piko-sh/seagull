@@ -1,0 +1,1 @@
+{"description": "A call to a function created as a lambda is typed from the body with the call's argument types, and keeps the query read-only."}

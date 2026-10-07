@@ -1,0 +1,4 @@
+{
+  "description": "A migration calling every policy and management function on a hypertable and on a continuous aggregate applies on the engine and generates without diagnostics: add_continuous_aggregate_policy, add_retention_policy and add_compression_policy on the continuous aggregate and their remove forms, set_chunk_time_interval, add_dimension, add_reorder_policy, enable_chunk_skipping and disable_chunk_skipping, add_compression_policy, add_retention_policy and their remove forms on the hypertable, and CALL add_columnstore_policy and remove_columnstore_policy.",
+  "expectedDiagnostics": []
+}

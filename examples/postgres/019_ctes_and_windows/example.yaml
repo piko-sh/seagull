@@ -1,0 +1,32 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: A gull colony read through a recursive CTE, a CTE feeding RANK and SUM window functions, and a view, with types and nullability carried through each; SUM of a bigint arrives as a decimal.
+differs:
+  - "$1 placeholders"
+  - "COUNT and RANK are bigint (int64), and SUM of a bigint is numeric, so the windowed total is *apd.Decimal"
+  - "stolen_on is a DATE, so the view's MAX(stolen_on) is a *time.Time"
+  - "Selecting gulls.name under GROUP BY gulls.id is allowed because id is the primary key"
+  - "SELECT * over the view is written out as its columns in the generated SQL, so adding a column to the view later does not break deployed code; go.keep_stars keeps the star"
+  - "The recursive CTE is named descendants: FAMILY is a reserved word in CockroachDB, which runs this variant too"
+  - "The example avoids LAG, LEAD and FIRST_VALUE, which Seagull types as any on PostgreSQL as well"
+  - "Integer columns are BIGINT and the CTE starts from 0::BIGINT, so the Go types are the same on CockroachDB, where integers are 64-bit"
+  - "id is an identity column, so ids count from 1 on CockroachDB too, where BIGSERIAL would give unique_rowid() values"
+entry: {file: db/queries/gulls.sql, query: TheftLeague}
+live: "no"
+test: integration

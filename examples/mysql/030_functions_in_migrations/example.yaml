@@ -1,0 +1,28 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: Stored functions created in a migration type the queries that call them, and their data-access characteristic, body or a sgl.migration(readonly:) line decides whether each query goes to the writer or the reader.
+differs:
+  - "NO SQL and READS SQL DATA functions are read-only; MODIFIES SQL DATA, or an INSERT, UPDATE or DELETE in the body, makes a query write unless sgl.migration(readonly: true) precedes the CREATE FUNCTION"
+  - "MySQL never checks a characteristic against the body, and refuses a function that is not DETERMINISTIC, NO SQL or READS SQL DATA while binary logging is on"
+  - "A BEGIN ... END body needs no DELIMITER line in a migration; DELIMITER is a mysql client command, not SQL"
+  - "No table-valued functions, so BoatHaul joins the tables itself and calls price_pence per row"
+  - "Function arguments have no column to name them, so ?1 as sgl.param(boat) names them"
+entry: {file: db/migrations/0002_market_functions.up.sql}
+live: "no"
+test: integration

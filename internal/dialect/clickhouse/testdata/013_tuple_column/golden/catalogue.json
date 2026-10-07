@@ -1,0 +1,101 @@
+{
+  "DefaultSchema": "default",
+  "Identifiers": {
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "default": {
+      "Name": "default",
+      "Tables": {
+        "coordinates": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt64",
+                "Unsigned": true,
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "point",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "Tuple",
+                "StructFields": [
+                  {
+                    "Name": "_1",
+                    "Positional": true,
+                    "SQLType": {
+                      "Category": "float",
+                      "EngineName": "Float64",
+                      "Width": 64
+                    }
+                  },
+                  {
+                    "Name": "_2",
+                    "Positional": true,
+                    "SQLType": {
+                      "Category": "float",
+                      "EngineName": "Float64",
+                      "Width": 64
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "named_point",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "Tuple",
+                "StructFields": [
+                  {
+                    "Name": "x",
+                    "SQLType": {
+                      "Category": "float",
+                      "EngineName": "Float64",
+                      "Width": 64
+                    }
+                  },
+                  {
+                    "Name": "y",
+                    "SQLType": {
+                      "Category": "float",
+                      "EngineName": "Float64",
+                      "Width": 64
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "Name": "coordinates",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "default"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "default"
+  ]
+}

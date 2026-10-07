@@ -1,0 +1,1 @@
+{"description": "MySQL's further arities type with no unknown-function warning: COUNT(DISTINCT a, b) counts combinations, UUID_TO_BIN and BIN_TO_UUID take the swap flag MySQL 8 recommends for time-ordered keys, LAST_INSERT_ID(expression) sets and returns the value the sequence idiom reads, and IS_IPV4, IS_IPV6, IS_IPV4_MAPPED and IS_IPV4_COMPAT test addresses"}

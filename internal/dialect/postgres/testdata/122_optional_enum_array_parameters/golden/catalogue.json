@@ -1,0 +1,96 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "public": {
+      "Enums": {
+        "colour": {
+          "Name": "colour",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "Schema": "public",
+          "Values": [
+            "red",
+            "green",
+            "blue"
+          ]
+        }
+      },
+      "Name": "public",
+      "Tables": {
+        "things": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int8",
+                "Width": 64
+              }
+            },
+            {
+              "ArrayDimensions": 1,
+              "GeneratedKind": "none",
+              "IsArray": true,
+              "Name": "colours",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "enum",
+                "EngineName": "colour",
+                "EnumValues": [
+                  "red",
+                  "green",
+                  "blue"
+                ],
+                "Nullable": true,
+                "Schema": "public"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "favourite",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "enum",
+                "EngineName": "colour",
+                "EnumValues": [
+                  "red",
+                  "green",
+                  "blue"
+                ],
+                "Schema": "public"
+              }
+            }
+          ],
+          "Name": "things",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 1
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

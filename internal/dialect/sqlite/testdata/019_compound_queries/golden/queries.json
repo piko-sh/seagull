@@ -1,0 +1,100 @@
+[
+  {
+    "Command": "many",
+    "Filename": "all_workers.sql",
+    "Line": 1,
+    "Name": "ListAllWorkers",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "employees",
+        "SourceTable": "employees"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "employees",
+        "SourceTable": "employees"
+      },
+      {
+        "Name": "org",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "department",
+        "SourceQualifier": "employees",
+        "SourceTable": "employees"
+      },
+      {
+        "Name": "pay",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        },
+        "SourceColumn": "salary",
+        "SourceQualifier": "employees",
+        "SourceTable": "employees"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "department",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "agency",
+        "Nullable": true,
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListAllWorkers, command: many)\nSELECT id, name, department AS org, salary AS pay FROM employees WHERE department = ?\nUNION ALL\nSELECT id, name, agency AS org, rate AS pay FROM contractors WHERE agency = ?",
+    "Template": "SELECT id, name, department AS org, salary AS pay FROM employees WHERE department = ⟨p0⟩\\nUNION ALL\\nSELECT id, name, agency AS org, rate AS pay FROM contractors WHERE agency = ⟨p1⟩⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "all_workers.sql",
+    "Line": 6,
+    "Name": "ListUniqueWorkerNames",
+    "OutputColumns": [
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "employees",
+        "SourceTable": "employees"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListUniqueWorkerNames, command: many)\nSELECT name FROM employees\nUNION\nSELECT name FROM contractors\nORDER BY name",
+    "Template": "SELECT name FROM employees\\nUNION\\nSELECT name FROM contractors\\nORDER BY name"
+  }
+]

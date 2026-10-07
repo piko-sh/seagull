@@ -1,0 +1,77 @@
+[
+  {
+    "Command": "one",
+    "Filename": "get_account.sql",
+    "Line": 1,
+    "Name": "GetAccountWithLatestVersion",
+    "OutputColumns": [
+      {
+        "Name": "account_id",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        },
+        "SourceColumn": "account_id",
+        "SourceQualifier": "accounts_with_latest",
+        "SourceTable": "accounts_with_latest"
+      },
+      {
+        "Name": "account_created_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "account_created_at",
+        "SourceQualifier": "accounts_with_latest",
+        "SourceTable": "accounts_with_latest"
+      },
+      {
+        "Name": "version_id",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        },
+        "SourceColumn": "version_id",
+        "SourceQualifier": "accounts_with_latest",
+        "SourceTable": "accounts_with_latest"
+      },
+      {
+        "Name": "version_status",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "version_status",
+        "SourceQualifier": "accounts_with_latest",
+        "SourceTable": "accounts_with_latest"
+      },
+      {
+        "Name": "version_email",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "version_email",
+        "SourceQualifier": "accounts_with_latest",
+        "SourceTable": "accounts_with_latest"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "param",
+        "Name": "account_id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetAccountWithLatestVersion, command: one)\n-- $1 as sgl.param(account_id)\nSELECT\n    account_id,\n    account_created_at,\n    version_id,\n    version_status,\n    version_email\nFROM accounts_with_latest\nWHERE account_id = $1;",
+    "Template": "SELECT\\n    ⟨c0:account_id⟩,\\n    ⟨c1:account_created_at⟩,\\n    ⟨c2:version_id⟩,\\n    ⟨c3:version_status⟩,\\n    ⟨c4:version_email⟩\\nFROM accounts_with_latest\\nWHERE account_id = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

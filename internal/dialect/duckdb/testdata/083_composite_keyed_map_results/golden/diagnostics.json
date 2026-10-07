@@ -1,0 +1,68 @@
+[
+  {
+    "Code": "Q059",
+    "Column": 8,
+    "EndColumn": 15,
+    "EndLine": 2,
+    "Filename": "boats.sql",
+    "Line": 2,
+    "Message": "column \"by_crew\" cannot be read: it holds a MAP keyed by a LIST, STRUCT, MAP or UNION, which duckdb-go cannot read (it fails with \"MAP key type not supported\")",
+    "Severity": "error",
+    "Suggestion": "read map_entries(m), a list of its key and value structs, or map_keys(m) and map_values(m) instead"
+  },
+  {
+    "Code": "Q059",
+    "Column": 17,
+    "EndColumn": 33,
+    "EndLine": 2,
+    "Filename": "boats.sql",
+    "Line": 2,
+    "Message": "column \"by_list\" cannot be read: it holds a MAP keyed by a LIST, STRUCT, MAP or UNION, which duckdb-go cannot read (it fails with \"MAP key type not supported\")",
+    "Severity": "error",
+    "Suggestion": "read map_entries(m), a list of its key and value structs, or map_keys(m) and map_values(m) instead"
+  },
+  {
+    "Code": "Q059",
+    "Column": 8,
+    "EndColumn": 18,
+    "EndLine": 6,
+    "Filename": "boats.sql",
+    "Line": 6,
+    "Message": "column \"listed\" cannot be read: it holds a MAP keyed by a LIST, STRUCT, MAP or UNION, which duckdb-go cannot read (it fails with \"MAP key type not supported\")",
+    "Severity": "error",
+    "Suggestion": "read map_entries(m), a list of its key and value structs, or map_keys(m) and map_values(m) instead"
+  },
+  {
+    "Code": "Q059",
+    "Column": 30,
+    "EndColumn": 63,
+    "EndLine": 6,
+    "Filename": "boats.sql",
+    "Line": 6,
+    "Message": "column \"nested\" cannot be read: it holds a MAP keyed by a LIST, STRUCT, MAP or UNION, which duckdb-go cannot read (it fails with \"MAP key type not supported\")",
+    "Severity": "error",
+    "Suggestion": "read map_entries(m), a list of its key and value structs, or map_keys(m) and map_values(m) instead"
+  },
+  {
+    "Code": "Q059",
+    "Column": 8,
+    "EndColumn": 9,
+    "EndLine": 10,
+    "Filename": "boats.sql",
+    "Line": 10,
+    "Message": "column \"by_crew\" cannot be read: it holds a MAP keyed by a LIST, STRUCT, MAP or UNION, which duckdb-go cannot read (it fails with \"MAP key type not supported\")",
+    "Severity": "error",
+    "Suggestion": "read map_entries(m), a list of its key and value structs, or map_keys(m) and map_values(m) instead"
+  },
+  {
+    "Code": "Q059",
+    "Column": 8,
+    "EndColumn": 9,
+    "EndLine": 10,
+    "Filename": "boats.sql",
+    "Line": 10,
+    "Message": "column \"by_berth\" cannot be read: it holds a MAP keyed by a LIST, STRUCT, MAP or UNION, which duckdb-go cannot read (it fails with \"MAP key type not supported\")",
+    "Severity": "error",
+    "Suggestion": "read map_entries(m), a list of its key and value structs, or map_keys(m) and map_values(m) instead"
+  }
+]

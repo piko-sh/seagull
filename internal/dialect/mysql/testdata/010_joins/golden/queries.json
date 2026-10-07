@@ -1,0 +1,91 @@
+[
+  {
+    "Command": "many",
+    "Filename": "all_employees_with_optional_department.sql",
+    "Line": 1,
+    "Name": "AllEmployeesWithOptionalDepartment",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "e",
+        "SourceTable": "employees"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "e",
+        "SourceTable": "employees"
+      },
+      {
+        "Name": "department_name",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "d",
+        "SourceTable": "departments"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AllEmployeesWithOptionalDepartment, command: many)\nSELECT e.id, e.name, d.name AS department_name\nFROM employees e\nLEFT JOIN departments d ON e.department_id = d.id;",
+    "Template": "SELECT ⟨c0:e.id⟩, ⟨c1:e.name⟩, ⟨c2 aliased:d.name⟩ AS department_name\\nFROM employees e\\nLEFT JOIN departments d ON e.department_id = d.id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "employees_with_departments.sql",
+    "Line": 1,
+    "Name": "EmployeesWithDepartments",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "e",
+        "SourceTable": "employees"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "e",
+        "SourceTable": "employees"
+      },
+      {
+        "Name": "department_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "d",
+        "SourceTable": "departments"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: EmployeesWithDepartments, command: many)\nSELECT e.id, e.name, d.name AS department_name\nFROM employees e\nINNER JOIN departments d ON e.department_id = d.id;",
+    "Template": "SELECT ⟨c0:e.id⟩, ⟨c1:e.name⟩, ⟨c2 aliased:d.name⟩ AS department_name\\nFROM employees e\\nINNER JOIN departments d ON e.department_id = d.id;"
+  }
+]

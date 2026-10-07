@@ -1,0 +1,18 @@
+{
+  "over_the_max_is_clamped": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "unset_takes_the_default": [
+    1,
+    2,
+    3
+  ],
+  "within_the_bounds": [
+    2,
+    3
+  ]
+}

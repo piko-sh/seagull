@@ -1,0 +1,11 @@
+{
+  "description": "A PRAGMA whose rows Seagull does not declare, here the deprecated count_changes, is refused rather than read into an empty row.",
+  "expectedDiagnosticCount": 1,
+  "diagnostics": [
+    {
+      "severity": "error",
+      "code": "Q010",
+      "messageContains": "PRAGMA count_changes returns are not declared"
+    }
+  ]
+}

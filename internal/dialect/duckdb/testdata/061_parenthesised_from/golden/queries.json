@@ -1,0 +1,91 @@
+[
+  {
+    "Command": "many",
+    "Filename": "landings.sql",
+    "Line": 1,
+    "Name": "HeavyLandings",
+    "OutputColumns": [
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "b",
+        "SourceTable": "boats"
+      },
+      {
+        "Name": "kg",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "kg",
+        "SourceQualifier": "l",
+        "SourceTable": "landings"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "kg",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: HeavyLandings, command: many)\nSELECT b.name, l.kg FROM (boats b JOIN landings l ON l.boat_id = b.id) WHERE l.kg \u003e $1;",
+    "Template": "SELECT ⟨c0:b.name⟩, ⟨c1:l.kg⟩ FROM (boats b JOIN landings l ON l.boat_id = b.id) WHERE l.kg \u003e ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "landings.sql",
+    "Line": 4,
+    "Name": "BoatsWithLandings",
+    "OutputColumns": [
+      {
+        "Name": "boat",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "b",
+        "SourceTable": "boats"
+      },
+      {
+        "Name": "harbour",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "h",
+        "SourceTable": "harbours"
+      },
+      {
+        "Name": "kg",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "kg",
+        "SourceQualifier": "l",
+        "SourceTable": "landings"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: BoatsWithLandings, command: many)\nSELECT b.name AS boat, h.name AS harbour, l.kg\nFROM boats b\nLEFT JOIN (landings l JOIN harbours h ON h.id = l.harbour_id) ON l.boat_id = b.id;",
+    "Template": "SELECT ⟨c0 aliased:b.name⟩ AS boat, ⟨c1 aliased:h.name⟩ AS harbour, ⟨c2:l.kg⟩\\nFROM boats b\\nLEFT JOIN (landings l JOIN harbours h ON h.id = l.harbour_id) ON l.boat_id = b.id;"
+  }
+]

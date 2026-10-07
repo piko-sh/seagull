@@ -1,0 +1,4 @@
+{
+  "description": "An unqualified set-returning function resolves through the search path in order, as PostgreSQL resolves it, not by the alphabetical order of the schemas: with stats() in both analytics and public and only public on the path, stats() is public.stats(); a schema-qualified call reaches the other.",
+  "expectedDiagnosticCount": 0
+}

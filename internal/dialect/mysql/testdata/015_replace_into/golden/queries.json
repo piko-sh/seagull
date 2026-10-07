@@ -1,0 +1,85 @@
+[
+  {
+    "Command": "one",
+    "Filename": "get_config.sql",
+    "Line": 1,
+    "Name": "GetConfig",
+    "OutputColumns": [
+      {
+        "Name": "key_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        },
+        "SourceColumn": "key_name",
+        "SourceQualifier": "config",
+        "SourceTable": "config"
+      },
+      {
+        "Name": "value",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "value",
+        "SourceQualifier": "config",
+        "SourceTable": "config"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "key_name",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetConfig, command: one)\nSELECT key_name, value FROM config WHERE key_name = ?;",
+    "Template": "SELECT ⟨c0:key_name⟩, ⟨c1:value⟩ FROM config WHERE key_name = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "set_config.sql",
+    "InsertColumns": [
+      "key_name",
+      "value"
+    ],
+    "InsertTarget": {
+      "Name": "config"
+    },
+    "Line": 1,
+    "Name": "SetConfig",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "key_name",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "value",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: SetConfig, command: exec)\nREPLACE INTO config (key_name, value) VALUES (?, ?);",
+    "Template": "REPLACE INTO config (key_name, value) VALUES ⟨values:(⟨p0⟩, ⟨p1⟩)⟩;⟨arguments p0 p1⟩"
+  }
+]

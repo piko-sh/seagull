@@ -1,0 +1,4 @@
+{
+  "description": "SQLite's date and time functions over a number: date, datetime, strftime and julianday of seconds since 1970 with the unixepoch modifier, unixepoch of a Julian day number, and if, iif's spelling, read back as text, a real, an integer and the chosen value; a time value that holds no time reads NULL. The same golden holds for modernc.org/sqlite and, through sqlite_cgo, mattn/go-sqlite3.",
+  "expectedDiagnostics": []
+}

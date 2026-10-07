@@ -1,0 +1,1 @@
+{"description": "generate_series takes the type of its bounds, a timestamp, a timestamp with time zone (dates included) or an integer, and unnest the element type of its array, as PostgreSQL resolves their overloads, rather than by name alone"}

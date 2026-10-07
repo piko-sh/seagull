@@ -1,0 +1,11 @@
+{
+  "description": "Function names are case-sensitive: Doubled and doubled are two functions created as lambdas and each call is typed from its own body, while a call in another case, DOUBLED, reaches neither: it is an unknown function (Q005 warning) whose column has no known type.",
+  "expectedDiagnosticCount": 1,
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "Q005",
+      "messageContains": "DOUBLED"
+    }
+  ]
+}

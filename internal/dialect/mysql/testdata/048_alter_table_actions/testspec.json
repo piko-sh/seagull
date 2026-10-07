@@ -1,0 +1,1 @@
+{"description": "MySQL ALTER TABLE applies every action of a multi-action statement; CHANGE COLUMN renames and redefines; MODIFY redefines; CREATE TABLE ... AS SELECT takes its columns from the query, each nullable"}

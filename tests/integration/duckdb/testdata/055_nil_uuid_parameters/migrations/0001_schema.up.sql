@@ -1,0 +1,1 @@
+CREATE TABLE tokens (id BIGINT PRIMARY KEY, owner UUID, label VARCHAR NOT NULL);

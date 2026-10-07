@@ -1,0 +1,12 @@
+one         moored Kittiwake as boat 1
+one         moored Salty Chip as boat 2
+one         moored Gull Wing as boat 3
+execresult  moved boat 2 to berth 4, command tag "UPDATE 1"
+execresult  Update() true, RowsAffected() 1
+one         boat 2 is Salty Chip, at berth 4
+exec        scrapped boat 3
+one         boat 3 is gone, so GetBoat returns pgx.ErrNoRows
+execrows    2 boats put to sea
+execrows    0 boats put to sea
+many        berth 1  Kittiwake   at sea: true
+many        berth 4  Salty Chip  at sea: true

@@ -1,0 +1,47 @@
+[
+  {
+    "Command": "many",
+    "Filename": "all_users.sql",
+    "Line": 1,
+    "Name": "AllUsers",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "active_users",
+        "SourceTable": "active_users"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "active_users",
+        "SourceTable": "active_users"
+      },
+      {
+        "Name": "email",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "active_users",
+        "SourceTable": "active_users"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AllUsers, command: many)\nSELECT id, name, email FROM active_users\nUNION ALL\nSELECT id, name, email FROM archived_users;",
+    "Template": "SELECT id, name, email FROM active_users\\nUNION ALL\\nSELECT id, name, email FROM archived_users;"
+  }
+]

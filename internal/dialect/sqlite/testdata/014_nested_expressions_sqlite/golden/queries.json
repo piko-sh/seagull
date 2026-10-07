@@ -1,0 +1,45 @@
+[
+  {
+    "Command": "one",
+    "Filename": "get_total.sql",
+    "Line": 1,
+    "Name": "GetLineItemTotal",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "line_items",
+        "SourceTable": "line_items"
+      },
+      {
+        "Name": "total",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetLineItemTotal, command: one)\nSELECT\n  id,\n  unit_price * quantity + COALESCE(unit_price * quantity * tax_rate, 0.0) - COALESCE(discount, 0.0) as total\nFROM line_items WHERE id = ?",
+    "Template": "SELECT\\n  ⟨c0:id⟩,\\n  ⟨c1 aliased:unit_price * quantity + COALESCE(unit_price * quantity * tax_rate, 0.0) - COALESCE(discount, 0.0)⟩ as total\\nFROM line_items WHERE id = ⟨p0⟩⟨arguments p0⟩"
+  }
+]

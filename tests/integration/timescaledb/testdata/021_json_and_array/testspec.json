@@ -1,0 +1,3 @@
+{
+  "description": "Nullable JSONB columns use the generated JSON type, and TEXT[] array columns are wrapped in to_json() and decoded into []*string: NULL and non-NULL values round-trip."
+}

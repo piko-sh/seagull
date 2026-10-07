@@ -1,0 +1,57 @@
+[
+  {
+    "Command": "many",
+    "Filename": "filter_colours.sql",
+    "Line": 1,
+    "Name": "FilterColours",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "colour",
+        "NonNullElements": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "enum",
+            "EngineName": "colour",
+            "EnumValues": [
+              "red",
+              "green",
+              "blue"
+            ],
+            "Schema": "public"
+          },
+          "EngineName": "colour[]"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FilterColours, command: many)\nSELECT id, name FROM items WHERE colour = ANY($1::colour[]);",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩ FROM items WHERE colour = ANY(⟨p0⟩::colour[]);⟨arguments p0⟩"
+  }
+]

@@ -1,0 +1,53 @@
+[
+  {
+    "Command": "many",
+    "Filename": "configurations.sql",
+    "Line": 1,
+    "Name": "ListConfigurations",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "configurations",
+        "SourceTable": "configurations"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "configurations",
+        "SourceTable": "configurations"
+      },
+      {
+        "Name": "settings",
+        "SQLType": {
+          "Category": "map",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "varchar",
+            "Nullable": true
+          },
+          "EngineName": "map",
+          "KeyType": {
+            "Category": "text",
+            "EngineName": "varchar"
+          }
+        },
+        "SourceColumn": "settings",
+        "SourceQualifier": "configurations",
+        "SourceTable": "configurations"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListConfigurations, command: many)\nSELECT id, name, settings FROM configurations;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:settings⟩ FROM configurations;"
+  }
+]

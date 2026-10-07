@@ -1,0 +1,1 @@
+{"description": "An optional parameter whose type is an array of an enum the package declares is a pointer to a slice in the dynamic query's Params struct, and the pgx and database/sql emitters, which bind an enum array as Go's own strings, read it through sglDereference before converting it, so a nil pointer binds as NULL"}

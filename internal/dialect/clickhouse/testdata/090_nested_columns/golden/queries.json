@@ -1,0 +1,312 @@
+[
+  {
+    "Command": "many",
+    "Filename": "flights.sql",
+    "Line": 1,
+    "Name": "ListFlights",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "flights",
+        "SourceTable": "flights"
+      },
+      {
+        "Name": "legs.colony",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "String"
+          },
+          "EngineName": "Array"
+        },
+        "SourceColumn": "legs.colony",
+        "SourceQualifier": "flights",
+        "SourceTable": "flights"
+      },
+      {
+        "Name": "legs.minutes",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "UInt16",
+            "Nullable": true,
+            "Unsigned": true,
+            "Width": 16
+          },
+          "EngineName": "Array"
+        },
+        "SourceColumn": "legs.minutes",
+        "SourceQualifier": "flights",
+        "SourceTable": "flights"
+      },
+      {
+        "Name": "note",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "note",
+        "SourceQualifier": "flights",
+        "SourceTable": "flights"
+      },
+      {
+        "Name": "legs.altitude",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "UInt32",
+            "Unsigned": true,
+            "Width": 32
+          },
+          "EngineName": "Array"
+        },
+        "SourceColumn": "legs.altitude",
+        "SourceQualifier": "flights",
+        "SourceTable": "flights"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ListFlights, many)\nSELECT * FROM flights;",
+    "Template": "SELECT ⟨star 0=flights.id 1=flights.legs\\.colony 2=flights.legs\\.minutes 3=flights.note 4=flights.legs\\.altitude:*⟩ FROM flights;"
+  },
+  {
+    "Command": "many",
+    "Filename": "flights.sql",
+    "Line": 4,
+    "Name": "ListLegs",
+    "OutputColumns": [
+      {
+        "Name": "legs.colony",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "String"
+          },
+          "EngineName": "Array"
+        }
+      },
+      {
+        "Name": "legs.minutes",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "UInt16",
+            "Nullable": true,
+            "Unsigned": true,
+            "Width": 16
+          },
+          "EngineName": "Array"
+        }
+      },
+      {
+        "Name": "legs.altitude",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "UInt32",
+            "Unsigned": true,
+            "Width": 32
+          },
+          "EngineName": "Array"
+        },
+        "SourceColumn": "legs.altitude",
+        "SourceQualifier": "flights",
+        "SourceTable": "flights"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ListLegs, many)\nSELECT legs.colony, flights.legs.minutes, `legs.altitude` FROM flights;",
+    "Template": "SELECT ⟨c0:legs.colony⟩, ⟨c1:flights.legs.minutes⟩, ⟨c2:`legs.altitude`⟩ FROM flights;"
+  },
+  {
+    "Command": "many",
+    "Filename": "flights.sql",
+    "Line": 7,
+    "Name": "ListStops",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "routes",
+        "SourceTable": "routes"
+      },
+      {
+        "Name": "stops",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "struct",
+            "EngineName": "Tuple",
+            "StructFields": [
+              {
+                "Name": "colony",
+                "SQLType": {
+                  "Category": "text",
+                  "EngineName": "String"
+                }
+              },
+              {
+                "Name": "minutes",
+                "SQLType": {
+                  "Category": "integer",
+                  "EngineName": "UInt16",
+                  "Unsigned": true,
+                  "Width": 16
+                }
+              }
+            ]
+          },
+          "EngineName": "Array"
+        },
+        "SourceColumn": "stops",
+        "SourceQualifier": "routes",
+        "SourceTable": "routes"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ListStops, many)\nSELECT id, stops FROM routes;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:stops⟩ FROM routes;"
+  },
+  {
+    "Command": "many",
+    "Filename": "flights.sql",
+    "Line": 10,
+    "Name": "ListColonies",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "f",
+        "SourceTable": "flights"
+      },
+      {
+        "Name": "colonies",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "String"
+          },
+          "EngineName": "Array"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ListColonies, many)\nSELECT f.id, f.legs.colony AS colonies FROM flights AS f;",
+    "Template": "SELECT ⟨c0:f.id⟩, ⟨c1 aliased:f.legs.colony⟩ AS colonies FROM flights AS f;"
+  },
+  {
+    "Command": "exec",
+    "Filename": "flights.sql",
+    "InsertColumns": [
+      "id",
+      "legs.colony",
+      "legs.minutes",
+      "legs.altitude",
+      "note"
+    ],
+    "InsertTarget": {
+      "Name": "flights"
+    },
+    "Line": 13,
+    "Name": "InsertFlight",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "colonies",
+        "Number": 2,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "String"
+          },
+          "EngineName": "Array"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "minutes",
+        "Number": 3,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "UInt16",
+            "Nullable": true,
+            "Unsigned": true,
+            "Width": 16
+          },
+          "EngineName": "Array"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "altitudes",
+        "Number": 4,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "UInt32",
+            "Unsigned": true,
+            "Width": 32
+          },
+          "EngineName": "Array"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "note",
+        "Number": 5,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(InsertFlight, exec)\nINSERT INTO flights (id, `legs.colony`, `legs.minutes`, `legs.altitude`, note)\nVALUES ({id:UInt64}, {colonies:Array(String)}, {minutes:Array(Nullable(UInt16))}, {altitudes:Array(UInt32)}, {note:String});",
+    "Template": "INSERT INTO flights (id, `legs.colony`, `legs.minutes`, `legs.altitude`, note)\\nVALUES ⟨values:(⟨p0 UInt64⟩, ⟨p1 Array(String)⟩, ⟨p2 Array(Nullable(UInt16))⟩, ⟨p3 Array(UInt32)⟩, ⟨p4 String⟩)⟩;⟨arguments p0 p1 p2 p3 p4⟩"
+  }
+]

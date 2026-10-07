@@ -1,0 +1,96 @@
+[
+  {
+    "Command": "one",
+    "Filename": "get_setting.sql",
+    "Line": 1,
+    "Name": "GetSetting",
+    "OutputColumns": [
+      {
+        "Name": "key_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        },
+        "SourceColumn": "key_name",
+        "SourceQualifier": "settings",
+        "SourceTable": "settings"
+      },
+      {
+        "Name": "value",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "value",
+        "SourceQualifier": "settings",
+        "SourceTable": "settings"
+      },
+      {
+        "Name": "updated_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "updated_at",
+        "SourceQualifier": "settings",
+        "SourceTable": "settings"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "key_name",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetSetting, command: one)\nSELECT key_name, value, updated_at FROM settings WHERE key_name = ?;",
+    "Template": "SELECT ⟨c0:key_name⟩, ⟨c1:value⟩, ⟨c2:updated_at⟩ FROM settings WHERE key_name = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "upsert_setting.sql",
+    "InsertColumns": [
+      "key_name",
+      "value"
+    ],
+    "InsertTarget": {
+      "Name": "settings"
+    },
+    "Line": 1,
+    "Name": "UpsertSetting",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "key_name",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "value",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: UpsertSetting, command: exec)\nINSERT INTO settings (key_name, value)\nVALUES (?, ?)\nON DUPLICATE KEY UPDATE value = VALUES(value);",
+    "Template": "INSERT INTO settings (key_name, value)\\nVALUES ⟨values:(⟨p0⟩, ⟨p1⟩)⟩\\nON DUPLICATE KEY UPDATE value = VALUES(value);⟨arguments p0 p1⟩"
+  }
+]

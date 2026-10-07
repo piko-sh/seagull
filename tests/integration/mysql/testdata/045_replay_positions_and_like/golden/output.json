@@ -1,0 +1,60 @@
+{
+  "later_pairs": [
+    {
+      "left_id": 3,
+      "note": null,
+      "right_id": null
+    }
+  ],
+  "pairs": [
+    {
+      "left_id": 1,
+      "note": "first",
+      "right_id": 2
+    }
+  ],
+  "renamed": [
+    {
+      "id": 4,
+      "label": "renamed"
+    }
+  ],
+  "renamed_view": [
+    {
+      "id": 5,
+      "label": "viewed"
+    }
+  ],
+  "t": [
+    {
+      "a": 1,
+      "b2": 3,
+      "c": "four",
+      "d": 5,
+      "m": 2,
+      "z": null
+    },
+    {
+      "a": 7,
+      "b2": 9,
+      "c": "ten",
+      "d": 11,
+      "m": 8,
+      "z": 6
+    }
+  ],
+  "users_copy": [
+    {
+      "bio": null,
+      "id": 1,
+      "name": "ada"
+    }
+  ],
+  "users_copy_parenthesised": [
+    {
+      "bio": "admiral",
+      "id": 1,
+      "name": "grace"
+    }
+  ]
+}

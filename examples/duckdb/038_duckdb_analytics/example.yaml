@@ -1,0 +1,30 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: A week of fish landings analysed with QUALIFY, FILTER, PIVOT, a scalar macro, a table macro and read_parquet over a price list the program writes with COPY TO.
+differs:
+  - "QUALIFY filters on a window function and keeps the table's column types"
+  - "SUM of an INTEGER is a HUGEINT in DuckDB, so the FILTER totals arrive as *big.Int"
+  - "A scalar macro is typed through the CAST in its body; a table macro's columns are typed from the SELECT in its body"
+  - "read_parquet takes its path as a bound parameter; Seagull cannot see the file's columns, so sgl vet warns Q001 and CASTs give the types"
+  - "PIVOT ... ON species IN (...) gives one typed column per listed value, the same columns as the FILTER query"
+  - "run takes the Parquet file's path, which main.go and the test write with COPY ... TO"
+entry: {file: db/queries/landings.sql, query: LandingValues}
+live: "no"
+test: cgo
+expected_diagnostics: [Q001]

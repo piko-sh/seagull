@@ -1,0 +1,41 @@
+[
+  {
+    "Command": "many",
+    "Filename": "bookings.sql",
+    "Line": 1,
+    "Name": "FormatBookings",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "bookings",
+        "SourceTable": "bookings"
+      },
+      {
+        "Name": "booked_on",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Name": "year",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt16",
+          "Unsigned": true,
+          "Width": 16
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(FormatBookings, many)\nSELECT id,\n       formatDateTime(ts, '%Y-%m-%d') AS booked_on,\n       toYear(ts) AS year\nFROM bookings;",
+    "Template": "SELECT ⟨c0:id⟩,\\n       ⟨c1 aliased:formatDateTime(ts, '%Y-%m-%d')⟩ AS booked_on,\\n       ⟨c2 aliased:toYear(ts)⟩ AS year\\nFROM bookings;"
+  }
+]

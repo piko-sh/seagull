@@ -1,0 +1,3 @@
+{
+  "description": "Slice parameters with IN clauses: a kind: slice parameter expands to dynamic IN (?, ?, ...) at runtime"
+}

@@ -1,0 +1,11 @@
+added 1 The Old Pier     tag_count=2
+added 2 Harbour Wall     tag_count=2
+added 3 Chip Shop        tag_count=1
+added 4 Lifeboat Station tag_count=3
+descriptions matching "gull*":
+  The Old Pier Wooden pier where the herring [gulls]...
+  Chip Shop    ...away; guard them from the [gulls]
+at (12, 4): The Old Pier
+at (70, 20): Lifeboat Station
+tagged walk: Harbour Wall     tag_count=2
+tagged walk: Lifeboat Station tag_count=3

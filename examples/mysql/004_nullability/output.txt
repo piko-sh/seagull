@@ -1,0 +1,10 @@
+ring    nickname  place
+GB1001  Steven    the pier
+GB1001  Steven    the chip shop
+GB1002  NULL      the harbour wall
+GB1003  Gwen      NULL
+
+ring    known as     times seen  last seen
+GB1001  Steven       2           2026-05-03
+GB1002  GB1002       1           2026-05-02
+GB1003  Gwen         0           NULL

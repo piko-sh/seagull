@@ -1,0 +1,40 @@
+[
+  {
+    "Command": "many",
+    "Filename": "get_totals.sql",
+    "Line": 1,
+    "Name": "GetProductTotals",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      },
+      {
+        "Name": "subtotal",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "tax_amount",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetProductTotals, command: many)\nSELECT\n  id,\n  price * quantity as subtotal,\n  price * COALESCE(tax_rate, 0.0) as tax_amount\nFROM products",
+    "Template": "SELECT\\n  ⟨c0:id⟩,\\n  ⟨c1 aliased:price * quantity⟩ as subtotal,\\n  ⟨c2 aliased:price * COALESCE(tax_rate, 0.0)⟩ as tax_amount\\nFROM products"
+  }
+]

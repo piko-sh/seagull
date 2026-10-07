@@ -1,0 +1,114 @@
+{
+  "by_ids": [
+    {
+      "host": "back\\slash, tab\there, newline\nthere, quote's and \\N",
+      "id": 1
+    },
+    {
+      "host": "beta",
+      "id": 3
+    },
+    {
+      "host": "delta",
+      "id": 5
+    }
+  ],
+  "event_1": {
+    "amount": "10.5",
+    "day": "2024-03-05",
+    "host": "back\\slash, tab\there, newline\nthere, quote's and \\N",
+    "id": 1,
+    "in_stock": true,
+    "note": null,
+    "seen_at": "2024-03-05T09:59:59.999Z"
+  },
+  "event_2": {
+    "amount": "3.1415",
+    "day": "2024-03-05",
+    "host": "alpha",
+    "id": 2,
+    "in_stock": false,
+    "note": "beta",
+    "seen_at": "2024-03-05T10:00:00.25Z"
+  },
+  "event_3": {
+    "amount": "99.9999",
+    "day": "2024-03-06",
+    "host": "beta",
+    "id": 3,
+    "in_stock": true,
+    "note": null,
+    "seen_at": "2024-03-06T08:00:00Z"
+  },
+  "event_5": {
+    "amount": "0.0001",
+    "day": "2024-03-05",
+    "host": "delta",
+    "id": 5,
+    "in_stock": true,
+    "note": "beta",
+    "seen_at": "2024-03-05T13:00:00Z"
+  },
+  "host_or_note": [
+    {
+      "id": 2
+    },
+    {
+      "id": 3
+    },
+    {
+      "id": 5
+    }
+  ],
+  "on_day": [
+    {
+      "id": 1
+    },
+    {
+      "id": 4
+    }
+  ],
+  "page": [
+    {
+      "id": 2
+    },
+    {
+      "id": 3
+    }
+  ],
+  "runtime_builder": [
+    {
+      "host": "delta",
+      "id": 5
+    },
+    {
+      "host": "beta",
+      "id": 3
+    }
+  ],
+  "seen_since": [
+    {
+      "id": 2
+    },
+    {
+      "id": 3
+    },
+    {
+      "id": 4
+    },
+    {
+      "id": 5
+    }
+  ],
+  "without_note": [
+    {
+      "id": 1
+    },
+    {
+      "id": 3
+    },
+    {
+      "id": 4
+    }
+  ]
+}

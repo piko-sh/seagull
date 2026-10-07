@@ -1,0 +1,592 @@
+[
+  {
+    "Command": "many",
+    "Filename": "types.sql",
+    "Line": 1,
+    "Name": "Columns",
+    "OutputColumns": [
+      {
+        "Name": "quoted_mood",
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "Mood",
+          "EnumValues": [
+            "Happy",
+            "Sad"
+          ],
+          "Schema": "public"
+        },
+        "SourceColumn": "quoted_mood",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "plain_mood",
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "calm",
+            "tense",
+            "bored"
+          ],
+          "Schema": "public"
+        },
+        "SourceColumn": "plain_mood",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "shouted_mood",
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "calm",
+            "tense",
+            "bored"
+          ],
+          "Schema": "public"
+        },
+        "SourceColumn": "shouted_mood",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "quoted_moods",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "enum",
+            "EngineName": "Mood",
+            "EnumValues": [
+              "Happy",
+              "Sad"
+            ],
+            "Nullable": true,
+            "Schema": "public"
+          },
+          "EngineName": "Mood[]"
+        },
+        "SourceColumn": "quoted_moods",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "quoted_pair",
+        "SQLType": {
+          "Category": "composite",
+          "EngineName": "Pair",
+          "Schema": "Shapes"
+        },
+        "SourceColumn": "quoted_pair",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "plain_pair",
+        "SQLType": {
+          "Category": "composite",
+          "EngineName": "pair",
+          "Schema": "Shapes"
+        },
+        "SourceColumn": "plain_pair",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Columns, command: many)\nSELECT quoted_mood, plain_mood, shouted_mood, quoted_moods, quoted_pair, plain_pair FROM readings;",
+    "Template": "SELECT ⟨c0:quoted_mood⟩, ⟨c1:plain_mood⟩, ⟨c2:shouted_mood⟩, ⟨c3:quoted_moods⟩, ⟨c4:quoted_pair⟩, ⟨c5:plain_pair⟩ FROM readings;"
+  },
+  {
+    "Command": "one",
+    "Filename": "types.sql",
+    "Line": 4,
+    "Name": "ColonCasts",
+    "OutputColumns": [
+      {
+        "Name": "quoted",
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "Mood",
+          "EnumValues": [
+            "Happy",
+            "Sad"
+          ],
+          "Schema": "public"
+        }
+      },
+      {
+        "Name": "plain",
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "calm",
+            "tense",
+            "bored"
+          ],
+          "Schema": "public"
+        }
+      },
+      {
+        "Name": "shouted",
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "calm",
+            "tense",
+            "bored"
+          ],
+          "Schema": "public"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ColonCasts, command: one)\nSELECT 'Happy'::\"Mood\" AS quoted, 'calm'::mood AS plain, 'bored'::MOOD AS shouted;",
+    "Template": "SELECT ⟨c0 aliased:'Happy'::\"Mood\"⟩ AS quoted, ⟨c1 aliased:'calm'::mood⟩ AS plain, ⟨c2 aliased:'bored'::MOOD⟩ AS shouted;"
+  },
+  {
+    "Command": "one",
+    "Filename": "types.sql",
+    "Line": 7,
+    "Name": "CastFunctions",
+    "OutputColumns": [
+      {
+        "Name": "quoted",
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "Mood",
+          "EnumValues": [
+            "Happy",
+            "Sad"
+          ],
+          "Schema": "public"
+        }
+      },
+      {
+        "Name": "plain",
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "calm",
+            "tense",
+            "bored"
+          ],
+          "Schema": "public"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CastFunctions, command: one)\nSELECT CAST('Sad' AS \"Mood\") AS quoted, CAST('tense' AS mood) AS plain;",
+    "Template": "SELECT ⟨c0 aliased:CAST('Sad' AS \"Mood\")⟩ AS quoted, ⟨c1 aliased:CAST('tense' AS mood)⟩ AS plain;"
+  },
+  {
+    "Command": "one",
+    "Filename": "types.sql",
+    "Line": 10,
+    "Name": "QualifiedCasts",
+    "OutputColumns": [
+      {
+        "Name": "quoted",
+        "SQLType": {
+          "Category": "composite",
+          "EngineName": "Pair",
+          "Schema": "Shapes"
+        }
+      },
+      {
+        "Name": "plain",
+        "SQLType": {
+          "Category": "composite",
+          "EngineName": "pair",
+          "Schema": "Shapes"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: QualifiedCasts, command: one)\nSELECT ROW(1, 2)::\"Shapes\".\"Pair\" AS quoted, ROW('one', 1)::\"Shapes\".pair AS plain;",
+    "Template": "SELECT ⟨c0 aliased:ROW(1, 2)::\"Shapes\".\"Pair\"⟩ AS quoted, ⟨c1 aliased:ROW('one', 1)::\"Shapes\".pair⟩ AS plain;"
+  },
+  {
+    "Command": "many",
+    "Filename": "types.sql",
+    "Line": 13,
+    "Name": "CastParameters",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "quoted_mood",
+        "Number": 1,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "Mood",
+          "EnumValues": [
+            "Happy",
+            "Sad"
+          ],
+          "Schema": "public"
+        }
+      },
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "plain_mood",
+        "Number": 2,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "calm",
+            "tense",
+            "bored"
+          ],
+          "Schema": "public"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CastParameters, command: many)\nSELECT id FROM readings WHERE quoted_mood = $1::\"Mood\" AND plain_mood = CAST($2 AS mood);",
+    "Template": "SELECT ⟨c0:id⟩ FROM readings WHERE quoted_mood = ⟨p0⟩::\"Mood\" AND plain_mood = CAST(⟨p1⟩ AS mood);⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "types.sql",
+    "Line": 16,
+    "Name": "QuotedCastParameter",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "quoted_mood",
+        "Number": 1,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "Mood",
+          "EnumValues": [
+            "Happy",
+            "Sad"
+          ],
+          "Schema": "public"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: QuotedCastParameter, command: many)\nSELECT id FROM readings WHERE quoted_mood = CAST($1 AS \"Mood\");",
+    "Template": "SELECT ⟨c0:id⟩ FROM readings WHERE quoted_mood = CAST(⟨p0⟩ AS \"Mood\");⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "types.sql",
+    "Line": 19,
+    "Name": "FunctionTypes",
+    "OutputColumns": [
+      {
+        "Name": "swapped",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "composite",
+          "EngineName": "Pair",
+          "Schema": "Shapes"
+        }
+      },
+      {
+        "Name": "settled",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "calm",
+            "tense",
+            "bored"
+          ],
+          "Schema": "public"
+        }
+      },
+      {
+        "Name": "unsettled",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "Mood",
+          "EnumValues": [
+            "Happy",
+            "Sad"
+          ],
+          "Schema": "public"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FunctionTypes, command: many)\nSELECT \"Swap\"(quoted_pair) AS swapped, settle(quoted_mood) AS settled, unsettle(plain_mood) AS unsettled FROM readings;",
+    "Template": "SELECT ⟨c0 aliased:\"Swap\"(quoted_pair)⟩ AS swapped, ⟨c1 aliased:settle(quoted_mood)⟩ AS settled, ⟨c2 aliased:unsettle(plain_mood)⟩ AS unsettled FROM readings;"
+  },
+  {
+    "Command": "one",
+    "Filename": "types.sql",
+    "Line": 22,
+    "Name": "FunctionParameters",
+    "OutputColumns": [
+      {
+        "Name": "settled",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "calm",
+            "tense",
+            "bored"
+          ],
+          "Schema": "public"
+        }
+      },
+      {
+        "Name": "unsettled",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "Mood",
+          "EnumValues": [
+            "Happy",
+            "Sad"
+          ],
+          "Schema": "public"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "value",
+        "Number": 1,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "Mood",
+          "EnumValues": [
+            "Happy",
+            "Sad"
+          ],
+          "Schema": "public"
+        }
+      },
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "value_2",
+        "Number": 2,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "calm",
+            "tense",
+            "bored"
+          ],
+          "Schema": "public"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FunctionParameters, command: one)\nSELECT settle($1) AS settled, unsettle($2) AS unsettled;",
+    "Template": "SELECT ⟨c0 aliased:settle(⟨p0⟩)⟩ AS settled, ⟨c1 aliased:unsettle(⟨p1⟩)⟩ AS unsettled;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "types.sql",
+    "Line": 25,
+    "Name": "ArrayCasts",
+    "OutputColumns": [
+      {
+        "Name": "quoted",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "enum",
+            "EngineName": "Mood",
+            "EnumValues": [
+              "Happy",
+              "Sad"
+            ],
+            "Nullable": true,
+            "Schema": "public"
+          },
+          "EngineName": "Mood[]"
+        }
+      },
+      {
+        "Name": "plain",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "enum",
+            "EngineName": "mood",
+            "EnumValues": [
+              "calm",
+              "tense",
+              "bored"
+            ],
+            "Nullable": true,
+            "Schema": "public"
+          },
+          "EngineName": "mood[]"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ArrayCasts, command: one)\nSELECT ARRAY['Happy']::\"Mood\"[] AS quoted, ARRAY['calm']::mood[] AS plain;",
+    "Template": "SELECT ⟨c0 aliased:ARRAY['Happy']::\"Mood\"[]⟩ AS quoted, ⟨c1 aliased:ARRAY['calm']::mood[]⟩ AS plain;"
+  },
+  {
+    "Command": "many",
+    "Filename": "types.sql",
+    "Line": 28,
+    "Name": "ColumnDefinitions",
+    "OutputColumns": [
+      {
+        "Name": "quoted",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "Mood",
+          "EnumValues": [
+            "Happy",
+            "Sad"
+          ],
+          "Schema": "public"
+        },
+        "SourceColumn": "quoted",
+        "SourceQualifier": "x"
+      },
+      {
+        "Name": "plain",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "calm",
+            "tense",
+            "bored"
+          ],
+          "Schema": "public"
+        },
+        "SourceColumn": "plain",
+        "SourceQualifier": "x"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "json",
+        "Number": 1,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ColumnDefinitions, command: many)\nSELECT x.quoted, x.plain FROM json_to_record($1) AS x (quoted \"Mood\", plain mood);",
+    "Template": "SELECT ⟨c0:x.quoted⟩, ⟨c1:x.plain⟩ FROM json_to_record(⟨p0⟩) AS x (quoted \"Mood\", plain mood);⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "types.sql",
+    "Line": 31,
+    "Name": "QuotedBuiltinSpellings",
+    "OutputColumns": [
+      {
+        "Name": "corner",
+        "SQLType": {
+          "Category": "composite",
+          "EngineName": "Point",
+          "Schema": "public"
+        },
+        "SourceColumn": "corner",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "spot",
+        "SQLType": {
+          "Category": "geometric",
+          "EngineName": "point"
+        },
+        "SourceColumn": "spot",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "quoted",
+        "SQLType": {
+          "Category": "composite",
+          "EngineName": "Point",
+          "Schema": "public"
+        }
+      },
+      {
+        "Name": "plain",
+        "SQLType": {
+          "Category": "geometric",
+          "EngineName": "point"
+        }
+      },
+      {
+        "Name": "quoted_lower",
+        "SQLType": {
+          "Category": "geometric",
+          "EngineName": "point"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: QuotedBuiltinSpellings, command: one)\nSELECT corner, spot, ROW(1, 2)::\"Point\" AS quoted, '(1,2)'::point AS plain, '(3,4)'::\"point\" AS quoted_lower\nFROM readings\nWHERE id = $1;",
+    "Template": "SELECT ⟨c0:corner⟩, ⟨c1:spot⟩, ⟨c2 aliased:ROW(1, 2)::\"Point\"⟩ AS quoted, ⟨c3 aliased:'(1,2)'::point⟩ AS plain, ⟨c4 aliased:'(3,4)'::\"point\"⟩ AS quoted_lower\\nFROM readings\\nWHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

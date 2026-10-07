@@ -1,0 +1,88 @@
+[
+  {
+    "Command": "many",
+    "Filename": "items.sql",
+    "Line": 1,
+    "Name": "ListItems",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "code",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "code",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "name",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListItems, command: many)\nSELECT * FROM items;",
+    "Template": "SELECT ⟨star 0=items.id 1=items.code 2=items.name:*⟩ FROM items;"
+  },
+  {
+    "Command": "many",
+    "Filename": "items.sql",
+    "Line": 4,
+    "Name": "ListRenamedView",
+    "OutputColumns": [
+      {
+        "Name": "item_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "item_id",
+        "SourceQualifier": "renamed_view",
+        "SourceTable": "renamed_view"
+      },
+      {
+        "Name": "item_code",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "item_code",
+        "SourceQualifier": "renamed_view",
+        "SourceTable": "renamed_view"
+      },
+      {
+        "Name": "item_name",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "item_name",
+        "SourceQualifier": "renamed_view",
+        "SourceTable": "renamed_view"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListRenamedView, command: many)\nSELECT * FROM renamed_view;",
+    "Template": "SELECT ⟨star 0=renamed_view.item_id 1=renamed_view.item_code 2=renamed_view.item_name:*⟩ FROM renamed_view;"
+  }
+]

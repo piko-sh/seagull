@@ -1,0 +1,47 @@
+[
+  {
+    "Command": "many",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "LatestPerCat",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "t",
+        "SourceTable": "t"
+      },
+      {
+        "Name": "cat",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "cat",
+        "SourceQualifier": "t",
+        "SourceTable": "t"
+      },
+      {
+        "Name": "ts",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "ts",
+        "SourceQualifier": "t",
+        "SourceTable": "t"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(LatestPerCat, many)\nSELECT id, cat, ts FROM t ORDER BY cat, ts DESC LIMIT 3 BY cat;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:cat⟩, ⟨c2:ts⟩ FROM t ORDER BY cat, ts DESC LIMIT 3 BY cat;"
+  }
+]

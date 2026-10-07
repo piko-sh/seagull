@@ -1,0 +1,4 @@
+{
+  "description": "A relation named where a value is expected is its current row, a STRUCT of its columns, which to_json and row_to_json accept; a literal key reads the field of a struct the query builds; and struct_insert gives the struct it is given with the new fields.",
+  "expectedDiagnosticCount": 0
+}

@@ -1,0 +1,4 @@
+{
+  "description": "Native ClickHouse reads an ARRAY JOIN of a Map as one Tuple(keys K, values V) per entry into a struct, through its alias and in place, a LEFT ARRAY JOIN gives an empty Map the tuple's default; a select-list alias shadows the column of its name in later items and in WHERE and ORDER BY while a qualified name reads the column; a map literal keyed by booleans is read in INSERT ... VALUES.",
+  "emitter": "native"
+}

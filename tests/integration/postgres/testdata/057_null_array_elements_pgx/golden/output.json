@@ -1,0 +1,61 @@
+{
+  "literal": [
+    {
+      "id": 1,
+      "pair": [
+        "a",
+        null
+      ]
+    },
+    {
+      "id": 2,
+      "pair": [
+        "b",
+        null
+      ]
+    }
+  ],
+  "notes": {
+    "notes": [
+      "calm",
+      null
+    ]
+  },
+  "readings": [
+    {
+      "id": 1,
+      "label": "a",
+      "note": "calm",
+      "scores": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": 2,
+      "label": "b",
+      "note": null,
+      "scores": [
+        3,
+        null
+      ]
+    }
+  ],
+  "scores": [
+    {
+      "id": 1,
+      "scores": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": 2,
+      "scores": [
+        3,
+        null
+      ]
+    }
+  ],
+  "strict_scores": "error: can't scan into dest[1] (col: scores): failed to scan array element 1: cannot scan NULL into *int32"
+}

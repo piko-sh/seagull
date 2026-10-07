@@ -1,0 +1,3 @@
+{
+  "description": "Runtime builder error values: rejected columns, operators and directions return exported errors that callers match with errors.Is"
+}

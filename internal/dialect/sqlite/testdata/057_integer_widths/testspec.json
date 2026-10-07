@@ -1,0 +1,4 @@
+{
+  "description": "Every SQLite integer is a signed 64-bit integer: a plain INTEGER, an INTEGER foreign key, an INT and a SMALLINT carry width 64 like the rowid alias; the rowid, counts and the LIMIT parameter are integers of known width; ->> yields a value whose type depends on the document.",
+  "expectedDiagnosticCount": 0
+}

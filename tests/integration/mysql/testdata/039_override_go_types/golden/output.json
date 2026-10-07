@@ -1,0 +1,105 @@
+{
+  "cells": {
+    "batch": "ok",
+    "exec": "ok",
+    "parameter amount": "ok",
+    "parameter flag": "ok",
+    "parameter label": "ok",
+    "parameter note": "ok",
+    "parameter optional label": "ok",
+    "parameter payload": "ok",
+    "parameter ratio": "ok",
+    "scan amount": "ok",
+    "scan flag": "ok",
+    "scan label": "ok",
+    "scan note": "ok",
+    "scan optional amount": "ok",
+    "scan optional amount null": "ok",
+    "scan optional label": "ok",
+    "scan optional label null": "ok",
+    "scan payload": "ok",
+    "scan ratio": "ok",
+    "scan row": "ok",
+    "written note": "ok"
+  },
+  "probes": [
+    {
+      "amount": 7,
+      "flag": true,
+      "id": 1,
+      "label": "alpha",
+      "note": {
+        "n": 1
+      },
+      "optional_amount": 9,
+      "optional_label": "beta",
+      "payload": "AQ==",
+      "ratio": 2.5
+    },
+    {
+      "amount": 8,
+      "flag": false,
+      "id": 2,
+      "label": "gamma",
+      "note": {
+        "n": 2
+      },
+      "optional_amount": 9,
+      "optional_label": "beta",
+      "payload": "Ag==",
+      "ratio": 3.5
+    },
+    {
+      "amount": 9,
+      "flag": true,
+      "id": 3,
+      "label": "delta",
+      "note": {
+        "n": 3
+      },
+      "optional_amount": null,
+      "optional_label": null,
+      "payload": "Aw==",
+      "ratio": 4.5
+    },
+    {
+      "amount": 110,
+      "flag": true,
+      "id": 11,
+      "label": "written 11",
+      "note": {
+        "n": 11
+      },
+      "optional_amount": 90,
+      "optional_label": "theta",
+      "payload": "Cw==",
+      "ratio": 11.25
+    },
+    {
+      "amount": 120,
+      "flag": true,
+      "id": 12,
+      "label": "written 12",
+      "note": {
+        "n": 12
+      },
+      "optional_amount": 90,
+      "optional_label": "theta",
+      "payload": "DA==",
+      "ratio": 12.25
+    },
+    {
+      "amount": 130,
+      "flag": true,
+      "id": 13,
+      "label": "written 13",
+      "note": {
+        "n": 13
+      },
+      "optional_amount": null,
+      "optional_label": null,
+      "payload": "DQ==",
+      "ratio": 13.25
+    }
+  ]
+}

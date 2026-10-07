@@ -1,0 +1,4 @@
+{
+  "description": "DATE 'yyyy-mm-dd' and TIMESTAMP 'yyyy-mm-dd hh:mm:ss', in any case, are the Date and DateTime literals ClickHouse 25.4 reads, in the select list and in WHERE, rather than a syntax error",
+  "expectedDiagnosticCount": 0
+}

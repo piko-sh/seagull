@@ -1,0 +1,4 @@
+{
+  "description": "An INSERT ... SELECT whose WHERE clause holds a subquery reading the selecting query's alias: NOT EXISTS correlated with a.id and a scalar count(*) correlated the same way analyse without diagnostics and insert the rows SQLite selects; run twice, the NOT EXISTS insert adds nothing the second time. Through database/sql on modernc.org/sqlite and, through sqlite_cgo, mattn/go-sqlite3.",
+  "expectedDiagnostics": []
+}

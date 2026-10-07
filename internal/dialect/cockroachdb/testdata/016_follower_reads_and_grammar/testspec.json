@@ -1,0 +1,16 @@
+{
+  "description": "CockroachDB: AS OF SYSTEM TIME after the FROM clause, a join and a follower read; a table's column alias list; a VALUES arm; a cast LIMIT; character_length and date(), which CockroachDB has, and date_add and txid_current, which it lacks and Seagull withholds.",
+  "expectedDiagnosticCount": 2,
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "Q005",
+      "messageContains": "date_add"
+    },
+    {
+      "severity": "warning",
+      "code": "Q005",
+      "messageContains": "txid_current"
+    }
+  ]
+}

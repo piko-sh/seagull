@@ -1,0 +1,4 @@
+{
+  "description": "Relations derived from DDL against PostgreSQL through database/sql: a partition, a partition of a partition, an attached table and a detached partition are tables a query can read, each partition holding its parent's columns, its element list's NOT NULL and the column the parent gains later; a sequence can be read as a relation; CREATE OR REPLACE TRIGGER and CREATE CONSTRAINT TRIGGER replay. The introspection parity check finds the partitions, with their parents, as the replay does.",
+  "expectedDiagnostics": []
+}

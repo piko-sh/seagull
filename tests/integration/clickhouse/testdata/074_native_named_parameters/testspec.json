@@ -1,0 +1,4 @@
+{
+  "description": "Native clickhouse-go emitter binding {name:Type} placeholders: every value binds as clickhouse.Named under its p_-prefixed name (reserved keywords limit and offset included), strings keep backslashes, tabs and newlines, Date, DateTime64, Decimal, nullable and array parameters round-trip, a repeated placeholder binds once, the columnar batch still appends typed values, and the runtime builder binds its base parameter and appended predicates positionally.",
+  "emitter": "native"
+}

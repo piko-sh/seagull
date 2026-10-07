@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q038",
+    "Column": 31,
+    "EndColumn": 69,
+    "EndLine": 2,
+    "Filename": "users.sql",
+    "Line": 2,
+    "Message": "sgl.column: keyword arguments \"type\" and \"go_type\" are mutually exclusive; pick one",
+    "Severity": "error"
+  }
+]

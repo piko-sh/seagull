@@ -1,0 +1,51 @@
+[
+  {
+    "Command": "many",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "Family",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "family",
+        "SourceTable": "family"
+      },
+      {
+        "Name": "generation",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        },
+        "SourceColumn": "generation",
+        "SourceQualifier": "family",
+        "SourceTable": "family"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "root",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(Family, many)\nWITH RECURSIVE family AS (\n    SELECT id, 0 AS generation FROM gulls WHERE id = {root:UInt64}\n    UNION ALL\n    SELECT gulls.id, family.generation + 1 FROM gulls JOIN family ON gulls.parent_id = family.id\n)\nSELECT id, generation FROM family;",
+    "Template": "WITH RECURSIVE family AS (\\n    SELECT id, 0 AS generation FROM gulls WHERE id = ⟨p0 UInt64⟩\\n    UNION ALL\\n    SELECT gulls.id, family.generation + 1 FROM gulls JOIN family ON gulls.parent_id = family.id\\n)\\nSELECT ⟨c0:id⟩, ⟨c1:generation⟩ FROM family;⟨arguments p0⟩"
+  }
+]

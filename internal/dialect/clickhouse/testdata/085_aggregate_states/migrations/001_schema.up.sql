@@ -1,0 +1,1 @@
+CREATE TABLE totals (species String, a AggregateFunction(uniq, String), b AggregateFunction(sum, UInt64), c AggregateFunction(max, UInt32), d AggregateFunction(count)) ENGINE = AggregatingMergeTree() ORDER BY species;

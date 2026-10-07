@@ -1,0 +1,21 @@
+[
+  {
+    "Command": "one",
+    "Filename": "count_subquery.sql",
+    "Line": 1,
+    "Name": "CountDistinct",
+    "OutputColumns": [
+      {
+        "Name": "cnt",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CountDistinct, command: one)\nSELECT COUNT(*) AS cnt FROM (SELECT DISTINCT col FROM foo) sub;",
+    "Template": "SELECT ⟨c0 aliased:COUNT(*)⟩ AS cnt FROM (SELECT DISTINCT col FROM foo) sub;"
+  }
+]

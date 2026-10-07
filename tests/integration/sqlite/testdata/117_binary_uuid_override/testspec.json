@@ -1,0 +1,12 @@
+{
+  "description": "A google/uuid UUID override on a binary key column binds the 16 bytes its MarshalBinary writes through sglDriverBinary, so the row stores 16 bytes and a lookup by the UUID finds it.",
+  "expectedDiagnostics": [],
+  "typeOverrides": [
+    {
+      "SQLTypeName": "",
+      "Column": "tokens.id",
+      "GoPackage": "github.com/google/uuid",
+      "GoName": "UUID"
+    }
+  ]
+}

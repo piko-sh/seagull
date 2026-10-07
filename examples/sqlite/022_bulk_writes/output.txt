@@ -1,0 +1,4 @@
+0 readings sent in 0 statements
+2880 readings sent in 12 statements
+harbour  1440 readings, 24 with a note
+pier     1440 readings, 24 with a note

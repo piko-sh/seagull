@@ -1,0 +1,4 @@
+{
+  "description": "Native ClickHouse predicates typed as the engine types them: a comparison, IN, BETWEEN, IS NULL and EXISTS are UInt8, Nullable(UInt8) over a Nullable operand, and AND and OR over a Bool are Bool, each scanned into the Go type it maps to",
+  "emitter": "native"
+}

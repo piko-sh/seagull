@@ -1,0 +1,1 @@
+{"description": "ClickHouse leaves ALIAS, MATERIALIZED and EPHEMERAL columns out of SELECT * and t.*, and out of the table model; a query may still name an ALIAS or MATERIALIZED column, and an INSERT may give an EPHEMERAL one"}

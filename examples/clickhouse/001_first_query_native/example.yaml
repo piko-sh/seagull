@@ -1,0 +1,28 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: The tasks example over a native clickhouse-go connection; the same queries generate methods on driver.Conn, migrated first through the driver's database/sql adapter.
+differs:
+  - "sgl.yaml sets go.driver: clickhouse, so store.New takes a native connection (the DBTX subset of driver.Conn) instead of *sql.DB"
+  - "Parameters bind as clickhouse.Named(\"p_<name>\", ...), formatted as text by the generated clickhouse_values.go"
+  - The migrator runs on database/sql, so main.go migrates through clickhouse.OpenDB and then opens clickhouse.Open with the same options
+  - "No WithTx, RunInTx or NewWithReplica: ClickHouse has no transactions and the native emitter has no replica routing"
+  - "execrows and execresult are refused, as the native driver reports no affected rows; CompleteTask is asyncexec"
+entry: {file: db/queries/tasks.sql, query: CreateTask}
+live: "no"
+test: integration

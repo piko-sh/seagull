@@ -1,0 +1,3 @@
+{
+  "description": "Runtime builder Count with base-query parameters: the CountSQL constant is rewritten like the main query (directive header stripped, named parameters numbered) and binds the same seeded arguments, with and without appended Where predicates"
+}

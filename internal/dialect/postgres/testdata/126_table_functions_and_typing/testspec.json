@@ -1,0 +1,4 @@
+{
+  "description": "Table functions and typing: a function a migration creates is a FROM item whatever it returns, a set of a table's rows, one row of a table's or a composite type, several output parameters, or one value named by its only output parameter or after the function, and a built-in scalar function or a SQL value function such as CURRENT_DATE gives one column; CALL of a procedure with an output parameter returns its row; json(b)_populate_record(set) gives the columns of its first argument's row type; an unnest of several arrays WITH ORDINALITY is typed; nested array literals and ARRAY(subquery) are arrays of their elements; a composite field selection takes the type the composite type declares; named placeholders are numbered after the numbered ones; tsvector is a text type sent in another binary form.",
+  "expectedDiagnosticCount": 0
+}

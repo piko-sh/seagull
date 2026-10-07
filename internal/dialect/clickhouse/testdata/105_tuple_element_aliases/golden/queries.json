@@ -1,0 +1,285 @@
+[
+  {
+    "Command": "many",
+    "Filename": "gulls.sql",
+    "Line": 1,
+    "Name": "BuiltTuples",
+    "OutputColumns": [
+      {
+        "Name": "called",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "Tuple",
+          "StructFields": [
+            {
+              "Name": "_1",
+              "Positional": true,
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt8",
+                "Unsigned": true,
+                "Width": 8
+              }
+            },
+            {
+              "Name": "_2",
+              "Positional": true,
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "String"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "Name": "parenthesised",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "Tuple",
+          "StructFields": [
+            {
+              "Name": "_1",
+              "Positional": true,
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt64",
+                "Unsigned": true,
+                "Width": 64
+              }
+            },
+            {
+              "Name": "_2",
+              "Positional": true,
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "String"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "Name": "single",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "Tuple",
+          "StructFields": [
+            {
+              "Name": "_1",
+              "Positional": true,
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt64",
+                "Unsigned": true,
+                "Width": 64
+              }
+            }
+          ]
+        }
+      },
+      {
+        "Name": "partly",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "Tuple",
+          "StructFields": [
+            {
+              "Name": "_1",
+              "Positional": true,
+              "SQLType": {
+                "Category": "float",
+                "EngineName": "Float64",
+                "Nullable": true,
+                "Width": 64
+              }
+            },
+            {
+              "Name": "_2",
+              "Positional": true,
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "String"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(BuiltTuples, many)\nSELECT\n    tuple(1 AS rank, 'gull' AS kind) AS called,\n    (id AS key, name AS label) AS parenthesised,\n    tuple(id AS key) AS single,\n    tuple(wingspan AS span, name) AS partly\nFROM gulls ORDER BY id;",
+    "Template": "SELECT\\n    ⟨c0 aliased:tuple(1 AS rank, 'gull' AS kind)⟩ AS called,\\n    ⟨c1 aliased:(id AS key, name AS label)⟩ AS parenthesised,\\n    ⟨c2 aliased:tuple(id AS key)⟩ AS single,\\n    ⟨c3 aliased:tuple(wingspan AS span, name)⟩ AS partly\\nFROM gulls ORDER BY id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "gulls.sql",
+    "Line": 9,
+    "Name": "NestedTuples",
+    "OutputColumns": [
+      {
+        "Name": "listed",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "struct",
+            "EngineName": "Tuple",
+            "StructFields": [
+              {
+                "Name": "_1",
+                "Positional": true,
+                "SQLType": {
+                  "Category": "integer",
+                  "EngineName": "UInt64",
+                  "Unsigned": true,
+                  "Width": 64
+                }
+              },
+              {
+                "Name": "_2",
+                "Positional": true,
+                "SQLType": {
+                  "Category": "text",
+                  "EngineName": "String"
+                }
+              }
+            ]
+          },
+          "EngineName": "Array"
+        }
+      },
+      {
+        "Name": "keyed",
+        "SQLType": {
+          "Category": "map",
+          "ElementType": {
+            "Category": "struct",
+            "EngineName": "Tuple",
+            "StructFields": [
+              {
+                "Name": "_1",
+                "Positional": true,
+                "SQLType": {
+                  "Category": "integer",
+                  "EngineName": "UInt64",
+                  "Unsigned": true,
+                  "Width": 64
+                }
+              },
+              {
+                "Name": "_2",
+                "Positional": true,
+                "SQLType": {
+                  "Category": "text",
+                  "EngineName": "String"
+                }
+              }
+            ]
+          },
+          "EngineName": "Map",
+          "KeyType": {
+            "Category": "text",
+            "EngineName": "String"
+          }
+        }
+      },
+      {
+        "Name": "named",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "Tuple",
+          "StructFields": [
+            {
+              "Name": "key",
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt64",
+                "Unsigned": true,
+                "Width": 64
+              }
+            },
+            {
+              "Name": "label",
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "String"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(NestedTuples, many)\nSELECT\n    [tuple(id AS key, name AS label)] AS listed,\n    map(name, tuple(id AS key, 'gull' AS kind)) AS keyed,\n    CAST(tuple(id, name) AS Tuple(key UInt64, label String)) AS named\nFROM gulls WHERE id = {id:UInt64};",
+    "Template": "SELECT\\n    ⟨c0 aliased:[tuple(id AS key, name AS label)]⟩ AS listed,\\n    ⟨c1 aliased:map(name, tuple(id AS key, 'gull' AS kind))⟩ AS keyed,\\n    ⟨c2 aliased:CAST(tuple(id, name) AS Tuple(key UInt64, label String))⟩ AS named\\nFROM gulls WHERE id = ⟨p0 UInt64⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "gulls.sql",
+    "Line": 16,
+    "Name": "AliasedArguments",
+    "OutputColumns": [
+      {
+        "Name": "next",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "doubled",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "pair",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "UInt8",
+            "Unsigned": true,
+            "Width": 8
+          },
+          "EngineName": "Array"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(AliasedArguments, one)\nSELECT plus(id AS key, 1) AS next, (id + 1 AS bumped) * 2 AS doubled, [1 AS first, 2] AS pair FROM gulls WHERE id = {id:UInt64};",
+    "Template": "SELECT ⟨c0 aliased:plus(id AS key, 1)⟩ AS next, ⟨c1 aliased:(id + 1 AS bumped) * 2⟩ AS doubled, ⟨c2 aliased:[1 AS first, 2]⟩ AS pair FROM gulls WHERE id = ⟨p0 UInt64⟩;⟨arguments p0⟩"
+  }
+]

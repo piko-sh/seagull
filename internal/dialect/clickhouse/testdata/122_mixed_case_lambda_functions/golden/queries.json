@@ -1,0 +1,46 @@
+[
+  {
+    "Command": "many",
+    "Filename": "compute.sql",
+    "Line": 1,
+    "Name": "Compute",
+    "OutputColumns": [
+      {
+        "Name": "twice",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "text_form",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(Compute, many)\nSELECT Doubled(value) AS twice, doubled(value) AS text_form FROM readings;",
+    "Template": "SELECT ⟨c0 aliased:Doubled(value)⟩ AS twice, ⟨c1 aliased:doubled(value)⟩ AS text_form FROM readings;"
+  },
+  {
+    "Command": "many",
+    "Filename": "compute.sql",
+    "Line": 4,
+    "Name": "Shouted",
+    "OutputColumns": [
+      {
+        "Name": "shouted",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(Shouted, many)\nSELECT DOUBLED(value) AS shouted FROM readings;",
+    "Template": "SELECT ⟨c0 aliased:DOUBLED(value)⟩ AS shouted FROM readings;"
+  }
+]

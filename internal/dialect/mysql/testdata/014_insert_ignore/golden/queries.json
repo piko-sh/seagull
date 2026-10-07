@@ -1,0 +1,29 @@
+[
+  {
+    "Command": "exec",
+    "Filename": "add_email.sql",
+    "InsertColumns": [
+      "email"
+    ],
+    "InsertTarget": {
+      "Name": "unique_emails"
+    },
+    "Line": 1,
+    "Name": "AddEmail",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "email",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: AddEmail, command: exec)\nINSERT IGNORE INTO unique_emails (email) VALUES (?);",
+    "Template": "INSERT IGNORE INTO unique_emails (email) VALUES ⟨values:(⟨p0⟩)⟩;⟨arguments p0⟩"
+  }
+]

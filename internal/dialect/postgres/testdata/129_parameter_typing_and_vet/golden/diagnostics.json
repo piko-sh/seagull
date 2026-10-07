@@ -1,0 +1,58 @@
+[
+  {
+    "Code": "Q001",
+    "Column": 1,
+    "Filename": "vet.sql",
+    "Line": 1,
+    "Message": "unknown column \"nickname\" in table \"authors\"",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q001",
+    "Column": 1,
+    "Filename": "vet.sql",
+    "Line": 4,
+    "Message": "unknown column \"writer\"",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q003",
+    "Column": 1,
+    "Filename": "vet.sql",
+    "Line": 4,
+    "Message": "unknown table or view \"shelves\" in schema \"public\"",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q001",
+    "Column": 67,
+    "EndColumn": 75,
+    "EndLine": 8,
+    "Filename": "vet.sql",
+    "Line": 8,
+    "Message": "unknown table or alias \"found\"",
+    "Severity": "warning",
+    "Suggestion": "found"
+  },
+  {
+    "Code": "Q001",
+    "Column": 79,
+    "EndColumn": 83,
+    "EndLine": 11,
+    "Filename": "vet.sql",
+    "Line": 11,
+    "Message": "unknown column \"nmae\"",
+    "Severity": "warning",
+    "Suggestion": "name"
+  },
+  {
+    "Code": "Q004",
+    "Column": 1,
+    "EndColumn": 43,
+    "EndLine": 14,
+    "Filename": "vet.sql",
+    "Line": 14,
+    "Message": "parameter name is used both where text and where int8 is expected, which the engine converts between only explicitly; the generated code takes text, so a value of the other type fails; cast one use, or pass the value as two parameters",
+    "Severity": "warning"
+  }
+]

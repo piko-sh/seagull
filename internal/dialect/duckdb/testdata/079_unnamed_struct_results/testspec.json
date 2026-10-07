@@ -1,0 +1,4 @@
+{
+  "description": "ROW(...) and a parenthesised list of values build a STRUCT whose fields have no names, which duckdb-go cannot read (it fails with \"empty name\" before any row is scanned), so a column a query returns that holds one, directly, in a list or in a named struct, through a star, or in RETURNING, is refused with an error at its select-list item; comparing such structs inside the query is fine.",
+  "expectedDiagnosticCount": 6
+}

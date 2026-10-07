@@ -1,0 +1,28 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: A main package calls cli.Main with WithDialect, WithEmitter and WithDriver to build an sgl whose SQLite has tighter parser limits, whose database/sql emitter also writes query_index.go, and which links the pure-Go SQLite driver.
+differs:
+  - "it replaces the stock sqlite dialect and database/sql emitter by registering the same names, so sgl.yaml stays dialect: sqlite with the default driver"
+  - "the dialect factory receives dialect_options from sgl.yaml as dialects.Options; max_parse_depth: 128 overrides this sgl's default of 64"
+  - "the emitter factory receives go.prepared through cli.EmitterRequest; the stock emitter picks its driver profile from the dialect it is given"
+  - "cli links no database driver; importing modernc.org/sqlite and WithDriver(\"sqlite\", \"sqlite\") let migrate, seed and schema diff connect"
+  - "the test runs generate --check and vet --strict through cli.MainContext with the same options"
+entry: {file: db/queries/tasks.sql, query: ListTasks}
+live: "no"
+test: generate-only

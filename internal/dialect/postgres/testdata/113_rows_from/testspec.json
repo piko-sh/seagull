@@ -1,0 +1,4 @@
+{
+  "description": "ROWS FROM (f(...), g(...)) reads each function's columns in turn, a one-column function's named after the function, a record function's from its own column definition list, every one of them NULL where a shorter function is padded, then the ordinality column; the alias column list renames them by position and the alias alone names none; one function reads as the function alone; an unnest of several arrays reads as ROWS FROM of one unnest per array.",
+  "expectedDiagnosticCount": 0
+}

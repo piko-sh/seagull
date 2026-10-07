@@ -1,0 +1,56 @@
+{
+  "counted": {
+    "bookings": 1
+  },
+  "read": [
+    {
+      "days_after": 1,
+      "days_since_new_year": 31,
+      "earlier_text": "09:00:00",
+      "extracted_year": 2024,
+      "following_date": "2024-02-02T00:00:00Z",
+      "formatted": "2024/01",
+      "id": 1,
+      "later_opening": "10:30:00",
+      "literal_epoch": "1704067200",
+      "literal_hour": 10,
+      "literal_month": 3,
+      "month_end": "2024-01-31T00:00:00Z",
+      "next_day": "2024-02-01",
+      "next_hour": "2024-01-31 01:00:00.000000",
+      "number_year": 2024,
+      "precise_epoch": "1706781600.250",
+      "previous_day": "2024-02-29",
+      "text_date": "2024-01-31T00:00:00Z",
+      "text_epoch": "1706659200.000000",
+      "text_timestamp": "2024-01-31T00:00:00Z",
+      "text_year": 2024
+    },
+    {
+      "days_after": null,
+      "days_since_new_year": 59,
+      "earlier_text": "09:00:00",
+      "extracted_year": null,
+      "following_date": "2024-03-01T00:00:00Z",
+      "formatted": null,
+      "id": 2,
+      "later_opening": "19:00:00",
+      "literal_epoch": "1704067200",
+      "literal_hour": 10,
+      "literal_month": 3,
+      "month_end": null,
+      "next_day": null,
+      "next_hour": null,
+      "number_year": 2024,
+      "precise_epoch": "1709251200.000",
+      "previous_day": "2024-02-29",
+      "text_date": null,
+      "text_epoch": null,
+      "text_timestamp": null,
+      "text_year": null
+    }
+  ],
+  "shifted": {
+    "shifted": "2024-02-29 12:00:00"
+  }
+}

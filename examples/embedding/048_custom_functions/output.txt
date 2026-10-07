@@ -1,0 +1,9 @@
+custom functions declared: 0
+  articles.sql:5: warning[Q005]: unknown function "slugify"
+  articles.sql:9: warning[Q005]: unknown function "slugify"
+  ListArticleSlugs.slug: type unknown, nullable true
+custom functions declared: 1
+  ListArticleSlugs.slug: type text, nullable false
+1	Gulls of the North Sea       gulls-of-the-north-sea
+2	Why Chips?  A Field Guide    why-chips-a-field-guide
+why-chips-a-field-guide is article 2

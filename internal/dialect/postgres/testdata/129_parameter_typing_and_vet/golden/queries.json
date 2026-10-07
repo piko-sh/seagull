@@ -1,0 +1,590 @@
+[
+  {
+    "Command": "many",
+    "Filename": "typing.sql",
+    "Line": 1,
+    "Name": "FilterAuthors",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "authors",
+        "SourceTable": "authors"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "authors",
+        "SourceTable": "authors"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "name",
+        "Nullable": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "email",
+        "Nullable": true,
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FilterAuthors, command: many)\nSELECT id, name FROM authors WHERE name = COALESCE($1, name) AND email = COALESCE(:email, email);",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩ FROM authors WHERE name = COALESCE(⟨p0⟩, name) AND email = COALESCE(⟨p1⟩, email);⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "typing.sql",
+    "Line": 4,
+    "Name": "RenameAuthor",
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "name",
+        "Nullable": true,
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "bio",
+        "Nullable": true,
+        "Number": 3,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: RenameAuthor, command: exec)\nUPDATE authors SET name = COALESCE($2, name), bio = COALESCE($3, bio) WHERE id = $1;",
+    "Template": "UPDATE authors SET name = COALESCE(⟨p1⟩, name), bio = COALESCE(⟨p2⟩, bio) WHERE id = ⟨p0⟩;⟨arguments p0 p1 p2⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "typing.sql",
+    "Line": 7,
+    "Name": "AuthorsByIDs",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "authors",
+        "SourceTable": "authors"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "authors",
+        "SourceTable": "authors"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "id",
+        "NonNullElements": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int8",
+            "Width": 64
+          },
+          "EngineName": "int8[]"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AuthorsByIDs, command: many)\nSELECT id, name FROM authors WHERE id = ANY($1);",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩ FROM authors WHERE id = ANY(⟨p0⟩);⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "typing.sql",
+    "Line": 10,
+    "Name": "AuthorsOutside",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "authors",
+        "SourceTable": "authors"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "authors",
+        "SourceTable": "authors"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "id",
+        "NonNullElements": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int8",
+            "Width": 64
+          },
+          "EngineName": "int8[]"
+        }
+      },
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "email",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AuthorsOutside, command: many)\nSELECT id, name FROM authors WHERE id \u003c\u003e ALL($1) AND lower(email) = lower($2);",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩ FROM authors WHERE id \u003c\u003e ALL(⟨p0⟩) AND lower(email) = lower(⟨p1⟩);⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "typing.sql",
+    "Line": 13,
+    "Name": "BooksBetween",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "books",
+        "SourceTable": "books"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "books",
+        "SourceTable": "books"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "published_from",
+        "Number": 1,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "published_to",
+        "Number": 2,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 3,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: BooksBetween, command: many)\nSELECT id, title FROM books WHERE published BETWEEN $1 AND $2 AND $3 \u003c id;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:title⟩ FROM books WHERE published BETWEEN ⟨p0⟩ AND ⟨p1⟩ AND ⟨p2⟩ \u003c id;⟨arguments p0 p1 p2⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "typing.sql",
+    "Line": 16,
+    "Name": "AuthorUnlessExcluded",
+    "OutputColumns": [
+      {
+        "Name": "kept",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "email",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AuthorUnlessExcluded, command: many)\nSELECT NULLIF(id, $1) AS kept FROM authors WHERE NULLIF($2, '') = email;",
+    "Template": "SELECT ⟨c0 aliased:NULLIF(id, ⟨p0⟩)⟩ AS kept FROM authors WHERE NULLIF(⟨p1⟩, '') = email;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "typing.sql",
+    "Line": 19,
+    "Name": "Flagged",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "authors",
+        "SourceTable": "authors"
+      },
+      {
+        "Name": "shown",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      },
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "p2",
+        "Number": 2,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      },
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "p3",
+        "Number": 3,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Flagged, command: many)\nSELECT id, CASE WHEN $1 THEN name ELSE '' END AS shown FROM authors WHERE $2 AND NOT $3;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:CASE WHEN ⟨p0⟩ THEN name ELSE '' END⟩ AS shown FROM authors WHERE ⟨p1⟩ AND NOT ⟨p2⟩;⟨arguments p0 p1 p2⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "typing.sql",
+    "InsertTarget": {
+      "Name": "authors"
+    },
+    "Line": 22,
+    "Name": "AddAuthor",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "email",
+        "Nullable": true,
+        "Number": 3,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: AddAuthor, command: exec)\nINSERT INTO authors VALUES ($1, $2, $3);",
+    "Template": "INSERT INTO authors VALUES ⟨values:(⟨p0⟩, ⟨p1⟩, ⟨p2⟩)⟩;⟨arguments p0 p1 p2⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "typing.sql",
+    "Line": 25,
+    "Name": "Lock",
+    "OutputColumns": [
+      {
+        "Name": "pg_advisory_lock",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown",
+          "EngineName": "void"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "key",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: Lock, command: exec)\nSELECT pg_advisory_lock($1);",
+    "Template": "SELECT ⟨c0:pg_advisory_lock(⟨p0⟩)⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "vet.sql",
+    "InsertColumns": [
+      "id",
+      "nickname"
+    ],
+    "InsertTarget": {
+      "Name": "authors"
+    },
+    "Line": 1,
+    "Name": "MissingTarget",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: MissingTarget, command: exec)\nINSERT INTO authors (id, nickname) VALUES ($1, 'x');",
+    "Template": "INSERT INTO authors (id, nickname) VALUES ⟨values:(⟨p0⟩, 'x')⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "vet.sql",
+    "Line": 4,
+    "Name": "NestedUnknown",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "authors",
+        "SourceTable": "authors"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: NestedUnknown, command: many)\nSELECT id FROM authors WHERE id IN (SELECT writer FROM books) AND EXISTS (SELECT 1 FROM shelves);",
+    "Template": "SELECT ⟨c0:id⟩ FROM authors WHERE id IN (SELECT writer FROM books) AND EXISTS (SELECT 1 FROM shelves);"
+  },
+  {
+    "Command": "many",
+    "Filename": "vet.sql",
+    "Line": 7,
+    "Name": "CTEOutsideFrom",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "authors",
+        "SourceTable": "authors"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CTEOutsideFrom, command: many)\nWITH found AS (SELECT id FROM books) SELECT id FROM authors WHERE found.id = authors.id;",
+    "Template": "WITH found AS (SELECT id FROM books) SELECT ⟨c0:id⟩ FROM authors WHERE found.id = authors.id;"
+  },
+  {
+    "Command": "exec",
+    "Filename": "vet.sql",
+    "InsertColumns": [
+      "id",
+      "name"
+    ],
+    "InsertTarget": {
+      "Name": "authors"
+    },
+    "Line": 10,
+    "Name": "UpsertTypo",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: UpsertTypo, command: exec)\nINSERT INTO authors (id, name) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET nmae = EXCLUDED.name;",
+    "Template": "INSERT INTO authors (id, name) VALUES ⟨values:(⟨p0⟩, ⟨p1⟩)⟩ ON CONFLICT (id) DO UPDATE SET nmae = EXCLUDED.name;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "vet.sql",
+    "Line": 13,
+    "Name": "RenameByName",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: RenameByName, command: exec)\nUPDATE authors SET name = $1 WHERE id = $1;",
+    "Template": "UPDATE authors SET name = ⟨p0⟩ WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

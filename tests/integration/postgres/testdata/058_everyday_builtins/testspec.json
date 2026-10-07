@@ -1,0 +1,4 @@
+{
+  "description": "Everyday PostgreSQL built-ins generate without warnings and read back as PostgreSQL returns them: quoted literals passed as an interval, a timestamp or jsonb and a numeric passed as double precision; the regular expression family, digests and encodings; the JSON path queries, jsonb_set with a text[] path, JSON set-returning functions and generate_series in a select list; any_value and the regression aggregates; gen_random_uuid without pgcrypto; an advisory lock taken by an exec of a void call; range bounds; and the enum support functions.",
+  "expectedDiagnostics": []
+}

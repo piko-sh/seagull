@@ -1,0 +1,130 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "public": {
+      "Functions": {
+        "count_events": [
+          {
+            "BodySQL": "\nDECLARE\n    result BIGINT;\nBEGIN\n    SELECT count(*) INTO result FROM events;\n    RETURN result;\nEND;\n",
+            "DataAccess": "read-only",
+            "Language": "plpgsql",
+            "Name": "count_events",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 1
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int8",
+              "Width": 64
+            }
+          }
+        ],
+        "delete_old_events": [
+          {
+            "BodySQL": "\nBEGIN\n    DELETE FROM events WHERE occurred_at \u003c now() - INTERVAL '30 days';\nEND;\n",
+            "DataAccess": "modifies-data",
+            "Language": "plpgsql",
+            "Name": "delete_old_events",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 3
+            },
+            "ReturnType": {
+              "Category": "unknown",
+              "EngineName": "void"
+            }
+          }
+        ],
+        "log_event": [
+          {
+            "Arguments": [
+              {
+                "Name": "event_name",
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "text"
+                }
+              }
+            ],
+            "BodySQL": "\nBEGIN\n    INSERT INTO events (name) VALUES (event_name);\nEND;\n",
+            "DataAccess": "modifies-data",
+            "Language": "plpgsql",
+            "MinArguments": 1,
+            "Name": "log_event",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 2
+            },
+            "ReturnType": {
+              "Category": "unknown",
+              "EngineName": "void"
+            }
+          }
+        ]
+      },
+      "Name": "public",
+      "Tables": {
+        "events": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "occurred_at",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "temporal",
+                "EngineName": "timestamptz",
+                "Temporal": "timestamp",
+                "TimeZone": true
+              }
+            }
+          ],
+          "Name": "events",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

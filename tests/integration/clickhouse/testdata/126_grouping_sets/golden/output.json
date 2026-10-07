@@ -1,0 +1,133 @@
+{
+  "revenue_cube": [
+    {
+      "city": "",
+      "region": "",
+      "revenue": "21.75"
+    },
+    {
+      "city": "bath",
+      "region": "",
+      "revenue": "7"
+    },
+    {
+      "city": "leeds",
+      "region": "",
+      "revenue": "10.5"
+    },
+    {
+      "city": "york",
+      "region": "",
+      "revenue": "4.25"
+    },
+    {
+      "city": "",
+      "region": "north",
+      "revenue": "14.75"
+    },
+    {
+      "city": "leeds",
+      "region": "north",
+      "revenue": "10.5"
+    },
+    {
+      "city": "york",
+      "region": "north",
+      "revenue": "4.25"
+    },
+    {
+      "city": "",
+      "region": "south",
+      "revenue": "7"
+    },
+    {
+      "city": "bath",
+      "region": "south",
+      "revenue": "7"
+    }
+  ],
+  "revenue_rollup": [
+    {
+      "city": "leeds",
+      "level": 0,
+      "region": "north",
+      "revenue": "10.5"
+    },
+    {
+      "city": "york",
+      "level": 0,
+      "region": "north",
+      "revenue": "4.25"
+    },
+    {
+      "city": "bath",
+      "level": 0,
+      "region": "south",
+      "revenue": "7"
+    },
+    {
+      "city": "",
+      "level": 1,
+      "region": "north",
+      "revenue": "14.75"
+    },
+    {
+      "city": "",
+      "level": 1,
+      "region": "south",
+      "revenue": "7"
+    },
+    {
+      "city": "",
+      "level": 3,
+      "region": "",
+      "revenue": "21.75"
+    }
+  ],
+  "revenue_rollup_with_nulls": [
+    {
+      "region": "north",
+      "revenue": "14.75"
+    },
+    {
+      "region": "south",
+      "revenue": "7"
+    },
+    {
+      "region": null,
+      "revenue": "21.75"
+    }
+  ],
+  "revenue_sets": [
+    {
+      "city": "",
+      "region": "",
+      "revenue": "21.75"
+    },
+    {
+      "city": "",
+      "region": "north",
+      "revenue": "14.75"
+    },
+    {
+      "city": "leeds",
+      "region": "north",
+      "revenue": "10.5"
+    },
+    {
+      "city": "york",
+      "region": "north",
+      "revenue": "4.25"
+    },
+    {
+      "city": "",
+      "region": "south",
+      "revenue": "7"
+    },
+    {
+      "city": "bath",
+      "region": "south",
+      "revenue": "7"
+    }
+  ]
+}

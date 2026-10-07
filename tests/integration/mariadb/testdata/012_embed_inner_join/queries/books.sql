@@ -1,0 +1,6 @@
+-- sgl.query(name: GetBookWithAuthor, command: one)
+-- sgl.embed(authors, from: a)
+SELECT b.id, b.title,  a.id, a.name
+FROM books b
+INNER JOIN authors a ON a.id = b.author_id
+WHERE b.id = ?;

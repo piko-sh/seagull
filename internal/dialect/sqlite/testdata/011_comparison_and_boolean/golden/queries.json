@@ -1,0 +1,45 @@
+[
+  {
+    "Command": "many",
+    "Filename": "get_filtered.sql",
+    "Line": 1,
+    "Name": "GetFilteredTasks",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "tasks",
+        "SourceTable": "tasks"
+      },
+      {
+        "Name": "is_high",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "boolean"
+        }
+      },
+      {
+        "Name": "is_assigned",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "boolean"
+        }
+      },
+      {
+        "Name": "important_done",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "boolean"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetFilteredTasks, command: many)\nSELECT\n  id,\n  priority \u003e 5 as is_high,\n  assigned_to IS NOT NULL as is_assigned,\n  completed AND priority \u003e 3 as important_done\nFROM tasks",
+    "Template": "SELECT\\n  ⟨c0:id⟩,\\n  ⟨c1 aliased:priority \u003e 5⟩ as is_high,\\n  ⟨c2 aliased:assigned_to IS NOT NULL⟩ as is_assigned,\\n  ⟨c3 aliased:completed AND priority \u003e 3⟩ as important_done\\nFROM tasks"
+  }
+]

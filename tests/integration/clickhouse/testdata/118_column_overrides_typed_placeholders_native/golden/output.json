@@ -1,0 +1,89 @@
+{
+  "between": [
+    {
+      "id": 2
+    },
+    {
+      "id": 3
+    }
+  ],
+  "by_address": [
+    {
+      "addr": "10.0.0.3",
+      "id": 3,
+      "label": {
+        "name": "copy"
+      },
+      "previous": "10.9.0.1"
+    }
+  ],
+  "by_addresses": [
+    {
+      "id": 1
+    },
+    {
+      "id": 4
+    }
+  ],
+  "by_previous": [
+    {
+      "id": 1
+    },
+    {
+      "id": 3
+    },
+    {
+      "id": 6
+    }
+  ],
+  "devices": [
+    {
+      "addr": "10.0.1.1",
+      "id": 1,
+      "label": {
+        "name": "moved"
+      },
+      "previous": "10.9.0.1"
+    },
+    {
+      "addr": "10.0.0.2",
+      "id": 2,
+      "label": {
+        "name": "copy"
+      },
+      "previous": null
+    },
+    {
+      "addr": "10.0.0.3",
+      "id": 3,
+      "label": {
+        "name": "copy"
+      },
+      "previous": "10.9.0.1"
+    },
+    {
+      "addr": "10.0.0.4",
+      "id": 4,
+      "label": {
+        "name": "batch"
+      },
+      "previous": null
+    },
+    {
+      "addr": "10.0.0.5",
+      "id": 5,
+      "label": {
+        "name": "batch"
+      },
+      "previous": null
+    },
+    {
+      "addr": "10.0.0.6",
+      "id": 6,
+      "label": {
+        "name": "rows"
+      },
+      "previous": "10.9.0.1"
+    }
+  ]
+}

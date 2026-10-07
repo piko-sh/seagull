@@ -1,0 +1,113 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "public": {
+      "Functions": {
+        "get_recent_count": [
+          {
+            "BodySQL": "\nBEGIN\n    RETURN (SELECT COUNT(*) FROM audit_log WHERE created_at \u003e now() - INTERVAL '1 hour');\nEND;\n",
+            "DataAccess": "read-only",
+            "Language": "plpgsql",
+            "Name": "get_recent_count",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 2
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int8",
+              "Width": 64
+            }
+          }
+        ],
+        "log_action": [
+          {
+            "Arguments": [
+              {
+                "Name": "action_name",
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "text"
+                }
+              }
+            ],
+            "BodySQL": "\nDECLARE\n    counter INTEGER := 0;\nBEGIN\n    INSERT INTO audit_log (action) VALUES (action_name);\n    LOOP\n        counter := counter + 1;\n        EXIT WHEN counter \u003e 10;\n    END LOOP;\nEND;\n",
+            "DataAccess": "modifies-data",
+            "Language": "plpgsql",
+            "MinArguments": 1,
+            "Name": "log_action",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 1
+            },
+            "ReturnType": {
+              "Category": "unknown",
+              "EngineName": "void"
+            }
+          }
+        ]
+      },
+      "Name": "public",
+      "Tables": {
+        "audit_log": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "action",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "created_at",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "temporal",
+                "EngineName": "timestamptz",
+                "Temporal": "timestamp",
+                "TimeZone": true
+              }
+            }
+          ],
+          "Name": "audit_log",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

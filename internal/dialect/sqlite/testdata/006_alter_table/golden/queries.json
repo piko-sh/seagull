@@ -1,0 +1,68 @@
+[
+  {
+    "Command": "one",
+    "Filename": "get_setting.sql",
+    "Line": 1,
+    "Name": "GetSetting",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "settings",
+        "SourceTable": "settings"
+      },
+      {
+        "Name": "setting_key",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "setting_key",
+        "SourceQualifier": "settings",
+        "SourceTable": "settings"
+      },
+      {
+        "Name": "value",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "value",
+        "SourceQualifier": "settings",
+        "SourceTable": "settings"
+      },
+      {
+        "Name": "description",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "description",
+        "SourceQualifier": "settings",
+        "SourceTable": "settings"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "setting_key",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetSetting, command: one)\nSELECT id, setting_key, value, description FROM settings WHERE setting_key = ?",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:setting_key⟩, ⟨c2:value⟩, ⟨c3:description⟩ FROM settings WHERE setting_key = ⟨p0⟩⟨arguments p0⟩"
+  }
+]

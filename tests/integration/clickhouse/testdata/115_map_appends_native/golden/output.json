@@ -1,0 +1,171 @@
+{
+  "hosts": [
+    {
+      "holder": {
+        "a": 7,
+        "m": {
+          "held": "10.0.0.1"
+        }
+      },
+      "id": 1,
+      "keyed": {
+        "a": "10.0.0.1",
+        "m": "10.0.0.9"
+      },
+      "keyed_v6": {
+        "v4": "::ffff:10.0.0.1",
+        "v6": "2001:db8::1"
+      },
+      "listed": {
+        "none": [],
+        "two": [
+          "10.0.0.1",
+          "10.0.0.9"
+        ]
+      },
+      "listed_optional": {
+        "mixed": [
+          "2001:db8::1",
+          null
+        ]
+      },
+      "listed_pairs": {
+        "l": [
+          {
+            "x": 4,
+            "y": "four"
+          },
+          {
+            "x": 5,
+            "y": "five"
+          }
+        ]
+      },
+      "maps": [
+        {
+          "k": "10.0.0.1"
+        },
+        {}
+      ],
+      "nested": {
+        "empty": {},
+        "outer": {
+          "inner": "2001:db8::1"
+        }
+      },
+      "nullable_wide": {
+        "set": -170141183460469231731687303715884105728,
+        "unset": null
+      },
+      "optional": {
+        "set": "10.0.0.1",
+        "unset": null
+      },
+      "pairs": {
+        "p": {
+          "ip": "10.0.0.1",
+          "x": 3
+        }
+      },
+      "unnamed": {
+        "u": [
+          6,
+          "10.0.0.1"
+        ]
+      },
+      "wide": {
+        "min": -170141183460469231731687303715884105728,
+        "zero": 0
+      },
+      "wide_keyed": "{115792089237316195423570985008687907853269984665640564039457584007913129639935:'max'}",
+      "wide_lists": {
+        "list": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "holder": {
+        "a": 0,
+        "m": {}
+      },
+      "id": 2,
+      "keyed": {},
+      "keyed_v6": {},
+      "listed": {},
+      "listed_optional": {},
+      "listed_pairs": {},
+      "maps": [],
+      "nested": {},
+      "nullable_wide": {},
+      "optional": {},
+      "pairs": {},
+      "unnamed": {},
+      "wide": {},
+      "wide_keyed": "{}",
+      "wide_lists": {}
+    },
+    {
+      "holder": {
+        "a": 8,
+        "m": {}
+      },
+      "id": 3,
+      "keyed": {
+        "b": "192.0.2.1"
+      },
+      "keyed_v6": {
+        "loopback": "::1"
+      },
+      "listed": {
+        "one": [
+          "10.0.0.1"
+        ]
+      },
+      "listed_optional": {
+        "none": []
+      },
+      "listed_pairs": {
+        "empty": []
+      },
+      "maps": [
+        {
+          "x": "10.0.0.9"
+        }
+      ],
+      "nested": {
+        "outer": {
+          "a": "::ffff:10.0.0.1",
+          "b": "2001:db8::1"
+        }
+      },
+      "nullable_wide": {},
+      "optional": {
+        "unset": null
+      },
+      "pairs": {
+        "q": {
+          "ip": "10.0.0.9",
+          "x": 9
+        },
+        "r": {
+          "ip": "10.0.0.1",
+          "x": 10
+        }
+      },
+      "unnamed": {},
+      "wide": {},
+      "wide_keyed": "{1:'one'}",
+      "wide_lists": {
+        "empty": []
+      }
+    }
+  ],
+  "typed": {
+    "ipv4_into_ipv6": true,
+    "mapped_into_ipv4": true,
+    "pair_address": "10.0.0.9",
+    "unset_is_nil": true
+  }
+}

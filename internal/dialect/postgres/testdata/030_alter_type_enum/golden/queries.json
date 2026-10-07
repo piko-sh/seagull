@@ -1,0 +1,60 @@
+[
+  {
+    "Command": "many",
+    "Filename": "items_by_colour.sql",
+    "Line": 1,
+    "Name": "ItemsByColour",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "colour",
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "colour",
+          "EnumValues": [
+            "red",
+            "green",
+            "blue",
+            "yellow"
+          ],
+          "Schema": "public"
+        },
+        "SourceColumn": "colour",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "colour",
+        "Number": 1,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "colour",
+          "EnumValues": [
+            "red",
+            "green",
+            "blue",
+            "yellow"
+          ],
+          "Schema": "public"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ItemsByColour, command: many)\nSELECT id, colour FROM items WHERE colour = $1::colour;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:colour⟩ FROM items WHERE colour = ⟨p0⟩::colour;⟨arguments p0⟩"
+  }
+]

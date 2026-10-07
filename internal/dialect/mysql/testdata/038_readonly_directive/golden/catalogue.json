@@ -1,0 +1,149 @@
+{
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "": {
+      "Functions": {
+        "overridden_not_readonly_func": [
+          {
+            "Arguments": [
+              {
+                "Name": "val",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int",
+                  "Width": 32
+                }
+              }
+            ],
+            "BodySQL": "RETURN val * 2;",
+            "DataAccess": "modifies-data",
+            "MinArguments": 1,
+            "Name": "overridden_not_readonly_func",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 3
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int",
+              "Width": 32
+            }
+          }
+        ],
+        "overridden_readonly_func": [
+          {
+            "Arguments": [
+              {
+                "Name": "val",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int",
+                  "Width": 32
+                }
+              }
+            ],
+            "BodySQL": "RETURN val * 2;",
+            "DataAccess": "read-only",
+            "MinArguments": 1,
+            "Name": "overridden_readonly_func",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 2
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int",
+              "Width": 32
+            }
+          }
+        ],
+        "volatile_func": [
+          {
+            "Arguments": [
+              {
+                "Name": "val",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int",
+                  "Width": 32
+                }
+              }
+            ],
+            "BodySQL": "RETURN val * 2;",
+            "DataAccess": "modifies-data",
+            "MinArguments": 1,
+            "Name": "volatile_func",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 1
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int",
+              "Width": 32
+            }
+          }
+        ]
+      },
+      "Tables": {
+        "items": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "name",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Length": 255
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "quantity",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            }
+          ],
+          "Name": "items",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ]
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    ""
+  ]
+}

@@ -1,0 +1,12 @@
+CREATE TABLE items (
+    id BIGINT PRIMARY KEY,
+    kind VARCHAR(40) NOT NULL,
+    mood ENUM('calm', 'stormy', 'fair') NULL,
+    score INT NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE entries (
+    id BIGINT PRIMARY KEY,
+    action VARCHAR(40) NOT NULL,
+    actor VARCHAR(40) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -1,0 +1,22 @@
+[
+  {
+    "Code": "Q005",
+    "Column": 8,
+    "EndColumn": 16,
+    "EndLine": 17,
+    "Filename": "reads.sql",
+    "Line": 17,
+    "Message": "unknown function \"date_add\"",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q005",
+    "Column": 55,
+    "EndColumn": 67,
+    "EndLine": 17,
+    "Filename": "reads.sql",
+    "Line": 17,
+    "Message": "unknown function \"txid_current\"",
+    "Severity": "warning"
+  }
+]

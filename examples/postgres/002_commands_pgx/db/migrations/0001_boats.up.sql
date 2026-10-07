@@ -1,0 +1,6 @@
+CREATE TABLE boats (
+    id     BIGINT  GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name   TEXT    NOT NULL,
+    berth  BIGINT  NOT NULL,
+    at_sea BOOLEAN NOT NULL DEFAULT false
+);

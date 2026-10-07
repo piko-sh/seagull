@@ -1,0 +1,3 @@
+{
+  "description": "database/sql batch and copyfrom over ClickHouse: each row writes the VALUES tuple, expressions included, with its own row-numbered {p_name_N:Type} placeholders bound by matching clickhouse.Named values, so every row keeps its own values, and a large batch splits across statements."
+}

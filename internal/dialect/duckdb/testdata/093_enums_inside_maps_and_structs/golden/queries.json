@@ -1,0 +1,694 @@
+[
+  {
+    "Command": "one",
+    "Filename": "logs.sql",
+    "Line": 1,
+    "Name": "GetLog",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "logs",
+        "SourceTable": "logs"
+      },
+      {
+        "Name": "moods",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "map",
+          "ElementType": {
+            "Category": "enum",
+            "EngineName": "mood",
+            "EnumValues": [
+              "calm",
+              "stormy"
+            ],
+            "Nullable": true,
+            "Schema": "main"
+          },
+          "EngineName": "map",
+          "KeyType": {
+            "Category": "text",
+            "EngineName": "varchar"
+          }
+        },
+        "SourceColumn": "moods",
+        "SourceQualifier": "logs",
+        "SourceTable": "logs"
+      },
+      {
+        "Name": "counts",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "map",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int4",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "map",
+          "KeyType": {
+            "Category": "enum",
+            "EngineName": "mood",
+            "EnumValues": [
+              "calm",
+              "stormy"
+            ],
+            "Schema": "main"
+          }
+        },
+        "SourceColumn": "counts",
+        "SourceQualifier": "logs",
+        "SourceTable": "logs"
+      },
+      {
+        "Name": "entry",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "struct",
+          "StructFields": [
+            {
+              "Name": "note",
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Nullable": true
+              }
+            },
+            {
+              "Name": "feeling",
+              "SQLType": {
+                "Category": "enum",
+                "EngineName": "mood",
+                "EnumValues": [
+                  "calm",
+                  "stormy"
+                ],
+                "Nullable": true,
+                "Schema": "main"
+              }
+            }
+          ]
+        },
+        "SourceColumn": "entry",
+        "SourceQualifier": "logs",
+        "SourceTable": "logs"
+      },
+      {
+        "Name": "history",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "struct",
+          "StructFields": [
+            {
+              "Name": "feelings",
+              "SQLType": {
+                "Category": "array",
+                "ElementType": {
+                  "Category": "enum",
+                  "EngineName": "mood",
+                  "EnumValues": [
+                    "calm",
+                    "stormy"
+                  ],
+                  "Nullable": true,
+                  "Schema": "main"
+                },
+                "EngineName": "mood[]",
+                "Nullable": true
+              }
+            }
+          ]
+        },
+        "SourceColumn": "history",
+        "SourceQualifier": "logs",
+        "SourceTable": "logs"
+      },
+      {
+        "Name": "entries",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "struct",
+            "EngineName": "struct",
+            "Nullable": true,
+            "StructFields": [
+              {
+                "Name": "feeling",
+                "SQLType": {
+                  "Category": "enum",
+                  "EngineName": "mood",
+                  "EnumValues": [
+                    "calm",
+                    "stormy"
+                  ],
+                  "Nullable": true,
+                  "Schema": "main"
+                }
+              }
+            ]
+          },
+          "EngineName": "struct[]"
+        },
+        "SourceColumn": "entries",
+        "SourceQualifier": "logs",
+        "SourceTable": "logs"
+      },
+      {
+        "Name": "tagged",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "union",
+          "EngineName": "union",
+          "UnionMembers": [
+            {
+              "SQLType": {
+                "Category": "enum",
+                "EngineName": "mood",
+                "EnumValues": [
+                  "calm",
+                  "stormy"
+                ],
+                "Schema": "main"
+              },
+              "Tag": "feeling"
+            },
+            {
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar"
+              },
+              "Tag": "note"
+            }
+          ]
+        },
+        "SourceColumn": "tagged",
+        "SourceQualifier": "logs",
+        "SourceTable": "logs"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetLog, command: one)\nSELECT id, moods, counts, entry, history, entries, tagged FROM logs WHERE id = $1;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:moods⟩, ⟨c2:counts⟩, ⟨c3:entry⟩, ⟨c4:history⟩, ⟨c5:entries⟩, ⟨c6:tagged⟩ FROM logs WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "logs.sql",
+    "Line": 4,
+    "Name": "LogFeelings",
+    "OutputColumns": [
+      {
+        "Name": "feeling",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "calm",
+            "stormy"
+          ],
+          "Nullable": true,
+          "Schema": "main"
+        }
+      },
+      {
+        "Name": "keyed_feeling",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "calm",
+            "stormy"
+          ],
+          "Nullable": true,
+          "Schema": "main"
+        }
+      },
+      {
+        "Name": "feelings",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "enum",
+            "EngineName": "mood",
+            "EnumValues": [
+              "calm",
+              "stormy"
+            ],
+            "Nullable": true,
+            "Schema": "main"
+          },
+          "EngineName": "mood[]",
+          "Nullable": true
+        }
+      },
+      {
+        "Name": "morning",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "calm",
+            "stormy"
+          ],
+          "Schema": "main"
+        }
+      },
+      {
+        "Name": "mood_values",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "enum",
+            "EngineName": "mood",
+            "EnumValues": [
+              "calm",
+              "stormy"
+            ],
+            "Nullable": true,
+            "Schema": "main"
+          },
+          "EngineName": "mood[]"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: LogFeelings, command: one)\nSELECT entry.feeling AS feeling, entry['feeling'] AS keyed_feeling, history.feelings AS feelings,\n    moods['morning'] AS morning, map_values(moods) AS mood_values\nFROM logs WHERE id = $1;",
+    "Template": "SELECT ⟨c0 aliased:entry.feeling⟩ AS feeling, ⟨c1 aliased:entry['feeling']⟩ AS keyed_feeling, ⟨c2 aliased:history.feelings⟩ AS feelings,\\n    ⟨c3 aliased:moods['morning']⟩ AS morning, ⟨c4 aliased:map_values(moods)⟩ AS mood_values\\nFROM logs WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "logs.sql",
+    "Line": 9,
+    "Name": "LogsFeeling",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "logs",
+        "SourceTable": "logs"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "feeling",
+        "Number": 1,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "calm",
+            "stormy"
+          ],
+          "Nullable": true,
+          "Schema": "main"
+        }
+      },
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "feeling_2",
+        "Number": 2,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "calm",
+            "stormy"
+          ],
+          "Nullable": true,
+          "Schema": "main"
+        }
+      },
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "feeling_3",
+        "Number": 3,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "calm",
+            "stormy"
+          ],
+          "Nullable": true,
+          "Schema": "main"
+        }
+      },
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "morning",
+        "Number": 4,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "calm",
+            "stormy"
+          ],
+          "Schema": "main"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: LogsFeeling, command: many)\nSELECT id FROM logs\nWHERE entry.feeling = $1 OR entry['feeling'] = $2 OR struct_extract(entry, 'feeling') = $3 OR moods['morning'] = $4;",
+    "Template": "SELECT ⟨c0:id⟩ FROM logs\\nWHERE entry.feeling = ⟨p0⟩ OR entry['feeling'] = ⟨p1⟩ OR struct_extract(entry, 'feeling') = ⟨p2⟩ OR moods['morning'] = ⟨p3⟩;⟨arguments p0 p1 p2 p3⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "logs.sql",
+    "InsertColumns": [
+      "id",
+      "moods",
+      "entry"
+    ],
+    "InsertTarget": {
+      "Name": "logs"
+    },
+    "Line": 13,
+    "Name": "AddLog",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "moods",
+        "Number": 2,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "varchar",
+            "Nullable": true
+          },
+          "EngineName": "varchar[]"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "moods_2",
+        "Number": 3,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "enum",
+            "EngineName": "mood",
+            "EnumValues": [
+              "calm",
+              "stormy"
+            ],
+            "Nullable": true,
+            "Schema": "main"
+          },
+          "EngineName": "mood[]"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "entry",
+        "Number": 4,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "entry_2",
+        "Number": 5,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "calm",
+            "stormy"
+          ],
+          "Schema": "main"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: AddLog, command: exec)\nINSERT INTO logs (id, moods, entry)\nVALUES ($1, map($2::VARCHAR[], $3::mood[]), {'note': $4::VARCHAR, 'feeling': $5::mood});",
+    "Template": "INSERT INTO logs (id, moods, entry)\\nVALUES ⟨values:(⟨p0⟩, map(⟨p1⟩::VARCHAR[], ⟨p2⟩::mood[]), {'note': ⟨p3⟩::VARCHAR, 'feeling': ⟨p4⟩::mood})⟩;⟨arguments p0 p1 p2 p3 p4⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "logs.sql",
+    "Line": 17,
+    "Name": "SetMoods",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "moods",
+        "Nullable": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "map",
+          "ElementType": {
+            "Category": "enum",
+            "EngineName": "mood",
+            "EnumValues": [
+              "calm",
+              "stormy"
+            ],
+            "Nullable": true,
+            "Schema": "main"
+          },
+          "EngineName": "map",
+          "KeyType": {
+            "Category": "text",
+            "EngineName": "varchar"
+          }
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: SetMoods, command: exec)\nUPDATE logs SET moods = $1 WHERE id = $2;",
+    "Template": "UPDATE logs SET moods = ⟨p0⟩ WHERE id = ⟨p1⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "logs.sql",
+    "Line": 20,
+    "Name": "SetCounts",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "counts",
+        "Nullable": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "map",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int4",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "map",
+          "KeyType": {
+            "Category": "enum",
+            "EngineName": "mood",
+            "EnumValues": [
+              "calm",
+              "stormy"
+            ],
+            "Schema": "main"
+          }
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: SetCounts, command: exec)\nUPDATE logs SET counts = $1 WHERE id = $2;",
+    "Template": "UPDATE logs SET counts = ⟨p0⟩ WHERE id = ⟨p1⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "logs.sql",
+    "Line": 23,
+    "Name": "SetEntry",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "entry",
+        "Nullable": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "struct",
+          "StructFields": [
+            {
+              "Name": "note",
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "varchar",
+                "Nullable": true
+              }
+            },
+            {
+              "Name": "feeling",
+              "SQLType": {
+                "Category": "enum",
+                "EngineName": "mood",
+                "EnumValues": [
+                  "calm",
+                  "stormy"
+                ],
+                "Nullable": true,
+                "Schema": "main"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: SetEntry, command: exec)\nUPDATE logs SET entry = $1 WHERE id = $2;",
+    "Template": "UPDATE logs SET entry = ⟨p0⟩ WHERE id = ⟨p1⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "logs.sql",
+    "Line": 26,
+    "Name": "SetHistory",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "history",
+        "Nullable": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "struct",
+          "StructFields": [
+            {
+              "Name": "feelings",
+              "SQLType": {
+                "Category": "array",
+                "ElementType": {
+                  "Category": "enum",
+                  "EngineName": "mood",
+                  "EnumValues": [
+                    "calm",
+                    "stormy"
+                  ],
+                  "Nullable": true,
+                  "Schema": "main"
+                },
+                "EngineName": "mood[]",
+                "Nullable": true
+              }
+            }
+          ]
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: SetHistory, command: exec)\nUPDATE logs SET history = $1 WHERE id = $2;",
+    "Template": "UPDATE logs SET history = ⟨p0⟩ WHERE id = ⟨p1⟩;⟨arguments p0 p1⟩"
+  }
+]

@@ -1,0 +1,4 @@
+{
+  "description": "Date spines read back as DuckDB types them by their bounds (on DuckDB): generate_series and range over timestamps and dates give TIMESTAMP, over integers BIGINT, and unnest the element type of its list.",
+  "expectedDiagnostics": []
+}

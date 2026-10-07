@@ -1,0 +1,351 @@
+[
+  {
+    "Command": "many",
+    "Filename": "landings.sql",
+    "Line": 1,
+    "Name": "Pivoted",
+    "OutputColumns": [
+      {
+        "Name": "harbour",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "harbour",
+        "SourceQualifier": "landings",
+        "SourceTable": "landings"
+      },
+      {
+        "Name": "cod",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "hugeint",
+          "Width": 128
+        }
+      },
+      {
+        "Name": "hake",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "hugeint",
+          "Width": 128
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Pivoted, command: many)\nPIVOT landings ON species IN ('cod', 'hake') USING sum(kg) GROUP BY harbour;",
+    "Template": "PIVOT landings ON species IN ('cod', 'hake') USING sum(kg) GROUP BY harbour;"
+  },
+  {
+    "Command": "many",
+    "Filename": "landings.sql",
+    "Line": 4,
+    "Name": "PivotTwoAggregates",
+    "OutputColumns": [
+      {
+        "Name": "harbour",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "harbour",
+        "SourceQualifier": "landings",
+        "SourceTable": "landings"
+      },
+      {
+        "Name": "cod_total",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "hugeint",
+          "Width": 128
+        }
+      },
+      {
+        "Name": "cod_catches",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "hake_total",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "hugeint",
+          "Width": 128
+        }
+      },
+      {
+        "Name": "hake_catches",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: PivotTwoAggregates, command: many)\nPIVOT landings ON species IN ('cod', 'hake') USING sum(kg) AS total, count(*) AS catches GROUP BY harbour ORDER BY harbour;",
+    "Template": "PIVOT landings ON species IN ('cod', 'hake') USING sum(kg) AS total, count(*) AS catches GROUP BY harbour ORDER BY harbour;"
+  },
+  {
+    "Command": "many",
+    "Filename": "landings.sql",
+    "Line": 7,
+    "Name": "PivotImplicitGroup",
+    "OutputColumns": [
+      {
+        "Name": "harbour",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "harbour",
+        "SourceQualifier": "landings",
+        "SourceTable": "landings"
+      },
+      {
+        "Name": "price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        },
+        "SourceColumn": "price",
+        "SourceQualifier": "landings",
+        "SourceTable": "landings"
+      },
+      {
+        "Name": "c",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "h",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: PivotImplicitGroup, command: many)\nPIVOT landings ON species IN ('cod' AS c, 'hake' AS h) USING max(kg);",
+    "Template": "PIVOT landings ON species IN ('cod' AS c, 'hake' AS h) USING max(kg);"
+  },
+  {
+    "Command": "many",
+    "Filename": "landings.sql",
+    "Line": 10,
+    "Name": "PivotSubquery",
+    "OutputColumns": [
+      {
+        "Name": "harbour",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "harbour"
+      },
+      {
+        "Name": "cod",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "hugeint",
+          "Width": 128
+        },
+        "SourceColumn": "cod"
+      },
+      {
+        "Name": "hake",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "hugeint",
+          "Width": 128
+        },
+        "SourceColumn": "hake"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "cod",
+        "Nullable": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "hugeint",
+          "Width": 128
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: PivotSubquery, command: many)\nSELECT harbour, cod, hake FROM (PIVOT landings ON species IN ('cod', 'hake') USING sum(kg) GROUP BY harbour) WHERE cod \u003e $1;",
+    "Template": "SELECT ⟨c0:harbour⟩, ⟨c1:cod⟩, ⟨c2:hake⟩ FROM (PIVOT landings ON species IN ('cod', 'hake') USING sum(kg) GROUP BY harbour) WHERE cod \u003e ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "landings.sql",
+    "Line": 13,
+    "Name": "StandardPivot",
+    "OutputColumns": [
+      {
+        "Name": "harbour",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "harbour",
+        "SourceQualifier": "pivot"
+      },
+      {
+        "Name": "cod",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "hugeint",
+          "Width": 128
+        },
+        "SourceColumn": "cod",
+        "SourceQualifier": "pivot"
+      },
+      {
+        "Name": "hake",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "hugeint",
+          "Width": 128
+        },
+        "SourceColumn": "hake",
+        "SourceQualifier": "pivot"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: StandardPivot, command: many)\nSELECT * FROM landings PIVOT (sum(kg) FOR species IN ('cod', 'hake') GROUP BY harbour);",
+    "Template": "SELECT ⟨star written 0=pivot.harbour 1=pivot.cod 2=pivot.hake:*⟩ FROM landings PIVOT (sum(kg) FOR species IN ('cod', 'hake') GROUP BY harbour);"
+  },
+  {
+    "Command": "many",
+    "Filename": "landings.sql",
+    "Line": 16,
+    "Name": "Unpivoted",
+    "OutputColumns": [
+      {
+        "Name": "harbour",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "harbour",
+        "SourceQualifier": "pivot_source"
+      },
+      {
+        "Name": "measure",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "amount",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "kg",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Unpivoted, command: many)\nUNPIVOT (SELECT harbour, kg, price FROM landings WHERE kg \u003e $1) ON kg, price INTO NAME measure VALUE amount;",
+    "Template": "UNPIVOT (SELECT harbour, kg, price FROM landings WHERE kg \u003e ⟨p0⟩) ON kg, price INTO NAME measure VALUE amount;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "landings.sql",
+    "Line": 19,
+    "Name": "StandardUnpivot",
+    "OutputColumns": [
+      {
+        "Name": "harbour",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "harbour",
+        "SourceQualifier": "unpivot"
+      },
+      {
+        "Name": "species",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "species",
+        "SourceQualifier": "unpivot"
+      },
+      {
+        "Name": "measure",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "measure",
+        "SourceQualifier": "unpivot"
+      },
+      {
+        "Name": "amount",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        },
+        "SourceColumn": "amount",
+        "SourceQualifier": "unpivot"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "harbour",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: StandardUnpivot, command: many)\nSELECT * FROM landings UNPIVOT INCLUDE NULLS (amount FOR measure IN (kg, price)) WHERE harbour = $1;",
+    "Template": "SELECT ⟨star written 0=unpivot.harbour 1=unpivot.species 2=unpivot.measure 3=unpivot.amount:*⟩ FROM landings UNPIVOT INCLUDE NULLS (amount FOR measure IN (kg, price)) WHERE harbour = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

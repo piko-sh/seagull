@@ -1,0 +1,57 @@
+[
+  {
+    "Command": "many",
+    "Filename": "list.sql",
+    "Line": 1,
+    "Name": "ListUsersSince",
+    "OutputColumns": [
+      {
+        "Name": "user_id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "user_id",
+        "SourceQualifier": "list_users_since"
+      },
+      {
+        "Name": "user_email",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "user_email",
+        "SourceQualifier": "list_users_since"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "_min_id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "_active",
+        "Number": 2,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListUsersSince, command: many)\nSELECT user_id, user_email\nFROM app.list_users_since($1, $2);",
+    "Template": "SELECT ⟨c0:user_id⟩, ⟨c1:user_email⟩\\nFROM app.list_users_since(⟨p0⟩, ⟨p1⟩);⟨arguments p0 p1⟩"
+  }
+]

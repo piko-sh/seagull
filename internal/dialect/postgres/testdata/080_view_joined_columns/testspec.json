@@ -1,0 +1,3 @@
+{
+  "description": "A view body uses WITH cte AS (SELECT DISTINCT ON ...) followed by a multi-JOIN SELECT. JOIN conditions stop at the next JOIN so account_versions v remains in scope and the projected v.id, v.status and v.email columns resolve to uuid, text and text."
+}

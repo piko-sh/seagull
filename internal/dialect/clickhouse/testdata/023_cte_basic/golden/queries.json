@@ -1,0 +1,37 @@
+[
+  {
+    "Command": "many",
+    "Filename": "top_spenders.sql",
+    "Line": 1,
+    "Name": "TopSpenders",
+    "OutputColumns": [
+      {
+        "Name": "user_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "user_id",
+        "SourceQualifier": "user_totals",
+        "SourceTable": "user_totals"
+      },
+      {
+        "Name": "lifetime_total",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "Decimal128",
+          "Precision": 38,
+          "Scale": 2
+        },
+        "SourceColumn": "lifetime_total",
+        "SourceQualifier": "user_totals",
+        "SourceTable": "user_totals"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(TopSpenders, many)\nWITH user_totals AS (\n    SELECT user_id, sum(total) AS lifetime_total FROM orders GROUP BY user_id\n)\nSELECT user_id, lifetime_total FROM user_totals ORDER BY lifetime_total DESC LIMIT 10;",
+    "Template": "WITH user_totals AS (\\n    SELECT user_id, sum(total) AS lifetime_total FROM orders GROUP BY user_id\\n)\\nSELECT ⟨c0:user_id⟩, ⟨c1:lifetime_total⟩ FROM user_totals ORDER BY lifetime_total DESC LIMIT 10;"
+  }
+]

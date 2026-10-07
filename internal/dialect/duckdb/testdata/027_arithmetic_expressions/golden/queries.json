@@ -1,0 +1,32 @@
+[
+  {
+    "Command": "many",
+    "Filename": "totals.sql",
+    "Line": 1,
+    "Name": "GetLineTotals",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "line_items",
+        "SourceTable": "line_items"
+      },
+      {
+        "Name": "total",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetLineTotals, command: many)\nSELECT id, quantity * unit_price AS total FROM line_items;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:quantity * unit_price⟩ AS total FROM line_items;"
+  }
+]

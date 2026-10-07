@@ -1,0 +1,22 @@
+[
+  {
+    "Command": "one",
+    "Filename": "counters.sql",
+    "Line": 1,
+    "Name": "ReadOnlyWrapperPure",
+    "OutputColumns": [
+      {
+        "Name": "result",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ReadOnlyWrapperPure, command: one)\nSELECT wrapper_pure(42) AS result;",
+    "Template": "SELECT ⟨c0 aliased:wrapper_pure(42)⟩ AS result;"
+  }
+]

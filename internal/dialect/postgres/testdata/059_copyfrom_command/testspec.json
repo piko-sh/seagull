@@ -1,0 +1,3 @@
+{
+  "description": "CopyFrom command directive (sgl.command: copyfrom). Tests query analysis recognises copyfrom command and resolves InsertTarget and InsertColumns for pgx CopyFrom bulk insertion."
+}

@@ -1,0 +1,4 @@
+{
+  "description": "A select item may name an earlier item of the same select list by its alias, as ClickHouse 25.4 reads it: next_id * 2 is typed from next_id (UInt64), concat(loud, '!') from loud and span / 2 from the nullable span (Nullable(Float64)), with no unknown-column warning",
+  "expectedDiagnosticCount": 0
+}

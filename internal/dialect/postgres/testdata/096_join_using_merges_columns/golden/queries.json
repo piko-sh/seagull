@@ -1,0 +1,263 @@
+[
+  {
+    "Command": "many",
+    "Filename": "moorings.sql",
+    "Line": 1,
+    "Name": "MooringsUsing",
+    "OutputColumns": [
+      {
+        "Name": "harbour_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "harbour_id",
+        "SourceQualifier": "harbours",
+        "SourceTable": "harbours"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "harbours",
+        "SourceTable": "harbours"
+      },
+      {
+        "Name": "region",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "harbours",
+        "SourceTable": "harbours"
+      },
+      {
+        "Name": "berth",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "berth",
+        "SourceQualifier": "moorings",
+        "SourceTable": "moorings"
+      },
+      {
+        "Name": "region",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "moorings",
+        "SourceTable": "moorings"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: MooringsUsing, command: many)\nSELECT *\nFROM harbours\nJOIN moorings USING (harbour_id);",
+    "Template": "SELECT ⟨star 0=harbours.harbour_id 1=harbours.name 2=harbours.region 3=moorings.berth 4=moorings.region:*⟩\\nFROM harbours\\nJOIN moorings USING (harbour_id);"
+  },
+  {
+    "Command": "many",
+    "Filename": "moorings.sql",
+    "Line": 6,
+    "Name": "MooringsNatural",
+    "OutputColumns": [
+      {
+        "Name": "harbour_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "harbour_id",
+        "SourceQualifier": "harbours",
+        "SourceTable": "harbours"
+      },
+      {
+        "Name": "region",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "harbours",
+        "SourceTable": "harbours"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "harbours",
+        "SourceTable": "harbours"
+      },
+      {
+        "Name": "berth",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "berth",
+        "SourceQualifier": "moorings",
+        "SourceTable": "moorings"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: MooringsNatural, command: many)\nSELECT *\nFROM harbours\nNATURAL JOIN moorings;",
+    "Template": "SELECT ⟨star 0=harbours.harbour_id 1=harbours.region 2=harbours.name 3=moorings.berth:*⟩\\nFROM harbours\\nNATURAL JOIN moorings;"
+  },
+  {
+    "Command": "many",
+    "Filename": "moorings.sql",
+    "Line": 11,
+    "Name": "MooringsLeftUsing",
+    "OutputColumns": [
+      {
+        "Name": "harbour_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "harbour_id",
+        "SourceQualifier": "harbours",
+        "SourceTable": "harbours"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "harbours",
+        "SourceTable": "harbours"
+      },
+      {
+        "Name": "region",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "harbours",
+        "SourceTable": "harbours"
+      },
+      {
+        "Name": "berth",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "berth",
+        "SourceQualifier": "moorings",
+        "SourceTable": "moorings"
+      },
+      {
+        "Name": "region",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "moorings",
+        "SourceTable": "moorings"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: MooringsLeftUsing, command: many)\nSELECT *\nFROM harbours\nLEFT JOIN moorings USING (harbour_id);",
+    "Template": "SELECT ⟨star 0=harbours.harbour_id 1=harbours.name 2=harbours.region 3=moorings.berth 4=moorings.region:*⟩\\nFROM harbours\\nLEFT JOIN moorings USING (harbour_id);"
+  },
+  {
+    "Command": "many",
+    "Filename": "moorings.sql",
+    "Line": 16,
+    "Name": "MooringHarbourIDs",
+    "OutputColumns": [
+      {
+        "Name": "harbour_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "harbour_id",
+        "SourceQualifier": "harbours",
+        "SourceTable": "harbours"
+      },
+      {
+        "Name": "berth",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "berth",
+        "SourceQualifier": "moorings",
+        "SourceTable": "moorings"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: MooringHarbourIDs, command: many)\nSELECT harbour_id, berth\nFROM harbours\nJOIN moorings USING (harbour_id);",
+    "Template": "SELECT ⟨c0:harbour_id⟩, ⟨c1:berth⟩\\nFROM harbours\\nJOIN moorings USING (harbour_id);"
+  },
+  {
+    "Command": "many",
+    "Filename": "moorings.sql",
+    "Line": 21,
+    "Name": "BusiestHarbours",
+    "OutputColumns": [
+      {
+        "Name": "harbour_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "harbour_id",
+        "SourceQualifier": "busy"
+      },
+      {
+        "Name": "berths",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "berths",
+        "SourceQualifier": "busy"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "harbours",
+        "SourceTable": "harbours"
+      },
+      {
+        "Name": "region",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "harbours",
+        "SourceTable": "harbours"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: BusiestHarbours, command: many)\nSELECT *\nFROM (SELECT harbour_id, count(*) AS berths FROM moorings GROUP BY harbour_id) busy\nJOIN harbours USING (harbour_id);",
+    "Template": "SELECT ⟨star written 0=busy.harbour_id 1=busy.berths 2=harbours.name 3=harbours.region:*⟩\\nFROM (SELECT harbour_id, count(*) AS berths FROM moorings GROUP BY harbour_id) busy\\nJOIN harbours USING (harbour_id);"
+  }
+]

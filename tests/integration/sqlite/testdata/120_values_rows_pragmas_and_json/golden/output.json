@@ -1,0 +1,155 @@
+{
+  "blob_fields": [
+    {
+      "a": "text in a blob",
+      "doc": "{\"a\":\"text in a blob\"}",
+      "id": 1
+    },
+    {
+      "a": 2,
+      "doc": "{\"a\":2}",
+      "id": 2
+    }
+  ],
+  "countdown": [
+    {
+      "n": 3
+    },
+    {
+      "n": 2
+    },
+    {
+      "n": 1
+    }
+  ],
+  "documents": [
+    {
+      "doc": {
+        "a": 1
+      },
+      "id": 1,
+      "label": "hello"
+    },
+    {
+      "doc": {
+        "a": [
+          2
+        ]
+      },
+      "id": 2,
+      "label": "12"
+    }
+  ],
+  "ledger_after": [
+    {
+      "category": "tools",
+      "id": 1
+    },
+    {
+      "category": "tools",
+      "id": 2
+    }
+  ],
+  "ledger_columns": [
+    {
+      "cid": 0,
+      "dflt_value": null,
+      "name": "id",
+      "notnull": 0,
+      "pk": 1,
+      "type": "INTEGER"
+    },
+    {
+      "cid": 1,
+      "dflt_value": null,
+      "name": "amount",
+      "notnull": 1,
+      "pk": 0,
+      "type": "INTEGER"
+    },
+    {
+      "cid": 2,
+      "dflt_value": null,
+      "name": "parts",
+      "notnull": 1,
+      "pk": 0,
+      "type": "INTEGER"
+    },
+    {
+      "cid": 3,
+      "dflt_value": null,
+      "name": "category",
+      "notnull": 1,
+      "pk": 0,
+      "type": "TEXT"
+    },
+    {
+      "cid": 4,
+      "dflt_value": null,
+      "name": "dir",
+      "notnull": 1,
+      "pk": 0,
+      "type": "TEXT"
+    }
+  ],
+  "move_ledger": "moved",
+  "moved_entry": {
+    "category": "garden",
+    "dir": "rakes",
+    "id": 1
+  },
+  "pairs": [
+    {
+      "code": 1,
+      "label": "one"
+    },
+    {
+      "code": 2,
+      "label": "two"
+    }
+  ],
+  "paths": [
+    {
+      "path": "garden/hoses"
+    },
+    {
+      "path": "garden/rakes"
+    }
+  ],
+  "patterned": [
+    {
+      "id": 2
+    }
+  ],
+  "read_binary": {
+    "doc": "{\"b\":true}"
+  },
+  "schema_version": {
+    "user_version": 4
+  },
+  "schema_version_after": {
+    "user_version": 9
+  },
+  "set_version": "set",
+  "shares": [
+    {
+      "half": 3,
+      "id": 1,
+      "remainder": null,
+      "share": null
+    },
+    {
+      "half": 4,
+      "id": 2,
+      "remainder": 1,
+      "share": 4
+    },
+    {
+      "half": 2,
+      "id": 3,
+      "remainder": 0,
+      "share": 1
+    }
+  ],
+  "store_binary": "stored"
+}

@@ -1,0 +1,65 @@
+{
+  "add_jobs": "added",
+  "list_jobs": [
+    {
+      "id": 1,
+      "state": "ready"
+    },
+    {
+      "id": 2,
+      "state": "ready"
+    }
+  ],
+  "lock_in_cte": {
+    "id": 2,
+    "state": "ready"
+  },
+  "lock_in_derived_table": [
+    {
+      "id": 1
+    },
+    {
+      "id": 2
+    }
+  ],
+  "lock_in_exists": [
+    {
+      "id": 1
+    },
+    {
+      "id": 2
+    }
+  ],
+  "lock_in_scalar_subquery": [
+    {
+      "id": 1,
+      "locked_state": "ready"
+    },
+    {
+      "id": 2,
+      "locked_state": "ready"
+    },
+    {
+      "id": 3,
+      "locked_state": "done"
+    }
+  ],
+  "lock_in_subquery": [
+    {
+      "id": 1
+    },
+    {
+      "id": 2
+    }
+  ],
+  "lock_job": {
+    "id": 1,
+    "state": "ready"
+  },
+  "locking_statements_on_the_reader": 0,
+  "reader_refuses_for_update": "error: Error 1792 (25006): Cannot execute statement in a READ ONLY transaction.",
+  "share_lock_job": {
+    "id": 3,
+    "state": "done"
+  }
+}

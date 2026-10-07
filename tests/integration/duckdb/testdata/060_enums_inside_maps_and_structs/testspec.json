@@ -1,0 +1,4 @@
+{
+  "description": "An enum inside a MAP or STRUCT column: the column's map keys and values, struct fields, lists inside a struct and structs inside a list take the enum's Go type and read back through duckdb-go, a parameter compared with such a field (entry.feeling, entry['feeling'], struct_extract(entry, 'feeling')) or a map value takes the enum type, and the map and struct are written from parameters in the SQL. duckdb-go cannot bind a MAP or STRUCT parameter holding an enum (it fails with 'unsupported data type'), so such parameters are refused with Q059.",
+  "expectedDiagnostics": []
+}

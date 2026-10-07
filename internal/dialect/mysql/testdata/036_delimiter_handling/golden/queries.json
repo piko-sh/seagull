@@ -1,0 +1,66 @@
+[
+  {
+    "Command": "one",
+    "Filename": "logs.sql",
+    "Line": 1,
+    "Name": "GetLogCount",
+    "OutputColumns": [
+      {
+        "Name": "total",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetLogCount, command: one)\nSELECT count_logs() AS total;",
+    "Template": "SELECT ⟨c0 aliased:count_logs()⟩ AS total;"
+  },
+  {
+    "Command": "many",
+    "Filename": "logs.sql",
+    "Line": 4,
+    "Name": "ListLogs",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "logs",
+        "SourceTable": "logs"
+      },
+      {
+        "Name": "message",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        },
+        "SourceColumn": "message",
+        "SourceQualifier": "logs",
+        "SourceTable": "logs"
+      },
+      {
+        "Name": "created_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "created_at",
+        "SourceQualifier": "logs",
+        "SourceTable": "logs"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListLogs, command: many)\nSELECT id, message, created_at FROM logs;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:message⟩, ⟨c2:created_at⟩ FROM logs;"
+  }
+]

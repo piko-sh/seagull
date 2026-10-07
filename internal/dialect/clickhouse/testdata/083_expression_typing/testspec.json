@@ -1,0 +1,1 @@
+{"description": "Computed columns are typed as the server types them: literals by value, arithmetic by ClickHouse result rules, functions NULL only when an argument may be, coalesce from its arguments, window functions and count(DISTINCT), and qualified columns inside expressions."}

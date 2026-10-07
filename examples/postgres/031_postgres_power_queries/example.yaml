@@ -1,0 +1,28 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: A harbour's landings read with DISTINCT ON, a LEFT JOIN LATERAL subquery, full-text search over a generated tsvector, and jsonb_each, then archived by a DELETE inside a CTE feeding an INSERT, every result typed.
+differs:
+  - "DISTINCT ON (boat_id) keeps the first row of each boat in ORDER BY order"
+  - "LEFT JOIN LATERAL (...) ON true lets a subquery see the outer row; its columns become pointers, as a boat may have no landings"
+  - "A TSVECTOR GENERATED ALWAYS AS (...) STORED column with a GIN index, matched with @@ websearch_to_tsquery and scored by ts_rank as *float32; :terms is used twice and bound once"
+  - "jsonb_each used as a table gives key as string and value as store.JSON"
+  - "A data-modifying CTE: DELETE ... RETURNING feeds INSERT ... SELECT, and the INSERT's RETURNING rows come back as one many query"
+entry: {file: db/queries/harbour.sql, query: BiggestLandings}
+live: "no"
+test: integration

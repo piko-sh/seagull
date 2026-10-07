@@ -1,0 +1,47 @@
+[
+  {
+    "Command": "many",
+    "Filename": "display_or_default.sql",
+    "Line": 1,
+    "Name": "DisplayOrDefault",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "profiles",
+        "SourceTable": "profiles"
+      },
+      {
+        "Name": "name",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "display_name",
+        "Nullable": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 100
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: DisplayOrDefault, command: many)\nSELECT id, COALESCE(display_name, ?) AS name FROM profiles;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:COALESCE(display_name, ⟨p0⟩)⟩ AS name FROM profiles;⟨arguments p0⟩"
+  }
+]

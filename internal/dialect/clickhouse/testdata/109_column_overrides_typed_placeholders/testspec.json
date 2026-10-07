@@ -1,0 +1,4 @@
+{
+  "description": "N-193: every ClickHouse placeholder carries its type, and the dialect linked none to a column, so a column override (here a go_type migration directive) reached no parameter at all. A placeholder declaring the column's own type, such as {addr:IPv4} for an IPv4 column, now takes the override wherever it is compared with the column, listed against it, bounds it, or is the whole value an INSERT ... VALUES row, an ALTER TABLE ... UPDATE or an UPDATE assigns to it; a Nullable(T) placeholder restates a T column; a placeholder declaring another type ({text:String}, Decimal(12, 4) for a Decimal(10, 2) column, an Array for an IN list), a placeholder inside an expression and a LIKE pattern keep the placeholder's own Go type",
+  "expectedDiagnosticCount": 0
+}

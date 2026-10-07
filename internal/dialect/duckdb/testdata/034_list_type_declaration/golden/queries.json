@@ -1,0 +1,66 @@
+[
+  {
+    "Command": "many",
+    "Filename": "documents.sql",
+    "Line": 1,
+    "Name": "ListDocuments",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "documents",
+        "SourceTable": "documents"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "documents",
+        "SourceTable": "documents"
+      },
+      {
+        "Name": "tags",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "varchar",
+            "Nullable": true
+          },
+          "EngineName": "varchar[]"
+        },
+        "SourceColumn": "tags",
+        "SourceQualifier": "documents",
+        "SourceTable": "documents"
+      },
+      {
+        "Name": "scores",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int4",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "int4[]"
+        },
+        "SourceColumn": "scores",
+        "SourceQualifier": "documents",
+        "SourceTable": "documents"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListDocuments, command: many)\nSELECT id, title, tags, scores FROM documents;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:title⟩, ⟨c2:tags⟩, ⟨c3:scores⟩ FROM documents;"
+  }
+]

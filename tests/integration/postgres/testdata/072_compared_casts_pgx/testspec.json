@@ -1,0 +1,5 @@
+{
+  "description": "A parameter compared with a CAST takes the type the CAST converts to, as PostgreSQL types it, and a parameter compared with a qualified column a CAST, a call or parentheses wrap is named after the column, through pgx: cast(pe.born AS text) = $1 and CAST(born AS text) = $1 take a string, length(pe.name) < $2 an integer, and the parameters are named born, name and listing_id; a parameter after a column and the bitwise & takes the column's integer type and name.",
+  "emitter": "pgx",
+  "expectedDiagnostics": []
+}

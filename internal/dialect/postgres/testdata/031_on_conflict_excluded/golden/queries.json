@@ -1,0 +1,72 @@
+[
+  {
+    "Command": "one",
+    "Filename": "upsert_kv.sql",
+    "InsertColumns": [
+      "key",
+      "value"
+    ],
+    "InsertTarget": {
+      "Name": "kv_store"
+    },
+    "Line": 1,
+    "Name": "UpsertKV",
+    "OutputColumns": [
+      {
+        "Name": "key",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "key",
+        "SourceQualifier": "kv_store",
+        "SourceTable": "kv_store"
+      },
+      {
+        "Name": "value",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "value",
+        "SourceQualifier": "kv_store",
+        "SourceTable": "kv_store"
+      },
+      {
+        "Name": "version",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "version",
+        "SourceQualifier": "kv_store",
+        "SourceTable": "kv_store"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "key",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "value",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: UpsertKV, command: one)\nINSERT INTO kv_store (key, value) VALUES ($1, $2)\nON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, version = kv_store.version + 1\nRETURNING key, value, version;",
+    "Template": "INSERT INTO kv_store (key, value) VALUES ⟨values:(⟨p0⟩, ⟨p1⟩)⟩\\nON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, version = kv_store.version + 1\\nRETURNING ⟨c0:key⟩, ⟨c1:value⟩, ⟨c2:version⟩;⟨arguments p0 p1⟩"
+  }
+]

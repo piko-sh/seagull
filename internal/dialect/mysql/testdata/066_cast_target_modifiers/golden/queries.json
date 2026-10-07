@@ -1,0 +1,162 @@
+[
+  {
+    "Command": "many",
+    "Filename": "prices.sql",
+    "Line": 1,
+    "Name": "PriceConversions",
+    "OutputColumns": [
+      {
+        "GoTypeOverride": {
+          "Name": "Decimal",
+          "Package": "github.com/shopspring/decimal"
+        },
+        "Name": "same_amount",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 10,
+          "Scale": 2
+        },
+        "SourceColumn": "amount",
+        "SourceQualifier": "prices",
+        "SourceTable": "prices"
+      },
+      {
+        "Name": "wider_amount",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 12,
+          "Scale": 4
+        },
+        "SourceColumn": "amount",
+        "SourceQualifier": "prices",
+        "SourceTable": "prices"
+      },
+      {
+        "Name": "short_label",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "char",
+          "Length": 20
+        },
+        "SourceColumn": "label",
+        "SourceQualifier": "prices",
+        "SourceTable": "prices"
+      },
+      {
+        "Name": "listed_precisely",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Precision": 6,
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "listed_at",
+        "SourceQualifier": "prices",
+        "SourceTable": "prices"
+      },
+      {
+        "Name": "discount",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 5,
+          "Scale": 2
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "GoTypeOverride": {
+          "Name": "Decimal",
+          "Package": "github.com/shopspring/decimal"
+        },
+        "Kind": "none",
+        "Name": "amount",
+        "Number": 1,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 10,
+          "Scale": 2
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: PriceConversions, command: many)\nSELECT\n    CAST(amount AS DECIMAL(10, 2)) AS same_amount,\n    CAST(amount AS DECIMAL(12, 4)) AS wider_amount,\n    CONVERT(label, CHAR(20)) AS short_label,\n    CAST(listed_at AS DATETIME(6)) AS listed_precisely,\n    JSON_VALUE(details, '$.discount' RETURNING DECIMAL(5, 2)) AS discount\nFROM prices\nWHERE amount \u003e CAST(? AS DECIMAL(10, 2));",
+    "Template": "SELECT\\n    ⟨c0 aliased:CAST(amount AS DECIMAL(10, 2))⟩ AS same_amount,\\n    ⟨c1 aliased:CAST(amount AS DECIMAL(12, 4))⟩ AS wider_amount,\\n    ⟨c2 aliased:CONVERT(label, CHAR(20))⟩ AS short_label,\\n    ⟨c3 aliased:CAST(listed_at AS DATETIME(6))⟩ AS listed_precisely,\\n    ⟨c4 aliased:JSON_VALUE(details, '$.discount' RETURNING DECIMAL(5, 2))⟩ AS discount\\nFROM prices\\nWHERE amount \u003e CAST(⟨p0⟩ AS DECIMAL(10, 2));⟨arguments p0⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "prices.sql",
+    "Line": 11,
+    "Name": "SetAmount",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "GoTypeOverride": {
+          "Name": "Decimal",
+          "Package": "github.com/shopspring/decimal"
+        },
+        "Kind": "none",
+        "Name": "amount",
+        "Number": 1,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 10,
+          "Scale": 2
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: SetAmount, command: exec)\nUPDATE prices SET amount = CAST(? AS DECIMAL(10, 2)) WHERE id = ?;",
+    "Template": "UPDATE prices SET amount = CAST(⟨p0⟩ AS DECIMAL(10, 2)) WHERE id = ⟨p1⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "prices.sql",
+    "Line": 14,
+    "Name": "SetWiderAmount",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "amount",
+        "Number": 1,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 12,
+          "Scale": 4
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: SetWiderAmount, command: exec)\nUPDATE prices SET amount = CAST(? AS DECIMAL(12, 4)) WHERE id = ?;",
+    "Template": "UPDATE prices SET amount = CAST(⟨p0⟩ AS DECIMAL(12, 4)) WHERE id = ⟨p1⟩;⟨arguments p0 p1⟩"
+  }
+]

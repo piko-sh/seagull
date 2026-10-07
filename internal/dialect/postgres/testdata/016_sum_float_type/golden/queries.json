@@ -1,0 +1,31 @@
+[
+  {
+    "Command": "one",
+    "Filename": "sum_prices.sql",
+    "Line": 1,
+    "Name": "SumPrices",
+    "OutputColumns": [
+      {
+        "Name": "total_price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "total_discount",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: SumPrices, command: one)\nSELECT SUM(price) AS total_price, SUM(discount) AS total_discount FROM products;",
+    "Template": "SELECT ⟨c0 aliased:SUM(price)⟩ AS total_price, ⟨c1 aliased:SUM(discount)⟩ AS total_discount FROM products;"
+  }
+]

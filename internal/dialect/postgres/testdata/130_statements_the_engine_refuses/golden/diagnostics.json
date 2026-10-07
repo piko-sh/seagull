@@ -1,0 +1,50 @@
+[
+  {
+    "Code": "Q064",
+    "Column": 39,
+    "EndColumn": 43,
+    "EndLine": 1,
+    "Filename": "refused.sql",
+    "Line": 1,
+    "Message": "row 1 of the INSERT gives 1 value for the 2 target columns it lists, which the engine refuses",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q064",
+    "Column": 1,
+    "Filename": "refused.sql",
+    "Line": 4,
+    "Message": "the SELECT of the INSERT gives 1 column for the 2 target columns it lists, which the engine refuses",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 25,
+    "EndColumn": 27,
+    "EndLine": 8,
+    "Filename": "refused.sql",
+    "Line": 8,
+    "Message": "failed to analyse query \"SessionUser\": syntax error near \"$1\": no parameter can be bound in SET statements, which run without analysis; the server takes no parameter in SET either, so set it with SELECT set_config('setting', $1, true), true for SET LOCAL and false for the session",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 17,
+    "EndColumn": 19,
+    "EndLine": 11,
+    "Filename": "refused.sql",
+    "Line": 11,
+    "Message": "failed to analyse query \"Announce\": syntax error near \"$1\": no parameter can be bound in NOTIFY statements, which run without analysis; the server takes no parameter in NOTIFY either, so send the payload with SELECT pg_notify('channel', $1)",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q028",
+    "Column": 13,
+    "EndColumn": 20,
+    "EndLine": 14,
+    "Filename": "refused.sql",
+    "Line": 14,
+    "Message": "sgl.embed(books) names no table the query reads, so it would embed nothing; name one of authors",
+    "Severity": "error"
+  }
+]

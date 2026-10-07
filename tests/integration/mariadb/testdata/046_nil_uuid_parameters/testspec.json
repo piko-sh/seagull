@@ -1,0 +1,6 @@
+{
+  "description": "A nil *uuid.UUID parameter binds NULL through database/sql on go-sql-driver/mysql, a MariaDB UUID column, through an optional filter and a runtime builder's own parameter as through an INSERT (check): database/sql calls the Value method of a nil pointer to a type whose Value has a value receiver only through its own guard, so no wrapper is needed; a nil owner matches every row through the optional filter and no row through the builder, and a UUID matches its row.",
+  "expectedDiagnostics": [
+    "Q022"
+  ]
+}

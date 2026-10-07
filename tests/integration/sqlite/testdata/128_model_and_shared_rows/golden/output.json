@@ -1,0 +1,59 @@
+{
+  "add_books": "added",
+  "built_model_books": [
+    {
+      "id": 2,
+      "pages": null,
+      "published": null,
+      "title": "Strong Poison"
+    }
+  ],
+  "model_book": {
+    "id": 1,
+    "pages": 288,
+    "published": "1930-10-01T00:00:00Z",
+    "title": "The Murder at the Vicarage"
+  },
+  "reused_model_books": [
+    {
+      "id": 1,
+      "pages": 288,
+      "published": "1930-10-01T00:00:00Z",
+      "title": "The Murder at the Vicarage"
+    },
+    {
+      "id": 2,
+      "pages": null,
+      "published": null,
+      "title": "Strong Poison"
+    }
+  ],
+  "shared_row_title": {
+    "id": 2,
+    "title": "Strong Poison"
+  },
+  "shared_row_titles": [
+    {
+      "id": 1,
+      "title": "The Murder at the Vicarage"
+    },
+    {
+      "id": 2,
+      "title": "Strong Poison"
+    }
+  ],
+  "streamed_model_books": [
+    {
+      "id": 1,
+      "pages": 288,
+      "published": "1930-10-01T00:00:00Z",
+      "title": "The Murder at the Vicarage"
+    },
+    {
+      "id": 2,
+      "pages": null,
+      "published": null,
+      "title": "Strong Poison"
+    }
+  ]
+}

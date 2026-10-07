@@ -1,0 +1,211 @@
+[
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 1,
+    "Name": "DotField",
+    "OutputColumns": [
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      },
+      {
+        "Name": "pontoon",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Nullable": true
+        }
+      },
+      {
+        "Name": "number",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Nullable": true,
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: DotField, command: many)\nSELECT name, berth.pontoon AS pontoon, berth.number FROM boats;",
+    "Template": "SELECT ⟨c0:name⟩, ⟨c1 aliased:berth.pontoon⟩ AS pontoon, ⟨c2:berth.number⟩ FROM boats;"
+  },
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 4,
+    "Name": "QualifiedField",
+    "OutputColumns": [
+      {
+        "Name": "pontoon",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Nullable": true
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: QualifiedField, command: many)\nSELECT b.berth.pontoon AS pontoon FROM boats b WHERE b.id = $1;",
+    "Template": "SELECT ⟨c0 aliased:b.berth.pontoon⟩ AS pontoon FROM boats b WHERE b.id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 7,
+    "Name": "SubscriptThenDot",
+    "OutputColumns": [
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      },
+      {
+        "Name": "start_lat",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Nullable": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: SubscriptThenDot, command: many)\nSELECT name, route[1].lat AS start_lat FROM boats;",
+    "Template": "SELECT ⟨c0:name⟩, ⟨c1 aliased:route[1].lat⟩ AS start_lat FROM boats;"
+  },
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 10,
+    "Name": "StructExtract",
+    "OutputColumns": [
+      {
+        "Name": "berth_number",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Nullable": true,
+          "Width": 32
+        }
+      },
+      {
+        "Name": "pontoon",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Nullable": true
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: StructExtract, command: many)\nSELECT struct_extract(berth, 'number') AS berth_number, berth['pontoon'] AS pontoon FROM boats;",
+    "Template": "SELECT ⟨c0 aliased:struct_extract(berth, 'number')⟩ AS berth_number, ⟨c1 aliased:berth['pontoon']⟩ AS pontoon FROM boats;"
+  },
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 13,
+    "Name": "MapAccess",
+    "OutputColumns": [
+      {
+        "Name": "july_fees",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int4",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "int4[]"
+        }
+      },
+      {
+        "Name": "july",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: MapAccess, command: many)\nSELECT element_at(fees, 'July') AS july_fees, fees['July'] AS july FROM boats;",
+    "Template": "SELECT ⟨c0 aliased:element_at(fees, 'July')⟩ AS july_fees, ⟨c1 aliased:fees['July']⟩ AS july FROM boats;"
+  },
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 16,
+    "Name": "UnionAndListFunctions",
+    "OutputColumns": [
+      {
+        "Name": "contact_by",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "phone",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      },
+      {
+        "Name": "crew_size",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "crew_length",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: UnionAndListFunctions, command: many)\nSELECT union_tag(contact) AS contact_by, union_extract(contact, 'phone') AS phone, len(crew) AS crew_size, array_length(crew) AS crew_length FROM boats;",
+    "Template": "SELECT ⟨c0 aliased:union_tag(contact)⟩ AS contact_by, ⟨c1 aliased:union_extract(contact, 'phone')⟩ AS phone, ⟨c2 aliased:len(crew)⟩ AS crew_size, ⟨c3 aliased:array_length(crew)⟩ AS crew_length FROM boats;"
+  }
+]

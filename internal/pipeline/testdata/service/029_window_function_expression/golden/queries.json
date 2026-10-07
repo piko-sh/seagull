@@ -1,0 +1,61 @@
+[
+  {
+    "Command": "many",
+    "Filename": "get_windowed.sql",
+    "Line": 1,
+    "Name": "GetWindowedSales",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "region",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "amount",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        },
+        "SourceColumn": "amount",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "region_total",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        }
+      },
+      {
+        "Name": "rank",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: GetWindowedSales, command: many)\nSELECT\n  id,\n  region,\n  amount,\n  SUM(amount) OVER (PARTITION BY region) as region_total,\n  ROW_NUMBER() OVER (ORDER BY amount DESC) as rank\nFROM sales",
+    "Template": "SELECT\\n  id,\\n  region,\\n  amount,\\n  SUM(amount) OVER (PARTITION BY region) as region_total,\\n  ROW_NUMBER() OVER (ORDER BY amount DESC) as rank\\nFROM sales"
+  }
+]

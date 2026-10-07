@@ -1,0 +1,47 @@
+[
+  {
+    "Command": "many",
+    "Filename": "cast_values.sql",
+    "Line": 1,
+    "Name": "CastValues",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "measurements",
+        "SourceTable": "measurements"
+      },
+      {
+        "Name": "numeric_value",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 10,
+          "Scale": 2
+        },
+        "SourceColumn": "raw_value",
+        "SourceQualifier": "measurements",
+        "SourceTable": "measurements"
+      },
+      {
+        "Name": "int_value",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "raw_value",
+        "SourceQualifier": "measurements",
+        "SourceTable": "measurements"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CastValues, command: many)\nSELECT\n    id,\n    CAST(raw_value AS DECIMAL(10, 2)) AS numeric_value,\n    CAST(raw_value AS SIGNED) AS int_value\nFROM measurements;",
+    "Template": "SELECT\\n    ⟨c0:id⟩,\\n    ⟨c1 aliased:CAST(raw_value AS DECIMAL(10, 2))⟩ AS numeric_value,\\n    ⟨c2 aliased:CAST(raw_value AS SIGNED)⟩ AS int_value\\nFROM measurements;"
+  }
+]

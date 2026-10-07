@@ -1,0 +1,28 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: Promenade kiosks with LowCardinality, Array, Map, Tuple and IPv4 columns, stored from Go values, read back and unrolled with ARRAY JOIN.
+differs:
+  - "LowCardinality(String) is a storage hint and maps to string"
+  - "ARRAY JOIN gives one row per array element, so the joined tag is a plain string"
+  - "A Map or Array parameter is one value, as in {prices:Map(String, UInt32)}"
+  - "The Tuple is written from scalar parameters, ({lat:Float64}, {lon:Float64}); a {location:Tuple(lat Float64, lon Float64)} parameter would take a map[string]any keyed by element name"
+  - "Map(String, UInt32) maps to map[string]uint32; through database/sql the named Tuple maps to map[string]any and IPv4 to net.IP, the types clickhouse-go's bridge scans into"
+entry: {file: db/queries/kiosks.sql, query: KiosksByTag}
+live: "no"
+test: integration

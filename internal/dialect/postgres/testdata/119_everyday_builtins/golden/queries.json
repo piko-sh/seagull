@@ -1,0 +1,828 @@
+[
+  {
+    "Command": "one",
+    "Filename": "admin.sql",
+    "Line": 1,
+    "Name": "NewID",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: NewID, command: one)\nSELECT gen_random_uuid() AS id;",
+    "Template": "SELECT ⟨c0 aliased:gen_random_uuid()⟩ AS id;"
+  },
+  {
+    "Command": "exec",
+    "Filename": "admin.sql",
+    "Line": 4,
+    "Name": "LockAccount",
+    "OutputColumns": [
+      {
+        "Name": "pg_advisory_xact_lock",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown",
+          "EngineName": "void"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: LockAccount, command: exec)\nSELECT pg_advisory_xact_lock($1::bigint);",
+    "Template": "SELECT ⟨c0:pg_advisory_xact_lock(⟨p0⟩::bigint)⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "admin.sql",
+    "Line": 7,
+    "Name": "TryLock",
+    "OutputColumns": [
+      {
+        "Name": "locked",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: TryLock, command: one)\nSELECT pg_try_advisory_lock($1::bigint) AS locked;",
+    "Template": "SELECT ⟨c0 aliased:pg_try_advisory_lock(⟨p0⟩::bigint)⟩ AS locked;⟨arguments p0⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "admin.sql",
+    "Line": 10,
+    "Name": "Notify",
+    "OutputColumns": [
+      {
+        "Name": "pg_notify",
+        "SQLType": {
+          "Category": "unknown",
+          "EngineName": "void"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "payload",
+        "Nullable": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: Notify, command: exec)\nSELECT pg_notify('events', $1);",
+    "Template": "SELECT ⟨c0:pg_notify('events', ⟨p0⟩)⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "admin.sql",
+    "Line": 13,
+    "Name": "Setting",
+    "OutputColumns": [
+      {
+        "Name": "path",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "tenant",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "size",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Setting, command: one)\nSELECT current_setting('search_path') AS path, current_setting('app.tenant', true) AS tenant,\n       pg_size_pretty(1024::bigint) AS size;",
+    "Template": "SELECT ⟨c0 aliased:current_setting('search_path')⟩ AS path, ⟨c1 aliased:current_setting('app.tenant', true)⟩ AS tenant,\\n       ⟨c2 aliased:pg_size_pretty(1024::bigint)⟩ AS size;"
+  },
+  {
+    "Command": "one",
+    "Filename": "admin.sql",
+    "Line": 17,
+    "Name": "Statistics",
+    "OutputColumns": [
+      {
+        "Name": "correlation",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "slope",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "pairs",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "sample",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "joined",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "binary",
+          "EngineName": "bytea"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Statistics, command: one)\nSELECT corr(ratio, amount) AS correlation, regr_slope(ratio, amount) AS slope, regr_count(ratio, amount) AS pairs,\n       any_value(body) AS sample, string_agg(raw, '\\x00'::bytea) AS joined\nFROM events;",
+    "Template": "SELECT ⟨c0 aliased:corr(ratio, amount)⟩ AS correlation, ⟨c1 aliased:regr_slope(ratio, amount)⟩ AS slope, ⟨c2 aliased:regr_count(ratio, amount)⟩ AS pairs,\\n       ⟨c3 aliased:any_value(body)⟩ AS sample, ⟨c4 aliased:string_agg(raw, '\\\\x00'::bytea)⟩ AS joined\\nFROM events;"
+  },
+  {
+    "Command": "many",
+    "Filename": "json.sql",
+    "Line": 1,
+    "Name": "Paths",
+    "OutputColumns": [
+      {
+        "Name": "first_item",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        }
+      },
+      {
+        "Name": "item_ids",
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        }
+      },
+      {
+        "Name": "tagged",
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        }
+      },
+      {
+        "Name": "inserted",
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        }
+      },
+      {
+        "Name": "lax",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        }
+      },
+      {
+        "Name": "paired",
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        }
+      },
+      {
+        "Name": "nulls",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Paths, command: many)\nSELECT\n    jsonb_path_query_first(payload, '$.items[0]') AS first_item,\n    jsonb_path_query_array(payload, '$.items[*].id') AS item_ids,\n    jsonb_set(payload, tags, '1') AS tagged,\n    jsonb_insert(payload, ARRAY['items', '0'], '{}', true) AS inserted,\n    jsonb_set_lax(payload, '{gone}', NULL, true, 'delete_key') AS lax,\n    jsonb_object(tags, tags) AS paired,\n    num_nulls(body, NULL) AS nulls\nFROM events;",
+    "Template": "SELECT\\n    ⟨c0 aliased:jsonb_path_query_first(payload, '$.items[0]')⟩ AS first_item,\\n    ⟨c1 aliased:jsonb_path_query_array(payload, '$.items[*].id')⟩ AS item_ids,\\n    ⟨c2 aliased:jsonb_set(payload, tags, '1')⟩ AS tagged,\\n    ⟨c3 aliased:jsonb_insert(payload, ARRAY['items', '0'], '{}', true)⟩ AS inserted,\\n    ⟨c4 aliased:jsonb_set_lax(payload, '{gone}', NULL, true, 'delete_key')⟩ AS lax,\\n    ⟨c5 aliased:jsonb_object(tags, tags)⟩ AS paired,\\n    ⟨c6 aliased:num_nulls(body, NULL)⟩ AS nulls\\nFROM events;"
+  },
+  {
+    "Command": "many",
+    "Filename": "json.sql",
+    "Line": 12,
+    "Name": "Elements",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "item",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "jsonb"
+        }
+      },
+      {
+        "Name": "key",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Elements, command: many)\nSELECT id, jsonb_array_elements(payload -\u003e 'items') AS item, jsonb_object_keys(payload) AS key\nFROM events;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:jsonb_array_elements(payload -\u003e 'items')⟩ AS item, ⟨c2 aliased:jsonb_object_keys(payload)⟩ AS key\\nFROM events;"
+  },
+  {
+    "Command": "many",
+    "Filename": "json.sql",
+    "Line": 16,
+    "Name": "Series",
+    "OutputColumns": [
+      {
+        "Name": "n",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "day",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Series, command: many)\nSELECT generate_series(1, 3) AS n, generate_series(created_at, created_at + interval '2 days', interval '1 day') AS day\nFROM events;",
+    "Template": "SELECT ⟨c0 aliased:generate_series(1, 3)⟩ AS n, ⟨c1 aliased:generate_series(created_at, created_at + interval '2 days', interval '1 day')⟩ AS day\\nFROM events;"
+  },
+  {
+    "Command": "many",
+    "Filename": "literals.sql",
+    "Line": 1,
+    "Name": "Ages",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "since_new_year",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "interval",
+          "Temporal": "interval"
+        }
+      },
+      {
+        "Name": "slot",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp",
+          "Temporal": "timestamp"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Ages, command: many)\nSELECT id, age(created_at, '2024-01-01') AS since_new_year, date_bin('15 minutes', happened, '2000-01-01') AS slot\nFROM events;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:age(created_at, '2024-01-01')⟩ AS since_new_year, ⟨c2 aliased:date_bin('15 minutes', happened, '2000-01-01')⟩ AS slot\\nFROM events;"
+  },
+  {
+    "Command": "one",
+    "Filename": "literals.sql",
+    "Line": 5,
+    "Name": "Roots",
+    "OutputColumns": [
+      {
+        "Name": "cube_root",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "exact_root",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        }
+      },
+      {
+        "Name": "angle",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Roots, command: one)\nSELECT cbrt(27.0) AS cube_root, sqrt(amount) AS exact_root, degrees(ratio) AS angle\nFROM events\nWHERE id = $1;",
+    "Template": "SELECT ⟨c0 aliased:cbrt(27.0)⟩ AS cube_root, ⟨c1 aliased:sqrt(amount)⟩ AS exact_root, ⟨c2 aliased:degrees(ratio)⟩ AS angle\\nFROM events\\nWHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "literals.sql",
+    "Line": 10,
+    "Name": "MedianRatio",
+    "OutputColumns": [
+      {
+        "Name": "median_ratio",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: MedianRatio, command: one)\nSELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY ratio) AS median_ratio FROM events;",
+    "Template": "SELECT ⟨c0 aliased:percentile_cont(0.5) WITHIN GROUP (ORDER BY ratio)⟩ AS median_ratio FROM events;"
+  },
+  {
+    "Command": "exec",
+    "Filename": "literals.sql",
+    "Line": 13,
+    "Name": "Retag",
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: Retag, command: exec)\nUPDATE events SET payload = jsonb_set(payload, '{status}', '\"done\"') WHERE id = $1;",
+    "Template": "UPDATE events SET payload = jsonb_set(payload, '{status}', '\"done\"') WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "literals.sql",
+    "Line": 16,
+    "Name": "LongIntervals",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "span",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "interval",
+          "Temporal": "interval"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "days",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: LongIntervals, command: many)\nSELECT id, make_interval(days =\u003e $1) AS span FROM events;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:make_interval(days =\u003e ⟨p0⟩)⟩ AS span FROM events;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "ranges.sql",
+    "Line": 1,
+    "Name": "Bookings",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "starts",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "ends",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "unseated",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      },
+      {
+        "Name": "open_start",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      },
+      {
+        "Name": "window",
+        "SQLType": {
+          "Category": "range",
+          "EngineName": "tstzrange"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "lower",
+        "Nullable": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "upper",
+        "Nullable": true,
+        "Number": 2,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Bookings, command: many)\nSELECT id, lower(booked) AS starts, upper(booked) AS ends, isempty(seats) AS unseated,\n       lower_inf(booked) AS open_start, tstzrange($1, $2, '[)') AS window\nFROM events;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:lower(booked)⟩ AS starts, ⟨c2 aliased:upper(booked)⟩ AS ends, ⟨c3 aliased:isempty(seats)⟩ AS unseated,\\n       ⟨c4 aliased:lower_inf(booked)⟩ AS open_start, ⟨c5 aliased:tstzrange(⟨p0⟩, ⟨p1⟩, '[)')⟩ AS window\\nFROM events;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "ranges.sql",
+    "Line": 6,
+    "Name": "Moods",
+    "OutputColumns": [
+      {
+        "Name": "lowest",
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "sad",
+            "ok",
+            "happy"
+          ],
+          "Schema": "public"
+        }
+      },
+      {
+        "Name": "highest",
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "mood",
+          "EnumValues": [
+            "sad",
+            "ok",
+            "happy"
+          ],
+          "Schema": "public"
+        }
+      },
+      {
+        "Name": "every_mood",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "enum",
+            "EngineName": "mood",
+            "EnumValues": [
+              "sad",
+              "ok",
+              "happy"
+            ],
+            "Nullable": true,
+            "Schema": "public"
+          },
+          "EngineName": "mood[]"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Moods, command: one)\nSELECT enum_first(NULL::mood) AS lowest, enum_last(feeling) AS highest, enum_range(NULL::mood) AS every_mood\nFROM events\nWHERE id = $1;",
+    "Template": "SELECT ⟨c0 aliased:enum_first(NULL::mood)⟩ AS lowest, ⟨c1 aliased:enum_last(feeling)⟩ AS highest, ⟨c2 aliased:enum_range(NULL::mood)⟩ AS every_mood\\nFROM events\\nWHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "text.sql",
+    "Line": 1,
+    "Name": "Cleaned",
+    "OutputColumns": [
+      {
+        "Name": "squeezed",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "first_number",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "text",
+            "Nullable": true
+          },
+          "EngineName": "text[]"
+        }
+      },
+      {
+        "Name": "parts",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "text",
+            "Nullable": true
+          },
+          "EngineName": "text[]"
+        }
+      },
+      {
+        "Name": "a_count",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "starts_with_x",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      },
+      {
+        "Name": "digits",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "pattern_match",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Cleaned, command: many)\nSELECT\n    regexp_replace(body, '\\s+', ' ', 'g') AS squeezed,\n    regexp_match(body, '(\\d+)') AS first_number,\n    regexp_split_to_array(body, ',') AS parts,\n    regexp_count(body, 'a') AS a_count,\n    regexp_like(body, '^x', 'i') AS starts_with_x,\n    regexp_substr(body, '\\d+') AS digits,\n    substring(body FROM '[0-9]+') AS pattern_match\nFROM events;",
+    "Template": "SELECT\\n    ⟨c0 aliased:regexp_replace(body, '\\\\s+', ' ', 'g')⟩ AS squeezed,\\n    ⟨c1 aliased:regexp_match(body, '(\\\\d+)')⟩ AS first_number,\\n    ⟨c2 aliased:regexp_split_to_array(body, ',')⟩ AS parts,\\n    ⟨c3 aliased:regexp_count(body, 'a')⟩ AS a_count,\\n    ⟨c4 aliased:regexp_like(body, '^x', 'i')⟩ AS starts_with_x,\\n    ⟨c5 aliased:regexp_substr(body, '\\\\d+')⟩ AS digits,\\n    ⟨c6 aliased:substring(body FROM '[0-9]+')⟩ AS pattern_match\\nFROM events;"
+  },
+  {
+    "Command": "one",
+    "Filename": "text.sql",
+    "Line": 12,
+    "Name": "Digests",
+    "OutputColumns": [
+      {
+        "Name": "digest",
+        "SQLType": {
+          "Category": "binary",
+          "EngineName": "bytea"
+        }
+      },
+      {
+        "Name": "checksum",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "long_digest",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "decoded",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "encoded",
+        "SQLType": {
+          "Category": "binary",
+          "EngineName": "bytea"
+        }
+      },
+      {
+        "Name": "hex_id",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "size",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "head",
+        "SQLType": {
+          "Category": "binary",
+          "EngineName": "bytea"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Digests, command: one)\nSELECT sha256(raw) AS digest, md5(raw) AS checksum, encode(sha512(raw), 'hex') AS long_digest,\n       convert_from(raw, 'UTF8') AS decoded, convert_to(body, 'UTF8') AS encoded, to_hex(id) AS hex_id,\n       length(raw) AS size, substring(raw FROM 1 FOR 4) AS head\nFROM events\nWHERE id = $1;",
+    "Template": "SELECT ⟨c0 aliased:sha256(raw)⟩ AS digest, ⟨c1 aliased:md5(raw)⟩ AS checksum, ⟨c2 aliased:encode(sha512(raw), 'hex')⟩ AS long_digest,\\n       ⟨c3 aliased:convert_from(raw, 'UTF8')⟩ AS decoded, ⟨c4 aliased:convert_to(body, 'UTF8')⟩ AS encoded, ⟨c5 aliased:to_hex(id)⟩ AS hex_id,\\n       ⟨c6 aliased:length(raw)⟩ AS size, ⟨c7 aliased:substring(raw FROM 1 FOR 4)⟩ AS head\\nFROM events\\nWHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "text.sql",
+    "Line": 19,
+    "Name": "Words",
+    "OutputColumns": [
+      {
+        "Name": "word",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Words, command: many)\nSELECT regexp_split_to_table(body, '\\s+') AS word FROM events;",
+    "Template": "SELECT ⟨c0 aliased:regexp_split_to_table(body, '\\\\s+')⟩ AS word FROM events;"
+  }
+]

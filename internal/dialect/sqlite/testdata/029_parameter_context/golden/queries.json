@@ -1,0 +1,169 @@
+[
+  {
+    "Command": "many",
+    "Filename": "cast_parameter.sql",
+    "Line": 1,
+    "Name": "CastParam",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CastParam, command: many)\nSELECT id, name FROM products WHERE id = CAST(? AS INTEGER)",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩ FROM products WHERE id = CAST(⟨p0⟩ AS INTEGER)⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "function_argument_parameter.sql",
+    "Line": 1,
+    "Name": "FuncArgParam",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "str",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "length",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FuncArgParam, command: many)\nSELECT id, name FROM products WHERE name = substr(?, 1, ?)",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩ FROM products WHERE name = substr(⟨p0⟩, 1, ⟨p1⟩)⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "in_list_parameter.sql",
+    "Line": 1,
+    "Name": "InListParam",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "in-list",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "in-list",
+        "Kind": "none",
+        "Name": "id_2",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "in-list",
+        "Kind": "none",
+        "Name": "id_3",
+        "Number": 3,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: InListParam, command: many)\nSELECT id, name FROM products WHERE id IN (?, ?, ?)",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩ FROM products WHERE id IN (⟨p0⟩, ⟨p1⟩, ⟨p2⟩)⟨arguments p0 p1 p2⟩"
+  }
+]

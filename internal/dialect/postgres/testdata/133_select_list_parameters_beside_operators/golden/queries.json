@@ -1,0 +1,358 @@
+[
+  {
+    "Command": "many",
+    "Filename": "beside.sql",
+    "Line": 1,
+    "Name": "Bumped",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "bumped",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "n",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(Bumped, many)\nSELECT id, n + $1 AS bumped FROM items;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:n + ⟨p0⟩⟩ AS bumped FROM items;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "beside.sql",
+    "Line": 4,
+    "Name": "Scaled",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "i",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "scaled",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "price",
+        "Number": 1,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(Scaled, many)\nSELECT id, i.price * $1 AS scaled FROM items i;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:i.price * ⟨p0⟩⟩ AS scaled FROM items i;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "beside.sql",
+    "Line": 7,
+    "Name": "MaskedValues",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "masked",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "mask",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(MaskedValues, many)\nSELECT id, mask \u0026 $1 AS masked FROM items;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:mask \u0026 ⟨p0⟩⟩ AS masked FROM items;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "beside.sql",
+    "Line": 10,
+    "Name": "Distances",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "distance",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "location",
+        "Number": 1,
+        "SQLType": {
+          "Category": "geometric",
+          "EngineName": "point"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(Distances, many)\nSELECT id, location \u003c-\u003e $1 AS distance FROM items;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:location \u003c-\u003e ⟨p0⟩⟩ AS distance FROM items;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "beside.sql",
+    "Line": 13,
+    "Name": "Shrink",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "lowered",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "n",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(Shrink, many)\nUPDATE items SET label = label WHERE id = $1 RETURNING id, n - $2 AS lowered;",
+    "Template": "UPDATE items SET label = label WHERE id = ⟨p0⟩ RETURNING ⟨c0:id⟩, ⟨c1 aliased:n - ⟨p1⟩⟩ AS lowered;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "beside.sql",
+    "Line": 16,
+    "Name": "CastBumped",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "bumped",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(CastBumped, many)\nSELECT id, n + $1::numeric AS bumped FROM items;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:n + ⟨p0⟩::numeric⟩ AS bumped FROM items;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "beside.sql",
+    "Line": 19,
+    "Name": "BumpedFromTheLeft",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "bumped",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(BumpedFromTheLeft, many)\nSELECT id, $1 + n AS bumped FROM items;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:⟨p0⟩ + n⟩ AS bumped FROM items;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "beside.sql",
+    "Line": 22,
+    "Name": "Labelled",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "labelled",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(Labelled, many)\nSELECT id, label || $1 AS labelled FROM items;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:label || ⟨p0⟩⟩ AS labelled FROM items;⟨arguments p0⟩"
+  }
+]

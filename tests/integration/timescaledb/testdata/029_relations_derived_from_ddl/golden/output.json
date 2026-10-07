@@ -1,0 +1,22 @@
+{
+  "add_metrics": "added",
+  "metric_numbers": {
+    "is_called": false,
+    "last_value": 50
+  },
+  "metrics_2026": [
+    {
+      "device": "probe",
+      "id": 1,
+      "reading": 21.5,
+      "recorded_on": "2026-05-01T00:00:00Z"
+    }
+  ],
+  "metrics_2027": [
+    {
+      "device": null,
+      "id": 2,
+      "reading": null
+    }
+  ]
+}

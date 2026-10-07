@@ -1,0 +1,40 @@
+[
+  {
+    "Command": "batch",
+    "Filename": "insert_audit_batch.sql",
+    "InsertColumns": [
+      "action",
+      "detail"
+    ],
+    "InsertTarget": {
+      "Name": "audit_log"
+    },
+    "Line": 1,
+    "Name": "InsertAuditBatch",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "action",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "detail",
+        "Nullable": true,
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: InsertAuditBatch, command: batch)\nINSERT INTO audit_log (action, detail) VALUES ($1, $2);",
+    "Template": "INSERT INTO audit_log (action, detail) VALUES ⟨values:(⟨p0⟩, ⟨p1⟩)⟩;⟨arguments p0 p1⟩"
+  }
+]

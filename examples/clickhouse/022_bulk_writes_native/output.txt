@@ -1,0 +1,4 @@
+0 readings sent, parts holding rows: 0
+2880 readings sent, parts holding rows: 1
+harbour  1440 readings, 24 with a note
+pier     1440 readings, 24 with a note

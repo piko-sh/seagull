@@ -1,0 +1,621 @@
+[
+  {
+    "Command": "many",
+    "Filename": "nests.sql",
+    "Line": 1,
+    "Name": "ReadableNests",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Unsigned": true,
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "nests",
+        "SourceTable": "nests"
+      },
+      {
+        "Name": "fields_in_pair",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "Tuple",
+          "StructFields": [
+            {
+              "Name": "_1",
+              "Positional": true,
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt8",
+                "Unsigned": true,
+                "Width": 8
+              }
+            },
+            {
+              "Name": "_2",
+              "Positional": true,
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "Tuple",
+                "StructFields": [
+                  {
+                    "Name": "s",
+                    "SQLType": {
+                      "Category": "text",
+                      "EngineName": "String"
+                    }
+                  },
+                  {
+                    "Name": "n",
+                    "SQLType": {
+                      "Category": "integer",
+                      "EngineName": "UInt16",
+                      "Unsigned": true,
+                      "Width": 16
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "SourceColumn": "fields_in_pair",
+        "SourceQualifier": "nests",
+        "SourceTable": "nests"
+      },
+      {
+        "Name": "keyed_pairs_in_pair",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "Tuple",
+          "StructFields": [
+            {
+              "Name": "_1",
+              "Positional": true,
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt8",
+                "Unsigned": true,
+                "Width": 8
+              }
+            },
+            {
+              "Name": "_2",
+              "Positional": true,
+              "SQLType": {
+                "Category": "map",
+                "ElementType": {
+                  "Category": "struct",
+                  "EngineName": "Tuple",
+                  "StructFields": [
+                    {
+                      "Name": "_1",
+                      "Positional": true,
+                      "SQLType": {
+                        "Category": "text",
+                        "EngineName": "String"
+                      }
+                    },
+                    {
+                      "Name": "_2",
+                      "Positional": true,
+                      "SQLType": {
+                        "Category": "integer",
+                        "EngineName": "UInt16",
+                        "Unsigned": true,
+                        "Width": 16
+                      }
+                    }
+                  ]
+                },
+                "EngineName": "Map",
+                "KeyType": {
+                  "Category": "text",
+                  "EngineName": "String"
+                }
+              }
+            }
+          ]
+        },
+        "SourceColumn": "keyed_pairs_in_pair",
+        "SourceQualifier": "nests",
+        "SourceTable": "nests"
+      },
+      {
+        "Name": "pair_list_in_fields",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "Tuple",
+          "StructFields": [
+            {
+              "Name": "a",
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt8",
+                "Unsigned": true,
+                "Width": 8
+              }
+            },
+            {
+              "Name": "b",
+              "SQLType": {
+                "Category": "array",
+                "ElementType": {
+                  "Category": "struct",
+                  "EngineName": "Tuple",
+                  "StructFields": [
+                    {
+                      "Name": "_1",
+                      "Positional": true,
+                      "SQLType": {
+                        "Category": "text",
+                        "EngineName": "String"
+                      }
+                    },
+                    {
+                      "Name": "_2",
+                      "Positional": true,
+                      "SQLType": {
+                        "Category": "integer",
+                        "EngineName": "UInt16",
+                        "Unsigned": true,
+                        "Width": 16
+                      }
+                    }
+                  ]
+                },
+                "EngineName": "Array"
+              }
+            }
+          ]
+        },
+        "SourceColumn": "pair_list_in_fields",
+        "SourceQualifier": "nests",
+        "SourceTable": "nests"
+      },
+      {
+        "Name": "keyed_pairs_in_fields",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "Tuple",
+          "StructFields": [
+            {
+              "Name": "a",
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt8",
+                "Unsigned": true,
+                "Width": 8
+              }
+            },
+            {
+              "Name": "b",
+              "SQLType": {
+                "Category": "map",
+                "ElementType": {
+                  "Category": "struct",
+                  "EngineName": "Tuple",
+                  "StructFields": [
+                    {
+                      "Name": "_1",
+                      "Positional": true,
+                      "SQLType": {
+                        "Category": "text",
+                        "EngineName": "String"
+                      }
+                    },
+                    {
+                      "Name": "_2",
+                      "Positional": true,
+                      "SQLType": {
+                        "Category": "integer",
+                        "EngineName": "UInt16",
+                        "Unsigned": true,
+                        "Width": 16
+                      }
+                    }
+                  ]
+                },
+                "EngineName": "Map",
+                "KeyType": {
+                  "Category": "text",
+                  "EngineName": "String"
+                }
+              }
+            }
+          ]
+        },
+        "SourceColumn": "keyed_pairs_in_fields",
+        "SourceQualifier": "nests",
+        "SourceTable": "nests"
+      },
+      {
+        "Name": "numbers_in_pair",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "Tuple",
+          "StructFields": [
+            {
+              "Name": "_1",
+              "Positional": true,
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt8",
+                "Unsigned": true,
+                "Width": 8
+              }
+            },
+            {
+              "Name": "_2",
+              "Positional": true,
+              "SQLType": {
+                "Category": "array",
+                "ElementType": {
+                  "Category": "integer",
+                  "EngineName": "UInt8",
+                  "Unsigned": true,
+                  "Width": 8
+                },
+                "EngineName": "Array"
+              }
+            }
+          ]
+        },
+        "SourceColumn": "numbers_in_pair",
+        "SourceQualifier": "nests",
+        "SourceTable": "nests"
+      },
+      {
+        "Name": "listed_lists",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "array",
+            "ElementType": {
+              "Category": "struct",
+              "EngineName": "Tuple",
+              "StructFields": [
+                {
+                  "Name": "_1",
+                  "Positional": true,
+                  "SQLType": {
+                    "Category": "integer",
+                    "EngineName": "UInt8",
+                    "Unsigned": true,
+                    "Width": 8
+                  }
+                },
+                {
+                  "Name": "_2",
+                  "Positional": true,
+                  "SQLType": {
+                    "Category": "text",
+                    "EngineName": "String"
+                  }
+                }
+              ]
+            },
+            "EngineName": "Array"
+          },
+          "EngineName": "Array"
+        },
+        "SourceColumn": "listed_lists",
+        "SourceQualifier": "nests",
+        "SourceTable": "nests"
+      },
+      {
+        "Name": "field_list_in_pair",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "Tuple",
+          "StructFields": [
+            {
+              "Name": "_1",
+              "Positional": true,
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt8",
+                "Unsigned": true,
+                "Width": 8
+              }
+            },
+            {
+              "Name": "_2",
+              "Positional": true,
+              "SQLType": {
+                "Category": "array",
+                "ElementType": {
+                  "Category": "struct",
+                  "EngineName": "Tuple",
+                  "StructFields": [
+                    {
+                      "Name": "s",
+                      "SQLType": {
+                        "Category": "text",
+                        "EngineName": "String"
+                      }
+                    },
+                    {
+                      "Name": "n",
+                      "SQLType": {
+                        "Category": "integer",
+                        "EngineName": "UInt16",
+                        "Unsigned": true,
+                        "Width": 16
+                      }
+                    }
+                  ]
+                },
+                "EngineName": "Array"
+              }
+            }
+          ]
+        },
+        "SourceColumn": "field_list_in_pair",
+        "SourceQualifier": "nests",
+        "SourceTable": "nests"
+      },
+      {
+        "Name": "keyed_lists",
+        "SQLType": {
+          "Category": "map",
+          "ElementType": {
+            "Category": "array",
+            "ElementType": {
+              "Category": "struct",
+              "EngineName": "Tuple",
+              "StructFields": [
+                {
+                  "Name": "_1",
+                  "Positional": true,
+                  "SQLType": {
+                    "Category": "integer",
+                    "EngineName": "UInt8",
+                    "Unsigned": true,
+                    "Width": 8
+                  }
+                },
+                {
+                  "Name": "_2",
+                  "Positional": true,
+                  "SQLType": {
+                    "Category": "text",
+                    "EngineName": "String"
+                  }
+                }
+              ]
+            },
+            "EngineName": "Array"
+          },
+          "EngineName": "Map",
+          "KeyType": {
+            "Category": "text",
+            "EngineName": "String"
+          }
+        },
+        "SourceColumn": "keyed_lists",
+        "SourceQualifier": "nests",
+        "SourceTable": "nests"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ReadableNests, many)\nSELECT id, fields_in_pair, keyed_pairs_in_pair, pair_list_in_fields, keyed_pairs_in_fields, numbers_in_pair, listed_lists, field_list_in_pair, keyed_lists FROM nests;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:fields_in_pair⟩, ⟨c2:keyed_pairs_in_pair⟩, ⟨c3:pair_list_in_fields⟩, ⟨c4:keyed_pairs_in_fields⟩, ⟨c5:numbers_in_pair⟩, ⟨c6:listed_lists⟩, ⟨c7:field_list_in_pair⟩, ⟨c8:keyed_lists⟩ FROM nests;"
+  },
+  {
+    "Command": "many",
+    "Filename": "nests.sql",
+    "Line": 4,
+    "Name": "NamedNests",
+    "OutputColumns": [
+      {
+        "Name": "inner_named",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "Tuple",
+          "StructFields": [
+            {
+              "Name": "_1",
+              "Positional": true,
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt8",
+                "Unsigned": true,
+                "Width": 8
+              }
+            },
+            {
+              "Name": "_2",
+              "Positional": true,
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "Tuple",
+                "StructFields": [
+                  {
+                    "Name": "s",
+                    "SQLType": {
+                      "Category": "text",
+                      "EngineName": "String"
+                    }
+                  },
+                  {
+                    "Name": "n",
+                    "SQLType": {
+                      "Category": "integer",
+                      "EngineName": "UInt16",
+                      "Unsigned": true,
+                      "Width": 16
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "SourceColumn": "pairs_in_pair",
+        "SourceQualifier": "nests",
+        "SourceTable": "nests"
+      },
+      {
+        "Name": "all_named",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "Tuple",
+          "StructFields": [
+            {
+              "Name": "a",
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt8",
+                "Unsigned": true,
+                "Width": 8
+              }
+            },
+            {
+              "Name": "b",
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "Tuple",
+                "StructFields": [
+                  {
+                    "Name": "s",
+                    "SQLType": {
+                      "Category": "text",
+                      "EngineName": "String"
+                    }
+                  },
+                  {
+                    "Name": "n",
+                    "SQLType": {
+                      "Category": "integer",
+                      "EngineName": "UInt16",
+                      "Unsigned": true,
+                      "Width": 16
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "SourceColumn": "pair_in_fields",
+        "SourceQualifier": "nests",
+        "SourceTable": "nests"
+      },
+      {
+        "Name": "cast_named",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "Tuple",
+          "StructFields": [
+            {
+              "Name": "x",
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt8",
+                "Unsigned": true,
+                "Width": 8
+              }
+            },
+            {
+              "Name": "y",
+              "SQLType": {
+                "Category": "struct",
+                "EngineName": "Tuple",
+                "StructFields": [
+                  {
+                    "Name": "s",
+                    "SQLType": {
+                      "Category": "text",
+                      "EngineName": "String"
+                    }
+                  },
+                  {
+                    "Name": "n",
+                    "SQLType": {
+                      "Category": "integer",
+                      "EngineName": "UInt16",
+                      "Unsigned": true,
+                      "Width": 16
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "SourceColumn": "pairs_in_pair",
+        "SourceQualifier": "nests",
+        "SourceTable": "nests"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(NamedNests, many)\nSELECT CAST(pairs_in_pair AS Tuple(UInt8, Tuple(s String, n UInt16))) AS inner_named, CAST(pair_in_fields AS Tuple(a UInt8, b Tuple(s String, n UInt16))) AS all_named, pairs_in_pair::Tuple(x UInt8, y Tuple(s String, n UInt16)) AS cast_named FROM nests;",
+    "Template": "SELECT ⟨c0 aliased:CAST(pairs_in_pair AS Tuple(UInt8, Tuple(s String, n UInt16)))⟩ AS inner_named, ⟨c1 aliased:CAST(pair_in_fields AS Tuple(a UInt8, b Tuple(s String, n UInt16)))⟩ AS all_named, ⟨c2 aliased:pairs_in_pair::Tuple(x UInt8, y Tuple(s String, n UInt16))⟩ AS cast_named FROM nests;"
+  },
+  {
+    "Command": "many",
+    "Filename": "nests.sql",
+    "Line": 7,
+    "Name": "NestElements",
+    "OutputColumns": [
+      {
+        "Name": "first",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        }
+      },
+      {
+        "Name": "inner_first",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Name": "inner_second",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt16",
+          "Unsigned": true,
+          "Width": 16
+        }
+      },
+      {
+        "Name": "inner_pair",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "Tuple",
+          "StructFields": [
+            {
+              "Name": "_1",
+              "Positional": true,
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "String"
+              }
+            },
+            {
+              "Name": "_2",
+              "Positional": true,
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt16",
+                "Unsigned": true,
+                "Width": 16
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(NestElements, many)\nSELECT pairs_in_pair.1 AS first, pairs_in_pair.2.1 AS inner_first, pairs_in_pair.2.2 AS inner_second, pair_in_fields.b AS inner_pair FROM nests;",
+    "Template": "SELECT ⟨c0 aliased:pairs_in_pair.1⟩ AS first, ⟨c1 aliased:pairs_in_pair.2.1⟩ AS inner_first, ⟨c2 aliased:pairs_in_pair.2.2⟩ AS inner_second, ⟨c3 aliased:pair_in_fields.b⟩ AS inner_pair FROM nests;"
+  }
+]

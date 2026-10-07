@@ -1,0 +1,31 @@
+[
+  {
+    "Command": "one",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "UniqueCounts",
+    "OutputColumns": [
+      {
+        "Name": "approx_unique",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "exact_unique",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(UniqueCounts, one)\nSELECT uniq(user_id) AS approx_unique, uniqExact(user_id) AS exact_unique FROM t;",
+    "Template": "SELECT ⟨c0 aliased:uniq(user_id)⟩ AS approx_unique, ⟨c1 aliased:uniqExact(user_id)⟩ AS exact_unique FROM t;"
+  }
+]

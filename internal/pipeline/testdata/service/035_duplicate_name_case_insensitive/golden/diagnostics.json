@@ -1,0 +1,10 @@
+[
+  {
+    "Code": "Q006",
+    "Column": 1,
+    "Filename": "zzfoo_second.sql",
+    "Line": 1,
+    "Message": "duplicate query name \"ZZFOO\" (first defined in zzfoo_first.sql:1)",
+    "Severity": "error"
+  }
+]

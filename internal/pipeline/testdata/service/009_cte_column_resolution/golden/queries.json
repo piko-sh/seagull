@@ -1,0 +1,22 @@
+[
+  {
+    "Command": "many",
+    "Filename": "get_active_users.sql",
+    "Line": 1,
+    "Name": "GetActiveUserNames",
+    "OutputColumns": [
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "active_users",
+        "SourceTable": "active_users"
+      }
+    ],
+    "SQL": "-- sgl.query(name: GetActiveUserNames, command: many)\nWITH active_users AS (SELECT id, name FROM users WHERE active = true)\nSELECT active_users.name FROM active_users",
+    "Template": "WITH active_users AS (SELECT id, name FROM users WHERE active = true)\\nSELECT active_users.name FROM active_users"
+  }
+]

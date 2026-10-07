@@ -1,0 +1,1 @@
+{"description": "INSERT ON CONFLICT DO UPDATE with parameters in both INSERT and UPDATE parts; the key, a TEXT PRIMARY KEY of a rowid table, which SQLite lets hold NULL, is a *string parameter"}

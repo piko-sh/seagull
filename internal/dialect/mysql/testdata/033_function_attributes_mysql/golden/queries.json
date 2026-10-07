@@ -1,0 +1,55 @@
+[
+  {
+    "Command": "one",
+    "Filename": "items.sql",
+    "Line": 1,
+    "Name": "GetDoubled",
+    "OutputColumns": [
+      {
+        "Name": "doubled",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetDoubled, command: one)\nSELECT pure_double(quantity) AS doubled FROM items WHERE id = ?;",
+    "Template": "SELECT ⟨c0 aliased:pure_double(quantity)⟩ AS doubled FROM items WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "items.sql",
+    "Line": 4,
+    "Name": "GetItemCount",
+    "OutputColumns": [
+      {
+        "Name": "total",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetItemCount, command: one)\nSELECT get_item_count() AS total;",
+    "Template": "SELECT ⟨c0 aliased:get_item_count()⟩ AS total;"
+  }
+]

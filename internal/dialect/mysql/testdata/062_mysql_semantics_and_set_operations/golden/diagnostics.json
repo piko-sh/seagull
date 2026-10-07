@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q063",
+    "Column": 49,
+    "EndColumn": 51,
+    "EndLine": 12,
+    "Filename": "operators.sql",
+    "Line": 12,
+    "Message": "|| is a logical OR in the server's default sql_mode, not string concatenation, so its text operand is read as a number and the expression is true or false; join strings with CONCAT() instead",
+    "Severity": "warning"
+  }
+]

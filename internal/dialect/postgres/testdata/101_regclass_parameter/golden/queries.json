@@ -1,0 +1,58 @@
+[
+  {
+    "Command": "one",
+    "Filename": "sizes.sql",
+    "Line": 1,
+    "Name": "Relation",
+    "OutputColumns": [
+      {
+        "Name": "relation",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "regclass"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "regclass"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Relation, command: one)\nSELECT $1::regclass AS relation;",
+    "Template": "SELECT ⟨c0 aliased:⟨p0⟩::regclass⟩ AS relation;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "sizes.sql",
+    "Line": 4,
+    "Name": "ValueType",
+    "OutputColumns": [
+      {
+        "Name": "value_type",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "relation",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "regclass"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ValueType, command: one)\nSELECT pg_typeof(value) AS value_type, 'readings'::regclass AS relation FROM readings LIMIT 1;",
+    "Template": "SELECT ⟨c0 aliased:pg_typeof(value)⟩ AS value_type, ⟨c1 aliased:'readings'::regclass⟩ AS relation FROM readings LIMIT 1;"
+  }
+]

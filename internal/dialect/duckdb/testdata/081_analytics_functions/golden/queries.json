@@ -1,0 +1,1149 @@
+[
+  {
+    "Command": "many",
+    "Filename": "aggregates.sql",
+    "Line": 1,
+    "Name": "StationSummary",
+    "OutputColumns": [
+      {
+        "Name": "station",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "station",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "any_tally",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "arbitrary_reading",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "opening_reading",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "last_taken_at",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp",
+          "Temporal": "timestamp"
+        }
+      },
+      {
+        "Name": "earliest_id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "peak_station",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "peak_tally",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "cheapest_price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric",
+          "Precision": 10,
+          "Scale": 2
+        }
+      },
+      {
+        "Name": "busiest_day",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        }
+      },
+      {
+        "Name": "top_ids",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int4",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "int4[]"
+        }
+      },
+      {
+        "Name": "reading_product",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "reading_total",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "reading_average",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "mean_price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "reading_kurtosis",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "reading_skewness",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "tally_entropy",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "reading_error",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "distinct_ids",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "approximate_median_tally",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "sampled_reading",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "median_tally",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "median_reading",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      },
+      {
+        "Name": "percentile_reading",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "tally_histogram",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "map",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "ubigint",
+            "Nullable": true,
+            "Unsigned": true,
+            "Width": 64
+          },
+          "EngineName": "map",
+          "KeyType": {
+            "Category": "integer",
+            "EngineName": "int4",
+            "Width": 32
+          }
+        }
+      },
+      {
+        "Name": "frequent_stations",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "varchar",
+            "Nullable": true
+          },
+          "EngineName": "varchar[]"
+        }
+      },
+      {
+        "Name": "correlation",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "population_covariance",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "sample_covariance",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "slope",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "intercept",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "fit",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "fitted_rows",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "uinteger",
+          "Unsigned": true,
+          "Width": 32
+        }
+      },
+      {
+        "Name": "valid_readings",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "hugeint",
+          "Width": 128
+        }
+      },
+      {
+        "Name": "readings",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "stations",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "listed_stations",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "tallies",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "geometric_mean",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "weighted_reading",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: StationSummary, command: many)\nSELECT\n    station,\n    any_value(tally) AS any_tally,\n    arbitrary(reading) AS arbitrary_reading,\n    first(reading ORDER BY taken_at) AS opening_reading,\n    last(taken_at) AS last_taken_at,\n    arg_min(id, taken_at) AS earliest_id,\n    arg_max(station, reading) AS peak_station,\n    argmax(tally, reading) AS peak_tally,\n    min_by(price, reading) AS cheapest_price,\n    max_by(taken_on, tally) AS busiest_day,\n    arg_max(id, reading, 3) AS top_ids,\n    product(reading) AS reading_product,\n    fsum(reading) AS reading_total,\n    favg(reading) AS reading_average,\n    mean(price) AS mean_price,\n    kurtosis(reading) AS reading_kurtosis,\n    skewness(reading) AS reading_skewness,\n    entropy(tally) AS tally_entropy,\n    sem(reading) AS reading_error,\n    approx_count_distinct(id) AS distinct_ids,\n    approx_quantile(tally, 0.5) AS approximate_median_tally,\n    reservoir_quantile(reading, 0.9) AS sampled_reading,\n    quantile(tally, 0.5) AS median_tally,\n    quantile_cont(reading, 0.5) AS median_reading,\n    percentile_cont(0.5) WITHIN GROUP (ORDER BY reading) AS percentile_reading,\n    histogram(tally) AS tally_histogram,\n    approx_top_k(station, 2) AS frequent_stations,\n    corr(reading, tally) AS correlation,\n    covar_pop(reading, tally) AS population_covariance,\n    covar_samp(reading, tally) AS sample_covariance,\n    regr_slope(reading, tally) AS slope,\n    regr_intercept(reading, tally) AS intercept,\n    regr_r2(reading, tally) AS fit,\n    regr_count(reading, tally) AS fitted_rows,\n    count_if(valid) AS valid_readings,\n    count_star() AS readings,\n    group_concat(station, ',') AS stations,\n    listagg(station) AS listed_stations,\n    string_agg(tally, ',') AS tallies,\n    geomean(reading) AS geometric_mean,\n    weighted_avg(reading, tally) AS weighted_reading\nFROM readings\nGROUP BY station;",
+    "Template": "SELECT\\n    ⟨c0:station⟩,\\n    ⟨c1 aliased:any_value(tally)⟩ AS any_tally,\\n    ⟨c2 aliased:arbitrary(reading)⟩ AS arbitrary_reading,\\n    ⟨c3 aliased:first(reading ORDER BY taken_at)⟩ AS opening_reading,\\n    ⟨c4 aliased:last(taken_at)⟩ AS last_taken_at,\\n    ⟨c5 aliased:arg_min(id, taken_at)⟩ AS earliest_id,\\n    ⟨c6 aliased:arg_max(station, reading)⟩ AS peak_station,\\n    ⟨c7 aliased:argmax(tally, reading)⟩ AS peak_tally,\\n    ⟨c8 aliased:min_by(price, reading)⟩ AS cheapest_price,\\n    ⟨c9 aliased:max_by(taken_on, tally)⟩ AS busiest_day,\\n    ⟨c10 aliased:arg_max(id, reading, 3)⟩ AS top_ids,\\n    ⟨c11 aliased:product(reading)⟩ AS reading_product,\\n    ⟨c12 aliased:fsum(reading)⟩ AS reading_total,\\n    ⟨c13 aliased:favg(reading)⟩ AS reading_average,\\n    ⟨c14 aliased:mean(price)⟩ AS mean_price,\\n    ⟨c15 aliased:kurtosis(reading)⟩ AS reading_kurtosis,\\n    ⟨c16 aliased:skewness(reading)⟩ AS reading_skewness,\\n    ⟨c17 aliased:entropy(tally)⟩ AS tally_entropy,\\n    ⟨c18 aliased:sem(reading)⟩ AS reading_error,\\n    ⟨c19 aliased:approx_count_distinct(id)⟩ AS distinct_ids,\\n    ⟨c20 aliased:approx_quantile(tally, 0.5)⟩ AS approximate_median_tally,\\n    ⟨c21 aliased:reservoir_quantile(reading, 0.9)⟩ AS sampled_reading,\\n    ⟨c22 aliased:quantile(tally, 0.5)⟩ AS median_tally,\\n    ⟨c23 aliased:quantile_cont(reading, 0.5)⟩ AS median_reading,\\n    ⟨c24 aliased:percentile_cont(0.5) WITHIN GROUP (ORDER BY reading)⟩ AS percentile_reading,\\n    ⟨c25 aliased:histogram(tally)⟩ AS tally_histogram,\\n    ⟨c26 aliased:approx_top_k(station, 2)⟩ AS frequent_stations,\\n    ⟨c27 aliased:corr(reading, tally)⟩ AS correlation,\\n    ⟨c28 aliased:covar_pop(reading, tally)⟩ AS population_covariance,\\n    ⟨c29 aliased:covar_samp(reading, tally)⟩ AS sample_covariance,\\n    ⟨c30 aliased:regr_slope(reading, tally)⟩ AS slope,\\n    ⟨c31 aliased:regr_intercept(reading, tally)⟩ AS intercept,\\n    ⟨c32 aliased:regr_r2(reading, tally)⟩ AS fit,\\n    ⟨c33 aliased:regr_count(reading, tally)⟩ AS fitted_rows,\\n    ⟨c34 aliased:count_if(valid)⟩ AS valid_readings,\\n    ⟨c35 aliased:count_star()⟩ AS readings,\\n    ⟨c36 aliased:group_concat(station, ',')⟩ AS stations,\\n    ⟨c37 aliased:listagg(station)⟩ AS listed_stations,\\n    ⟨c38 aliased:string_agg(tally, ',')⟩ AS tallies,\\n    ⟨c39 aliased:geomean(reading)⟩ AS geometric_mean,\\n    ⟨c40 aliased:weighted_avg(reading, tally)⟩ AS weighted_reading\\nFROM readings\\nGROUP BY station;"
+  },
+  {
+    "Command": "many",
+    "Filename": "dates.sql",
+    "Line": 1,
+    "Name": "ReadingCalendar",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "taken_year",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "taken_month",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "taken_day",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "taken_hour",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "taken_minute",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "taken_second",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "taken_millisecond",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "taken_quarter",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "taken_week",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "taken_weekday",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "taken_day_of_week",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "taken_day_of_year",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "taken_iso_day",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "taken_epoch",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "taken_epoch_ms",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "age_days",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "age_hours",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "age_months",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "taken_part",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "taken_month_start",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "next_day",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp",
+          "Temporal": "timestamp"
+        }
+      },
+      {
+        "Name": "hour_bucket",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp",
+          "Temporal": "timestamp"
+        }
+      },
+      {
+        "Name": "week_bucket",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        }
+      },
+      {
+        "Name": "tally_days",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "interval",
+          "Temporal": "interval"
+        }
+      },
+      {
+        "Name": "tally_hours",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "interval",
+          "Temporal": "interval"
+        }
+      },
+      {
+        "Name": "parsed_payload",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp",
+          "Temporal": "timestamp"
+        }
+      },
+      {
+        "Name": "started_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "days_left",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "epoch_start",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ReadingCalendar, command: many)\nSELECT\n    id,\n    year(taken_at) AS taken_year,\n    month(taken_on) AS taken_month,\n    day(taken_on) AS taken_day,\n    hour(taken_at) AS taken_hour,\n    minute(taken_at) AS taken_minute,\n    second(taken_at) AS taken_second,\n    millisecond(taken_at) AS taken_millisecond,\n    quarter(taken_on) AS taken_quarter,\n    week(taken_on) AS taken_week,\n    weekday(taken_on) AS taken_weekday,\n    dayofweek(taken_on) AS taken_day_of_week,\n    dayofyear(taken_at) AS taken_day_of_year,\n    isodow(taken_on) AS taken_iso_day,\n    epoch(taken_at) AS taken_epoch,\n    epoch_ms(taken_at) AS taken_epoch_ms,\n    date_diff('day', taken_on, current_date) AS age_days,\n    datediff('hour', taken_at, now()) AS age_hours,\n    date_sub('month', taken_on, current_date) AS age_months,\n    datepart('year', taken_at) AS taken_part,\n    datetrunc('month', taken_at) AS taken_month_start,\n    date_add(taken_on, INTERVAL 1 DAY) AS next_day,\n    time_bucket(INTERVAL '1 hour', taken_at) AS hour_bucket,\n    time_bucket(INTERVAL '7 days', taken_on) AS week_bucket,\n    to_days(tally) AS tally_days,\n    to_hours(tally) AS tally_hours,\n    try_strptime(payload, '%Y-%m-%d') AS parsed_payload,\n    transaction_timestamp() AS started_at,\n    date_diff('day', taken_on, DATE '2024-12-31') AS days_left,\n    TIMESTAMP WITH TIME ZONE '2024-01-01 00:00:00+00' AS epoch_start\nFROM readings\nWHERE taken_at \u003e '2024-01-01'\n  AND taken_on BETWEEN DATE '2024-01-01' AND '2024-12-31';",
+    "Template": "SELECT\\n    ⟨c0:id⟩,\\n    ⟨c1 aliased:year(taken_at)⟩ AS taken_year,\\n    ⟨c2 aliased:month(taken_on)⟩ AS taken_month,\\n    ⟨c3 aliased:day(taken_on)⟩ AS taken_day,\\n    ⟨c4 aliased:hour(taken_at)⟩ AS taken_hour,\\n    ⟨c5 aliased:minute(taken_at)⟩ AS taken_minute,\\n    ⟨c6 aliased:second(taken_at)⟩ AS taken_second,\\n    ⟨c7 aliased:millisecond(taken_at)⟩ AS taken_millisecond,\\n    ⟨c8 aliased:quarter(taken_on)⟩ AS taken_quarter,\\n    ⟨c9 aliased:week(taken_on)⟩ AS taken_week,\\n    ⟨c10 aliased:weekday(taken_on)⟩ AS taken_weekday,\\n    ⟨c11 aliased:dayofweek(taken_on)⟩ AS taken_day_of_week,\\n    ⟨c12 aliased:dayofyear(taken_at)⟩ AS taken_day_of_year,\\n    ⟨c13 aliased:isodow(taken_on)⟩ AS taken_iso_day,\\n    ⟨c14 aliased:epoch(taken_at)⟩ AS taken_epoch,\\n    ⟨c15 aliased:epoch_ms(taken_at)⟩ AS taken_epoch_ms,\\n    ⟨c16 aliased:date_diff('day', taken_on, current_date)⟩ AS age_days,\\n    ⟨c17 aliased:datediff('hour', taken_at, now())⟩ AS age_hours,\\n    ⟨c18 aliased:date_sub('month', taken_on, current_date)⟩ AS age_months,\\n    ⟨c19 aliased:datepart('year', taken_at)⟩ AS taken_part,\\n    ⟨c20 aliased:datetrunc('month', taken_at)⟩ AS taken_month_start,\\n    ⟨c21 aliased:date_add(taken_on, INTERVAL 1 DAY)⟩ AS next_day,\\n    ⟨c22 aliased:time_bucket(INTERVAL '1 hour', taken_at)⟩ AS hour_bucket,\\n    ⟨c23 aliased:time_bucket(INTERVAL '7 days', taken_on)⟩ AS week_bucket,\\n    ⟨c24 aliased:to_days(tally)⟩ AS tally_days,\\n    ⟨c25 aliased:to_hours(tally)⟩ AS tally_hours,\\n    ⟨c26 aliased:try_strptime(payload, '%Y-%m-%d')⟩ AS parsed_payload,\\n    ⟨c27 aliased:transaction_timestamp()⟩ AS started_at,\\n    ⟨c28 aliased:date_diff('day', taken_on, DATE '2024-12-31')⟩ AS days_left,\\n    ⟨c29 aliased:TIMESTAMP WITH TIME ZONE '2024-01-01 00:00:00+00'⟩ AS epoch_start\\nFROM readings\\nWHERE taken_at \u003e '2024-01-01'\\n  AND taken_on BETWEEN DATE '2024-01-01' AND '2024-12-31';"
+  },
+  {
+    "Command": "many",
+    "Filename": "values.sql",
+    "Line": 1,
+    "Name": "ReadingValues",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "payload_parts",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "varchar",
+            "Nullable": true
+          },
+          "EngineName": "varchar[]"
+        }
+      },
+      {
+        "Name": "station_parts",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "varchar",
+            "Nullable": true
+          },
+          "EngineName": "varchar[]"
+        }
+      },
+      {
+        "Name": "split_station",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "varchar",
+            "Nullable": true
+          },
+          "EngineName": "varchar[]"
+        }
+      },
+      {
+        "Name": "payload_fields",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "varchar",
+            "Nullable": true
+          },
+          "EngineName": "varchar[]"
+        }
+      },
+      {
+        "Name": "payload_numbers",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "varchar",
+            "Nullable": true
+          },
+          "EngineName": "varchar[]"
+        }
+      },
+      {
+        "Name": "lower_station",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "upper_station",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "station_digest",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "station_hex",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "edit_distance",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "similarity",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "overlap",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "plain_station",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "encoded_station",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "tally_size",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "has_three",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      },
+      {
+        "Name": "has_any_tag",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      },
+      {
+        "Name": "more_scores",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int4",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "int4[]"
+        }
+      },
+      {
+        "Name": "first_tags",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "varchar",
+            "Nullable": true
+          },
+          "EngineName": "varchar[]"
+        }
+      },
+      {
+        "Name": "tag_position",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "common_scores",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int4",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "int4[]"
+        }
+      },
+      {
+        "Name": "reversed_tags",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "varchar",
+            "Nullable": true
+          },
+          "EngineName": "varchar[]"
+        }
+      },
+      {
+        "Name": "appended_scores",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int4",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "int4[]"
+        }
+      },
+      {
+        "Name": "prepended_scores",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int4",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "int4[]"
+        }
+      },
+      {
+        "Name": "selected_tags",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "varchar",
+            "Nullable": true
+          },
+          "EngineName": "varchar[]"
+        }
+      },
+      {
+        "Name": "masked_scores",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int4",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "int4[]"
+        }
+      },
+      {
+        "Name": "score_order",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int8",
+            "Nullable": true,
+            "Width": 64
+          },
+          "EngineName": "int8[]"
+        }
+      },
+      {
+        "Name": "score_total",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "hugeint",
+          "Width": 128
+        }
+      },
+      {
+        "Name": "score_average",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "lowest_score",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "last_tag",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "score_count",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "first_tag",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "joined_tags",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "cosine",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "root_half",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "reading_remainder",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "tally_third",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "reading_tanh",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "negative_reading",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      },
+      {
+        "Name": "rounded_reading",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "common_divisor",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "flipped_tally",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "payload_a",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "json"
+        }
+      },
+      {
+        "Name": "payload_a_text",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "has_a",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        }
+      },
+      {
+        "Name": "document_a",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "document_a_text",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "payload_document",
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "json"
+        }
+      },
+      {
+        "Name": "lower_document",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "document_length",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "request_id",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ReadingValues, command: many)\nSELECT\n    id,\n    string_split(payload, ',') AS payload_parts,\n    str_split(station, '-') AS station_parts,\n    split(station, '-') AS split_station,\n    regexp_split_to_array(payload, '[,;]') AS payload_fields,\n    regexp_extract_all(payload, '[0-9]+') AS payload_numbers,\n    lcase(station) AS lower_station,\n    ucase(station) AS upper_station,\n    sha256(station) AS station_digest,\n    hex(station) AS station_hex,\n    levenshtein(station, payload) AS edit_distance,\n    jaro_winkler_similarity(station, payload) AS similarity,\n    jaccard(station, payload) AS overlap,\n    strip_accents(station) AS plain_station,\n    url_encode(station) AS encoded_station,\n    format_bytes(tally) AS tally_size,\n    list_has(scores, 3) AS has_three,\n    list_has_any(tags, ['a', 'b']) AS has_any_tag,\n    list_concat(scores, [1, 2]) AS more_scores,\n    list_slice(tags, 1, 2) AS first_tags,\n    list_position(tags, 'a') AS tag_position,\n    list_intersect(scores, [1, 2]) AS common_scores,\n    list_reverse(tags) AS reversed_tags,\n    list_append(scores, tally) AS appended_scores,\n    list_prepend(tally, scores) AS prepended_scores,\n    list_select(tags, [1]) AS selected_tags,\n    list_where(scores, [true, false]) AS masked_scores,\n    list_grade_up(scores) AS score_order,\n    list_sum(scores) AS score_total,\n    list_avg(scores) AS score_average,\n    list_min(scores) AS lowest_score,\n    list_max(tags) AS last_tag,\n    list_count(scores) AS score_count,\n    list_first(tags) AS first_tag,\n    list_string_agg(tags) AS joined_tags,\n    list_cosine_similarity([1.0, 2.0], [2.0, 1.0]) AS cosine,\n    sqrt(0.5) AS root_half,\n    fmod(reading, 2) AS reading_remainder,\n    fdiv(tally, 3) AS tally_third,\n    tanh(reading) AS reading_tanh,\n    signbit(reading) AS negative_reading,\n    round_even(reading, 1) AS rounded_reading,\n    greatest_common_divisor(tally, 12) AS common_divisor,\n    xor(tally, 1) AS flipped_tally,\n    json_extract(payload, '$.a') AS payload_a,\n    json_extract_string(payload, '$.a') AS payload_a_text,\n    json_exists(document, '$.a') AS has_a,\n    json_value(document, '$.a') AS document_a,\n    json_extract_path_text(document, '$.a') AS document_a_text,\n    json(payload) AS payload_document,\n    lower(document) AS lower_document,\n    length(document) AS document_length,\n    uuidv7() AS request_id\nFROM readings;",
+    "Template": "SELECT\\n    ⟨c0:id⟩,\\n    ⟨c1 aliased:string_split(payload, ',')⟩ AS payload_parts,\\n    ⟨c2 aliased:str_split(station, '-')⟩ AS station_parts,\\n    ⟨c3 aliased:split(station, '-')⟩ AS split_station,\\n    ⟨c4 aliased:regexp_split_to_array(payload, '[,;]')⟩ AS payload_fields,\\n    ⟨c5 aliased:regexp_extract_all(payload, '[0-9]+')⟩ AS payload_numbers,\\n    ⟨c6 aliased:lcase(station)⟩ AS lower_station,\\n    ⟨c7 aliased:ucase(station)⟩ AS upper_station,\\n    ⟨c8 aliased:sha256(station)⟩ AS station_digest,\\n    ⟨c9 aliased:hex(station)⟩ AS station_hex,\\n    ⟨c10 aliased:levenshtein(station, payload)⟩ AS edit_distance,\\n    ⟨c11 aliased:jaro_winkler_similarity(station, payload)⟩ AS similarity,\\n    ⟨c12 aliased:jaccard(station, payload)⟩ AS overlap,\\n    ⟨c13 aliased:strip_accents(station)⟩ AS plain_station,\\n    ⟨c14 aliased:url_encode(station)⟩ AS encoded_station,\\n    ⟨c15 aliased:format_bytes(tally)⟩ AS tally_size,\\n    ⟨c16 aliased:list_has(scores, 3)⟩ AS has_three,\\n    ⟨c17 aliased:list_has_any(tags, ['a', 'b'])⟩ AS has_any_tag,\\n    ⟨c18 aliased:list_concat(scores, [1, 2])⟩ AS more_scores,\\n    ⟨c19 aliased:list_slice(tags, 1, 2)⟩ AS first_tags,\\n    ⟨c20 aliased:list_position(tags, 'a')⟩ AS tag_position,\\n    ⟨c21 aliased:list_intersect(scores, [1, 2])⟩ AS common_scores,\\n    ⟨c22 aliased:list_reverse(tags)⟩ AS reversed_tags,\\n    ⟨c23 aliased:list_append(scores, tally)⟩ AS appended_scores,\\n    ⟨c24 aliased:list_prepend(tally, scores)⟩ AS prepended_scores,\\n    ⟨c25 aliased:list_select(tags, [1])⟩ AS selected_tags,\\n    ⟨c26 aliased:list_where(scores, [true, false])⟩ AS masked_scores,\\n    ⟨c27 aliased:list_grade_up(scores)⟩ AS score_order,\\n    ⟨c28 aliased:list_sum(scores)⟩ AS score_total,\\n    ⟨c29 aliased:list_avg(scores)⟩ AS score_average,\\n    ⟨c30 aliased:list_min(scores)⟩ AS lowest_score,\\n    ⟨c31 aliased:list_max(tags)⟩ AS last_tag,\\n    ⟨c32 aliased:list_count(scores)⟩ AS score_count,\\n    ⟨c33 aliased:list_first(tags)⟩ AS first_tag,\\n    ⟨c34 aliased:list_string_agg(tags)⟩ AS joined_tags,\\n    ⟨c35 aliased:list_cosine_similarity([1.0, 2.0], [2.0, 1.0])⟩ AS cosine,\\n    ⟨c36 aliased:sqrt(0.5)⟩ AS root_half,\\n    ⟨c37 aliased:fmod(reading, 2)⟩ AS reading_remainder,\\n    ⟨c38 aliased:fdiv(tally, 3)⟩ AS tally_third,\\n    ⟨c39 aliased:tanh(reading)⟩ AS reading_tanh,\\n    ⟨c40 aliased:signbit(reading)⟩ AS negative_reading,\\n    ⟨c41 aliased:round_even(reading, 1)⟩ AS rounded_reading,\\n    ⟨c42 aliased:greatest_common_divisor(tally, 12)⟩ AS common_divisor,\\n    ⟨c43 aliased:xor(tally, 1)⟩ AS flipped_tally,\\n    ⟨c44 aliased:json_extract(payload, '$.a')⟩ AS payload_a,\\n    ⟨c45 aliased:json_extract_string(payload, '$.a')⟩ AS payload_a_text,\\n    ⟨c46 aliased:json_exists(document, '$.a')⟩ AS has_a,\\n    ⟨c47 aliased:json_value(document, '$.a')⟩ AS document_a,\\n    ⟨c48 aliased:json_extract_path_text(document, '$.a')⟩ AS document_a_text,\\n    ⟨c49 aliased:json(payload)⟩ AS payload_document,\\n    ⟨c50 aliased:lower(document)⟩ AS lower_document,\\n    ⟨c51 aliased:length(document)⟩ AS document_length,\\n    ⟨c52 aliased:uuidv7()⟩ AS request_id\\nFROM readings;"
+  }
+]

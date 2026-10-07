@@ -1,0 +1,298 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "public": {
+      "CompositeTypes": {
+        "__sgl_udf_Series____row": {
+          "Fields": [
+            {
+              "GeneratedKind": "none",
+              "Name": "quoted_value",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 5
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            }
+          ],
+          "Name": "__sgl_udf_Series____row",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 5
+          },
+          "Schema": "public"
+        },
+        "__sgl_udf_series____row": {
+          "Fields": [
+            {
+              "GeneratedKind": "none",
+              "Name": "plain_value",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 6
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            }
+          ],
+          "Name": "__sgl_udf_series____row",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 6
+          },
+          "Schema": "public"
+        }
+      },
+      "Functions": {
+        "Label": [
+          {
+            "Arguments": [
+              {
+                "Name": "value",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int4",
+                  "Width": 32
+                }
+              }
+            ],
+            "BodySQL": "\n    SELECT value * 2;\n",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "Label",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 1
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int4",
+              "Width": 32
+            }
+          }
+        ],
+        "Purge": [
+          {
+            "BodySQL": "\n    DELETE FROM events;\n    SELECT 0;\n",
+            "DataAccess": "modifies-data",
+            "Language": "sql",
+            "Name": "Purge",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 7
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int4",
+              "Width": 32
+            }
+          }
+        ],
+        "Scale": [
+          {
+            "Arguments": [
+              {
+                "Name": "factor",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int8",
+                  "Width": 64
+                }
+              }
+            ],
+            "BodySQL": "\n    SELECT factor * 10;\n",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "Scale",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 3
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int8",
+              "Width": 64
+            }
+          }
+        ],
+        "Series": [
+          {
+            "BodySQL": "\n    SELECT 1;\n",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "Name": "Series",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 5
+            },
+            "ReturnType": {
+              "Category": "composite",
+              "EngineName": "__sgl_udf_Series____row",
+              "Schema": "public"
+            },
+            "ReturnsSet": true
+          }
+        ],
+        "counted": [
+          {
+            "BodySQL": "\n    SELECT purge();\n",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "Name": "counted",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 9
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int4",
+              "Width": 32
+            }
+          }
+        ],
+        "label": [
+          {
+            "Arguments": [
+              {
+                "Name": "value",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int4",
+                  "Width": 32
+                }
+              }
+            ],
+            "BodySQL": "\n    SELECT value::text;\n",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "label",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 2
+            },
+            "ReturnType": {
+              "Category": "text",
+              "EngineName": "text"
+            }
+          }
+        ],
+        "purge": [
+          {
+            "BodySQL": "\n    SELECT count(*)::integer FROM events;\n",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "Name": "purge",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 8
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int4",
+              "Width": 32
+            }
+          }
+        ],
+        "scale": [
+          {
+            "Arguments": [
+              {
+                "Name": "factor",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int4",
+                  "Width": 32
+                }
+              }
+            ],
+            "BodySQL": "\n    SELECT factor * 10;\n",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "scale",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 4
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int4",
+              "Width": 32
+            }
+          }
+        ],
+        "series": [
+          {
+            "BodySQL": "\n    SELECT 'one'::text;\n",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "Name": "series",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 6
+            },
+            "ReturnType": {
+              "Category": "composite",
+              "EngineName": "__sgl_udf_series____row",
+              "Schema": "public"
+            },
+            "ReturnsSet": true
+          }
+        ]
+      },
+      "Name": "public",
+      "Tables": {
+        "events": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            }
+          ],
+          "Name": "events",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

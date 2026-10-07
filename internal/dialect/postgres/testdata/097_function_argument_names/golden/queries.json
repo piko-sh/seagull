@@ -1,0 +1,166 @@
+[
+  {
+    "Command": "one",
+    "Filename": "prices.sql",
+    "Line": 1,
+    "Name": "ScaledPrice",
+    "OutputColumns": [
+      {
+        "Name": "price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "amount",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "factor",
+        "Number": 2,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ScaledPrice, command: one)\nSELECT scale_price($1, $2) AS price;",
+    "Template": "SELECT ⟨c0 aliased:scale_price(⟨p0⟩, ⟨p1⟩)⟩ AS price;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "prices.sql",
+    "Line": 4,
+    "Name": "ScaledPriceByName",
+    "OutputColumns": [
+      {
+        "Name": "price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "factor",
+        "Number": 1,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "amount",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ScaledPriceByName, command: one)\nSELECT scale_price(factor =\u003e $1, amount =\u003e $2) AS price;",
+    "Template": "SELECT ⟨c0 aliased:scale_price(factor =\u003e ⟨p0⟩, amount =\u003e ⟨p1⟩)⟩ AS price;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "prices.sql",
+    "Line": 7,
+    "Name": "ScaledPriceByOldName",
+    "OutputColumns": [
+      {
+        "Name": "price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "factor",
+        "Number": 1,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "amount",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ScaledPriceByOldName, command: one)\nSELECT scale_price(factor := $1, amount := $2) AS price;",
+    "Template": "SELECT ⟨c0 aliased:scale_price(factor := ⟨p0⟩, amount := ⟨p1⟩)⟩ AS price;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "prices.sql",
+    "Line": 10,
+    "Name": "TidyCatches",
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "older_than",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "keep",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: TidyCatches, command: exec)\nCALL tidy_catches($1, $2);",
+    "Template": "CALL tidy_catches(⟨p0⟩, ⟨p1⟩);⟨arguments p0 p1⟩"
+  }
+]

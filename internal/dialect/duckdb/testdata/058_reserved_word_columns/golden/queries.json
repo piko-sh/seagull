@@ -1,0 +1,189 @@
+[
+  {
+    "Command": "many",
+    "Filename": "orders.sql",
+    "Line": 1,
+    "Name": "GetOrders",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "order",
+        "SourceTable": "order"
+      },
+      {
+        "Name": "group",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "group",
+        "SourceQualifier": "order",
+        "SourceTable": "order"
+      },
+      {
+        "Name": "check",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "check",
+        "SourceQualifier": "order",
+        "SourceTable": "order"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "where",
+        "Nullable": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "select",
+        "Nullable": true,
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetOrders, command: many)\nSELECT id, \"group\", \"check\" FROM \"order\" WHERE \"where\" = $1 AND \"select\" = $2;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:\"group\"⟩, ⟨c2:\"check\"⟩ FROM \"order\" WHERE \"where\" = ⟨p0⟩ AND \"select\" = ⟨p1⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "execrows",
+    "Filename": "orders.sql",
+    "Line": 4,
+    "Name": "MoveOrder",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "group",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "where",
+        "Nullable": true,
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: MoveOrder, command: execrows)\nUPDATE \"order\" SET \"group\" = $1 WHERE \"where\" = $2;",
+    "Template": "UPDATE \"order\" SET \"group\" = ⟨p0⟩ WHERE \"where\" = ⟨p1⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "orders.sql",
+    "Line": 7,
+    "Name": "AllOrders",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "order",
+        "SourceTable": "order"
+      },
+      {
+        "Name": "group",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "group",
+        "SourceQualifier": "order",
+        "SourceTable": "order"
+      },
+      {
+        "Name": "where",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "where",
+        "SourceQualifier": "order",
+        "SourceTable": "order"
+      },
+      {
+        "Name": "check",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "check",
+        "SourceQualifier": "order",
+        "SourceTable": "order"
+      },
+      {
+        "Name": "constraint",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "constraint",
+        "SourceQualifier": "order",
+        "SourceTable": "order"
+      },
+      {
+        "Name": "primary",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "bool"
+        },
+        "SourceColumn": "primary",
+        "SourceQualifier": "order",
+        "SourceTable": "order"
+      },
+      {
+        "Name": "select",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "select",
+        "SourceQualifier": "order",
+        "SourceTable": "order"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AllOrders, command: many)\nSELECT * FROM \"order\";",
+    "Template": "SELECT ⟨star 0=order.id 1=order.group 2=order.where 3=order.check 4=order.constraint 5=order.primary 6=order.select:*⟩ FROM \"order\";"
+  }
+]

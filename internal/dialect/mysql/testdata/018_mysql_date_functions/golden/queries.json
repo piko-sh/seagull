@@ -1,0 +1,105 @@
+[
+  {
+    "Command": "many",
+    "Filename": "formatted_schedule.sql",
+    "Line": 1,
+    "Name": "FormattedSchedule",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "appointments",
+        "SourceTable": "appointments"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 200
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "appointments",
+        "SourceTable": "appointments"
+      },
+      {
+        "Name": "formatted_date",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "days_until",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FormattedSchedule, command: many)\nSELECT\n    id,\n    title,\n    DATE_FORMAT(scheduled_at, '%Y-%m-%d %H:%i') AS formatted_date,\n    DATEDIFF(scheduled_at, CURDATE()) AS days_until\nFROM appointments\nWHERE scheduled_at \u003e= CURDATE();",
+    "Template": "SELECT\\n    ⟨c0:id⟩,\\n    ⟨c1:title⟩,\\n    ⟨c2 aliased:DATE_FORMAT(scheduled_at, '%Y-%m-%d %H:%i')⟩ AS formatted_date,\\n    ⟨c3 aliased:DATEDIFF(scheduled_at, CURDATE())⟩ AS days_until\\nFROM appointments\\nWHERE scheduled_at \u003e= CURDATE();"
+  },
+  {
+    "Command": "many",
+    "Filename": "upcoming.sql",
+    "Line": 1,
+    "Name": "UpcomingAppointments",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "appointments",
+        "SourceTable": "appointments"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 200
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "appointments",
+        "SourceTable": "appointments"
+      },
+      {
+        "Name": "scheduled_at",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "scheduled_at",
+        "SourceQualifier": "appointments",
+        "SourceTable": "appointments"
+      },
+      {
+        "Name": "duration_minutes",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "duration_minutes",
+        "SourceQualifier": "appointments",
+        "SourceTable": "appointments"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: UpcomingAppointments, command: many)\nSELECT id, title, scheduled_at, duration_minutes\nFROM appointments\nWHERE scheduled_at \u003e NOW()\nORDER BY scheduled_at;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:title⟩, ⟨c2:scheduled_at⟩, ⟨c3:duration_minutes⟩\\nFROM appointments\\nWHERE scheduled_at \u003e NOW()\\nORDER BY scheduled_at;"
+  }
+]

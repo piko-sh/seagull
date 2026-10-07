@@ -1,0 +1,3 @@
+{
+  "description": "Nullable JSON column on DuckDB: a NULL row scans into the generated JSON type as nil, and a populated row, cast to VARCHAR by the generated query, scans as the document's text"
+}

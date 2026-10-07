@@ -1,0 +1,68 @@
+[
+  {
+    "Command": "many",
+    "Filename": "list_by_status.sql",
+    "Line": 1,
+    "Name": "ListByStatus",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "status",
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "status",
+          "EnumValues": [
+            "active",
+            "inactive",
+            "pending"
+          ],
+          "Schema": "public"
+        },
+        "SourceColumn": "status",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "status",
+        "Number": 1,
+        "SQLType": {
+          "Category": "enum",
+          "EngineName": "status",
+          "EnumValues": [
+            "active",
+            "inactive",
+            "pending"
+          ],
+          "Schema": "public"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListByStatus, command: many)\nSELECT id, name, status FROM items WHERE status = $1::status;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:status⟩ FROM items WHERE status = ⟨p0⟩::status;⟨arguments p0⟩"
+  }
+]

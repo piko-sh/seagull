@@ -1,0 +1,4 @@
+{
+  "description": "Follower reads and grammar against CockroachDB: AS OF SYSTEM TIME after the FROM clause, with an interval and with follower_read_timestamp() after a join; LIMIT and OFFSET over cast and multiplied parameters; a table's column alias list; a VALUES arm.",
+  "expectedDiagnostics": []
+}

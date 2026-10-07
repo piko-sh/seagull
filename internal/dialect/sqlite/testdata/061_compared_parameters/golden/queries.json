@@ -1,0 +1,137 @@
+[
+  {
+    "Command": "many",
+    "Filename": "items.sql",
+    "Line": 1,
+    "Name": "MatchItems",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "matched",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "boolean"
+        }
+      },
+      {
+        "Name": "level",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "threshold",
+        "Nullable": true,
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "p3",
+        "Number": 3,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "ceiling",
+        "Number": 4,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 5,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: MatchItems, command: many)\nSELECT\n    id,\n    id + 1 = ? AS matched,\n    CASE WHEN stock \u003e :threshold THEN 'many' ELSE 'few' END AS level\nFROM items\nWHERE price * 2 \u003e ?3\n  AND coalesce(stock, 0) \u003c @ceiling\n  AND name = $name\n  AND stock \u003c\u003e :threshold;",
+    "Template": "SELECT\\n    ⟨c0:id⟩,\\n    ⟨c1 aliased:id + 1 = ⟨p0⟩⟩ AS matched,\\n    ⟨c2 aliased:CASE WHEN stock \u003e ⟨p1⟩ THEN 'many' ELSE 'few' END⟩ AS level\\nFROM items\\nWHERE price * 2 \u003e ⟨p2⟩\\n  AND coalesce(stock, 0) \u003c ⟨p3⟩\\n  AND name = ⟨p4⟩\\n  AND stock \u003c\u003e ⟨p1⟩;⟨arguments p0 p1 p2 p3 p4⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "items.sql",
+    "Line": 12,
+    "Name": "CountBusyNames",
+    "OutputColumns": [
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "total",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "unknown",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CountBusyNames, command: many)\nSELECT name, count(*) AS total\nFROM items\nGROUP BY name\nHAVING count(*) + 1 \u003e= ?;",
+    "Template": "SELECT ⟨c0:name⟩, ⟨c1 aliased:count(*)⟩ AS total\\nFROM items\\nGROUP BY name\\nHAVING count(*) + 1 \u003e= ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

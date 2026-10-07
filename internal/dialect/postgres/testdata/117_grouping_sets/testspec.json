@@ -1,0 +1,1 @@
+{"description": "ROLLUP, CUBE and GROUPING SETS leave keys out of their subtotal rows, which hold NULL there: a select item reading such a key outside an aggregate is nullable, as is an item a key names by position or alias, while a key written beside the modifier, an aggregate and GROUPING keep their nullability"}

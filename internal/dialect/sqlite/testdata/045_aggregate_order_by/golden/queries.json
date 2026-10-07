@@ -1,0 +1,39 @@
+[
+  {
+    "Command": "many",
+    "Filename": "products.sql",
+    "Line": 1,
+    "Name": "GetCategoryProducts",
+    "OutputColumns": [
+      {
+        "Name": "category",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "category",
+        "SourceQualifier": "products",
+        "SourceTable": "products"
+      },
+      {
+        "Name": "sorted_names",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "by_price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetCategoryProducts, command: many)\nSELECT\n  category,\n  GROUP_CONCAT(name ORDER BY name ASC) AS sorted_names,\n  GROUP_CONCAT(name, ',' ORDER BY price DESC) AS by_price\nFROM products\nGROUP BY category;",
+    "Template": "SELECT\\n  ⟨c0:category⟩,\\n  ⟨c1 aliased:GROUP_CONCAT(name ORDER BY name ASC)⟩ AS sorted_names,\\n  ⟨c2 aliased:GROUP_CONCAT(name, ',' ORDER BY price DESC)⟩ AS by_price\\nFROM products\\nGROUP BY category;"
+  }
+]

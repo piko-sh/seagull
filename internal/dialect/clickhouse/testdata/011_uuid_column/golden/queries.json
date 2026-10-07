@@ -1,0 +1,57 @@
+[
+  {
+    "Command": "one",
+    "Filename": "sessions.sql",
+    "Line": 1,
+    "Name": "GetSession",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "UUID"
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "sessions",
+        "SourceTable": "sessions"
+      },
+      {
+        "Name": "user_id",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "UUID"
+        },
+        "SourceColumn": "user_id",
+        "SourceQualifier": "sessions",
+        "SourceTable": "sessions"
+      },
+      {
+        "Name": "created",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "created",
+        "SourceQualifier": "sessions",
+        "SourceTable": "sessions"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "sid",
+        "Number": 1,
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "UUID"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(GetSession, one)\nSELECT id, user_id, created FROM sessions WHERE id = {sid:UUID};",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:user_id⟩, ⟨c2:created⟩ FROM sessions WHERE id = ⟨p0 UUID⟩;⟨arguments p0⟩"
+  }
+]

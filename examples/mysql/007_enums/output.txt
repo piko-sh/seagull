@@ -1,0 +1,11 @@
+ListMenu: section store.MenuItemsSection, status menu.Status
+  fish      cod
+  fish      haddock (sold out)
+  sides     chips
+  sides     mushy peas
+  puddings  sticky toffee pudding
+ItemsInSection: section menu.Section, status menu.Status
+  fish      cod
+  fish      haddock (sold out)
+section drinks is valid: false
+refused section drinks: Error 1265 (01000): Data truncated for column 'section' at row 1

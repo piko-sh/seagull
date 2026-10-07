@@ -1,0 +1,1 @@
+{"description": "A row lock anywhere in a query routes it to the writer: FOR UPDATE, FOR SHARE and LOCK IN SHARE MODE at the end of the statement, a CTE body, a derived table, an IN subquery, an EXISTS subquery or a scalar subquery make the statement not read-only; the same query without the lock stays read-only."}

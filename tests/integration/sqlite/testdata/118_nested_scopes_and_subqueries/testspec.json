@@ -1,0 +1,4 @@
+{
+  "description": "Nested scopes and subqueries against SQLite: a star over an earlier CTE reads its rows into a typed row struct; a WITH clause inside a CTE body, a CTE body's derived table, a CTE joined in a later CTE and a CTE read in a derived table, a derived table in a later arm of a UNION, a CTE column list over a star, scalar subqueries projecting a column and compared with a parameter, and a NULL in the first branch read typed values without diagnostics.",
+  "expectedDiagnostics": []
+}

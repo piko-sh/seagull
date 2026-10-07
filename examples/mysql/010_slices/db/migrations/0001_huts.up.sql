@@ -1,0 +1,6 @@
+CREATE TABLE huts (
+    number BIGINT      NOT NULL PRIMARY KEY,
+    beach  VARCHAR(50) NOT NULL,
+    colour VARCHAR(20) NOT NULL,
+    booked BOOLEAN     NOT NULL DEFAULT FALSE
+);

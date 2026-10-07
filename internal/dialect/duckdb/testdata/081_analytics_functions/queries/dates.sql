@@ -1,0 +1,35 @@
+-- sgl.query(name: ReadingCalendar, command: many)
+SELECT
+    id,
+    year(taken_at) AS taken_year,
+    month(taken_on) AS taken_month,
+    day(taken_on) AS taken_day,
+    hour(taken_at) AS taken_hour,
+    minute(taken_at) AS taken_minute,
+    second(taken_at) AS taken_second,
+    millisecond(taken_at) AS taken_millisecond,
+    quarter(taken_on) AS taken_quarter,
+    week(taken_on) AS taken_week,
+    weekday(taken_on) AS taken_weekday,
+    dayofweek(taken_on) AS taken_day_of_week,
+    dayofyear(taken_at) AS taken_day_of_year,
+    isodow(taken_on) AS taken_iso_day,
+    epoch(taken_at) AS taken_epoch,
+    epoch_ms(taken_at) AS taken_epoch_ms,
+    date_diff('day', taken_on, current_date) AS age_days,
+    datediff('hour', taken_at, now()) AS age_hours,
+    date_sub('month', taken_on, current_date) AS age_months,
+    datepart('year', taken_at) AS taken_part,
+    datetrunc('month', taken_at) AS taken_month_start,
+    date_add(taken_on, INTERVAL 1 DAY) AS next_day,
+    time_bucket(INTERVAL '1 hour', taken_at) AS hour_bucket,
+    time_bucket(INTERVAL '7 days', taken_on) AS week_bucket,
+    to_days(tally) AS tally_days,
+    to_hours(tally) AS tally_hours,
+    try_strptime(payload, '%Y-%m-%d') AS parsed_payload,
+    transaction_timestamp() AS started_at,
+    date_diff('day', taken_on, DATE '2024-12-31') AS days_left,
+    TIMESTAMP WITH TIME ZONE '2024-01-01 00:00:00+00' AS epoch_start
+FROM readings
+WHERE taken_at > '2024-01-01'
+  AND taken_on BETWEEN DATE '2024-01-01' AND '2024-12-31';

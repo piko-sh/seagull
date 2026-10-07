@@ -1,0 +1,3 @@
+{
+  "description": "database/sql reads the same values as the native driver does in 113_driver_typed_values_native: IP addresses as net.IP, which prints a v4-mapped IPv6 address as its IPv4 form, wide integers as *big.Int, and named tuples as map[string]any holding the driver's own values, where a wide integer that cannot be NULL is a big.Int value that encoding/json writes as {} (a known limitation)"
+}

@@ -1,0 +1,29 @@
+{
+  "committed": {
+    "id": 2,
+    "name": "anchor",
+    "qty": 1
+  },
+  "found": {
+    "id": 1,
+    "name": "rope",
+    "qty": 3
+  },
+  "in_transaction": {
+    "direct_runs": 1,
+    "new_prepares": 0,
+    "statement_runs": 3
+  },
+  "sorted": [
+    {
+      "id": 2,
+      "name": "anchor",
+      "qty": 1
+    },
+    {
+      "id": 1,
+      "name": "rope",
+      "qty": 3
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+{
+  "description": "N-203: a placeholder standing only in a later arm of a UNION, INTERSECT or EXCEPT chain, at the top of the statement, in a derived table or in a CTE, was left out of the statement's parameters, so generation reported Q030 (the placeholder matches none of the query's parameters) on valid SQL. Every arm's placeholders are now the statement's parameters, numbered as the statement numbers them, and one repeated across arms is one parameter",
+  "expectedDiagnosticCount": 0
+}

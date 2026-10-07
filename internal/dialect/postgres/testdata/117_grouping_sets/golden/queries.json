@@ -1,0 +1,260 @@
+[
+  {
+    "Command": "many",
+    "Filename": "sales.sql",
+    "Line": 1,
+    "Name": "RevenueRollup",
+    "OutputColumns": [
+      {
+        "Name": "region",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "city",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "city",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "loud_city",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "city_label",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "level",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "revenue",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        }
+      },
+      {
+        "Name": "sales",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: RevenueRollup, command: many)\nSELECT region, city, upper(city) AS loud_city, coalesce(city, 'all cities') AS city_label,\n       grouping(region, city) AS level, sum(amount) AS revenue, count(*) AS sales\nFROM sales\nGROUP BY ROLLUP (region, city);",
+    "Template": "SELECT ⟨c0:region⟩, ⟨c1:city⟩, ⟨c2 aliased:upper(city)⟩ AS loud_city, ⟨c3 aliased:coalesce(city, 'all cities')⟩ AS city_label,\\n       ⟨c4 aliased:grouping(region, city)⟩ AS level, ⟨c5 aliased:sum(amount)⟩ AS revenue, ⟨c6 aliased:count(*)⟩ AS sales\\nFROM sales\\nGROUP BY ROLLUP (region, city);"
+  },
+  {
+    "Command": "many",
+    "Filename": "sales.sql",
+    "Line": 7,
+    "Name": "RegionCityRollup",
+    "OutputColumns": [
+      {
+        "Name": "region",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "city",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "city",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "revenue",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: RegionCityRollup, command: many)\nSELECT region, city, sum(amount) AS revenue\nFROM sales\nGROUP BY region, ROLLUP (city);",
+    "Template": "SELECT ⟨c0:region⟩, ⟨c1:city⟩, ⟨c2 aliased:sum(amount)⟩ AS revenue\\nFROM sales\\nGROUP BY region, ROLLUP (city);"
+  },
+  {
+    "Command": "many",
+    "Filename": "sales.sql",
+    "Line": 12,
+    "Name": "ProductCube",
+    "OutputColumns": [
+      {
+        "Name": "region",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "s",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "product",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "product",
+        "SourceQualifier": "s",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "sales",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ProductCube, command: many)\nSELECT s.region, s.product, count(*) AS sales\nFROM sales s\nGROUP BY CUBE (s.region, s.product);",
+    "Template": "SELECT ⟨c0:s.region⟩, ⟨c1:s.product⟩, ⟨c2 aliased:count(*)⟩ AS sales\\nFROM sales s\\nGROUP BY CUBE (s.region, s.product);"
+  },
+  {
+    "Command": "many",
+    "Filename": "sales.sql",
+    "Line": 17,
+    "Name": "GroupingSets",
+    "OutputColumns": [
+      {
+        "Name": "region",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "region",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "product",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "product",
+        "SourceQualifier": "sales",
+        "SourceTable": "sales"
+      },
+      {
+        "Name": "month",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "revenue",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GroupingSets, command: many)\nSELECT region, product, date_trunc('month', sold_on) AS month, sum(amount) AS revenue\nFROM sales\nGROUP BY GROUPING SETS ((region, product), (date_trunc('month', sold_on)), ());",
+    "Template": "SELECT ⟨c0:region⟩, ⟨c1:product⟩, ⟨c2 aliased:date_trunc('month', sold_on)⟩ AS month, ⟨c3 aliased:sum(amount)⟩ AS revenue\\nFROM sales\\nGROUP BY GROUPING SETS ((region, product), (date_trunc('month', sold_on)), ());"
+  },
+  {
+    "Command": "many",
+    "Filename": "sales.sql",
+    "Line": 22,
+    "Name": "PositionalRollup",
+    "OutputColumns": [
+      {
+        "Name": "area",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "revenue",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: PositionalRollup, command: many)\nSELECT lower(region) AS area, sum(amount) AS revenue\nFROM sales\nGROUP BY ROLLUP (1);",
+    "Template": "SELECT ⟨c0 aliased:lower(region)⟩ AS area, ⟨c1 aliased:sum(amount)⟩ AS revenue\\nFROM sales\\nGROUP BY ROLLUP (1);"
+  },
+  {
+    "Command": "many",
+    "Filename": "sales.sql",
+    "Line": 27,
+    "Name": "AliasRollup",
+    "OutputColumns": [
+      {
+        "Name": "area",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "revenue",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AliasRollup, command: many)\nSELECT lower(region) AS area, sum(amount) AS revenue\nFROM sales\nGROUP BY ROLLUP (area);",
+    "Template": "SELECT ⟨c0 aliased:lower(region)⟩ AS area, ⟨c1 aliased:sum(amount)⟩ AS revenue\\nFROM sales\\nGROUP BY ROLLUP (area);"
+  }
+]

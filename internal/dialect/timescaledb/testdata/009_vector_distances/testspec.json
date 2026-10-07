@@ -1,0 +1,4 @@
+{
+  "description": "TimescaleDB: pgvector's distance operators give double precision distances; a cast LIMIT; a VALUES arm.",
+  "expectedDiagnosticCount": 0
+}

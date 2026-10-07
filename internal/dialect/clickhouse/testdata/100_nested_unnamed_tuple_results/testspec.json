@@ -1,0 +1,4 @@
+{
+  "description": "A Tuple with unnamed elements inside another Tuple, directly, through an array, or as a field of a named Tuple, is read by neither clickhouse-go driver (the native driver fails, database/sql returns NULL or keeps only the last element under the empty name), so a column a query returns that holds one, stored or built with (a, b) or tuple(a, b), selected by name or through a star, is refused with an error at its select-list item.",
+  "expectedDiagnosticCount": 21
+}

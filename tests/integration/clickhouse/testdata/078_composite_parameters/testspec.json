@@ -1,0 +1,3 @@
+{
+  "description": "database/sql ClickHouse composite parameters: a named Tuple binds as a tuple literal in its declared field order, a Map as a map literal, and an Array(Map) as an array of map literals, each round-tripping through an insert and an equality filter."
+}

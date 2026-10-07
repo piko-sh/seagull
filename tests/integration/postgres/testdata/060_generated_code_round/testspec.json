@@ -1,0 +1,8 @@
+{
+  "description": "Generated code against PostgreSQL through database/sql: a JSON column overridden to a plain struct and to []string is written as its document through sglDriverJSON and read back through sglScanOverrideJSON, a NULL document reading as a nil pointer; an optional enum-array parameter binds NULL when nil and its values otherwise; a batch upsert that repeats a key in one batch runs one statement per row, as pgx does; an array column inside sgl.embed reads through the JSON adapter; and SELECT * and RETURNING * name their columns, so the methods keep working after a migration adds a column to every table, with the prepared statements the driver cached before it.",
+  "expectedDiagnostics": [],
+  "typeOverrides": [
+    {"SQLTypeName": "", "Column": "shows.data", "GoPackage": "case_runner/kinds", "GoName": "Show"},
+    {"SQLTypeName": "", "Column": "shows.tags", "GoPackage": "", "GoName": "[]string"}
+  ]
+}

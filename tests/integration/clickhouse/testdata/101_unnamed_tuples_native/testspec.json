@@ -1,0 +1,4 @@
+{
+  "description": "Native ClickHouse reads unnamed tuples: a Tuple(T, U) column, an Array and a Map of them, and tuples built with tuple(...) and (a, b) scan into []any, which clickhouse-go's native scanner requires for a tuple whose elements have no names",
+  "emitter": "native"
+}

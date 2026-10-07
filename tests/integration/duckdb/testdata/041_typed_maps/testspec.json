@@ -1,0 +1,3 @@
+{
+  "description": "MAP {..}, map(keys, values) and map_from_entries carry their key and value types, so the generated code reads each into a typed Go map (map[string]int32, map[string]float64, map[string]*string for values that may be NULL, a map of named structs, and the map histogram gives). Maps of ROW values are refused with Q059 instead (unnamed_struct_test.go)"
+}

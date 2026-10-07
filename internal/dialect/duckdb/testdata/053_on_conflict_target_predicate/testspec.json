@@ -1,0 +1,3 @@
+{
+  "description": "INSERT ... ON CONFLICT (col) DO NOTHING / DO UPDATE SET ... WHERE <predicate> ... RETURNING. The predicate of the DO UPDATE action must be consumed so the trailing RETURNING columns and the DO UPDATE SET parameter are not silently dropped. DuckDB has no partial indexes, so its binder rejects a predicate after the conflict target; the dialect still reads one, as DuckDB's parser does, so this case writes the predicate where DuckDB runs it."
+}

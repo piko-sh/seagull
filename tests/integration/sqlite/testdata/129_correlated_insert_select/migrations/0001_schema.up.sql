@@ -1,0 +1,10 @@
+CREATE TABLE apps (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL
+);
+
+CREATE TABLE app_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  app_id INTEGER NOT NULL,
+  master_item_id INTEGER NOT NULL
+);

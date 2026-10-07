@@ -1,0 +1,3 @@
+{
+  "description": "An ARRAY JOIN of a Map reads one Tuple(keys K, values V) per entry, through its alias and in place (with attributes.keys and attributes.values as the key and value), a LEFT ARRAY JOIN gives an empty Map the tuple's default; a select-list alias shadows the column of its name in later items and in WHERE and ORDER BY while a qualified name reads the column; a map literal keyed by booleans is read in INSERT ... VALUES. Through database/sql the tuple reads as map[string]any."
+}

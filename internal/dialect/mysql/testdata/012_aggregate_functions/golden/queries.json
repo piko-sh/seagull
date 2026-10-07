@@ -1,0 +1,58 @@
+[
+  {
+    "Command": "one",
+    "Filename": "sales_summary.sql",
+    "Line": 1,
+    "Name": "SalesSummary",
+    "OutputColumns": [
+      {
+        "Name": "total_sales",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "total_quantity",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal"
+        }
+      },
+      {
+        "Name": "average_price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "double",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "lowest_price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 10,
+          "Scale": 2
+        }
+      },
+      {
+        "Name": "highest_price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 10,
+          "Scale": 2
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: SalesSummary, command: one)\nSELECT\n    COUNT(*) AS total_sales,\n    SUM(quantity) AS total_quantity,\n    AVG(unit_price) AS average_price,\n    MIN(unit_price) AS lowest_price,\n    MAX(unit_price) AS highest_price\nFROM sales;",
+    "Template": "SELECT\\n    ⟨c0 aliased:COUNT(*)⟩ AS total_sales,\\n    ⟨c1 aliased:SUM(quantity)⟩ AS total_quantity,\\n    ⟨c2 aliased:AVG(unit_price)⟩ AS average_price,\\n    ⟨c3 aliased:MIN(unit_price)⟩ AS lowest_price,\\n    ⟨c4 aliased:MAX(unit_price)⟩ AS highest_price\\nFROM sales;"
+  }
+]

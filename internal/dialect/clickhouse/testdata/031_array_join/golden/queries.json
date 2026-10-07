@@ -1,0 +1,46 @@
+[
+  {
+    "Command": "many",
+    "Filename": "events_by_tag.sql",
+    "Line": 1,
+    "Name": "EventsByTag",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      },
+      {
+        "Name": "tag",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "tag",
+        "SourceQualifier": "tag"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "filter_tag",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(EventsByTag, many)\nSELECT id, tag FROM events ARRAY JOIN tags AS tag WHERE tag = {filter_tag:String};",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:tag⟩ FROM events ARRAY JOIN tags AS tag WHERE tag = ⟨p0 String⟩;⟨arguments p0⟩"
+  }
+]

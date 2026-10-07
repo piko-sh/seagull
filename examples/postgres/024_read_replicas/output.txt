@@ -1,0 +1,18 @@
+writer  INSERT INTO sightings (species, place) VALUES ($1, $2) RETURNING id;
+writer  INSERT INTO sightings (species, place) VALUES ($1, $2) RETURNING id;
+writer  SELECT log_sighting($1, $2) AS id;
+        logged sighting 3
+reader  SELECT id, sighting_label(species, place) AS label FROM sightings ORDER BY id;
+        1 herring gull at the pier
+        2 kittiwake at the harbour wall
+        3 puffin at the cliffs
+writer  SELECT COUNT(*) AS total FROM sightings;
+        3 sightings on the primary
+writer  SELECT id, species FROM sightings WHERE id = $1 FOR UPDATE;
+        locked sighting 1, a herring gull
+writer  WITH forgotten AS (DELETE FROM sightings WHERE place = $1 RETURNING id) SELECT id FROM forgotten ORDER BY id;
+        forgot 1 sighting at the cliffs
+on the reader:
+  RecordSighting refused: SQLSTATE 25006
+  LogSighting refused: SQLSTATE 25006
+  ClaimSighting refused: SQLSTATE 25006

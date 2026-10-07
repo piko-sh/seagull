@@ -1,0 +1,58 @@
+[
+  {
+    "Command": "many",
+    "Filename": "high_value_orders.sql",
+    "Line": 1,
+    "Name": "GetHighValueOrders",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "high_value",
+        "SourceTable": "high_value"
+      },
+      {
+        "Name": "customer_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "customer_name",
+        "SourceQualifier": "high_value",
+        "SourceTable": "high_value"
+      },
+      {
+        "Name": "amount",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        },
+        "SourceColumn": "amount",
+        "SourceQualifier": "high_value",
+        "SourceTable": "high_value"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "amount",
+        "Number": 1,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetHighValueOrders, command: many)\nWITH high_value AS (\n  SELECT id, customer_name, amount\n  FROM orders\n  WHERE amount \u003e ?\n)\nSELECT id, customer_name, amount FROM high_value",
+    "Template": "WITH high_value AS (\\n  SELECT id, customer_name, amount\\n  FROM orders\\n  WHERE amount \u003e ⟨p0⟩\\n)\\nSELECT ⟨c0:id⟩, ⟨c1:customer_name⟩, ⟨c2:amount⟩ FROM high_value⟨arguments p0⟩"
+  }
+]

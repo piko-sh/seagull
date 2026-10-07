@@ -1,0 +1,12 @@
+CREATE TABLE plain (code TEXT PRIMARY KEY, note TEXT);
+CREATE TABLE IF NOT EXISTS plain (id INTEGER PRIMARY KEY);
+CREATE TABLE declared (code TEXT NOT NULL PRIMARY KEY, note TEXT);
+CREATE TABLE pairs (left_id INTEGER, right_id INTEGER, note TEXT, PRIMARY KEY (left_id, right_id));
+CREATE TABLE rowless (left_id INTEGER, right_id INTEGER, note TEXT, PRIMARY KEY (left_id, right_id)) WITHOUT ROWID;
+CREATE TABLE strict_keys (code TEXT PRIMARY KEY, note TEXT) STRICT;
+CREATE TABLE aliased (id INTEGER PRIMARY KEY, note TEXT);
+CREATE TABLE table_aliased (id INTEGER, note TEXT, PRIMARY KEY (id));
+CREATE TABLE descending (id INTEGER PRIMARY KEY DESC, note TEXT);
+CREATE TABLE short_int (id INT PRIMARY KEY, note TEXT);
+CREATE VIEW IF NOT EXISTS plain_view (plain_code, plain_note) AS SELECT * FROM plain;
+CREATE VIEW IF NOT EXISTS plain_view AS SELECT code FROM plain;

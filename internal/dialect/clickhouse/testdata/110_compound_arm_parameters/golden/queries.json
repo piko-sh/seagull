@@ -1,0 +1,247 @@
+[
+  {
+    "Command": "many",
+    "Filename": "events.sql",
+    "Line": 1,
+    "Name": "EachArm",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "first",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "second",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: EachArm, command: many)\nSELECT id FROM events WHERE kind = {first:String}\nUNION ALL\nSELECT id FROM events WHERE kind = {second:String};",
+    "Template": "SELECT id FROM events WHERE kind = ⟨p0 String⟩\\nUNION ALL\\nSELECT id FROM events WHERE kind = ⟨p1 String⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "events.sql",
+    "Line": 6,
+    "Name": "SecondArmOnly",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "floor",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int32",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: SecondArmOnly, command: many)\nSELECT id FROM events\nUNION ALL\nSELECT id FROM events WHERE score \u003e {floor:Int32};",
+    "Template": "SELECT id FROM events\\nUNION ALL\\nSELECT id FROM events WHERE score \u003e ⟨p0 Int32⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "events.sql",
+    "Line": 11,
+    "Name": "ThirdArmOfAChain",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "kind",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "ceiling",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int32",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ThirdArmOfAChain, command: many)\nSELECT id FROM events\nUNION DISTINCT\nSELECT id FROM events WHERE kind = {kind:String}\nEXCEPT\nSELECT id FROM events WHERE score \u003c {ceiling:Int32};",
+    "Template": "SELECT id FROM events\\nUNION DISTINCT\\nSELECT id FROM events WHERE kind = ⟨p0 String⟩\\nEXCEPT\\nSELECT id FROM events WHERE score \u003c ⟨p1 Int32⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "events.sql",
+    "Line": 18,
+    "Name": "RepeatedAcrossArms",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "events",
+        "SourceTable": "events"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: RepeatedAcrossArms, command: many)\nSELECT id FROM events WHERE id = {id:UInt64}\nUNION ALL\nSELECT id FROM events WHERE id = {id:UInt64} + 1;",
+    "Template": "SELECT id FROM events WHERE id = ⟨p0 UInt64⟩\\nUNION ALL\\nSELECT id FROM events WHERE id = ⟨p0 UInt64⟩ + 1;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "events.sql",
+    "Line": 23,
+    "Name": "ArmsOfADerivedTable",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "kind",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "after",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ArmsOfADerivedTable, command: many)\nSELECT id FROM (\n    SELECT id FROM events\n    UNION ALL\n    SELECT id FROM events WHERE kind = {kind:String}\n) WHERE id \u003e {after:UInt64};",
+    "Template": "SELECT ⟨c0:id⟩ FROM (\\n    SELECT id FROM events\\n    UNION ALL\\n    SELECT id FROM events WHERE kind = ⟨p0 String⟩\\n) WHERE id \u003e ⟨p1 UInt64⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "events.sql",
+    "Line": 30,
+    "Name": "ArmsOfACTE",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "found",
+        "SourceTable": "found"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "score",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int32",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ArmsOfACTE, command: many)\nWITH found AS (\n    SELECT id FROM events\n    UNION ALL\n    SELECT id FROM events WHERE score = {score:Int32}\n)\nSELECT id FROM found;",
+    "Template": "WITH found AS (\\n    SELECT id FROM events\\n    UNION ALL\\n    SELECT id FROM events WHERE score = ⟨p0 Int32⟩\\n)\\nSELECT ⟨c0:id⟩ FROM found;⟨arguments p0⟩"
+  }
+]

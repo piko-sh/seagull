@@ -1,0 +1,1 @@
+{"description": "SQLite's date and time functions take a number as the time value, seconds since 1970 with the unixepoch modifier or a Julian day number, as they take text, so date(created_at, 'unixepoch') types as text that is NULL for a value holding no time; if is iif's spelling, with two arguments or several pairs; and the hyperbolic functions and unistr are known"}

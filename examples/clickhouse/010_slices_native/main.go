@@ -1,0 +1,85 @@
+// Copyright 2026 PolitePixels Limited
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// This project stands against fascism, authoritarianism, and all forms of
+// oppression. We built this to empower people, not to enable those who would
+// strip others of their rights and dignity.
+
+// Command 010_slices_native applies its migrations to a ClickHouse database, then runs
+// the example in example.go over a native clickhouse-go connection: beach huts are found
+// and booked by passing Go slices as Array parameters.
+//
+// Run it with `go run .` against a local server, or `go run . -dsn <dsn>` to choose the
+// database; give it an empty one. Keep mutations_sync=2 in the DSN so each booking has
+// finished before the huts are counted.
+package main
+
+import (
+	"context"
+	"embed"
+	"flag"
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/ClickHouse/clickhouse-go/v2"
+
+	"seagull.sh/seagull/sdk/migrate"
+	"seagull.sh/seagull/sdk/migrate/migrate_backend_clickhouse"
+)
+
+// migrations holds the migration files, compiled into the binary.
+//
+//go:embed db/migrations
+var migrations embed.FS
+
+func main() {
+	dsn := flag.String("dsn", "clickhouse://localhost:9000/default?mutations_sync=2", "ClickHouse DSN of an empty database")
+	flag.Parse()
+	if err := execute(context.Background(), *dsn); err != nil {
+		log.Fatal(err)
+	}
+}
+
+// execute migrates the database the DSN names, then opens a native connection to it and
+// runs the example.
+//
+// Takes dsn (string) which names the ClickHouse database.
+//
+// Returns error when the database cannot be prepared or the example fails.
+func execute(ctx context.Context, dsn string) error {
+	options, err := clickhouse.ParseDSN(dsn)
+	if err != nil {
+		return err
+	}
+
+	// The migrator runs on database/sql, so the migrations go through the driver's
+	// database/sql adapter, opened from the same options as the native connection.
+	database := clickhouse.OpenDB(options)
+	defer func() { _ = database.Close() }()
+	migrator, err := migrate.NewMigrator(database, migrate_backend_clickhouse.New(), migrations, "db/migrations")
+	if err != nil {
+		return err
+	}
+	if _, err := migrator.Up(ctx); err != nil {
+		return fmt.Errorf("migrating: %w", err)
+	}
+
+	connection, err := clickhouse.Open(options)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = connection.Close() }()
+	return run(ctx, connection, os.Stdout)
+}

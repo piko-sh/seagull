@@ -1,0 +1,31 @@
+# Copyright 2026 PolitePixels Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This project stands against fascism, authoritarianism, and all forms of
+# oppression. We built this to empower people, not to enable those who would
+# strip others of their rights and dignity.
+
+summary: Marina boats with STRUCT, MAP, LIST and UNION columns, written from typed Go structs, maps and slices, read back whole, and reached into with subscripts and map_keys for typed results.
+differs:
+  - "A LIST of a scalar is a typed slice, a STRUCT a struct with a field per field, a LIST of STRUCT a slice of those structs, and a MAP a Go map"
+  - "sgl.yaml sets go.types.non_null_elements: true, as the marina never stores NULL inside a list or map, so elements and map values are plain values rather than the default pointers"
+  - "Each STRUCT is a struct type in models.go named after its table and column, store.BoatsBerth, or store.BoatsRouteItem for the route's elements; DuckDB lets a STRUCT field be NULL, so its fields are pointers"
+  - "The generated SQL selects LIST, STRUCT and MAP columns as written, and the generated code reads the values duckdb-go returns into the typed fields"
+  - "The generated code converts a struct, a slice of structs or a map into what duckdb-go binds, and a nil one binds NULL"
+  - "A UNION column is the generated JSON type, holding duckdb-go's Union encoded as {\"value\", \"tag\"}"
+  - "The JSON type cannot bind a union, so the writes cast a value to one member's type"
+  - "crew[1], map_keys(fees) and fees['August'] give typed, nullable results"
+entry: {file: db/queries/boats.sql, query: ListBoats}
+live: "no"
+test: cgo

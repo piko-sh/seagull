@@ -1,0 +1,5 @@
+haul 1: species []string [mackerel pollock], weights_kg []uint32 [120 45]
+hauls with mackerel:
+  #1 Kittiwake  [mackerel pollock] [120 45] kg
+  #3 Gull Wing  [mackerel] [80] kg
+haul 4 landed 0 species, an empty array: []

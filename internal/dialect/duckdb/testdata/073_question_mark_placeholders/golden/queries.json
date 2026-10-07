@@ -1,0 +1,158 @@
+[
+  {
+    "Command": "one",
+    "Filename": "gulls.sql",
+    "Line": 1,
+    "Name": "FindGull",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "gulls",
+        "SourceTable": "gulls"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "gulls",
+        "SourceTable": "gulls"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FindGull, command: one)\nSELECT id, name FROM gulls WHERE id = ? AND name = ?;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩ FROM gulls WHERE id = ⟨p0⟩ AND name = ⟨p1⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "gulls.sql",
+    "Line": 4,
+    "Name": "FindGullMixed",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "gulls",
+        "SourceTable": "gulls"
+      },
+      {
+        "Name": "colony",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "colony",
+        "SourceQualifier": "gulls",
+        "SourceTable": "gulls"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "colony",
+        "Nullable": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FindGullMixed, command: many)\nSELECT id, colony FROM gulls WHERE colony = $1 OR name = ?;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:colony⟩ FROM gulls WHERE colony = ⟨p0⟩ OR name = ⟨p1⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "gulls.sql",
+    "Line": 7,
+    "Name": "FindGullNumbered",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "gulls",
+        "SourceTable": "gulls"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FindGullNumbered, command: many)\nSELECT id FROM gulls WHERE name = ?2 AND id \u003e ?1;",
+    "Template": "SELECT ⟨c0:id⟩ FROM gulls WHERE name = ⟨p1⟩ AND id \u003e ⟨p0⟩;⟨arguments p0 p1⟩"
+  }
+]

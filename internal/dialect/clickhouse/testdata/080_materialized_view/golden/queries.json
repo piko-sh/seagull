@@ -1,0 +1,37 @@
+[
+  {
+    "Command": "many",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "ReadMV",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "mv",
+        "SourceTable": "mv"
+      },
+      {
+        "Name": "doubled",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "doubled",
+        "SourceQualifier": "mv",
+        "SourceTable": "mv"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ReadMV, many)\nSELECT id, doubled FROM mv;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:doubled⟩ FROM mv;"
+  }
+]

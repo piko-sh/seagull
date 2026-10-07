@@ -1,0 +1,16 @@
+{
+  "user_totals": [
+    {
+      "total": 150,
+      "user_id": 10
+    },
+    {
+      "total": 225,
+      "user_id": 20
+    },
+    {
+      "total": 5,
+      "user_id": 30
+    }
+  ]
+}

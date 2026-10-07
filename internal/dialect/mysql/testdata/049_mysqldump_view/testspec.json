@@ -1,0 +1,1 @@
+{"description": "Views and routines as mysqldump writes them, with ALGORITHM, DEFINER and SQL SECURITY modifiers, also split across executable comments, reach the catalogue"}

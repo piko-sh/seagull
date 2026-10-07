@@ -1,0 +1,26 @@
+{
+  "description": "Overrides and driver type mapping through pgx, held to the same Go types as database/sql: money as text; timetz, which pgx has no codec for, as a string; bit and varbit as strings read through a cast to text (pgx decodes their binary form only into its own Bits); an interval slot set to string read through a cast to text; arrays of timestamps, dates, decimals and bytes; and a column override on a numeric[] column naming the elements' type everywhere; and an override naming the Go 1.27 standard library's uuid.UUID binds and reads.",
+  "emitter": "pgx",
+  "expectedDiagnostics": [],
+  "typeOverrides": [
+    {
+      "SQLTypeName": "",
+      "Column": "ledgers.rates",
+      "GoPackage": "case_runner/kinds",
+      "GoName": "Rate"
+    },
+    {
+      "SQLTypeName": "",
+      "Column": "ledgers.ident",
+      "GoPackage": "uuid",
+      "GoName": "UUID"
+    }
+  ],
+  "typeSlots": {
+    "Interval": {
+      "NotNull": {
+        "Name": "string"
+      }
+    }
+  }
+}

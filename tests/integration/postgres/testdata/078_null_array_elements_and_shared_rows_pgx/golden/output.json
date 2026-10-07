@@ -1,0 +1,125 @@
+{
+  "add_empty_and_null": "added",
+  "add_only_null": "added",
+  "add_with_null_elements": "added",
+  "model_note": {
+    "id": 1,
+    "moods": [
+      "calm",
+      null
+    ],
+    "scores": [
+      1,
+      null
+    ],
+    "tags": [
+      "a",
+      null,
+      "c"
+    ]
+  },
+  "notes_by_id": [
+    {
+      "id": 1
+    },
+    {
+      "id": 3
+    }
+  ],
+  "notes_without_tags": [
+    {
+      "id": 2
+    }
+  ],
+  "reused_model_notes": [
+    {
+      "id": 1,
+      "moods": [
+        "calm",
+        null
+      ],
+      "scores": [
+        1,
+        null
+      ],
+      "tags": [
+        "a",
+        null,
+        "c"
+      ]
+    },
+    {
+      "id": 2,
+      "moods": null,
+      "scores": null,
+      "tags": [
+        null,
+        "b"
+      ]
+    },
+    {
+      "id": 3,
+      "moods": [
+        "stormy"
+      ],
+      "scores": [
+        null
+      ],
+      "tags": [
+        "x"
+      ]
+    }
+  ],
+  "set_tags": "set",
+  "shared_row_authors": [
+    {
+      "bio": "crime",
+      "id": 1,
+      "name": "Agatha"
+    },
+    {
+      "bio": null,
+      "id": 2,
+      "name": "Dorothy"
+    },
+    {
+      "bio": null,
+      "id": 3,
+      "name": "Ngaio Marsh"
+    }
+  ],
+  "shared_row_named": [
+    {
+      "bio": null,
+      "id": 2,
+      "name": "Dorothy"
+    },
+    {
+      "bio": null,
+      "id": 3,
+      "name": "Ngaio Marsh"
+    }
+  ],
+  "stored": [
+    {
+      "id": 1,
+      "moods": "calm,NULL",
+      "scores": "1,NULL",
+      "tags": "a,NULL,c"
+    },
+    {
+      "id": 2,
+      "moods": null,
+      "scores": null,
+      "tags": "NULL,b"
+    },
+    {
+      "id": 3,
+      "moods": "stormy",
+      "scores": "NULL",
+      "tags": "x"
+    }
+  ],
+  "upsert_again": "upserted",
+  "upsert_authors": "upserted"
+}

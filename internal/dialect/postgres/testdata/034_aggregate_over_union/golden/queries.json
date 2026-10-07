@@ -1,0 +1,21 @@
+[
+  {
+    "Command": "one",
+    "Filename": "count_union.sql",
+    "Line": 1,
+    "Name": "CountUnion",
+    "OutputColumns": [
+      {
+        "Name": "total",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CountUnion, command: one)\nWITH t AS (\n    SELECT thing FROM things\n    UNION ALL\n    SELECT thing FROM things\n)\nSELECT COUNT(*) AS total FROM t;",
+    "Template": "WITH t AS (\\n    SELECT thing FROM things\\n    UNION ALL\\n    SELECT thing FROM things\\n)\\nSELECT ⟨c0 aliased:COUNT(*)⟩ AS total FROM t;"
+  }
+]

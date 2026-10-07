@@ -1,0 +1,1 @@
+CREATE TABLE landings (harbour VARCHAR NOT NULL, species VARCHAR NOT NULL, kg INTEGER NOT NULL);

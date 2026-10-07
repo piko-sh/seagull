@@ -1,0 +1,264 @@
+[
+  {
+    "Command": "many",
+    "Filename": "trips.sql",
+    "Line": 1,
+    "Name": "TripTuples",
+    "OutputColumns": [
+      {
+        "Name": "pair",
+        "SQLType": {
+          "Category": "struct",
+          "EngineName": "Tuple",
+          "StructFields": [
+            {
+              "Name": "_1",
+              "Positional": true,
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "String",
+                "Nullable": true
+              }
+            },
+            {
+              "Name": "_2",
+              "Positional": true,
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "UInt64",
+                "Unsigned": true,
+                "Width": 64
+              }
+            }
+          ]
+        }
+      },
+      {
+        "Name": "second",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "notes",
+        "SQLType": {
+          "Category": "map",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "String",
+            "Nullable": true
+          },
+          "EngineName": "Map",
+          "KeyType": {
+            "Category": "text",
+            "EngineName": "String"
+          }
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(TripTuples, many)\nSELECT tuple(note, id) AS pair, (note, id).2 AS second, map('note', note) AS notes FROM trips;",
+    "Template": "SELECT ⟨c0 aliased:tuple(note, id)⟩ AS pair, ⟨c1 aliased:(note, id).2⟩ AS second, ⟨c2 aliased:map('note', note)⟩ AS notes FROM trips;"
+  },
+  {
+    "Command": "many",
+    "Filename": "trips.sql",
+    "Line": 4,
+    "Name": "MovedByUnits",
+    "OutputColumns": [
+      {
+        "Name": "next_day",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "Date",
+          "Temporal": "date"
+        }
+      },
+      {
+        "Name": "next_hour",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "week_before",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "Date32",
+          "Temporal": "date"
+        }
+      },
+      {
+        "Name": "later",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime64",
+          "Precision": 3,
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "nudged",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime64",
+          "Precision": 3,
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "next_month",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime64",
+          "Precision": 3,
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "back",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "Date",
+          "Temporal": "date"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(MovedByUnits, many)\nSELECT date_add(DAY, 1, started) AS next_day, date_add(HOUR, 1, started) AS next_hour, date_sub(WEEK, 1, started32) AS week_before, dateAdd(MINUTE, 5, started32) AS later, timestamp_add(MILLISECOND, 1, departed) AS nudged, date_add(MONTH, 1, landed) AS next_month, date_add(DAY, 1, returned) AS back FROM trips;",
+    "Template": "SELECT ⟨c0 aliased:date_add(DAY, 1, started)⟩ AS next_day, ⟨c1 aliased:date_add(HOUR, 1, started)⟩ AS next_hour, ⟨c2 aliased:date_sub(WEEK, 1, started32)⟩ AS week_before, ⟨c3 aliased:dateAdd(MINUTE, 5, started32)⟩ AS later, ⟨c4 aliased:timestamp_add(MILLISECOND, 1, departed)⟩ AS nudged, ⟨c5 aliased:date_add(MONTH, 1, landed)⟩ AS next_month, ⟨c6 aliased:date_add(DAY, 1, returned)⟩ AS back FROM trips;"
+  },
+  {
+    "Command": "many",
+    "Filename": "trips.sql",
+    "Line": 7,
+    "Name": "MovedByFunctions",
+    "OutputColumns": [
+      {
+        "Name": "a",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "Date",
+          "Temporal": "date"
+        }
+      },
+      {
+        "Name": "b",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "c",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "Date32",
+          "Temporal": "date"
+        }
+      },
+      {
+        "Name": "d",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime64",
+          "Precision": 3,
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "e",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime64",
+          "Precision": 6,
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "f",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime64",
+          "Precision": 9,
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(MovedByFunctions, many)\nSELECT addDays(started, 1) AS a, addHours(started, 1) AS b, subtractMonths(started32, 1) AS c, addSeconds(started32, 1) AS d, addMicroseconds(departed, 1) AS e, addNanoseconds(landed, 1) AS f FROM trips;",
+    "Template": "SELECT ⟨c0 aliased:addDays(started, 1)⟩ AS a, ⟨c1 aliased:addHours(started, 1)⟩ AS b, ⟨c2 aliased:subtractMonths(started32, 1)⟩ AS c, ⟨c3 aliased:addSeconds(started32, 1)⟩ AS d, ⟨c4 aliased:addMicroseconds(departed, 1)⟩ AS e, ⟨c5 aliased:addNanoseconds(landed, 1)⟩ AS f FROM trips;"
+  },
+  {
+    "Command": "many",
+    "Filename": "trips.sql",
+    "Line": 10,
+    "Name": "MovedByIntervals",
+    "OutputColumns": [
+      {
+        "Name": "a",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "Date",
+          "Temporal": "date"
+        }
+      },
+      {
+        "Name": "b",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "c",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "d",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime64",
+          "Precision": 3,
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "e",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime64",
+          "Precision": 6,
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(MovedByIntervals, many)\nSELECT started + INTERVAL 1 DAY AS a, started + INTERVAL 1 HOUR AS b, INTERVAL 1 HOUR + started AS c, started32 - INTERVAL 1 MINUTE AS d, landed + INTERVAL 1 MICROSECOND AS e FROM trips;",
+    "Template": "SELECT ⟨c0 aliased:started + INTERVAL 1 DAY⟩ AS a, ⟨c1 aliased:started + INTERVAL 1 HOUR⟩ AS b, ⟨c2 aliased:INTERVAL 1 HOUR + started⟩ AS c, ⟨c3 aliased:started32 - INTERVAL 1 MINUTE⟩ AS d, ⟨c4 aliased:landed + INTERVAL 1 MICROSECOND⟩ AS e FROM trips;"
+  }
+]

@@ -1,0 +1,4 @@
+{
+  "description": "Nullability and parameter typing: a comparison, BETWEEN, IN list, pattern match, negation or logical operator over a nullable operand is nullable while an IS NULL test and a NULL-safe comparison are not; a CTE or derived table before a RIGHT or FULL join is nullable; a column beside an aggregate without GROUP BY follows the engine; an aggregate subquery without GROUP BY is as nullable as its column; elements the analysis proves never NULL are plain; a parameter inside an expression an INSERT or UPDATE assigns is not typed as the column, and one in a VALUES subquery takes its own comparison; the keys of a map are never NULL. The ungrouped column case is its own, since DuckDB rejects it.",
+  "expectedDiagnosticCount": 0
+}

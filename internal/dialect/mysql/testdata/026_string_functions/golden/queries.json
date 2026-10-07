@@ -1,0 +1,54 @@
+[
+  {
+    "Command": "many",
+    "Filename": "formatted_contacts.sql",
+    "Line": 1,
+    "Name": "FormattedContacts",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "contacts",
+        "SourceTable": "contacts"
+      },
+      {
+        "Name": "full_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "upper_last",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "name_length",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Name": "area_code",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FormattedContacts, command: many)\nSELECT\n    id,\n    CONCAT(first_name, ' ', last_name) AS full_name,\n    UPPER(last_name) AS upper_last,\n    CHAR_LENGTH(first_name) AS name_length,\n    SUBSTRING(phone, 1, 3) AS area_code\nFROM contacts;",
+    "Template": "SELECT\\n    ⟨c0:id⟩,\\n    ⟨c1 aliased:CONCAT(first_name, ' ', last_name)⟩ AS full_name,\\n    ⟨c2 aliased:UPPER(last_name)⟩ AS upper_last,\\n    ⟨c3 aliased:CHAR_LENGTH(first_name)⟩ AS name_length,\\n    ⟨c4 aliased:SUBSTRING(phone, 1, 3)⟩ AS area_code\\nFROM contacts;"
+  }
+]

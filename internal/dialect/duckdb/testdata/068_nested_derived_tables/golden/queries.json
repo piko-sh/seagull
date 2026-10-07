@@ -1,0 +1,65 @@
+[
+  {
+    "Command": "many",
+    "Filename": "landings.sql",
+    "Line": 1,
+    "Name": "PivotedLandings",
+    "OutputColumns": [
+      {
+        "Name": "harbour",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "harbour",
+        "SourceQualifier": "pivot"
+      },
+      {
+        "Name": "cod",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "hugeint",
+          "Width": 128
+        },
+        "SourceColumn": "cod",
+        "SourceQualifier": "pivot"
+      },
+      {
+        "Name": "hake",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "hugeint",
+          "Width": 128
+        },
+        "SourceColumn": "hake",
+        "SourceQualifier": "pivot"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(PivotedLandings, many)\nSELECT * FROM (SELECT harbour, species, kg FROM landings) AS l PIVOT (sum(kg) FOR species IN ('cod', 'hake'));",
+    "Template": "SELECT ⟨star written 0=pivot.harbour 1=pivot.cod 2=pivot.hake:*⟩ FROM (SELECT harbour, species, kg FROM landings) AS l PIVOT (sum(kg) FOR species IN ('cod', 'hake'));"
+  },
+  {
+    "Command": "many",
+    "Filename": "landings.sql",
+    "Line": 4,
+    "Name": "NestedKilos",
+    "OutputColumns": [
+      {
+        "Name": "x",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "x",
+        "SourceQualifier": "b"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(NestedKilos, many)\nSELECT x FROM (SELECT x FROM (SELECT kg AS x FROM landings) a) b;",
+    "Template": "SELECT ⟨c0:x⟩ FROM (SELECT x FROM (SELECT kg AS x FROM landings) a) b;"
+  }
+]

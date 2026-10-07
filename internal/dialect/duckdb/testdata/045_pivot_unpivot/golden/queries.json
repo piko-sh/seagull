@@ -1,0 +1,44 @@
+[
+  {
+    "Command": "many",
+    "Filename": "sales.sql",
+    "Line": 1,
+    "Name": "ListMonthlySales",
+    "OutputColumns": [
+      {
+        "Name": "product",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "product",
+        "SourceQualifier": "monthly_sales",
+        "SourceTable": "monthly_sales"
+      },
+      {
+        "Name": "month",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "month",
+        "SourceQualifier": "monthly_sales",
+        "SourceTable": "monthly_sales"
+      },
+      {
+        "Name": "revenue",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        },
+        "SourceColumn": "revenue",
+        "SourceQualifier": "monthly_sales",
+        "SourceTable": "monthly_sales"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListMonthlySales, command: many)\nSELECT product, month, revenue FROM monthly_sales;",
+    "Template": "SELECT ⟨c0:product⟩, ⟨c1:month⟩, ⟨c2:revenue⟩ FROM monthly_sales;"
+  }
+]

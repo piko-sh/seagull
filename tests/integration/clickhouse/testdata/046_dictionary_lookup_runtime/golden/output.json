@@ -1,0 +1,19 @@
+{
+  "shipments": [
+    {
+      "country_id": 1,
+      "country_name": "France",
+      "id": 10
+    },
+    {
+      "country_id": 2,
+      "country_name": "Spain",
+      "id": 11
+    },
+    {
+      "country_id": 3,
+      "country_name": "Japan",
+      "id": 12
+    }
+  ]
+}

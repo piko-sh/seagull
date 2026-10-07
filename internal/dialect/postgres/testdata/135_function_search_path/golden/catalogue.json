@@ -1,0 +1,112 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "analytics": {
+      "CompositeTypes": {
+        "__sgl_udf_stats____row": {
+          "Fields": [
+            {
+              "GeneratedKind": "none",
+              "Name": "a",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            }
+          ],
+          "Name": "__sgl_udf_stats____row",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 1
+          },
+          "Schema": "analytics"
+        }
+      },
+      "Functions": {
+        "stats": [
+          {
+            "BodySQL": "\n    SELECT 1;\n",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "Name": "stats",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 1
+            },
+            "ReturnType": {
+              "Category": "composite",
+              "EngineName": "__sgl_udf_stats____row",
+              "Schema": "analytics"
+            },
+            "ReturnsSet": true,
+            "Schema": "analytics"
+          }
+        ]
+      },
+      "Name": "analytics"
+    },
+    "public": {
+      "CompositeTypes": {
+        "__sgl_udf_stats____row": {
+          "Fields": [
+            {
+              "GeneratedKind": "none",
+              "Name": "b",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            }
+          ],
+          "Name": "__sgl_udf_stats____row",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 2
+          },
+          "Schema": "public"
+        }
+      },
+      "Functions": {
+        "stats": [
+          {
+            "BodySQL": "\n    SELECT 'b'::text;\n",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "Name": "stats",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_schema.up.sql",
+              "Statement": 2
+            },
+            "ReturnType": {
+              "Category": "composite",
+              "EngineName": "__sgl_udf_stats____row",
+              "Schema": "public"
+            },
+            "ReturnsSet": true,
+            "Schema": "public"
+          }
+        ]
+      },
+      "Name": "public"
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

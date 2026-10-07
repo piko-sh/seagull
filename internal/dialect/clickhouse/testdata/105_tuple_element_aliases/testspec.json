@@ -1,0 +1,4 @@
+{
+  "description": "An expression in a list may carry AS name (tuple(1 AS x, 'a' AS y), (a AS x, b AS y), an argument, an array element): the name leaves the element's type as it is, and ClickHouse 25.4 names no tuple element after it (toTypeName gives Tuple(UInt8, String)), so such a tuple is an unnamed one read by position, inside an Array or a Map too, while CAST(... AS Tuple(key UInt64, ...)) is a named one",
+  "expectedDiagnosticCount": 0
+}

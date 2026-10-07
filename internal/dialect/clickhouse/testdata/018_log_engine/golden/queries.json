@@ -1,0 +1,33 @@
+[
+  {
+    "Command": "many",
+    "Filename": "flags.sql",
+    "Line": 1,
+    "Name": "ListFlags",
+    "OutputColumns": [
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "flags",
+        "SourceTable": "flags"
+      },
+      {
+        "Name": "enabled",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "Bool"
+        },
+        "SourceColumn": "enabled",
+        "SourceQualifier": "flags",
+        "SourceTable": "flags"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ListFlags, many)\nSELECT name, enabled FROM flags;",
+    "Template": "SELECT ⟨c0:name⟩, ⟨c1:enabled⟩ FROM flags;"
+  }
+]

@@ -1,0 +1,61 @@
+[
+  {
+    "Command": "many",
+    "Filename": "order_lines.sql",
+    "Line": 1,
+    "Name": "OrderLines",
+    "OutputColumns": [
+      {
+        "Name": "sku",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 40
+        },
+        "SourceColumn": "sku",
+        "SourceQualifier": "jt"
+      },
+      {
+        "Name": "price",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal",
+          "Precision": 10,
+          "Scale": 2
+        },
+        "SourceColumn": "price",
+        "SourceQualifier": "jt"
+      },
+      {
+        "Name": "placed_at",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Precision": 3,
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "placed_at",
+        "SourceQualifier": "jt"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: OrderLines, command: many)\nSELECT jt.sku, jt.price, jt.placed_at\nFROM orders,\n     JSON_TABLE(orders.lines, '$[*]' COLUMNS (\n         sku VARCHAR(40) PATH '$.sku',\n         price DECIMAL(10, 2) PATH '$.price',\n         placed_at DATETIME(3) PATH '$.placed_at'\n     )) AS jt\nWHERE orders.id = ?;",
+    "Template": "SELECT ⟨c0:jt.sku⟩, ⟨c1:jt.price⟩, ⟨c2:jt.placed_at⟩\\nFROM orders,\\n     JSON_TABLE(orders.lines, '$[*]' COLUMNS (\\n         sku VARCHAR(40) PATH '$.sku',\\n         price DECIMAL(10, 2) PATH '$.price',\\n         placed_at DATETIME(3) PATH '$.placed_at'\\n     )) AS jt\\nWHERE orders.id = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

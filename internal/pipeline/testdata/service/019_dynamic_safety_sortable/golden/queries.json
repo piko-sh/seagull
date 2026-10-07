@@ -1,0 +1,59 @@
+[
+  {
+    "Command": "many",
+    "Filename": "search_users.sql",
+    "IsDynamic": true,
+    "Line": 1,
+    "Name": "SearchUsers",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "uuid"
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "email",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "sortable",
+        "Name": "orderBy",
+        "Number": 1,
+        "SQLType": {
+          "Category": "unknown"
+        },
+        "SortableColumns": [
+          "name",
+          "email",
+          "nonexistent"
+        ]
+      }
+    ],
+    "SQL": "-- sgl.query(name: SearchUsers, command: many)\n-- sgl.sortable(orderBy, columns: [name, email, nonexistent])\nSELECT id, name, email FROM users WHERE active = true ORDER BY $1",
+    "Template": "SELECT id, name, email FROM users WHERE active = true ORDER BY $1"
+  }
+]

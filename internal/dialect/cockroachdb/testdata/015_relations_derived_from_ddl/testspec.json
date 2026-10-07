@@ -1,0 +1,4 @@
+{
+  "description": "A table created without a primary key is keyed by its hidden rowid (rowid_1 when it declares a rowid column), which ADD PRIMARY KEY and ALTER PRIMARY KEY drop; a sequence can be read as a relation; names qualified by the database replay as schema-qualified ones, and objects created after SET search_path go to the schema it names.",
+  "expectedDiagnosticCount": 0
+}

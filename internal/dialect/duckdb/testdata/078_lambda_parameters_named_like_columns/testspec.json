@@ -1,0 +1,4 @@
+{
+  "description": "A lambda parameter, or a list comprehension's variable, named like a column of the table hides the column inside its body, as DuckDB binds it: a parameter compared with it in WHERE, HAVING, an UPDATE's WHERE or a value its SET assigns takes the list element's type (or the field's, for a field of it) rather than the column's, while a parameter compared with the column outside the lambda keeps the column's name and type.",
+  "expectedDiagnosticCount": 0
+}

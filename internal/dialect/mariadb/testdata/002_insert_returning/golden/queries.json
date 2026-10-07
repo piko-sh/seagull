@@ -1,0 +1,132 @@
+[
+  {
+    "Command": "one",
+    "Filename": "articles.sql",
+    "InsertColumns": [
+      "title",
+      "body"
+    ],
+    "InsertTarget": {
+      "Name": "articles"
+    },
+    "Line": 1,
+    "Name": "CreateArticle",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "articles",
+        "SourceTable": "articles"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "articles",
+        "SourceTable": "articles"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "title",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "body",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: CreateArticle, command: one)\nINSERT INTO articles (title, body) VALUES (?, ?) RETURNING id, title;",
+    "Template": "INSERT INTO articles (title, body) VALUES ⟨values:(⟨p0⟩, ⟨p1⟩)⟩ RETURNING ⟨c0:id⟩, ⟨c1:title⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "articles.sql",
+    "Line": 4,
+    "Name": "GetArticle",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "articles",
+        "SourceTable": "articles"
+      },
+      {
+        "Name": "title",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "articles",
+        "SourceTable": "articles"
+      },
+      {
+        "Name": "body",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "body",
+        "SourceQualifier": "articles",
+        "SourceTable": "articles"
+      },
+      {
+        "Name": "published_at",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "published_at",
+        "SourceQualifier": "articles",
+        "SourceTable": "articles"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetArticle, command: one)\nSELECT id, title, body, published_at FROM articles WHERE id = ?;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:title⟩, ⟨c2:body⟩, ⟨c3:published_at⟩ FROM articles WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

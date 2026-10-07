@@ -1,0 +1,3 @@
+{
+  "description": "A named placeholder written several times binds once per occurrence: MySQL executes anonymous ? placeholders, so :term written three times becomes three ? bound to the same value, and ?1 written twice binds the first argument twice. A query that bound the value only once would fail with a placeholder count mismatch."
+}

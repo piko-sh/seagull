@@ -1,0 +1,19 @@
+{
+  "decoded": [
+    {
+      "age": 30,
+      "id": 1,
+      "name": "alice"
+    },
+    {
+      "age": 25,
+      "id": 2,
+      "name": "bob"
+    },
+    {
+      "age": 42,
+      "id": 3,
+      "name": "carol"
+    }
+  ]
+}

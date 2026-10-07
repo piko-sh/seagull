@@ -1,0 +1,84 @@
+[
+  {
+    "Command": "many",
+    "Filename": "numbers.sql",
+    "Line": 1,
+    "Name": "FirstNumbers",
+    "OutputColumns": [
+      {
+        "Name": "number",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "number"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "count",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: FirstNumbers, command: many)\nSELECT number FROM numbers({count:UInt64});",
+    "Template": "SELECT ⟨c0:number⟩ FROM numbers(⟨p0 UInt64⟩);⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "numbers.sql",
+    "Line": 4,
+    "Name": "NumbersFrom",
+    "OutputColumns": [
+      {
+        "Name": "number",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "number"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "start",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "count",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: NumbersFrom, command: many)\nSELECT number FROM numbers({start:UInt64}, {count:UInt64}) WHERE number \u003e {start:UInt64};",
+    "Template": "SELECT ⟨c0:number⟩ FROM numbers(⟨p0 UInt64⟩, ⟨p1 UInt64⟩) WHERE number \u003e ⟨p0 UInt64⟩;⟨arguments p0 p1⟩"
+  }
+]

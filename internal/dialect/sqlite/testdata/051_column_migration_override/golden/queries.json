@@ -1,0 +1,99 @@
+[
+  {
+    "Command": "one",
+    "Filename": "users.sql",
+    "Line": 1,
+    "Name": "GetUser",
+    "OutputColumns": [
+      {
+        "GoTypeOverride": {
+          "Name": "UUID",
+          "Package": "github.com/google/uuid"
+        },
+        "Name": "id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "binary",
+          "EngineName": "blob"
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "email",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "GoTypeOverride": {
+          "Name": "UUID",
+          "Package": "github.com/google/uuid"
+        },
+        "Kind": "none",
+        "Name": "id",
+        "Nullable": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "binary",
+          "EngineName": "blob"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(GetUser, one)\nSELECT id, email FROM users WHERE id = ?;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:email⟩ FROM users WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "users.sql",
+    "Line": 4,
+    "Name": "GetUserAsString",
+    "OutputColumns": [
+      {
+        "Name": "id_str",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      },
+      {
+        "Name": "email",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "email",
+        "SourceQualifier": "users",
+        "SourceTable": "users"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "email",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(GetUserAsString, one)\nSELECT CAST(id AS TEXT) AS id_str, email FROM users WHERE email = ?;",
+    "Template": "SELECT ⟨c0 aliased:CAST(id AS TEXT)⟩ AS id_str, ⟨c1:email⟩ FROM users WHERE email = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

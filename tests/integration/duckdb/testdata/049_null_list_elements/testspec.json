@@ -1,0 +1,4 @@
+{
+  "description": "A NULL list element, map value or STRUCT element round-trips: the elements of a list column, of a list() and of a list literal, and the values of a map column, are pointers by default, since DuckDB can hold NULL in any list or map, and read NULL as nil, in a query's row and in the table's model alike, while a NULL field of a STRUCT element reads as nil; a column whose elements a sgl.column directive declares non-null reads into plain elements and refuses a NULL element or value with an error.",
+  "expectedDiagnostics": []
+}

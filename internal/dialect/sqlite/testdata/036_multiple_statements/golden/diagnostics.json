@@ -1,0 +1,10 @@
+[
+  {
+    "Code": "Q012",
+    "Column": 1,
+    "Filename": "multi_statement.sql",
+    "Line": 1,
+    "Message": "query \"GetUsers\" contains 2 statements; give each its own header",
+    "Severity": "error"
+  }
+]

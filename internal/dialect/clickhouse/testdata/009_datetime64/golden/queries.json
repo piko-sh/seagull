@@ -1,0 +1,65 @@
+[
+  {
+    "Command": "one",
+    "Filename": "timed.sql",
+    "Line": 1,
+    "Name": "GetTimed",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "timed",
+        "SourceTable": "timed"
+      },
+      {
+        "Name": "micro_ts",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime64",
+          "Precision": 6,
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "micro_ts",
+        "SourceQualifier": "timed",
+        "SourceTable": "timed"
+      },
+      {
+        "Name": "nano_ts",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime64",
+          "Precision": 9,
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "nano_ts",
+        "SourceQualifier": "timed",
+        "SourceTable": "timed"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(GetTimed, one)\nSELECT id, micro_ts, nano_ts FROM timed WHERE id = {id:UInt64};",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:micro_ts⟩, ⟨c2:nano_ts⟩ FROM timed WHERE id = ⟨p0 UInt64⟩;⟨arguments p0⟩"
+  }
+]

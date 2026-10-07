@@ -1,0 +1,1 @@
+{"description": "Quoted reserved-word identifiers are names, never keywords, in DDL, queries and SET clauses"}

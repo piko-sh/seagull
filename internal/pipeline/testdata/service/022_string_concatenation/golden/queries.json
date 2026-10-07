@@ -1,0 +1,27 @@
+[
+  {
+    "Command": "many",
+    "Filename": "get_names.sql",
+    "Line": 1,
+    "Name": "GetFullNames",
+    "OutputColumns": [
+      {
+        "Name": "full_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "with_middle",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: GetFullNames, command: many)\nSELECT\n  first_name || ' ' || last_name as full_name,\n  first_name || ' ' || middle_name as with_middle\nFROM people",
+    "Template": "SELECT\\n  first_name || ' ' || last_name as full_name,\\n  first_name || ' ' || middle_name as with_middle\\nFROM people"
+  }
+]

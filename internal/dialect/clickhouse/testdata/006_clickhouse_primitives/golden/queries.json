@@ -1,0 +1,194 @@
+[
+  {
+    "Command": "one",
+    "Filename": "primitives.sql",
+    "Line": 1,
+    "Name": "GetPrimitive",
+    "OutputColumns": [
+      {
+        "Name": "u8",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        },
+        "SourceColumn": "u8",
+        "SourceQualifier": "primitives",
+        "SourceTable": "primitives"
+      },
+      {
+        "Name": "u16",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt16",
+          "Unsigned": true,
+          "Width": 16
+        },
+        "SourceColumn": "u16",
+        "SourceQualifier": "primitives",
+        "SourceTable": "primitives"
+      },
+      {
+        "Name": "u32",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Unsigned": true,
+          "Width": 32
+        },
+        "SourceColumn": "u32",
+        "SourceQualifier": "primitives",
+        "SourceTable": "primitives"
+      },
+      {
+        "Name": "u64",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        },
+        "SourceColumn": "u64",
+        "SourceQualifier": "primitives",
+        "SourceTable": "primitives"
+      },
+      {
+        "Name": "i8",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int8",
+          "Width": 8
+        },
+        "SourceColumn": "i8",
+        "SourceQualifier": "primitives",
+        "SourceTable": "primitives"
+      },
+      {
+        "Name": "i16",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int16",
+          "Width": 16
+        },
+        "SourceColumn": "i16",
+        "SourceQualifier": "primitives",
+        "SourceTable": "primitives"
+      },
+      {
+        "Name": "i32",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int32",
+          "Width": 32
+        },
+        "SourceColumn": "i32",
+        "SourceQualifier": "primitives",
+        "SourceTable": "primitives"
+      },
+      {
+        "Name": "i64",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "i64",
+        "SourceQualifier": "primitives",
+        "SourceTable": "primitives"
+      },
+      {
+        "Name": "f32",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "Float32",
+          "Width": 32
+        },
+        "SourceColumn": "f32",
+        "SourceQualifier": "primitives",
+        "SourceTable": "primitives"
+      },
+      {
+        "Name": "f64",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "Float64",
+          "Width": 64
+        },
+        "SourceColumn": "f64",
+        "SourceQualifier": "primitives",
+        "SourceTable": "primitives"
+      },
+      {
+        "Name": "s",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "s",
+        "SourceQualifier": "primitives",
+        "SourceTable": "primitives"
+      },
+      {
+        "Name": "b",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "Bool"
+        },
+        "SourceColumn": "b",
+        "SourceQualifier": "primitives",
+        "SourceTable": "primitives"
+      },
+      {
+        "Name": "d",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "Date",
+          "Temporal": "date"
+        },
+        "SourceColumn": "d",
+        "SourceQualifier": "primitives",
+        "SourceTable": "primitives"
+      },
+      {
+        "Name": "dt",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "DateTime",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        },
+        "SourceColumn": "dt",
+        "SourceQualifier": "primitives",
+        "SourceTable": "primitives"
+      },
+      {
+        "Name": "u",
+        "SQLType": {
+          "Category": "uuid",
+          "EngineName": "UUID"
+        },
+        "SourceColumn": "u",
+        "SourceQualifier": "primitives",
+        "SourceTable": "primitives"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(GetPrimitive, one)\nSELECT u8, u16, u32, u64, i8, i16, i32, i64, f32, f64, s, b, d, dt, u\nFROM primitives WHERE u64 = {id:UInt64};",
+    "Template": "SELECT ⟨c0:u8⟩, ⟨c1:u16⟩, ⟨c2:u32⟩, ⟨c3:u64⟩, ⟨c4:i8⟩, ⟨c5:i16⟩, ⟨c6:i32⟩, ⟨c7:i64⟩, ⟨c8:f32⟩, ⟨c9:f64⟩, ⟨c10:s⟩, ⟨c11:b⟩, ⟨c12:d⟩, ⟨c13:dt⟩, ⟨c14:u⟩\\nFROM primitives WHERE u64 = ⟨p0 UInt64⟩;⟨arguments p0⟩"
+  }
+]

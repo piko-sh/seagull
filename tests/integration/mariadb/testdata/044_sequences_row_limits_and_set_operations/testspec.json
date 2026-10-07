@@ -1,0 +1,4 @@
+{
+  "description": "MariaDB sequences, row limits and set operations against MariaDB 11: PREVIOUS VALUE FOR reads NULL before the session reads the sequence, NEXT VALUE FOR and NEXTVAL advance it, LASTVAL reads it, SETVAL moves it and reads NULL for a value below its next one, and NEXT VALUE FOR fills an inserted key; OFFSET n ROWS FETCH NEXT n ROWS ONLY and FETCH FIRST n ROWS WITH TIES limit the rows, and MEDIAN, PERCENTILE_CONT and PERCENTILE_DISC ... WITHIN GROUP (ORDER BY ...) OVER (...) read per window; a VALUES list and queries in parentheses are arms of a set operation; DIV by a zero divisor and STR_TO_DATE of a string that holds no date read NULL, and \"...\" is a string.",
+  "expectedDiagnostics": []
+}

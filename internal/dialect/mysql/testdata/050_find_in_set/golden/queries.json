@@ -1,0 +1,45 @@
+[
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 1,
+    "Name": "BoatsTagged",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      },
+      {
+        "Name": "position",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "string",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: BoatsTagged, command: many)\nSELECT id, FIND_IN_SET(?, tags) AS position FROM boats WHERE FIND_IN_SET('fast', tags) \u003e 0;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:FIND_IN_SET(⟨p0⟩, tags)⟩ AS position FROM boats WHERE FIND_IN_SET('fast', tags) \u003e 0;⟨arguments p0⟩"
+  }
+]

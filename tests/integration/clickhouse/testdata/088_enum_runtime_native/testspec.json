@@ -1,0 +1,4 @@
+{
+  "description": "Native ClickHouse enum runtime cases: an inline Enum8 column, a Nullable(Enum8) column, an Array(Enum8) column, an Array(Nullable(Enum8)) column and a Map(String, Enum8) column written by a batch that appends the named enum as string, *string, []string, []*string and map[string]string (clickhouse-go appends no named string type) and read into the named enum, its pointer, a slice of it, a slice of pointers to it and a map of it, the value and pointer through string and *string, since clickhouse-go scans an enum only into *string or **string, the map through map[string]string, since it scans a map only into its own type, and the slices as they are; enum parameters bound as text, a nullable one bound as NULL; a slice of the enum in IN and NOT IN bound whole as an Array(Enum8), nil, empty, of one and of many (an empty NOT IN keeps every row); a batch of lone placeholders appended column by column",
+  "emitter": "native"
+}

@@ -1,0 +1,77 @@
+{
+  "go_types": [
+    "map[string]*int32 map[string]*string map[string]*db.StationMapsNamedStructsValue",
+    "map[string]*int32 map[string]*string map[string]*db.StationMapsNamedStructsValue"
+  ],
+  "station_maps": [
+    {
+      "by_name": {
+        "Swift": 1
+      },
+      "from_entries": {
+        "Swift": 1
+      },
+      "from_rows": {
+        "Swift": 1.5
+      },
+      "id": 1,
+      "id_histogram": {
+        "1": 1,
+        "2": 1
+      },
+      "named_structs": {
+        "Swift": {
+          "id": 1,
+          "name": "Swift"
+        }
+      },
+      "readings_by_label": {
+        "reading": 1.5,
+        "twice": 3
+      },
+      "regions": {
+        "Swift": "north"
+      },
+      "zipped": {
+        "Swift": 1
+      },
+      "zipped_lists": {
+        "a": 1,
+        "b": 2
+      }
+    },
+    {
+      "by_name": {
+        "Gull": 2
+      },
+      "from_entries": {
+        "Gull": 2
+      },
+      "from_rows": {
+        "Gull": 4
+      },
+      "id": 2,
+      "id_histogram": {
+        "1": 1,
+        "2": 1
+      },
+      "named_structs": {
+        "Gull": {
+          "id": 2,
+          "name": "Gull"
+        }
+      },
+      "readings_by_label": {
+        "reading": 4,
+        "twice": 8
+      },
+      "regions": {
+        "Gull": null
+      },
+      "zipped": {
+        "Gull": 2
+      },
+      "zipped_lists": {}
+    }
+  ]
+}

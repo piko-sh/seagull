@@ -1,0 +1,53 @@
+{
+  "aligned": [
+    {
+      "bucket": "2024-01-01T09:52:00Z",
+      "readings": 1
+    },
+    {
+      "bucket": "2024-01-01T10:07:00Z",
+      "readings": 1
+    },
+    {
+      "bucket": "2024-01-01T11:37:00Z",
+      "readings": 1
+    },
+    {
+      "bucket": "2024-01-02T08:52:00Z",
+      "readings": 1
+    }
+  ],
+  "daily": [
+    {
+      "bucket": "2024-01-01T00:00:00Z",
+      "device_id": "a",
+      "peak": 24
+    },
+    {
+      "bucket": "2024-01-02T00:00:00Z",
+      "device_id": "b",
+      "peak": 18
+    }
+  ],
+  "hourly": [
+    {
+      "bucket": "2024-01-01T10:00:00Z",
+      "device_id": "a",
+      "peak": 22
+    },
+    {
+      "bucket": "2024-01-01T11:00:00Z",
+      "device_id": "a",
+      "peak": 24
+    },
+    {
+      "bucket": "2024-01-02T09:00:00Z",
+      "device_id": "b",
+      "peak": 18
+    }
+  ],
+  "percentiles": {
+    "median": 22,
+    "sketch_median": 22
+  }
+}

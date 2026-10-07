@@ -1,0 +1,8 @@
+writer  INSERT INTO sightings (species, place) VALUES (?1, ?2) RETURNING id;
+writer  INSERT INTO sightings (species, place) VALUES (?1, ?2) RETURNING id;
+reader  SELECT id, species, place FROM sightings ORDER BY id;
+        1 herring gull at the pier
+        2 kittiwake at the harbour wall
+writer  SELECT COUNT(*) AS total FROM sightings;
+        2 sightings on the primary
+a write on the reader fails: attempt to write a readonly database (8)

@@ -1,0 +1,11 @@
+ListMenu: section store.Section, status menu.Status
+  fish      cod
+  fish      haddock (sold out)
+  sides     chips
+  sides     mushy peas
+  puddings  sticky toffee pudding
+ItemsInSection: section menu.Section, status menu.Status
+  fish      cod
+  fish      haddock (sold out)
+section drinks is valid: false
+refused section drinks: Conversion Error: Could not convert string 'drinks' to UINT8

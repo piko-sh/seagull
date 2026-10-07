@@ -1,0 +1,19 @@
+{
+  "rows": [
+    {
+      "duration": 30,
+      "user_id": 1,
+      "user_name": "alice"
+    },
+    {
+      "duration": 60,
+      "user_id": 1,
+      "user_name": "alice"
+    },
+    {
+      "duration": 45,
+      "user_id": 2,
+      "user_name": "bob"
+    }
+  ]
+}

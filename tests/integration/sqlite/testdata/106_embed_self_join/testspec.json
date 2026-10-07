@@ -1,0 +1,3 @@
+{
+  "description": "Embed self-join: from: binds each embed to its own alias, as: names the field and type, and only the LEFT JOIN side is a pointer"
+}

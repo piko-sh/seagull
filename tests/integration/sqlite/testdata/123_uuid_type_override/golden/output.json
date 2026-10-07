@@ -1,0 +1,13 @@
+{
+  "account_by_id": {
+    "id": "0b9f8e2c-6d1a-4f3e-9a7b-5c4d3e2f1a0b",
+    "name": "primary",
+    "owner_id": "7d444840-9dc0-11d1-b245-5ffdce74fad2"
+  },
+  "add_accounts": "added",
+  "owner_by_id": {
+    "id": "7d444840-9dc0-11d1-b245-5ffdce74fad2",
+    "name": "owner",
+    "owner_id": null
+  }
+}

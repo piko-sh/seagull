@@ -1,0 +1,4 @@
+{
+  "description": "SELECT * and t.* over a table with an INVISIBLE column read the columns MySQL returns (on MySQL), and a query naming the invisible column reads it.",
+  "expectedDiagnostics": []
+}

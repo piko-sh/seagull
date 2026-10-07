@@ -1,0 +1,4 @@
+{
+  "description": "Every method checks each address against the column first: the zero address (also behind a non-nil pointer to a Nullable) and an IPv6 address for an IPv4 value are refused with an error naming the parameter and the reason: a columnar batch refuses the row before the batch is sent, and a parameter bound by name is refused by the server with the reason the value helper writes, so the statement holding it writes no row; an IPv4-mapped IPv6 address is stored as IPv4 on every path.",
+  "emitter": "native"
+}

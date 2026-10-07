@@ -1,0 +1,44 @@
+{
+  "durations": [
+    {
+      "duration": 3600000000000,
+      "state": "hall"
+    },
+    {
+      "duration": 7200000000000,
+      "state": "kitchen"
+    }
+  ],
+  "mean_readings": [
+    {
+      "device_id": "hall",
+      "mean": 15,
+      "readings": 1,
+      "spread": 0
+    },
+    {
+      "device_id": "kitchen",
+      "mean": 22,
+      "readings": 3,
+      "spread": 1.632993161855452
+    }
+  ],
+  "percentiles": {
+    "median": 21.999077712789624,
+    "sampled": 4
+  },
+  "points": [
+    {
+      "time": "2024-01-01T00:00:00Z",
+      "value": 20
+    },
+    {
+      "time": "2024-01-01T01:00:00Z",
+      "value": 22
+    },
+    {
+      "time": "2024-01-01T03:00:00Z",
+      "value": 24
+    }
+  ]
+}

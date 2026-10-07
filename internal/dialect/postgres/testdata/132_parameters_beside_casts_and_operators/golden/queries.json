@@ -1,0 +1,289 @@
+[
+  {
+    "Command": "many",
+    "Filename": "compared.sql",
+    "Line": 1,
+    "Name": "BornOn",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "pe",
+        "SourceTable": "people"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "born",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(BornOn, many)\nSELECT id FROM people pe WHERE cast(pe.born AS text) = $1 AND length(pe.name) \u003c $2;",
+    "Template": "SELECT ⟨c0:id⟩ FROM people pe WHERE cast(pe.born AS text) = ⟨p0⟩ AND length(pe.name) \u003c ⟨p1⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "compared.sql",
+    "Line": 4,
+    "Name": "BornOnPlain",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "people",
+        "SourceTable": "people"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "born",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(BornOnPlain, many)\nSELECT id FROM people WHERE CAST(born AS text) = $1;",
+    "Template": "SELECT ⟨c0:id⟩ FROM people WHERE CAST(born AS text) = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "compared.sql",
+    "Line": 7,
+    "Name": "BornAfter",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "people",
+        "SourceTable": "people"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "born",
+        "Number": 1,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(BornAfter, many)\nSELECT id FROM people WHERE CAST(born AS timestamp with time zone) \u003e $1;",
+    "Template": "SELECT ⟨c0:id⟩ FROM people WHERE CAST(born AS timestamp with time zone) \u003e ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "compared.sql",
+    "Line": 10,
+    "Name": "ListingsBelow",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "r",
+        "SourceTable": "reviews"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "listing_id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ListingsBelow, many)\nSELECT id FROM reviews r WHERE cast(r.listing_id AS int) \u003c $1;",
+    "Template": "SELECT ⟨c0:id⟩ FROM reviews r WHERE cast(r.listing_id AS int) \u003c ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "compared.sql",
+    "Line": 13,
+    "Name": "NamedInParentheses",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "pe",
+        "SourceTable": "people"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(NamedInParentheses, many)\nSELECT id FROM people pe WHERE (pe.name) = $1;",
+    "Template": "SELECT ⟨c0:id⟩ FROM people pe WHERE (pe.name) = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "compared.sql",
+    "Line": 16,
+    "Name": "Nearest",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "places",
+        "SourceTable": "places"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "location",
+        "Number": 1,
+        "SQLType": {
+          "Category": "geometric",
+          "EngineName": "point"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(Nearest, many)\nSELECT id FROM places ORDER BY location \u003c-\u003e $1 LIMIT 5;",
+    "Template": "SELECT ⟨c0:id⟩ FROM places ORDER BY location \u003c-\u003e ⟨p0⟩ LIMIT 5;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "compared.sql",
+    "Line": 19,
+    "Name": "Masked",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "places",
+        "SourceTable": "places"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "mask",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(Masked, many)\nSELECT id FROM places WHERE (mask \u0026 $1) \u003c\u003e 0;",
+    "Template": "SELECT ⟨c0:id⟩ FROM places WHERE (mask \u0026 ⟨p0⟩) \u003c\u003e 0;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "compared.sql",
+    "Line": 22,
+    "Name": "SimilarLabels",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "places",
+        "SourceTable": "places"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "label",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(SimilarLabels, many)\nSELECT id FROM places WHERE label \u003c-\u003e $1 \u003c 0.5;",
+    "Template": "SELECT ⟨c0:id⟩ FROM places WHERE label \u003c-\u003e ⟨p0⟩ \u003c 0.5;⟨arguments p0⟩"
+  }
+]

@@ -1,0 +1,39 @@
+[
+  {
+    "Command": "one",
+    "Filename": "sequences.sql",
+    "Line": 1,
+    "Name": "NextCounterValue",
+    "OutputColumns": [
+      {
+        "Name": "next_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: NextCounterValue, command: one)\nSELECT nextval('counters_seq') AS next_id;",
+    "Template": "SELECT ⟨c0 aliased:nextval('counters_seq')⟩ AS next_id;"
+  },
+  {
+    "Command": "one",
+    "Filename": "sequences.sql",
+    "Line": 4,
+    "Name": "CountRows",
+    "OutputColumns": [
+      {
+        "Name": "total",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CountRows, command: one)\nSELECT COUNT(*) AS total FROM counters;",
+    "Template": "SELECT ⟨c0 aliased:COUNT(*)⟩ AS total FROM counters;"
+  }
+]

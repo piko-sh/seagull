@@ -1,0 +1,35 @@
+{
+  "events": [
+    {
+      "a": 1,
+      "c": "x",
+      "extras": [
+        1,
+        "two"
+      ],
+      "id": 1,
+      "payload": 42
+    },
+    {
+      "a": "text",
+      "c": null,
+      "extras": [],
+      "id": 2,
+      "payload": "hello"
+    },
+    {
+      "a": null,
+      "c": null,
+      "extras": [
+        null
+      ],
+      "id": 3,
+      "payload": null
+    }
+  ],
+  "extras": [
+    2,
+    0,
+    1
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "first_stages": [
+    {
+      "id": 1,
+      "stages": [
+        {
+          "step": 1
+        },
+        {
+          "step": null
+        }
+      ]
+    }
+  ],
+  "limits": [
+    {
+      "id": 1,
+      "limits": {
+        "low": 1
+      }
+    },
+    {
+      "id": 2,
+      "limits": {
+        "low": null
+      }
+    }
+  ],
+  "literal": [
+    {
+      "id": 1,
+      "pair": [
+        "a",
+        null
+      ]
+    },
+    {
+      "id": 2,
+      "pair": [
+        "b",
+        null
+      ]
+    }
+  ],
+  "notes": {
+    "notes": [
+      "calm",
+      null
+    ]
+  },
+  "readings": [
+    {
+      "id": 1,
+      "label": "a",
+      "limits": {
+        "low": 1
+      },
+      "note": "calm",
+      "scores": [
+        1,
+        2
+      ],
+      "stages": [
+        {
+          "step": 1
+        },
+        {
+          "step": null
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "label": "b",
+      "limits": {
+        "low": null
+      },
+      "note": null,
+      "scores": [
+        3,
+        null
+      ],
+      "stages": [
+        null
+      ]
+    }
+  ],
+  "scores": [
+    {
+      "id": 1,
+      "scores": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": 2,
+      "scores": [
+        3,
+        null
+      ]
+    }
+  ],
+  "stages": [
+    {
+      "id": 1,
+      "stages": [
+        {
+          "step": 1
+        },
+        {
+          "step": null
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "stages": [
+        null
+      ]
+    }
+  ],
+  "strict_limits": "error: sql: Scan error on column index 1, name \"limits\": sgl: read duckdb.OrderedMap into map[string]int32: value of key low: converting NULL to int32 is unsupported",
+  "strict_scores": "error: sql: Scan error on column index 1, name \"scores\": sgl: read []interface {} into []int32: element 1: converting NULL to int32 is unsupported"
+}

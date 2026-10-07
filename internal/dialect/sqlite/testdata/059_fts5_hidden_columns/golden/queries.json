@@ -1,0 +1,135 @@
+[
+  {
+    "Command": "many",
+    "Filename": "notices.sql",
+    "Line": 1,
+    "Name": "AllNotices",
+    "OutputColumns": [
+      {
+        "Name": "title",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "notices",
+        "SourceTable": "notices"
+      },
+      {
+        "Name": "body",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "body",
+        "SourceQualifier": "notices",
+        "SourceTable": "notices"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AllNotices, command: many)\nSELECT * FROM notices;",
+    "Template": "SELECT ⟨star 0=notices.title 1=notices.body:*⟩ FROM notices;"
+  },
+  {
+    "Command": "many",
+    "Filename": "notices.sql",
+    "Line": 4,
+    "Name": "SearchNotices",
+    "OutputColumns": [
+      {
+        "Name": "rowid",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "rowid",
+        "SourceQualifier": "notices",
+        "SourceTable": "notices"
+      },
+      {
+        "Name": "title",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "title",
+        "SourceQualifier": "notices",
+        "SourceTable": "notices"
+      },
+      {
+        "Name": "rank",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "real",
+          "Width": 64
+        },
+        "SourceColumn": "rank",
+        "SourceQualifier": "notices",
+        "SourceTable": "notices"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "like",
+        "Kind": "none",
+        "Name": "notices_like",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: SearchNotices, command: many)\nSELECT rowid, title, rank\nFROM notices\nWHERE notices MATCH ?\nORDER BY rank;",
+    "Template": "SELECT ⟨c0:rowid⟩, ⟨c1:title⟩, ⟨c2:rank⟩\\nFROM notices\\nWHERE notices MATCH ⟨p0⟩\\nORDER BY rank;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "notices.sql",
+    "Line": 10,
+    "Name": "NoticeByTitle",
+    "OutputColumns": [
+      {
+        "Name": "rowid",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "rowid",
+        "SourceQualifier": "notices",
+        "SourceTable": "notices"
+      },
+      {
+        "Name": "body",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "body",
+        "SourceQualifier": "notices",
+        "SourceTable": "notices"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "like",
+        "Kind": "none",
+        "Name": "notices_like",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: NoticeByTitle, command: many)\nSELECT rowid, body FROM notices WHERE notices = ?;",
+    "Template": "SELECT ⟨c0:rowid⟩, ⟨c1:body⟩ FROM notices WHERE notices = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

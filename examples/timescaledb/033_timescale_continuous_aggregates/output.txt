@@ -1,0 +1,13 @@
+before the refresh, hourly_readings has 0 rows
+refreshing in RunInTx: ERROR: refresh_continuous_aggregate() cannot run inside a transaction block (SQLSTATE 25001)
+refreshing outside a transaction: done
+after the refresh, hourly_readings has 6 rows:
+  22:00  Doom Bar       readings 3  mean 14.20
+  22:00  Stepper Point  readings 1  mean 15.00
+  23:00  Doom Bar       readings 2  mean 13.70
+  23:00  Stepper Point  readings 1  mean 14.60
+  01:00  Doom Bar       readings 2  mean 13.20
+  01:00  Stepper Point  readings 1  mean 14.00
+the whole night, rolled up from the hourly summaries:
+  Doom Bar       readings 7  mean 13.77  stddev 0.47  mean of hourly means 13.70
+  Stepper Point  readings 3  mean 14.53  stddev 0.50  mean of hourly means 14.53

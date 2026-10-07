@@ -1,0 +1,104 @@
+[
+  {
+    "Command": "many",
+    "Filename": "users.sql",
+    "Line": 1,
+    "Name": "GetAllUsersUnion",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "active_users",
+        "SourceTable": "active_users"
+      },
+      {
+        "Name": "name",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "active_users",
+        "SourceTable": "active_users"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetAllUsersUnion, command: many)\nSELECT id, name FROM active_users UNION ALL SELECT id, name FROM archived_users;",
+    "Template": "SELECT id, name FROM active_users UNION ALL SELECT id, name FROM archived_users;"
+  },
+  {
+    "Command": "many",
+    "Filename": "users.sql",
+    "Line": 4,
+    "Name": "GetCommonUsers",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "active_users",
+        "SourceTable": "active_users"
+      },
+      {
+        "Name": "name",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "active_users",
+        "SourceTable": "active_users"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetCommonUsers, command: many)\nSELECT id, name FROM active_users INTERSECT SELECT id, name FROM archived_users;",
+    "Template": "SELECT id, name FROM active_users INTERSECT SELECT id, name FROM archived_users;"
+  },
+  {
+    "Command": "many",
+    "Filename": "users.sql",
+    "Line": 7,
+    "Name": "GetActiveOnlyUsers",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "active_users",
+        "SourceTable": "active_users"
+      },
+      {
+        "Name": "name",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "active_users",
+        "SourceTable": "active_users"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GetActiveOnlyUsers, command: many)\nSELECT id, name FROM active_users EXCEPT SELECT id, name FROM archived_users;",
+    "Template": "SELECT id, name FROM active_users EXCEPT SELECT id, name FROM archived_users;"
+  }
+]

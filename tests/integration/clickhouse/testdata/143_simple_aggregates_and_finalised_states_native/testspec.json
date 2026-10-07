@@ -1,0 +1,4 @@
+{
+  "description": "Native ClickHouse reads SimpleAggregateFunction(f, T) columns as T (uint64, *string, []string) and binds them as T; AggregateFunction states read through finalizeAggregation, typed as the aggregate's result, and through -Merge.",
+  "emitter": "native"
+}

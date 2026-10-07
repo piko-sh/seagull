@@ -1,0 +1,7 @@
+placed    #1 chips        waiting, 500p
+placed    #2 battered cod waiting, 250p
+placed    #3 mushy peas   waiting, 250p
+cancelled #2 battered cod x1
+served    #1 chips        x2
+served    #3 mushy peas   x1
+cannot cancel #1: it is no longer waiting

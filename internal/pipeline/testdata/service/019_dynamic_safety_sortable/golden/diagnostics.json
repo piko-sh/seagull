@@ -1,0 +1,10 @@
+[
+  {
+    "Code": "Q011",
+    "Column": 1,
+    "Filename": "search_users.sql",
+    "Line": 1,
+    "Message": "sortable parameter \"orderBy\" references column \"nonexistent\" which is not in the query output",
+    "Severity": "warning"
+  }
+]

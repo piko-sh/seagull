@@ -1,0 +1,24 @@
+latest landing per boat (DISTINCT ON):
+  Kittiwake mackerel 2026-07-04
+  Puffin    mackerel 2026-07-03
+two biggest landings per boat (LEFT JOIN LATERAL):
+  Gannet    nothing landed
+  Kittiwake mackerel 120kg
+  Kittiwake mackerel  80kg
+  Puffin    pollock   60kg
+  Puffin    mackerel  25kg
+search "mackerel" (full-text):
+  #1 rank 0.0760  a big shoal of mackerel off the point
+  #5 rank 0.0760  a few mackerel by the harbour wall
+  #4 rank 0.0608  feathers out, gulls everywhere
+search "crab or pollock" (full-text):
+  #2 rank 0.0304  pots hauled in a heavy swell
+  #3 rank 0.0304  lines over the wrecks
+gear (jsonb_each):
+  Kittiwake nets  2
+  Kittiwake pots  40
+  Puffin    lines 12
+archived before 2026-07-03 (DELETE and INSERT in one statement):
+  #1 mackerel 2026-07-01
+  #2 crab     2026-07-02
+  #3 pollock  2026-07-01

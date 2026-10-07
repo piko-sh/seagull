@@ -1,0 +1,70 @@
+[
+  {
+    "Command": "many",
+    "Filename": "q.sql",
+    "Line": 1,
+    "Name": "Merged",
+    "OutputColumns": [
+      {
+        "Name": "species",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "species",
+        "SourceQualifier": "totals",
+        "SourceTable": "totals"
+      },
+      {
+        "Name": "sighted",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "kilos",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "heaviest",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Unsigned": true,
+          "Width": 32
+        }
+      },
+      {
+        "Name": "trips",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "names",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "text",
+            "EngineName": "String"
+          },
+          "EngineName": "Array"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(Merged, many)\nSELECT species, uniqMerge(a) AS sighted, sumMerge(b) AS kilos, maxMerge(c) AS heaviest, countMerge(d) AS trips, groupArray(species) AS names FROM totals GROUP BY species;",
+    "Template": "SELECT ⟨c0:species⟩, ⟨c1 aliased:uniqMerge(a)⟩ AS sighted, ⟨c2 aliased:sumMerge(b)⟩ AS kilos, ⟨c3 aliased:maxMerge(c)⟩ AS heaviest, ⟨c4 aliased:countMerge(d)⟩ AS trips, ⟨c5 aliased:groupArray(species)⟩ AS names FROM totals GROUP BY species;"
+  }
+]
