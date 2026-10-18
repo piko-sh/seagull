@@ -6,7 +6,7 @@ require (
 	github.com/stretchr/testify v1.12.1
 	piko.sh/goastutil v0.2.0
 	piko.sh/safedisk v0.1.0
-	seagull.sh/seagull v0.0.0
+	seagull.sh/seagull v0.0.0-alpha.1
 )
 
 require (
