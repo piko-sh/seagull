@@ -14,7 +14,7 @@ require (
 	modernc.org/sqlite v1.56.0
 	piko.sh/safeconv v0.1.0
 	piko.sh/safedisk v0.1.0
-	seagull.sh/seagull v0.0.0
+	seagull.sh/seagull v0.0.0-alpha.2
 )
 
 require (

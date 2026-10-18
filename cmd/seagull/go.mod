@@ -8,8 +8,8 @@ require (
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/stretchr/testify v1.12.1
 	modernc.org/sqlite v1.56.0
-	seagull.sh/seagull v0.0.0
-	seagull.sh/seagull/cmd/sgl v0.0.0
+	seagull.sh/seagull v0.0.0-alpha.2
+	seagull.sh/seagull/cmd/sgl v0.0.0-alpha.2
 )
 
 require (
