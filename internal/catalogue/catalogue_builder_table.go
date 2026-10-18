@@ -647,11 +647,15 @@ func (b *catalogueBuilder) applyAlterTableDropConstraint(mutation *ast.Catalogue
 //
 // Takes mutation (*ast.CatalogueMutation) which holds the index definition.
 //
-// Returns error (always nil, silently ignores missing tables).
+// Returns error when no table or view of that name exists, as the engine refuses an index
+// on a missing relation even with IF NOT EXISTS, which only covers the index's own name.
 func (b *catalogueBuilder) applyCreateIndex(mutation *ast.CatalogueMutation) error {
 	table, err := b.findTable(mutation.SchemaName, mutation.TableName)
 	if err != nil {
-		return nil
+		if _, view := b.findView(mutation.SchemaName, mutation.TableName); view != nil {
+			return nil
+		}
+		return err
 	}
 	table.Indexes = append(table.Indexes, sqlmodel.Index{
 		Name:      mutation.NewName,

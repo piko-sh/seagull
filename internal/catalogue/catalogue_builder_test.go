@@ -1358,7 +1358,7 @@ func TestCatalogueBuilder_ApplyCreateIndex(t *testing.T) {
 		assert.Equal(t, "idx_users_email", table.Indexes[0].Name)
 	})
 
-	t.Run("table not found returns nil (silently ignored)", func(t *testing.T) {
+	t.Run("missing relation is an unknown object", func(t *testing.T) {
 		t.Parallel()
 
 		builder, _ := setupBuilder()
@@ -1369,6 +1369,26 @@ func TestCatalogueBuilder_ApplyCreateIndex(t *testing.T) {
 			SchemaName: "public",
 			TableName:  "missing",
 			NewName:    "idx_test",
+		})
+
+		require.ErrorIs(t, err, errUnknownObject)
+		assert.Equal(t, diag.CodeUnknownObject, mutationErrorCode(err))
+	})
+
+	t.Run("index on a view is accepted without a record", func(t *testing.T) {
+		t.Parallel()
+
+		builder, _ := setupBuilder()
+		ctx := t.Context()
+		builder.catalogue.Schemas["public"].Views["order_totals"] = &sqlmodel.View{
+			Name: "order_totals",
+		}
+
+		err := builder.applyMutation(ctx, &ast.CatalogueMutation{
+			Kind:       ast.MutationCreateIndex,
+			SchemaName: "public",
+			TableName:  "order_totals",
+			NewName:    "idx_order_totals",
 		})
 
 		require.NoError(t, err)

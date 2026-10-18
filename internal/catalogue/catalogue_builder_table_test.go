@@ -26,8 +26,11 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"seagull.sh/seagull/internal/diag"
+	"seagull.sh/seagull/internal/dialect"
 	"seagull.sh/seagull/internal/dialect/ast"
+	"seagull.sh/seagull/internal/dialect/duckdb"
 	"seagull.sh/seagull/internal/dialect/postgres"
+	"seagull.sh/seagull/internal/dialect/sqlite"
 	"seagull.sh/seagull/internal/namespace"
 	"seagull.sh/seagull/internal/sqlmodel"
 )
@@ -381,4 +384,57 @@ func TestDroppingAMissingObjectIsReportedUnlessTheStatementSaysIfExists(t *testi
 			require.Contains(t, diagnostics[0].Message, testCase.wantMessage)
 		})
 	}
+}
+
+func TestCreateIndexOnAMissingRelationIsRefused(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		engine    dialect.DialectPort
+		name      string
+		migration string
+	}{
+		{
+			name:   "postgres, indexing the table under another dialect's name",
+			engine: postgres.New(),
+			migration: "CREATE TABLE orchestrator_tasks (id text, execute_at bigint, status text);\n" +
+				"CREATE INDEX IF NOT EXISTS idx_tasks_pending_dispatch ON tasks (execute_at, id) WHERE status IN ('PENDING');",
+		},
+		{
+			name:      "sqlite",
+			engine:    sqlite.New(),
+			migration: "CREATE TABLE orchestrator_tasks (id text, execute_at integer);\nCREATE INDEX idx_tasks ON tasks (execute_at);",
+		},
+		{
+			name:      "duckdb",
+			engine:    duckdb.New(),
+			migration: "CREATE TABLE orchestrator_tasks (id text, execute_at bigint);\nCREATE INDEX idx_tasks ON tasks (execute_at);",
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			builder := newCatalogueBuilder(testCase.engine, namespace.Default())
+			diagnostics := applyMigration(t, builder, "migration.sql", testCase.migration, 0)
+
+			require.Len(t, diagnostics, 1)
+			require.Equal(t, diag.CodeUnknownObject, diagnostics[0].Code)
+			require.Equal(t, 2, diagnostics[0].Line)
+			require.Contains(t, diagnostics[0].Message, "tasks not found")
+			require.NotNil(t, builder.Catalogue().LookupTable("", "orchestrator_tasks"), "the table itself is still built")
+		})
+	}
+}
+
+func TestCreateIndexOnAMaterialisedViewIsAccepted(t *testing.T) {
+	t.Parallel()
+
+	_, diagnostics := replayPostgresMigrations(t,
+		"CREATE TABLE orders (id int, total numeric);\n"+
+			"CREATE MATERIALIZED VIEW order_totals AS SELECT id, total FROM orders;\n"+
+			"CREATE UNIQUE INDEX idx_order_totals_id ON order_totals (id);")
+
+	require.Empty(t, diagnostics)
 }
