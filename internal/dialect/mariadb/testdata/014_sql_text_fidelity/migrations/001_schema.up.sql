@@ -1,0 +1,14 @@
+CREATE TABLE customers (
+  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  company_name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE quotes (
+  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  description VARCHAR(255) NOT NULL,
+  category VARCHAR(32) NOT NULL,
+  price INT NOT NULL,
+  quote_date DATETIME NOT NULL,
+  customer_id BIGINT NOT NULL,
+  deleted_at DATETIME NULL
+);

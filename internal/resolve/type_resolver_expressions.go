@@ -313,11 +313,24 @@ func (r *TypeResolver) resolveFunctionCallExpression(
 	if match.notice != nil {
 		r.notices = append(r.notices, asError(locatedAt(match.notice, expression.Span)))
 	}
-	if r.resolvedCalls != nil && (match.isAggregate || match.elementsKnown) {
-		r.resolvedCalls[expression] = resolvedCall{aggregate: match.isAggregate, elementsKnown: match.elementsKnown}
-	}
+	r.recordResolvedCall(expression, match)
 
 	return match.returnType, resultNullable(match.nullableBehaviour, match.nullingArgument, argumentNullability(arguments)), nil
+}
+
+// recordResolvedCall records properties of a call's chosen overload for later checks.
+//
+// Takes expression (*ast.FunctionCallExpression) which is the call.
+// Takes match (*FunctionMatch) which is the overload chosen for it.
+func (r *TypeResolver) recordResolvedCall(expression *ast.FunctionCallExpression, match *FunctionMatch) {
+	if r.resolvedCalls == nil {
+		return
+	}
+	call := resolvedCall{aggregate: match.isAggregate, elementsKnown: match.elementsKnown, returnsSet: match.returnsSet}
+	if call == (resolvedCall{}) {
+		return
+	}
+	r.resolvedCalls[expression] = call
 }
 
 // resolveCallArguments types a call's arguments: every argument that is not a lambda

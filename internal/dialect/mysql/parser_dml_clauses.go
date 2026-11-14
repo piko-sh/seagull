@@ -293,8 +293,6 @@ func (p *parser) consumeParameterOrAdvance(context sqlmodel.ParameterContext) {
 }
 
 // parseLimitOffset parses LIMIT and OFFSET clauses in either order.
-//
-// Supports the MySQL `LIMIT a, b` shorthand by swapping the resulting parameter contexts.
 func (p *parser) parseLimitOffset() {
 	if p.MatchKeyword(keywordOFFSET) {
 		p.consumeParameterOrAdvance(sqlmodel.ParameterContextOffset)
@@ -312,11 +310,12 @@ func (p *parser) parseLimitOffset() {
 		return
 	}
 
+	referenceCountBefore := len(p.parameterReferences)
 	p.consumeParameterOrAdvance(sqlmodel.ParameterContextLimit)
 
 	if p.Current().Kind == tokenComma {
 		p.Advance()
-		p.parameterReferences = p.swapLastTwoLimitParameters(p.parameterReferences)
+		p.retagParameterReferences(referenceCountBefore, sqlmodel.ParameterContextOffset, nil)
 		p.consumeParameterOrAdvance(sqlmodel.ParameterContextLimit)
 		return
 	}
@@ -348,24 +347,6 @@ func (p *parser) parseFetchFirst() {
 	if !p.MatchKeyword(keywordWITH) || !p.MatchKeyword("TIES") {
 		p.reportSyntaxError("expected ONLY or WITH TIES to end FETCH")
 	}
-}
-
-// swapLastTwoLimitParameters retags the trailing LIMIT parameter as an OFFSET to match
-// the `LIMIT offset, count` MySQL form.
-//
-// Takes references ([]ast.RawParameterReference) which is the running list of parameter
-// references.
-//
-// Returns []ast.RawParameterReference which is the modified list.
-func (*parser) swapLastTwoLimitParameters(references []ast.RawParameterReference) []ast.RawParameterReference {
-	if len(references) == 0 {
-		return references
-	}
-	lastIndex := len(references) - 1
-	if references[lastIndex].Context == sqlmodel.ParameterContextLimit {
-		references[lastIndex].Context = sqlmodel.ParameterContextOffset
-	}
-	return references
 }
 
 // parseCompoundQuery matches a compound query operator if present.

@@ -28,6 +28,11 @@ import (
 	"seagull.sh/seagull/internal/sqlmodel"
 )
 
+const (
+	// limitCommaFormMessage reports the LIMIT a, b form, which the engine rejects.
+	limitCommaFormMessage = "LIMIT a, b is not supported; use LIMIT ... OFFSET ..."
+)
+
 var (
 	// expressionTerminatorKeywords lists keywords that terminate a free-form expression.
 	//
@@ -461,12 +466,6 @@ func (p *parser) consumeParameterOrAdvance(context sqlmodel.ParameterContext) {
 	p.retagLimitOffsetParameters(referenceCountBefore, context)
 }
 
-// consumeLimitValueOrAdvance consumes the LIMIT value, which in the "LIMIT value, offset"
-// comma form ends at the top-level comma.
-func (p *parser) consumeLimitValueOrAdvance() {
-	p.consumeParameterOrAdvance(sqlmodel.ParameterContextLimit)
-}
-
 // parseLimitExpression parses a LIMIT or OFFSET value: a number followed by % for a
 // percentage of the rows, or an expression.
 func (p *parser) parseLimitExpression() {
@@ -522,20 +521,19 @@ func (p *parser) parseLeadingOffset() {
 	p.MatchKeyword(keywordROWS)
 }
 
-// parseLimitClause consumes a LIMIT expression and any trailing OFFSET or "limit, offset"
-// comma form.
+// parseLimitClause consumes a LIMIT expression and any trailing OFFSET.
 func (p *parser) parseLimitClause() {
 	if !p.MatchKeyword(keywordALL) {
-		p.consumeLimitValueOrAdvance()
+		p.consumeParameterOrAdvance(sqlmodel.ParameterContextLimit)
 	}
-
+	if p.Current().Kind == tokenComma {
+		_ = p.syntaxErrorAt(limitCommaFormMessage)
+		return
+	}
 	if p.MatchKeyword(keywordOFFSET) {
 		p.consumeParameterOrAdvance(sqlmodel.ParameterContextOffset)
 		p.MatchKeyword(keywordROW)
 		p.MatchKeyword(keywordROWS)
-	} else if p.Current().Kind == tokenComma {
-		p.Advance()
-		p.consumeParameterOrAdvance(sqlmodel.ParameterContextOffset)
 	}
 }
 

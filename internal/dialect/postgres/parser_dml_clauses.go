@@ -43,6 +43,11 @@ const (
 	expressionScanAdvance
 )
 
+const (
+	// limitCommaFormMessage reports the LIMIT a, b form, which the engine rejects.
+	limitCommaFormMessage = "LIMIT a, b is not supported; use LIMIT ... OFFSET ..."
+)
+
 var (
 	// expressionTerminatorKeywords lists keywords that terminate a free-form SQL expression
 	// such as WHERE, ON, and HAVING.
@@ -478,8 +483,29 @@ func (p *parser) consumeParameterOrAdvance(context sqlmodel.ParameterContext) {
 		return
 	}
 	referenceCountBefore := len(p.parameterReferences)
-	p.skipTokensUntilTerminatorSet(limitOffsetValueTerminators)
+	p.skipPaginationValue()
 	p.retagLimitOffsetParameters(referenceCountBefore, context)
+}
+
+// skipPaginationValue scans a LIMIT or OFFSET value up to a keyword that ends it, the end
+// of its parentheses, or a comma outside every parenthesis. No such value holds that
+// comma, so stopping there leaves it for the clause to report.
+func (p *parser) skipPaginationValue() {
+	depth := 0
+	for !p.AtEnd() {
+		current := p.Current()
+		if depth == 0 && current.Kind == tokenComma {
+			return
+		}
+		newDepth, action := p.classifyExpressionToken(current, depth, limitOffsetValueTerminators)
+		depth = newDepth
+		if action == expressionScanBreak {
+			return
+		}
+		if action == expressionScanAdvance {
+			p.Advance()
+		}
+	}
 }
 
 // recordPaginationValue keeps the value a LIMIT or OFFSET clause gives, from start up to
@@ -562,20 +588,19 @@ func (p *parser) parseLeadingOffset() {
 	p.MatchKeyword(keywordROWS)
 }
 
-// parseLimitClause consumes the body of a LIMIT clause along with any following OFFSET or
-// comma-separated offset value.
+// parseLimitClause consumes the body of a LIMIT clause along with any following OFFSET.
 func (p *parser) parseLimitClause() {
 	if !p.MatchKeyword(keywordALL) {
 		p.consumeParameterOrAdvance(sqlmodel.ParameterContextLimit)
 	}
-
+	if p.Current().Kind == tokenComma {
+		_ = p.syntaxError(limitCommaFormMessage)
+		return
+	}
 	if p.MatchKeyword(keywordOFFSET) {
 		p.consumeParameterOrAdvance(sqlmodel.ParameterContextOffset)
 		p.MatchKeyword(keywordROW)
 		p.MatchKeyword(keywordROWS)
-	} else if p.Current().Kind == tokenComma {
-		p.Advance()
-		p.consumeParameterOrAdvance(sqlmodel.ParameterContextOffset)
 	}
 }
 

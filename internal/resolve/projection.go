@@ -58,20 +58,21 @@ type Projection struct {
 	// DataModifying reports an item that calls a function that modifies data.
 	DataModifying bool
 
-	// Aggregated reports an item that holds a window function or a call of an aggregate
-	// function outside any subquery, so the query returns rows other than those it reads.
-	Aggregated bool
+	// ItemsWrapCount reports whether a select-list item requires the count to wrap the
+	// query.
+	ItemsWrapCount bool
 }
 
 // ResolveProjection resolves output columns and tracks their source select items.
 //
-// It also identifies aggregate items and locates errors, including values the dialect's
-// drivers cannot read. Resolution stops, with nothing reported for the item it stopped
-// at, when the context is cancelled or the dialect's resolver is interrupted.
+// It also notes the items that make a count of the query's rows wrap the query, and
+// locates errors, including values the dialect's drivers cannot read. Resolution stops,
+// with nothing reported for the item it stopped at, when the context is cancelled or the
+// dialect's resolver is interrupted.
 //
 // Takes rawColumns ([]ast.RawOutputColumn) which specifies the select list.
 // Takes itemSpans ([]Span) which holds, parallel to rawColumns, where each item's
-// expression is written, in the same terms as a problem's span; it may be shorter, or
+// expression is written, in the same terms as a problem's span. It may be shorter, or
 // nil, when the dialect did not record the items.
 // Takes scope (*ScopeChain) which provides visible tables and columns.
 //
@@ -147,7 +148,7 @@ func (r *TypeResolver) resolveItems(
 	aliases *selectListAliases,
 ) Projection {
 	projection := Projection{Columns: nil, Origins: nil, Referable: nil, Problems: nil, NamedItems: nil, ElementsKnown: nil,
-		DataModifying: false, Aggregated: false}
+		DataModifying: false, ItemsWrapCount: false}
 	r.notices = nil
 	for index, raw := range rawColumns {
 		if ctx.Err() != nil {
@@ -172,29 +173,46 @@ func (r *TypeResolver) resolveItems(
 		for range columns {
 			projection.Origins = append(projection.Origins, index)
 		}
-		projection.Aggregated = projection.Aggregated || r.holdsAggregate(ctx, raw.Expression)
+		projection.ItemsWrapCount = projection.ItemsWrapCount || r.itemWrapsCount(ctx, raw.Expression)
 	}
 	return projection
 }
 
-// holdsAggregate reports whether an expression holds a window function or a call of an
-// aggregate function anywhere outside a subquery.
+// itemWrapsCount reports whether a select-list expression holds a window function, or a
+// call of an aggregate or set-returning function, anywhere outside a subquery.
 //
 // Takes expression (ast.Expression) which is the expression to search.
 //
-// Returns bool which is true when the expression aggregates.
-func (r *TypeResolver) holdsAggregate(ctx context.Context, expression ast.Expression) bool {
+// Returns bool which is true when a count of the query's rows wraps the query.
+func (r *TypeResolver) itemWrapsCount(ctx context.Context, expression ast.Expression) bool {
 	for node := range preorder(expression) {
 		switch typed := node.(type) {
 		case *ast.WindowFunctionExpression:
 			return true
 		case *ast.FunctionCallExpression:
-			if typed != nil && r.functionResolver.isAggregate(ctx, typed.FunctionName, typed.Schema) {
+			if r.callWrapsCount(ctx, typed) {
 				return true
 			}
 		}
 	}
 	return false
+}
+
+// callWrapsCount reports whether a call of the select list aggregates or, as its
+// resolution recorded, returns a set, such as unnest or ClickHouse's arrayJoin, whose
+// elements each become a row.
+//
+// Takes call (*ast.FunctionCallExpression) which is the call.
+//
+// Returns bool which is true when the call aggregates or returns a set.
+func (r *TypeResolver) callWrapsCount(ctx context.Context, call *ast.FunctionCallExpression) bool {
+	if call == nil {
+		return false
+	}
+	if r.resolvedCalls[call].returnsSet {
+		return true
+	}
+	return r.functionResolver.isAggregate(ctx, call.FunctionName, call.Schema)
 }
 
 // knownElements returns, parallel to a projection's columns, whether the nullability a

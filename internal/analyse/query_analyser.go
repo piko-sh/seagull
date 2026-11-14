@@ -224,20 +224,21 @@ func (a *QueryAnalyser) analyseQuery(
 	parameters = a.decorateParameters(parameters, directiveBlock, location, allDiagnostics)
 
 	query, assembled := a.assembleQuery(&assembleQueryInput{
-		queryName:     queryName,
-		queryCommand:  queryCommand,
-		block:         block,
-		location:      location,
-		filename:      filename,
-		outputColumns: outputColumns,
-		origins:       resolution.origins,
-		referable:     resolution.referable,
-		namedItems:    resolution.namedItems,
-		aggregated:    resolution.aggregated,
-		parameters:    parameters,
-		isDynamic:     isDynamicQuery(parameters),
-		directives:    directives,
-		rawAnalysis:   rawAnalysis,
+		queryName:       queryName,
+		queryCommand:    queryCommand,
+		block:           block,
+		location:        location,
+		filename:        filename,
+		outputColumns:   outputColumns,
+		origins:         resolution.origins,
+		referable:       resolution.referable,
+		namedItems:      resolution.namedItems,
+		itemsWrapCount:  resolution.itemsWrapCount,
+		orderByAddsRows: resolution.orderByAddsRows,
+		parameters:      parameters,
+		isDynamic:       isDynamicQuery(parameters),
+		directives:      directives,
+		rawAnalysis:     rawAnalysis,
 	})
 	*allDiagnostics = append(*allDiagnostics, assembled.diagnostics...)
 	*allDiagnostics = append(*allDiagnostics, a.applyRowType(query, directives, directiveBlock, filename)...)
@@ -427,6 +428,7 @@ func (a *QueryAnalyser) resolveQueryTypes(
 	parameters, parameterProblems := a.typeResolver.ResolveParameters(ctx, rawAnalysis, scope, directiveBlock.Parameters)
 	problems = append(problems, parameterProblems...)
 	calledDataModifyingFunction := projection.DataModifying || a.typeResolver.CallsDataModifyingFunction(ctx, rawAnalysis, scope)
+	orderByAddsRows := a.typeResolver.OrderByAddsRows(ctx, rawAnalysis, scope)
 	problems = append(problems, a.typeResolver.TakeDepthLimits()...)
 
 	return queryTypeResolution{
@@ -438,7 +440,8 @@ func (a *QueryAnalyser) resolveQueryTypes(
 		parameters:                  parameters,
 		scope:                       scope,
 		calledDataModifyingFunction: calledDataModifyingFunction,
-		aggregated:                  projection.Aggregated,
+		itemsWrapCount:              projection.ItemsWrapCount,
+		orderByAddsRows:             orderByAddsRows,
 		diagnostics:                 location.diagnostics(problems),
 	}
 }
@@ -547,9 +550,14 @@ type queryTypeResolution struct {
 	// function.
 	calledDataModifyingFunction bool
 
-	// aggregated reports a select-list item that holds an aggregate or a window function
-	// outside any subquery.
-	aggregated bool
+	// itemsWrapCount reports a select-list item that holds a window function, or a call of
+	// an aggregate or set-returning function, outside any subquery, as
+	// resolve.Projection.ItemsWrapCount describes.
+	itemsWrapCount bool
+
+	// orderByAddsRows reports an ORDER BY that calls a set-returning function outside any
+	// subquery, which adds a row for each element of the set.
+	orderByAddsRows bool
 }
 
 // statementLocation is where the analysed statement of a query block sits in its file, so

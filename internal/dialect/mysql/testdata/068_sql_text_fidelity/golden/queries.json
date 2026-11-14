@@ -1,0 +1,1117 @@
+[
+  {
+    "Command": "many",
+    "Filename": "dynamic.sql",
+    "IsDynamic": true,
+    "Line": 1,
+    "Name": "SortableQuotes",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      },
+      {
+        "Name": "price",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "price",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      },
+      {
+        "Name": "quote_date",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "quote_date",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "limit",
+        "Kind": "none",
+        "Name": "limit",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "sortable",
+        "Name": "order_by",
+        "Number": 2,
+        "SQLType": {
+          "Category": "unknown"
+        },
+        "SortableColumns": [
+          "id",
+          "price",
+          "quote_date"
+        ]
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: SortableQuotes, command: many)\n-- sgl.sortable(order_by, [id, price, quote_date])\nSELECT id, price, quote_date FROM quotes WHERE deleted_at IS NULL ORDER BY date(quote_date) DESC, id LIMIT ?;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:price⟩, ⟨c2:quote_date⟩ FROM quotes WHERE ⟨where:deleted_at IS NULL⟩ ⟨order:ORDER BY date(quote_date) DESC, id⟩ ⟨pagination:LIMIT ⟨p0⟩⟩;⟨arguments p0⟩"
+  },
+  {
+    "AllowedColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceExpression": "quotes.id"
+      },
+      {
+        "Name": "price",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceExpression": "quotes.price"
+      },
+      {
+        "Name": "quote_date",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        },
+        "SourceExpression": "quotes.quote_date"
+      }
+    ],
+    "Command": "many",
+    "CountTemplate": "SELECT COUNT(*) FROM quotes⟨where⟩",
+    "DynamicRuntime": true,
+    "Filename": "dynamic.sql",
+    "Line": 5,
+    "Name": "SearchQuotes",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      },
+      {
+        "Name": "price",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "price",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      },
+      {
+        "Name": "quote_date",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "quote_date",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: SearchQuotes, command: many, dynamic: runtime)\nSELECT id, price, quote_date\nFROM quotes\nORDER BY date(quote_date) DESC, id\nLIMIT 10;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:price⟩, ⟨c2:quote_date⟩\\nFROM quotes⟨where⟩\\n⟨order:ORDER BY date(quote_date) DESC, id⟩\\n⟨pagination:LIMIT 10⟩;"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordering.sql",
+    "Line": 1,
+    "Name": "ListQuotes",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "p",
+        "SourceTable": "quotes"
+      },
+      {
+        "Name": "description",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        },
+        "SourceColumn": "description",
+        "SourceQualifier": "p",
+        "SourceTable": "quotes"
+      },
+      {
+        "Name": "quote_date",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        },
+        "SourceColumn": "quote_date",
+        "SourceQualifier": "p",
+        "SourceTable": "quotes"
+      },
+      {
+        "Name": "customer_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        },
+        "SourceColumn": "company_name",
+        "SourceQualifier": "c",
+        "SourceTable": "customers"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "limit",
+        "Kind": "none",
+        "Name": "limit",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "offset",
+        "Kind": "none",
+        "Name": "offset",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListQuotes, command: many)\nSELECT\n  p.id,\n  p.description,\n  p.quote_date,\n  c.company_name AS customer_name\nFROM\n  quotes p\nJOIN\n  customers c ON p.customer_id = c.id\nWHERE\n  p.deleted_at IS NULL\nORDER BY\n  date(p.quote_date) DESC,\n  p.id DESC\nLIMIT ? OFFSET ?;",
+    "Template": "SELECT\\n  ⟨c0:p.id⟩,\\n  ⟨c1:p.description⟩,\\n  ⟨c2:p.quote_date⟩,\\n  ⟨c3 aliased:c.company_name⟩ AS customer_name\\nFROM\\n  quotes p\\nJOIN\\n  customers c ON p.customer_id = c.id\\nWHERE\\n  p.deleted_at IS NULL\\nORDER BY\\n  date(p.quote_date) DESC,\\n  p.id DESC\\nLIMIT ⟨p0⟩ OFFSET ⟨p1⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordering.sql",
+    "Line": 18,
+    "Name": "OrderBySubstring",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "limit",
+        "Kind": "none",
+        "Name": "limit",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: OrderBySubstring, command: many)\nSELECT id FROM quotes ORDER BY substr(description, 1, 10) DESC, id LIMIT ?;",
+    "Template": "SELECT ⟨c0:id⟩ FROM quotes ORDER BY substr(description, 1, 10) DESC, id LIMIT ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordering.sql",
+    "Line": 21,
+    "Name": "OrderByCase",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: OrderByCase, command: many)\nSELECT id FROM quotes ORDER BY CASE WHEN category = 'a' THEN 0 WHEN category = 'b' THEN 1 ELSE 2 END, id DESC;",
+    "Template": "SELECT ⟨c0:id⟩ FROM quotes ORDER BY CASE WHEN category = 'a' THEN 0 WHEN category = 'b' THEN 1 ELSE 2 END, id DESC;"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordering.sql",
+    "Line": 24,
+    "Name": "OrderByCollation",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      },
+      {
+        "Name": "description",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        },
+        "SourceColumn": "description",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: OrderByCollation, command: many)\nSELECT id, description FROM quotes ORDER BY description COLLATE utf8mb4_bin ASC, id;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:description⟩ FROM quotes ORDER BY description COLLATE utf8mb4_bin ASC, id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordering.sql",
+    "Line": 27,
+    "Name": "OrderByField",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: OrderByField, command: many)\nSELECT id FROM quotes ORDER BY FIELD(category, 'b', 'a', 'c'), IF(deleted_at IS NULL, 0, 1), id;",
+    "Template": "SELECT ⟨c0:id⟩ FROM quotes ORDER BY FIELD(category, 'b', 'a', 'c'), IF(deleted_at IS NULL, 0, 1), id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordering.sql",
+    "Line": 30,
+    "Name": "OrderByPosition",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      },
+      {
+        "Name": "description",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        },
+        "SourceColumn": "description",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: OrderByPosition, command: many)\nSELECT id, description FROM quotes ORDER BY 2 DESC, 1;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:description⟩ FROM quotes ORDER BY 2 DESC, 1;"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordering.sql",
+    "Line": 33,
+    "Name": "OrderByExpression",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "price",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: OrderByExpression, command: many)\nSELECT id FROM quotes ORDER BY price * 2 - 1 DESC, (price + 1), -price, abs(price - ?) LIMIT 10;",
+    "Template": "SELECT ⟨c0:id⟩ FROM quotes ORDER BY price * 2 - 1 DESC, (price + 1), -price, abs(price - ⟨p0⟩) LIMIT 10;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordering.sql",
+    "Line": 36,
+    "Name": "OrderByAlias",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      },
+      {
+        "Name": "day",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: OrderByAlias, command: many)\nSELECT id, date(quote_date) AS day FROM quotes ORDER BY day DESC, lower(description);",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:date(quote_date)⟩ AS day FROM quotes ORDER BY day DESC, lower(description);"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordering.sql",
+    "Line": 39,
+    "Name": "WindowOrdering",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      },
+      {
+        "Name": "position",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "running",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "decimal"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: WindowOrdering, command: many)\nSELECT id, row_number() OVER (PARTITION BY lower(category) ORDER BY date(quote_date) DESC, id) AS position,\n  sum(price) OVER (ORDER BY id ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS running\nFROM quotes ORDER BY position, date(quote_date);",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:row_number() OVER (PARTITION BY lower(category) ORDER BY date(quote_date) DESC, id)⟩ AS position,\\n  ⟨c2 aliased:sum(price) OVER (ORDER BY id ROWS BETWEEN 1 PRECEDING AND CURRENT ROW)⟩ AS running\\nFROM quotes ORDER BY position, date(quote_date);"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordering.sql",
+    "Line": 44,
+    "Name": "NamedWindow",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      },
+      {
+        "Name": "place",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "price",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: NamedWindow, command: many)\nSELECT id, rank() OVER ranked AS place FROM quotes WHERE price \u003e ? WINDOW ranked AS (PARTITION BY category ORDER BY price DESC) ORDER BY place;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:rank() OVER ranked⟩ AS place FROM quotes WHERE price \u003e ⟨p0⟩ WINDOW ranked AS (PARTITION BY category ORDER BY price DESC) ORDER BY place;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordering.sql",
+    "Line": 47,
+    "Name": "AggregateOrdering",
+    "OutputColumns": [
+      {
+        "Name": "category",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 32
+        },
+        "SourceColumn": "category",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      },
+      {
+        "Name": "names",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AggregateOrdering, command: many)\nSELECT category, GROUP_CONCAT(description ORDER BY lower(description) DESC SEPARATOR ',') AS names\nFROM quotes GROUP BY category ORDER BY category;",
+    "Template": "SELECT ⟨c0:category⟩, ⟨c1 aliased:GROUP_CONCAT(description ORDER BY lower(description) DESC SEPARATOR ',')⟩ AS names\\nFROM quotes GROUP BY category ORDER BY category;"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordering.sql",
+    "Line": 51,
+    "Name": "GroupedWithHaving",
+    "OutputColumns": [
+      {
+        "Name": "kind",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "total",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "latest",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "p2",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GroupedWithHaving, command: many)\nSELECT lower(category) AS kind, count(*) AS total, max(date(quote_date)) AS latest\nFROM quotes GROUP BY lower(category) HAVING count(*) \u003e ? AND max(price) \u003c ? ORDER BY count(*) DESC, lower(category);",
+    "Template": "SELECT ⟨c0 aliased:lower(category)⟩ AS kind, ⟨c1 aliased:count(*)⟩ AS total, ⟨c2 aliased:max(date(quote_date))⟩ AS latest\\nFROM quotes GROUP BY lower(category) HAVING count(*) \u003e ⟨p0⟩ AND max(price) \u003c ⟨p1⟩ ORDER BY count(*) DESC, lower(category);⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordering.sql",
+    "Line": 55,
+    "Name": "Subtotals",
+    "OutputColumns": [
+      {
+        "Name": "category",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 32
+        },
+        "SourceColumn": "category",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      },
+      {
+        "Name": "total",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Subtotals, command: many)\nSELECT category, count(*) AS total FROM quotes GROUP BY category WITH ROLLUP ORDER BY category;",
+    "Template": "SELECT ⟨c0:category⟩, ⟨c1 aliased:count(*)⟩ AS total FROM quotes GROUP BY category WITH ROLLUP ORDER BY category;"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordering.sql",
+    "Line": 58,
+    "Name": "DistinctKinds",
+    "OutputColumns": [
+      {
+        "Name": "kind",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: DistinctKinds, command: many)\nSELECT DISTINCT lower(category) AS kind FROM quotes ORDER BY lower(category);",
+    "Template": "SELECT DISTINCT ⟨c0 aliased:lower(category)⟩ AS kind FROM quotes ORDER BY lower(category);"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordering.sql",
+    "Line": 61,
+    "Name": "PageByCommaForm",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "offset",
+        "Kind": "none",
+        "Name": "offset",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "limit",
+        "Kind": "none",
+        "Name": "limit",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: PageByCommaForm, command: many)\nSELECT id FROM quotes ORDER BY lower(description) LIMIT ?, ?;",
+    "Template": "SELECT ⟨c0:id⟩ FROM quotes ORDER BY lower(description) LIMIT ⟨p0⟩, ⟨p1⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordering.sql",
+    "Line": 64,
+    "Name": "LockedQuote",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: LockedQuote, command: many)\nSELECT id FROM quotes WHERE id = ? ORDER BY lower(description) LIMIT 1 FOR UPDATE SKIP LOCKED;",
+    "Template": "SELECT ⟨c0:id⟩ FROM quotes WHERE id = ⟨p0⟩ ORDER BY lower(description) LIMIT 1 FOR UPDATE SKIP LOCKED;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordering.sql",
+    "Line": 67,
+    "Name": "Subqueries",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "recent"
+      },
+      {
+        "Name": "top",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Subqueries, command: many)\nSELECT id, (SELECT max(price) FROM quotes inner_quotes WHERE inner_quotes.category = recent.category) AS top\nFROM (SELECT id, category, quote_date FROM quotes ORDER BY date(quote_date) DESC LIMIT 100) recent\nWHERE id IN (SELECT id FROM (SELECT id FROM quotes ORDER BY lower(description) LIMIT 10) limited)\nORDER BY date(recent.quote_date), id;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:(SELECT max(price) FROM quotes inner_quotes WHERE inner_quotes.category = recent.category)⟩ AS top\\nFROM (SELECT id, category, quote_date FROM quotes ORDER BY date(quote_date) DESC LIMIT 100) recent\\nWHERE id IN (SELECT id FROM (SELECT id FROM quotes ORDER BY lower(description) LIMIT 10) limited)\\nORDER BY date(recent.quote_date), id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordering.sql",
+    "Line": 73,
+    "Name": "CommonTableExpression",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "recent",
+        "SourceTable": "recent"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CommonTableExpression, command: many)\nWITH recent AS (SELECT id, quote_date FROM quotes ORDER BY date(quote_date) DESC LIMIT 10)\nSELECT id FROM recent ORDER BY date(quote_date) ASC, id;",
+    "Template": "WITH recent AS (SELECT id, quote_date FROM quotes ORDER BY date(quote_date) DESC LIMIT 10)\\nSELECT ⟨c0:id⟩ FROM recent ORDER BY date(quote_date) ASC, id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordering.sql",
+    "Line": 77,
+    "Name": "CompoundOrdered",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      },
+      {
+        "Name": "description",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        },
+        "SourceColumn": "description",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "limit",
+        "Kind": "none",
+        "Name": "limit",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CompoundOrdered, command: many)\nSELECT id, description FROM quotes WHERE category = 'a'\nUNION ALL\nSELECT id, description FROM quotes WHERE category = 'b'\nORDER BY 2 DESC, 1\nLIMIT ?;",
+    "Template": "SELECT id, description FROM quotes WHERE category = 'a'\\nUNION ALL\\nSELECT id, description FROM quotes WHERE category = 'b'\\nORDER BY 2 DESC, 1\\nLIMIT ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordering.sql",
+    "Line": 84,
+    "Name": "CompoundBranchesOrdered",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CompoundBranchesOrdered, command: many)\n(SELECT id FROM quotes ORDER BY date(quote_date) LIMIT 5)\nUNION\n(SELECT id FROM quotes ORDER BY lower(description) DESC LIMIT 5)\nORDER BY 1;",
+    "Template": "(SELECT id FROM quotes ORDER BY date(quote_date) LIMIT 5)\\nUNION\\n(SELECT id FROM quotes ORDER BY lower(description) DESC LIMIT 5)\\nORDER BY 1;"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordering.sql",
+    "Line": 90,
+    "Name": "KeywordsInCommentsAndStrings",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      },
+      {
+        "Name": "description",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        },
+        "SourceColumn": "description",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "category",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 32
+        }
+      },
+      {
+        "Context": "limit",
+        "Kind": "none",
+        "Name": "limit",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: KeywordsInCommentsAndStrings, command: many)\nSELECT id /* ORDER BY nonsense LIMIT 5 */, description -- ORDER BY x\nFROM quotes\nWHERE description \u003c\u003e 'ORDER BY ? LIMIT \\'?\\'' AND category = ? # WHERE ?\nORDER BY /* inline */ lower(description) /* trailing */ DESC -- LIMIT\nLIMIT ? /* end */;",
+    "Template": "SELECT ⟨c0:id⟩ /* ORDER BY nonsense LIMIT 5 */, ⟨c1:description⟩ -- ORDER BY x\\nFROM quotes\\nWHERE description \u003c\u003e 'ORDER BY ? LIMIT \\\\'?\\\\'' AND category = ⟨p0⟩ # WHERE ?\\nORDER BY /* inline */ lower(description) /* trailing */ DESC -- LIMIT\\nLIMIT ⟨p1⟩ /* end */;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "ordering.sql",
+    "Line": 97,
+    "Name": "QuotedIdentifiers",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      },
+      {
+        "Name": "order by ?",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        },
+        "SourceColumn": "description",
+        "SourceQualifier": "quotes",
+        "SourceTable": "quotes"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: QuotedIdentifiers, command: many)\nSELECT `id`, `description` AS `order by ?` FROM `quotes` ORDER BY `order by ?` DESC, lower(`category`);",
+    "Template": "SELECT ⟨c0:`id`⟩, ⟨c1 aliased:`description`⟩ AS `order by ?` FROM `quotes` ORDER BY `order by ?` DESC, lower(`category`);"
+  },
+  {
+    "Command": "exec",
+    "Filename": "writes.sql",
+    "Line": 1,
+    "Name": "RenameNewestQuotes",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "description",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "category",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: RenameNewestQuotes, command: exec)\nUPDATE quotes SET description = upper(?), price = price + 1 WHERE category = ? ORDER BY date(quote_date) DESC, id LIMIT 5;",
+    "Template": "UPDATE quotes SET description = upper(⟨p0⟩), price = price + 1 WHERE category = ⟨p1⟩ ORDER BY date(quote_date) DESC, id LIMIT 5;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "writes.sql",
+    "Line": 4,
+    "Name": "DeleteOldestQuotes",
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "category",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: DeleteOldestQuotes, command: exec)\nDELETE FROM quotes WHERE category = ? ORDER BY date(quote_date) LIMIT 10;",
+    "Template": "DELETE FROM quotes WHERE category = ⟨p0⟩ ORDER BY date(quote_date) LIMIT 10;⟨arguments p0⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "writes.sql",
+    "InsertColumns": [
+      "id",
+      "description",
+      "category",
+      "price",
+      "quote_date",
+      "customer_id"
+    ],
+    "InsertTarget": {
+      "Name": "quotes"
+    },
+    "Line": 7,
+    "Name": "UpsertQuote",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "description",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 255
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "category",
+        "Number": 3,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 32
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "price",
+        "Number": 4,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "quote_date",
+        "Number": 5,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "datetime",
+          "Temporal": "timestamp"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "customer_id",
+        "Number": 6,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: UpsertQuote, command: exec)\nINSERT INTO quotes (id, description, category, price, quote_date, customer_id) VALUES (?, ?, ?, ?, ?, ?)\nON DUPLICATE KEY UPDATE description = CONCAT('(', VALUES(description), ')'), price = GREATEST(price, VALUES(price));",
+    "Template": "INSERT INTO quotes (id, description, category, price, quote_date, customer_id) VALUES ⟨values:(⟨p0⟩, ⟨p1⟩, ⟨p2⟩, ⟨p3⟩, ⟨p4⟩, ⟨p5⟩)⟩\\nON DUPLICATE KEY UPDATE description = CONCAT('(', VALUES(description), ')'), price = GREATEST(price, VALUES(price));⟨arguments p0 p1 p2 p3 p4 p5⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "writes.sql",
+    "InsertColumns": [
+      "description",
+      "category",
+      "price",
+      "quote_date",
+      "customer_id"
+    ],
+    "InsertTarget": {
+      "Name": "quotes"
+    },
+    "Line": 11,
+    "Name": "CopyLatestQuote",
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: CopyLatestQuote, command: exec)\nINSERT INTO quotes (description, category, price, quote_date, customer_id)\nSELECT description, category, price, quote_date, customer_id FROM quotes WHERE id = ? ORDER BY date(quote_date) DESC LIMIT 1;",
+    "Template": "INSERT INTO quotes (description, category, price, quote_date, customer_id)\\nSELECT description, category, price, quote_date, customer_id FROM quotes WHERE id = ⟨p0⟩ ORDER BY date(quote_date) DESC LIMIT 1;⟨arguments p0⟩"
+  }
+]

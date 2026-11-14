@@ -41,17 +41,18 @@ import (
 // diagnostics.
 func (a *QueryAnalyser) buildTemplates(query *sqlmodel.AnalysedQuery, input *assembleQueryInput) assembly {
 	built, problems := sqltemplate.Build(&sqltemplate.Input{
-		Info:       &a.info,
-		Query:      query,
-		Analysis:   input.rawAnalysis,
-		SQL:        input.block.SQL,
-		Tokens:     input.block.StrictTokens(),
-		Statements: input.location.statements,
-		Kept:       a.keptRanges(input.block, &a.info),
-		Origins:    input.origins,
-		Referable:  input.referable,
-		NamedItems: input.namedItems,
-		Aggregated: input.aggregated,
+		Info:            &a.info,
+		Query:           query,
+		Analysis:        input.rawAnalysis,
+		SQL:             input.block.SQL,
+		Tokens:          input.block.StrictTokens(),
+		Statements:      input.location.statements,
+		Kept:            a.keptRanges(input.block, &a.info),
+		Origins:         input.origins,
+		Referable:       input.referable,
+		NamedItems:      input.namedItems,
+		ItemsWrapCount:  input.itemsWrapCount,
+		OrderByAddsRows: input.orderByAddsRows,
 	})
 	query.Template = built.Template
 	query.CountTemplate = built.CountTemplate

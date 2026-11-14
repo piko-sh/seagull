@@ -351,6 +351,18 @@ func TestCockroachDBRejectsPostgresPartitionStatements(t *testing.T) {
 	}
 }
 
+func TestCockroachDBRejectsALimitWithASecondValueAfterAComma(t *testing.T) {
+	t.Parallel()
+
+	engine := New()
+	statements, err := engine.ParseStatements(t.Context(), "SELECT id FROM users ORDER BY id LIMIT $1, $2")
+	require.NoError(t, err)
+
+	_, err = engine.AnalyseQuery(t.Context(), nil, statements[0])
+
+	require.ErrorContains(t, err, "LIMIT a, b is not supported; use LIMIT ... OFFSET ...")
+}
+
 func TestCockroachDBKeepsItsOwnPartitioningOnTheTable(t *testing.T) {
 	t.Parallel()
 

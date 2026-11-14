@@ -1,0 +1,4 @@
+{
+  "description": "SQL generation preserves expressions, clauses, comments and string literals. UPDATE and DELETE retain ORDER BY and LIMIT.",
+  "expectedDiagnosticCount": 0
+}

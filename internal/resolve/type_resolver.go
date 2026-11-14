@@ -142,8 +142,9 @@ type TypeResolver struct {
 	// it again; nil otherwise.
 	typedArguments map[ast.Expression]callArgument
 
-	// resolvedCalls holds what the overload each call typed while a select list is resolved
-	// reached says of it, so the list can be judged by those overloads; nil otherwise.
+	// resolvedCalls records properties of the chosen overload for each call typed while
+	// resolving a select list or ORDER BY, so later checks use the same overloads. It is nil
+	// outside that resolution.
 	resolvedCalls map[*ast.FunctionCallExpression]resolvedCall
 
 	// core holds the dialect's types for the values the resolver types itself, read once

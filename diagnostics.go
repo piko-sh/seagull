@@ -112,8 +112,9 @@ const (
 	//
 	// The generated <query>CountSQL constant wraps the original SELECT in `SELECT COUNT(*)
 	// FROM (<original>) sub` because the query contains GROUP BY, HAVING, DISTINCT, an
-	// aggregate or window function, or a compound query. Wrapping makes .Count(ctx) return
-	// the outer-result-row cardinality rather than the inner-table cardinality.
+	// aggregate, window or set-returning function, or a compound query. Wrapping makes
+	// .Count(ctx) return the outer-result-row cardinality rather than the inner-table
+	// cardinality.
 	CodeCountSemanticsWrapped = diag.CodeCountSemanticsWrapped
 
 	// CodeCountRewriteUnavailable is a warning.

@@ -21,6 +21,7 @@ package clickhouse
 import (
 	"cmp"
 	"context"
+	"errors"
 	"strings"
 	"testing"
 	"time"
@@ -680,6 +681,83 @@ func TestDML_OrderByCapturesDirectionAndNulls(t *testing.T) {
 	assert.Equal(t, "name", analysis.OrderByColumns[1].Expression)
 	assert.Equal(t, ast.OrderDirectionAsc, analysis.OrderByColumns[1].Direction)
 	assert.Equal(t, ast.OrderNullsFirst, analysis.OrderByColumns[1].Nulls)
+}
+
+func TestDML_OrderByAcceptsCollation(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name       string
+		sql        string
+		expression string
+		direction  ast.OrderDirection
+		nulls      ast.OrderNullsPlacement
+		fill       bool
+	}{
+		{
+			name:       "a collation after the expression",
+			sql:        "SELECT id FROM users ORDER BY name COLLATE 'en', id",
+			expression: "name",
+			direction:  ast.OrderDirectionUnspecified,
+			nulls:      ast.OrderNullsUnspecified,
+			fill:       false,
+		},
+		{
+			name:       "a collation after the direction and nulls placement",
+			sql:        "SELECT id FROM users ORDER BY name DESC NULLS FIRST COLLATE 'tr', id LIMIT 3",
+			expression: "name",
+			direction:  ast.OrderDirectionDesc,
+			nulls:      ast.OrderNullsFirst,
+			fill:       false,
+		},
+		{
+			name:       "a collation before WITH FILL",
+			sql:        "SELECT id FROM users ORDER BY name ASC COLLATE 'de' WITH FILL, id",
+			expression: "name",
+			direction:  ast.OrderDirectionAsc,
+			nulls:      ast.OrderNullsUnspecified,
+			fill:       true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			analysis := analyse(t, testCase.sql)
+			require.Len(t, analysis.OrderByColumns, 2)
+			column := analysis.OrderByColumns[0]
+			assert.Equal(t, testCase.expression, column.Expression)
+			assert.Equal(t, testCase.direction, column.Direction)
+			assert.Equal(t, testCase.nulls, column.Nulls)
+			assert.Equal(t, testCase.fill, column.HasFill)
+			assert.Equal(t, "id", analysis.OrderByColumns[1].Expression)
+		})
+	}
+}
+
+func TestDML_OrderByRefusesAMalformedCollation(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name      string
+		sql       string
+		wantToken string
+	}{
+		{name: "a locale that is no string literal", sql: "SELECT id FROM users ORDER BY name COLLATE en", wantToken: "COLLATE"},
+		{name: "a direction after the collation", sql: "SELECT id FROM users ORDER BY name COLLATE 'en' DESC", wantToken: "DESC"},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			err := analyseError(t, testCase.sql)
+
+			parseError, isParseError := errors.AsType[*dialectkit.ParseError](err)
+			require.True(t, isParseError, "got %v", err)
+			assert.Equal(t, testCase.wantToken, parseError.Token)
+		})
+	}
 }
 
 func TestDML_OrderByCapturesFillSettings(t *testing.T) {

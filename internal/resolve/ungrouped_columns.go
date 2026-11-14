@@ -53,6 +53,10 @@ type resolvedCall struct {
 	// elementsKnown reports a call whose result's elements are as nullable as its type says,
 	// as ast.FunctionResolution.ElementsKnown describes.
 	elementsKnown bool
+
+	// returnsSet reports a set-returning call, such as unnest or arrayJoin, which in a
+	// select list or an ORDER BY adds a row for each element of the set it gives.
+	returnsSet bool
 }
 
 // registerGrouping records whether the scope's query has a GROUP BY clause: a grouping

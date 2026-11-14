@@ -64,6 +64,8 @@ func newProjectionResolver() *TypeResolver {
 	integer := sqlmodel.SQLType{EngineName: "int8", Category: sqlmodel.TypeCategoryInteger}
 	builtins := &ast.FunctionCatalogue{Functions: map[string][]*sqlmodel.Function{
 		"count": {sqlmodel.NewFunction(nil, integer, sqlmodel.FunctionNullableNeverNull, sqlmodel.WithFunctionName("count"), sqlmodel.WithAggregate())},
+		"generate_series": {sqlmodel.NewFunction(nil, integer, sqlmodel.FunctionNullableNeverNull, sqlmodel.WithFunctionName("generate_series"),
+			sqlmodel.WithReturnsSet())},
 		"lower": {sqlmodel.NewFunction([]sqlmodel.FunctionArgument{{Name: "value", Type: sqlmodel.SQLType{EngineName: "text", Category: sqlmodel.TypeCategoryText}}},
 			sqlmodel.SQLType{EngineName: "text", Category: sqlmodel.TypeCategoryText}, sqlmodel.FunctionNullableReturnsNullOnNull, sqlmodel.WithFunctionName("lower"))},
 	}}
@@ -84,7 +86,7 @@ func TestResolveProjectionReportsTheItemEachColumnCameFrom(t *testing.T) {
 	require.Empty(t, projection.Problems)
 	require.Len(t, projection.Columns, 5)
 	require.Equal(t, []int{0, 1, 1, 1, 2}, projection.Origins)
-	require.False(t, projection.Aggregated)
+	require.False(t, projection.ItemsWrapCount)
 }
 
 func TestResolveProjectionPlacesProblemsAtTheItem(t *testing.T) {
@@ -273,10 +275,13 @@ func TestResolveProjectionKeepsAProblemWithoutAPlaceUnplaced(t *testing.T) {
 	require.False(t, projection.Problems[0].Span.Known())
 }
 
-func TestResolveProjectionReportsAggregation(t *testing.T) {
+func TestResolveProjectionReportsItemsThatWrapTheCount(t *testing.T) {
 	t.Parallel()
 
 	count := func() *ast.FunctionCallExpression { return &ast.FunctionCallExpression{FunctionName: "COUNT"} }
+	series := func() *ast.FunctionCallExpression {
+		return &ast.FunctionCallExpression{FunctionName: "generate_series"}
+	}
 	testCases := []struct {
 		name       string
 		expression ast.Expression
@@ -286,10 +291,18 @@ func TestResolveProjectionReportsAggregation(t *testing.T) {
 		{name: "an aggregate call aggregates", expression: count(), expected: true},
 		{name: "an aggregate compared aggregates", expression: &ast.ComparisonExpression{Left: count(), Operator: ">", Right: &ast.LiteralExpression{TypeName: "integer"}}, expected: true},
 		{name: "an aggregate inside a scalar function aggregates", expression: &ast.FunctionCallExpression{FunctionName: "lower", Arguments: []ast.Expression{count()}}, expected: true},
-		{name: "a window function aggregates", expression: &ast.WindowFunctionExpression{Function: &ast.FunctionCallExpression{FunctionName: "lower"}}, expected: true},
+		{name: "a window function wraps the count as a precaution", expression: &ast.WindowFunctionExpression{Function: &ast.FunctionCallExpression{FunctionName: "lower"}}, expected: true},
 		{name: "an aggregate inside a subquery does not", expression: &ast.ScalarSubqueryExpression{InnerQuery: &ast.RawQueryAnalysis{
 			OutputColumns: []ast.RawOutputColumn{{Expression: count()}},
 		}}, expected: false},
+		{name: "a set-returning call wraps the count", expression: series(), expected: true},
+		{name: "a set-returning call inside a scalar function wraps the count", expression: &ast.FunctionCallExpression{FunctionName: "lower",
+			Arguments: []ast.Expression{series()}}, expected: true},
+		{name: "a set-returning call inside a subquery does not", expression: &ast.ScalarSubqueryExpression{InnerQuery: &ast.RawQueryAnalysis{
+			OutputColumns: []ast.RawOutputColumn{{Expression: series()}},
+		}}, expected: false},
+		{name: "a scalar call does not", expression: &ast.FunctionCallExpression{FunctionName: "lower",
+			Arguments: []ast.Expression{&ast.ColumnRefExpression{ColumnName: "name"}}}, expected: false},
 	}
 
 	for _, testCase := range testCases {
@@ -299,7 +312,7 @@ func TestResolveProjectionReportsAggregation(t *testing.T) {
 			raw := []ast.RawOutputColumn{{Name: "value", Expression: testCase.expression}}
 			projection := newProjectionResolver().ResolveProjection(t.Context(), raw, nil, setupTypeResolverScope())
 
-			require.Equal(t, testCase.expected, projection.Aggregated)
+			require.Equal(t, testCase.expected, projection.ItemsWrapCount)
 		})
 	}
 }

@@ -96,8 +96,8 @@ func placeOrderProblems(spans *ast.StatementSpans, place int) []string {
 		}
 	}
 	for _, clause := range []namedSpan{
-		{name: "Pagination", span: spans.Pagination},
-		{name: "Locking", span: spans.Locking},
+		{name: paginationName, span: spans.Pagination},
+		{name: lockingName, span: spans.Locking},
 		{name: trailingName, span: spans.Trailing},
 	} {
 		if clause.span.Known() && clause.span.Start < place {

@@ -657,30 +657,32 @@ func (p *parser) parseOrderByList() {
 // parseLimitOffset consumes a LIMIT value with an optional OFFSET or comma-separated
 // second value, registering any parameter bindings.
 func (p *parser) parseLimitOffset() {
+	referenceCountBefore := len(p.parameterReferences)
 	p.consumeLimitOffsetValue(sqlmodel.ParameterContextLimit)
 
 	if p.MatchKeyword("OFFSET") {
 		p.consumeLimitOffsetValue(sqlmodel.ParameterContextOffset)
-	} else if p.Current().Kind == tokenComma {
-		p.Advance()
-		p.consumeLimitOffsetValue(sqlmodel.ParameterContextOffset)
+		return
 	}
+	if p.Current().Kind != tokenComma {
+		return
+	}
+	p.Advance()
+	p.retagLimitOffsetParameters(referenceCountBefore, sqlmodel.ParameterContextOffset)
+	p.consumeLimitOffsetValue(sqlmodel.ParameterContextLimit)
 }
 
 // consumeLimitOffsetValue consumes a single LIMIT or OFFSET value.
 //
 // A bare placeholder is registered with the given context (preserving the integer typing
 // and limit or offset name that context drives). A compound value such as COALESCE(?1,
-// 100) or a parenthesised subexpression is scanned in full so a nested placeholder is
-// still registered rather than dropped; the scan stops at a top-level comma or a keyword
-// that begins the next clause.
+// 100), ? + 1 or a parenthesised subexpression is scanned in full so a nested placeholder
+// is still registered rather than dropped. The scan stops at a top-level comma or a
+// keyword that begins the next clause.
 //
 // Takes context (sqlmodel.ParameterContext) which tags a bare-placeholder value.
 func (p *parser) consumeLimitOffsetValue(context sqlmodel.ParameterContext) {
-	if isParameterToken(p.Current().Kind) {
-		parameterToken := p.Current()
-		p.Advance()
-		p.registerParameterFromToken(parameterToken, context, nil, nil)
+	if p.consumeLoneLimitOffsetPlaceholder(context) {
 		return
 	}
 
@@ -711,6 +713,23 @@ func (p *parser) consumeLimitOffsetValue(context sqlmodel.ParameterContext) {
 		p.Advance()
 	}
 	p.retagLimitOffsetParameters(referenceCountBefore, context)
+}
+
+// consumeLoneLimitOffsetPlaceholder consumes a LIMIT or OFFSET value that is a
+// placeholder alone, registering it with the given context.
+//
+// Takes context (sqlmodel.ParameterContext) which tags the placeholder.
+//
+// Returns bool which is false, with nothing consumed, when the value is not a placeholder
+// alone, such as ? + 1.
+func (p *parser) consumeLoneLimitOffsetPlaceholder(context sqlmodel.ParameterContext) bool {
+	if !isParameterToken(p.Current().Kind) || !endsLimitOffsetValue(p.Peek()) {
+		return false
+	}
+	parameterToken := p.Current()
+	p.Advance()
+	p.registerParameterFromToken(parameterToken, context, nil, nil)
+	return true
 }
 
 // retagLimitOffsetParameters re-tags every parameter registered while scanning a compound
@@ -1346,6 +1365,23 @@ func isOrderByTerminator(current token) bool {
 // Returns bool which is true for any keyword in limitOffsetValueTerminators.
 func isLimitOffsetValueTerminator(current token) bool {
 	return current.Kind == tokenIdentifier && limitOffsetValueTerminators[current.Keyword(tokenIdentifier)]
+}
+
+// endsLimitOffsetValue reports whether a token ends a LIMIT or OFFSET value, so that a
+// placeholder just before it is the whole value rather than the start of an expression
+// such as ? + 1.
+//
+// Takes next (token) which is the token after the placeholder.
+//
+// Returns bool which is true for the end of the statement, a top-level comma or closing
+// parenthesis, or a keyword that begins the next clause.
+func endsLimitOffsetValue(next token) bool {
+	switch next.Kind {
+	case tokenEOF, tokenSemicolon, tokenComma, tokenRightParen:
+		return true
+	default:
+		return isLimitOffsetValueTerminator(next)
+	}
 }
 
 // isInsertSourceTerminator reports whether current ends the INSERT source scan at the

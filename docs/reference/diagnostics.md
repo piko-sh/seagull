@@ -287,7 +287,7 @@ This is informational. Check that the fixed conditions should always apply along
 
 **Count query wraps the original query** (hint)
 
-The count query generated for a `dynamic: runtime` query wraps the original statement as `SELECT COUNT(*) FROM (...) sub`, because the rows the statement returns are not the rows it reads: it uses `GROUP BY`, `HAVING`, `DISTINCT`, an aggregate or a window function in its select list, a clause that shapes its rows after `HAVING`, or it is compound. The count therefore reports the number of result rows, not the number of rows in the underlying table.
+The count query generated for a `dynamic: runtime` query wraps the original statement as `SELECT COUNT(*) FROM (...) sub`, because the rows the statement returns are not the rows it reads: it uses `GROUP BY`, `HAVING`, `DISTINCT`, an aggregate, a window function or a set-returning function such as `unnest` in its select list, a set-returning function in its `ORDER BY`, a clause that shapes its rows after `HAVING`, or it is compound. The count therefore reports the number of result rows, not the number of rows in the underlying table.
 
 This is informational; no change is needed.
 

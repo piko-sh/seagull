@@ -1921,6 +1921,27 @@ func TestAnalyseQuery_Select_WindowsAndCTEs(t *testing.T) {
 			},
 		},
 		{
+			name: "comma-style LIMIT with a literal offset leaves a subquery's LIMIT parameter alone",
+			sql:  "SELECT id FROM (SELECT id FROM items LIMIT ?) x LIMIT 5, ?;",
+			assertions: func(t *testing.T, analysis *ast.RawQueryAnalysis) {
+				require.Len(t, analysis.ParameterReferences, 2)
+
+				assert.Equal(t, sqlmodel.ParameterContextLimit, analysis.ParameterReferences[0].Context)
+				assert.Equal(t, sqlmodel.ParameterContextLimit, analysis.ParameterReferences[1].Context)
+			},
+		},
+		{
+			name: "comma-style LIMIT after a subquery's LIMIT retags only its own offset",
+			sql:  "SELECT id FROM (SELECT id FROM items LIMIT ?) x LIMIT ?, ?;",
+			assertions: func(t *testing.T, analysis *ast.RawQueryAnalysis) {
+				require.Len(t, analysis.ParameterReferences, 3)
+
+				assert.Equal(t, sqlmodel.ParameterContextLimit, analysis.ParameterReferences[0].Context)
+				assert.Equal(t, sqlmodel.ParameterContextOffset, analysis.ParameterReferences[1].Context)
+				assert.Equal(t, sqlmodel.ParameterContextLimit, analysis.ParameterReferences[2].Context)
+			},
+		},
+		{
 			name: "CTE with column names",
 			sql:  "WITH numbered(id, rn) AS (SELECT id, ROW_NUMBER() OVER (ORDER BY id) FROM users) SELECT * FROM numbered;",
 			assertions: func(t *testing.T, analysis *ast.RawQueryAnalysis) {

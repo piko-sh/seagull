@@ -64,9 +64,9 @@ type DiagnosticContext struct {
 	Prefixes namespace.Set
 
 	// CountWrapped reports that the query's count template wraps the query in `SELECT
-	// COUNT(*) FROM (<query>) sub` because its rows are not the rows it reads, as with GROUP
-	// BY, DISTINCT, an aggregate or a window function, so the count is over the query's
-	// result rows.
+	// COUNT(*) FROM (<query>) sub` because its rows may not be the rows it reads, as with
+	// GROUP BY, DISTINCT, an aggregate, a window function or a set-returning function, so
+	// the count is over the query's result rows.
 	CountWrapped bool
 }
 

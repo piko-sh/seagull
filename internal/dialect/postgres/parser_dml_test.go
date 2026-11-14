@@ -1283,14 +1283,6 @@ func TestAnalyseQuery_Select(t *testing.T) {
 			},
 		},
 		{
-			name: "LIMIT with comma syntax for offset",
-			sql:  "SELECT id FROM users LIMIT 10, 5",
-			assertions: func(t *testing.T, analysis *ast.RawQueryAnalysis) {
-				require.NotNil(t, analysis)
-				assert.True(t, analysis.ReadOnly)
-			},
-		},
-		{
 			name: "TVF with column definitions",
 			sql:  "SELECT x, y FROM generate_series(1, 10) AS gs(x integer)",
 			assertions: func(t *testing.T, analysis *ast.RawQueryAnalysis) {

@@ -137,6 +137,9 @@ const (
 	// kwNulls is the NULLS keyword used in ORDER BY NULLS FIRST/LAST.
 	kwNulls = "NULLS"
 
+	// kwCollate is the COLLATE keyword used in ORDER BY expr COLLATE 'locale'.
+	kwCollate = "COLLATE"
+
 	// kwAsc is the ASC sort-direction keyword.
 	kwAsc = "ASC"
 
@@ -191,11 +194,11 @@ var (
 	// stopAfterOrderByColumn terminates the per-column expression scan inside an ORDER BY
 	// list.
 	//
-	// It includes the column-modifier keywords ASC, DESC, NULLS, WITH, FILL, FROM, TO, and
-	// STEP so each modifier attaches to the column whose expression it follows.
+	// It includes the column-modifier keywords ASC, DESC, NULLS, COLLATE, WITH, FILL, FROM,
+	// TO, and STEP so each modifier attaches to the column whose expression it follows.
 	stopAfterOrderByColumn = []string{
 		kwLimit, kwOffset, kwSettings, kwFormat, kwUnion, kwIntersect, kwExcept,
-		kwAsc, kwDesc, kwNulls, kwWith, kwFill, kwFrom, kwTo, kwStep,
+		kwAsc, kwDesc, kwNulls, kwCollate, kwWith, kwFill, kwFrom, kwTo, kwStep,
 	}
 
 	// stopArrayJoinSource terminates the textual capture of an ARRAY JOIN expression source.

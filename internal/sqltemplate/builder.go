@@ -71,9 +71,14 @@ type Input struct {
 	// they are, never wrapped, since a wrap would change what the later item reads.
 	NamedItems []int
 
-	// Aggregated reports a select-list item that holds an aggregate or a window function
-	// outside any subquery.
-	Aggregated bool
+	// ItemsWrapCount reports whether a select-list item requires the count to wrap the
+	// query.
+	ItemsWrapCount bool
+
+	// OrderByAddsRows reports an ORDER BY that calls a set-returning function outside any
+	// subquery, such as ORDER BY unnest(tags), which adds a row for each element of the set.
+	// The count wraps the query and keeps the ORDER BY, which makes those rows.
+	OrderByAddsRows bool
 }
 
 // Built is what Build made of a query.

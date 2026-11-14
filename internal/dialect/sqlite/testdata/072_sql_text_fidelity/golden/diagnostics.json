@@ -1,0 +1,10 @@
+[
+  {
+    "Code": "Q022",
+    "Column": 1,
+    "Filename": "dynamic.sql",
+    "Line": 5,
+    "Message": "a dynamic: runtime query already has a WHERE clause; runtime predicates are appended with AND, not as a new WHERE",
+    "Severity": "hint"
+  }
+]

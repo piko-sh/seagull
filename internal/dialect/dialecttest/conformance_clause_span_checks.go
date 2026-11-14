@@ -29,8 +29,23 @@ import (
 )
 
 const (
+	// quantifierName names the Quantifier span in messages.
+	quantifierName = "Quantifier"
+
+	// projectionName names the Projection span in messages.
+	projectionName = "Projection"
+
+	// fromName names the From span in messages.
+	fromName = "From"
+
 	// whereName names the Where span in messages.
 	whereName = "Where"
+
+	// whereConditionName names the WhereCondition span in messages.
+	whereConditionName = "WhereCondition"
+
+	// groupByName names the GroupBy span in messages.
+	groupByName = "GroupBy"
 
 	// havingName names the Having span in messages.
 	havingName = "Having"
@@ -38,8 +53,17 @@ const (
 	// orderByName names the OrderBy span in messages.
 	orderByName = "OrderBy"
 
+	// paginationName names the Pagination span in messages.
+	paginationName = "Pagination"
+
+	// lockingName names the Locking span in messages.
+	lockingName = "Locking"
+
 	// trailingName names the Trailing span in messages.
 	trailingName = "Trailing"
+
+	// returningName names the Returning span in messages.
+	returningName = "Returning"
 
 	// trailingClauseCount is how many clause spans clauseList adds after the leading ones,
 	// besides the row-shaping clauses and VALUES rows.
@@ -63,11 +87,11 @@ type namedSpan struct {
 // Returns []namedSpan which holds them in order, known or not.
 func leadingClauses(spans *ast.StatementSpans) []namedSpan {
 	return []namedSpan{
-		{name: "Quantifier", span: spans.Quantifier},
-		{name: "Projection", span: spans.Projection},
-		{name: "From", span: spans.From},
+		{name: quantifierName, span: spans.Quantifier},
+		{name: projectionName, span: spans.Projection},
+		{name: fromName, span: spans.From},
 		{name: whereName, span: spans.Where},
-		{name: "GroupBy", span: spans.GroupBy},
+		{name: groupByName, span: spans.GroupBy},
 		{name: havingName, span: spans.Having},
 	}
 }
@@ -110,10 +134,10 @@ func clauseList(spans *ast.StatementSpans) []namedSpan {
 	all = append(all, leadingClauses(spans)...)
 	all = append(all,
 		namedSpan{name: orderByName, span: spans.OrderBy},
-		namedSpan{name: "Pagination", span: spans.Pagination},
-		namedSpan{name: "Locking", span: spans.Locking},
+		namedSpan{name: paginationName, span: spans.Pagination},
+		namedSpan{name: lockingName, span: spans.Locking},
 		namedSpan{name: trailingName, span: spans.Trailing},
-		namedSpan{name: "Returning", span: spans.Returning},
+		namedSpan{name: returningName, span: spans.Returning},
 	)
 	for index, span := range spans.RowShaping {
 		all = append(all, namedSpan{name: fmt.Sprintf("RowShaping[%d]", index), span: span})
@@ -182,7 +206,7 @@ func orderProblems(spans *ast.StatementSpans) []string {
 		previous = clause
 	}
 	following := make([]namedSpan, 0, len(spans.RowShaping)+2)
-	following = append(following, namedSpan{name: orderByName, span: spans.OrderBy}, namedSpan{name: "Locking", span: spans.Locking})
+	following = append(following, namedSpan{name: orderByName, span: spans.OrderBy}, namedSpan{name: lockingName, span: spans.Locking})
 	for index, span := range spans.RowShaping {
 		following = append(following, namedSpan{name: fmt.Sprintf("RowShaping[%d]", index), span: span})
 	}
@@ -191,9 +215,9 @@ func orderProblems(spans *ast.StatementSpans) []string {
 			problems = append(problems, fmt.Sprintf("%s must follow %s", clause.name, previous.name))
 		}
 	}
-	problems = append(problems, mustFollow("Pagination", spans.Pagination, following[:1])...)
-	problems = append(problems, mustFollow("Pagination", spans.Pagination, following[2:])...)
-	return append(problems, mustFollow("Trailing", spans.Trailing, withoutTrailing(clauseList(spans)))...)
+	problems = append(problems, mustFollow(paginationName, spans.Pagination, following[:1])...)
+	problems = append(problems, mustFollow(paginationName, spans.Pagination, following[2:])...)
+	return append(problems, mustFollow(trailingName, spans.Trailing, withoutTrailing(clauseList(spans)))...)
 }
 
 // withoutTrailing removes Trailing from a list of clause spans, so the clauses it must
@@ -316,7 +340,7 @@ func presenceProblems(subject spanSubject) []string {
 	switch {
 	case analysis.DataChange == ast.DataChangeUpdate || analysis.DataChange == ast.DataChangeDelete:
 		problems = append(problems, requirePresent(subject, spans.Where, whereName, "WHERE")...)
-		problems = append(problems, requirePresent(subject, spans.Returning, "Returning", "RETURNING")...)
+		problems = append(problems, requirePresent(subject, spans.Returning, returningName, "RETURNING")...)
 	case analysis.DataChange == 0 && isSelect(subject):
 		problems = append(problems, selectPresenceProblems(subject)...)
 	}

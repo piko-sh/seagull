@@ -1,0 +1,158 @@
+{
+  "DefaultSchema": "main",
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "main": {
+      "Name": "main",
+      "Tables": {
+        "customers": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "bigint",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "company_name",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            }
+          ],
+          "Name": "customers",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "main"
+        },
+        "quotes": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "bigint",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "description",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "category",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "price",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "integer",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "quote_date",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "temporal",
+                "EngineName": "timestamp",
+                "Temporal": "timestamp"
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "customer_id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "integer",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "deleted_at",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "temporal",
+                "EngineName": "timestamp",
+                "Temporal": "timestamp"
+              }
+            }
+          ],
+          "Name": "quotes",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 1
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "main"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "main",
+    "temp"
+  ]
+}

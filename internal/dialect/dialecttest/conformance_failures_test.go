@@ -177,8 +177,26 @@ func dropsSpans(analysis *ast.RawQueryAnalysis) {
 	analysis.Spans = ast.StatementSpans{}
 }
 
+func shortensOrderBy(analysis *ast.RawQueryAnalysis) {
+	if analysis.Spans.OrderBy.Known() {
+		analysis.Spans.OrderBy.End = analysis.Spans.OrderBy.Start + len("ORDER BY id")
+	}
+}
+
 func dropsClauseExpressions(analysis *ast.RawQueryAnalysis) {
 	analysis.ClauseExpressions = nil
+}
+
+func dropsOrderByExpressions(analysis *ast.RawQueryAnalysis) {
+	analysis.ClauseExpressions = slices.DeleteFunc(analysis.ClauseExpressions, func(expression ast.ClauseExpression) bool {
+		return expression.Clause.Includes(ast.ClauseOrderBy)
+	})
+}
+
+func paginatesTheOrderBy(analysis *ast.RawQueryAnalysis) {
+	if analysis.Spans.OrderBy.Known() {
+		analysis.Spans.Pagination, analysis.Spans.OrderBy = analysis.Spans.OrderBy, ast.Span{}
+	}
 }
 
 func dropsParameters(analysis *ast.RawQueryAnalysis) {
@@ -377,6 +395,8 @@ func TestEachCheckReportsHowADialectFailsIt(t *testing.T) {
 			expect: `the placeholder "$1" names no parameter of the statement`},
 		{check: "ClauseSpansAreOrderedAndInside", fixture: perturbedFixture(analysisEdit(dropsSpans)),
 			expect: "the statement writes WHERE but records no Where"},
+		{check: "ClauseSpansCoverWholeClauses", fixture: perturbedFixture(analysisEdit(shortensOrderBy)),
+			expect: `OrderBy "ORDER BY id" ends before "DESC", inside its clause`},
 		{check: "ProjectionItemsMatchOutputColumns", fixture: perturbedFixture(analysisEdit(dropsOutputColumns)),
 			expect: "ProjectionItems records 2 items for 0 output columns"},
 		{check: "InListSpansOnlyForSoleElements", fixture: perturbedFixture(analysisEdit(recordsAListForEveryPlaceholder)),
@@ -406,6 +426,15 @@ func TestEachCheckReportsHowADialectFailsIt(t *testing.T) {
 			expect: "NotInQuery: ParseStatements refuses text sqllex splits"},
 		{check: "ReturningFollowsInfo", fixture: perturbedFixture(silentParser()),
 			expect: "Info.Returning includes INSERT, so its RETURNING clause must generate without an error"},
+		{check: "SetReturningItemsWrapTheCount", fixture: postgresFixture(func(fixture *dialecttest.Fixture) {
+			fixture.SetReturningItem = "abs(1)"
+		}), expect: "must wrap the query, which returns a row for each element of the set"},
+		{check: "SetReturningItemsWrapTheCount", fixture: perturbedFixture(silentParser()),
+			expect: `"SELECT id, unnest(ARRAY[1, 2]) AS element FROM items" must be generated as a runtime builder query with a count`},
+		{check: "SetReturningItemsWrapTheCount", fixture: perturbedFixture(analysisEdit(dropsOrderByExpressions)),
+			expect: `the count of "SELECT id FROM items ORDER BY unnest(ARRAY[1, 2])" must wrap the query`},
+		{check: "SetReturningItemsWrapTheCount", fixture: perturbedFixture(analysisEdit(paginatesTheOrderBy)),
+			expect: `the count of "SELECT id FROM items ORDER BY unnest(ARRAY[1, 2])" must keep unnest(ARRAY[1, 2]), which makes the query's rows`},
 		{check: "GroupingModifiersLeaveKeysOut", fixture: perturbedFixture(silentParser()),
 			expect: `"SELECT id, count(*) AS total FROM items GROUP BY ROLLUP (id);" must analyse: parsed into 0 statements, want 1`},
 		{check: "ElementsTheEngineCanHoldNullInArePointers", fixture: perturbedFixture(analysisEdit(dropsOutputColumns)),

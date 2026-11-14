@@ -145,6 +145,13 @@ type Fixture struct {
 	// items. Empty skips the check.
 	GroupingQuery string
 
+	// SetReturningItem is a dialect expression that returns a row for each element of a set.
+	SetReturningItem string
+
+	// SetReturningOrderBy is a dialect expression that returns a row for each element of a
+	// set when used in ORDER BY.
+	SetReturningOrderBy string
+
 	// UnboundStatement is a statement the dialect runs without analysing, such as a SET,
 	// that holds one parameter written in the dialect's placeholder form; the generated code
 	// could not bind it, so it must be refused with a parse error naming the statement.
@@ -309,6 +316,7 @@ var conformanceChecks = []conformanceCheck{
 	{name: "PlaceholderSpansCoverEveryParameterToken", run: checkPlaceholderSpans},
 	{name: "PlaceholdersAreParametersOfTheStatement", run: checkPlaceholdersAreParameters},
 	{name: "ClauseSpansAreOrderedAndInside", run: checkClauseSpans},
+	{name: "ClauseSpansCoverWholeClauses", run: checkClauseSpansCoverWholeClauses},
 	{name: "ProjectionItemsMatchOutputColumns", run: checkProjectionItems},
 	{name: "InListSpansOnlyForSoleElements", run: checkInListSpans},
 	{name: "ValuesTupleItemsAreCommaSeparated", run: checkValuesTupleSpans},
@@ -322,6 +330,7 @@ var conformanceChecks = []conformanceCheck{
 	{name: "TokeniserSpansMatchSharedScanner", run: checkTokeniserSpans},
 	{name: "ReturningFollowsInfo", run: checkReturningFollowsInfo},
 	{name: "GroupingModifiersLeaveKeysOut", run: checkGroupingModifiersLeaveKeysOut},
+	{name: "SetReturningItemsWrapTheCount", run: checkSetReturningItemsWrapTheCount},
 	{name: "ElementsTheEngineCanHoldNullInArePointers", run: checkElementsTheEngineCanHoldNullInArePointers},
 	{name: "AggregatedNonNullElementsAreNotPointers", run: checkAggregatedNonNullElementsAreNotPointers},
 	{name: "ArrayParametersHoldNullElementsWhereTheEngineCan", run: checkArrayParametersHoldNullElements},

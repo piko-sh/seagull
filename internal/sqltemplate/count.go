@@ -42,19 +42,22 @@ const (
 //
 // When the query's rows are the rows it reads, its select list becomes COUNT(*) and
 // everything from its ORDER BY, pagination, locking or terminator on is left out.
-// Otherwise, when it groups, has HAVING, a DISTINCT or other quantifier, a clause that
-// shapes the rows after HAVING, an item that aggregates, or is compound, it is wrapped
-// whole in SELECT COUNT(*) FROM (...) sub, less the same clauses; a compound statement
-// keeps its ORDER BY and pagination, which belong to its branches on some engines, and
-// any statement keeps an ORDER BY a row-shaping clause follows. Clauses that must stay
-// last, such as SETTINGS, follow the count in both forms.
+// Otherwise it is wrapped in SELECT COUNT(*) FROM (...) sub, with the same clauses
+// removed. Wrapping applies to compound queries, GROUP BY, HAVING, quantifiers such as
+// DISTINCT, clauses that shape rows after HAVING, select-list aggregates or window
+// functions, and set-returning calls in the select list or ORDER BY.
+//
+// A compound statement keeps its ORDER BY and pagination, which belong to its branches on
+// some engines. Any statement keeps an ORDER BY that returns a set or that precedes a
+// row-shaping clause. Clauses that must stay last, such as SETTINGS, follow the count in
+// both forms.
 //
 // Takes root (*node) which is the query's tree.
 //
 // Returns count (sqlmodel.SQLTemplate) which is the count template.
 // Returns wrapped (bool) which is true when it wraps the query.
-// Returns applies (bool) which is false when counting does not apply: the query is not a
-// runtime builder query, does not read rows, or has no FROM to count from.
+// Returns applies (bool) which is false when the query is not a runtime builder query,
+// does not read rows, or has no FROM to count from.
 func (b *builder) countTemplate(root *node) (count sqlmodel.SQLTemplate, wrapped bool, applies bool) {
 	compound := len(b.input.Analysis.CompoundBranches) > 0
 	if !b.input.Query.DynamicRuntime || !compound && !b.selectsRows() {
@@ -82,20 +85,34 @@ func (b *builder) countTemplate(root *node) (count sqlmodel.SQLTemplate, wrapped
 	return b.withArguments(segments), wrapped, true
 }
 
-// countWraps reports whether the rows a non-compound query returns are not the rows it
-// reads: it groups, has HAVING, a quantifier such as DISTINCT, a clause that shapes the
-// rows after HAVING, or an item that aggregates.
+// countWraps reports whether counting a non-compound query requires wrapping it.
+//
+// Wrapping applies when clauses shape the result rows, a select-list item aggregates,
+// holds a window function or returns a set, or the ORDER BY returns a set.
 //
 // Returns bool which is true when its count must wrap it.
 func (b *builder) countWraps() bool {
-	return b.spans.GroupBy.Known() || b.spans.Having.Known() || b.spans.Quantifier.Known() ||
-		len(b.spans.RowShaping) > 0 || b.input.Aggregated
+	if b.clausesShapeRows() {
+		return true
+	}
+	return b.input.ItemsWrapCount || b.input.OrderByAddsRows
 }
 
-// countCut returns where the part of the query its count keeps ends: at the first clause
-// written of the ORDER BY, unless a row-shaping clause follows it, the pagination, the
-// locking clause, the clauses that stay last and the terminator; a compound statement
-// keeps its ORDER BY and pagination.
+// clausesShapeRows reports whether a clause changes which rows the query returns.
+//
+// It checks GROUP BY, HAVING, quantifiers such as DISTINCT, and clauses that shape rows
+// after HAVING.
+//
+// Returns bool which is true when such a clause is written.
+func (b *builder) clausesShapeRows() bool {
+	return b.spans.GroupBy.Known() || b.spans.Having.Known() || b.spans.Quantifier.Known() || len(b.spans.RowShaping) > 0
+}
+
+// countCut returns the end offset of the query text retained by its count.
+//
+// It stops at the first ORDER BY, pagination, locking clause, clause that must stay last,
+// or statement terminator. A compound statement keeps its ORDER BY and pagination, and
+// any statement keeps an ORDER BY when countKeepsOrderBy requires it.
 //
 // Takes compound (bool) which is true for a compound statement.
 //
@@ -104,11 +121,21 @@ func (b *builder) countCut(compound bool) int {
 	clauses := []ast.Span{b.spans.Locking, b.spans.Trailing, b.spans.Terminator}
 	if !compound {
 		clauses = append(clauses, b.spans.Pagination)
-		if !b.rowShapingFollows(b.spans.OrderBy) {
+		if !b.countKeepsOrderBy() {
 			clauses = append(clauses, b.spans.OrderBy)
 		}
 	}
 	return b.firstStart(b.statementEnd(), clauses...)
+}
+
+// countKeepsOrderBy reports whether counting a non-compound query requires its ORDER BY.
+//
+// The ORDER BY must stay when it returns a set or when a later row-shaping clause picks
+// rows by their order.
+//
+// Returns bool which is true when the count keeps the ORDER BY.
+func (b *builder) countKeepsOrderBy() bool {
+	return b.input.OrderByAddsRows || b.rowShapingFollows(b.spans.OrderBy)
 }
 
 // rowShapingFollows reports whether a row-shaping clause comes after a clause.

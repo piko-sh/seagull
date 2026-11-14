@@ -92,8 +92,13 @@ type assembleQueryInput struct {
 	// location locates the query's statements in its file.
 	location statementLocation
 
-	// aggregated reports a select-list item that holds an aggregate or a window function.
-	aggregated bool
+	// itemsWrapCount reports a select-list item that holds a window function, or a call of
+	// an aggregate or set-returning function, outside any subquery.
+	itemsWrapCount bool
+
+	// orderByAddsRows reports an ORDER BY that calls a set-returning function outside any
+	// subquery, which adds a row for each element of the set.
+	orderByAddsRows bool
 
 	// queryCommand holds the command type declared by the query directive.
 	queryCommand sqlmodel.QueryCommand

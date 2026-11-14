@@ -617,6 +617,38 @@ func TestMariaDBTakesTheStandardRowLimit(t *testing.T) {
 	}
 }
 
+func TestMariaDBReadsTheCommaRowLimitAsOffsetThenCount(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name     string
+		sql      string
+		contexts []sqlmodel.ParameterContext
+	}{
+		{name: "an offset and a count", sql: "SELECT id FROM t LIMIT ?, ?",
+			contexts: []sqlmodel.ParameterContext{sqlmodel.ParameterContextOffset, sqlmodel.ParameterContextLimit}},
+		{name: "a literal offset after a subquery's limit", sql: "SELECT id FROM (SELECT id FROM t LIMIT ?) x LIMIT 5, ?",
+			contexts: []sqlmodel.ParameterContext{sqlmodel.ParameterContextLimit, sqlmodel.ParameterContextLimit}},
+		{name: "an offset and a count after a subquery's limit", sql: "SELECT id FROM (SELECT id FROM t LIMIT ?) x LIMIT ?, ?",
+			contexts: []sqlmodel.ParameterContext{sqlmodel.ParameterContextLimit, sqlmodel.ParameterContextOffset, sqlmodel.ParameterContextLimit}},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			statements, err := New().ParseStatements(t.Context(), testCase.sql)
+			require.NoError(t, err)
+			analysis, err := New().AnalyseQuery(t.Context(), nil, statements[0])
+			require.NoError(t, err)
+			contexts := make([]sqlmodel.ParameterContext, 0, len(analysis.ParameterReferences))
+			for _, reference := range analysis.ParameterReferences {
+				contexts = append(contexts, reference.Context)
+			}
+			require.Equal(t, testCase.contexts, contexts)
+		})
+	}
+}
+
 func TestMariaDBReadsThePercentileSortedValueAsAnArgument(t *testing.T) {
 	t.Parallel()
 

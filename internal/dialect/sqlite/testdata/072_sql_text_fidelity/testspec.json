@@ -1,0 +1,7 @@
+{
+  "description": "SQL generation preserves expressions, clauses, comments and string literals. ORDER BY expressions remain complete. LIMIT a, b binds a as the offset and b as the limit. Pagination expressions may begin with placeholders.",
+  "expectedDiagnosticCount": 1,
+  "diagnostics": [
+    {"code": "Q022", "severity": "hint", "filename": "dynamic.sql"}
+  ]
+}

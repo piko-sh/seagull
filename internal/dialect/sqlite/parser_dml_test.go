@@ -1521,8 +1521,28 @@ func TestAnalyseQuery_OrderByLimitOffset(t *testing.T) {
 			},
 		},
 		{
-			name: "LIMIT with comma-separated OFFSET parameter",
+			name: "LIMIT a, b reads the offset first and the limit second",
 			sql:  "SELECT id FROM users LIMIT ?, ?",
+			assertions: func(t *testing.T, analysis *ast.RawQueryAnalysis) {
+				require.NotNil(t, analysis)
+				require.Len(t, analysis.ParameterReferences, 2)
+				assert.Equal(t, sqlmodel.ParameterContextOffset, analysis.ParameterReferences[0].Context)
+				assert.Equal(t, sqlmodel.ParameterContextLimit, analysis.ParameterReferences[1].Context)
+			},
+		},
+		{
+			name: "LIMIT a, b with expressions reads the offset first and the limit second",
+			sql:  "SELECT id FROM users LIMIT ? * 2, ? + 3",
+			assertions: func(t *testing.T, analysis *ast.RawQueryAnalysis) {
+				require.NotNil(t, analysis)
+				require.Len(t, analysis.ParameterReferences, 2)
+				assert.Equal(t, sqlmodel.ParameterContextOffset, analysis.ParameterReferences[0].Context)
+				assert.Equal(t, sqlmodel.ParameterContextLimit, analysis.ParameterReferences[1].Context)
+			},
+		},
+		{
+			name: "LIMIT and OFFSET values may start with a placeholder",
+			sql:  "SELECT id FROM users ORDER BY id LIMIT ? + 1 OFFSET (? - 1) * 10",
 			assertions: func(t *testing.T, analysis *ast.RawQueryAnalysis) {
 				require.NotNil(t, analysis)
 				require.Len(t, analysis.ParameterReferences, 2)

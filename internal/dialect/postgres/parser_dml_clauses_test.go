@@ -260,6 +260,32 @@ func TestALimitOrOffsetValueMayBeAnExpressionOverItsParameters(t *testing.T) {
 	}
 }
 
+func TestALimitWithASecondValueAfterACommaIsASyntaxError(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name string
+		sql  string
+	}{
+		{name: "two literals", sql: "SELECT id FROM users LIMIT 10, 5"},
+		{name: "two parameters after an ORDER BY", sql: "SELECT id FROM users ORDER BY id LIMIT $1, $2"},
+		{name: "a second value after LIMIT ALL", sql: "SELECT id FROM users LIMIT ALL, 5"},
+		{name: "a subquery's limit", sql: "SELECT id FROM (SELECT id FROM users LIMIT 1, 2) u"},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			err := analyseQueryError(t, testCase.sql)
+
+			parseError, isParseError := errors.AsType[*dialectkit.ParseError](err)
+			require.True(t, isParseError, "got %v", err)
+			assert.Equal(t, ",", parseError.Token)
+			assert.Equal(t, limitCommaFormMessage, parseError.Message)
+		})
+	}
+}
+
 func TestAParenthesisThatOpensNoQueryIsNoInsertSource(t *testing.T) {
 	t.Parallel()
 

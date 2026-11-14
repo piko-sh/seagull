@@ -62,7 +62,8 @@ func (p *parser) parseOrderByList(analysis *ast.RawQueryAnalysis) {
 //
 // The expression body is reconstructed from tokens. ASC / DESC, NULLS FIRST / NULLS LAST,
 // and WITH FILL [FROM .. TO .. STEP ..] modifiers are recognised and recorded on the
-// returned OrderByColumn.
+// returned OrderByColumn. A COLLATE 'locale' modifier between the nulls placement and
+// WITH FILL is accepted.
 //
 // Takes analysis (*ast.RawQueryAnalysis) which is the analysis to register any captured
 // parameter references against.
@@ -76,6 +77,7 @@ func (p *parser) parseOrderByColumn(analysis *ast.RawQueryAnalysis) ast.OrderByC
 	column.Expression = strings.TrimSpace(expression)
 	column.Direction = p.matchOrderDirection()
 	column.Nulls = p.matchOrderNullsPlacement()
+	p.matchOrderCollation()
 	if p.MatchKeyword(kwWith) && p.MatchKeyword(kwFill) {
 		column.HasFill = true
 		p.parseOrderByFillBoundaries(analysis, &column)
@@ -118,6 +120,16 @@ func (p *parser) matchOrderNullsPlacement() ast.OrderNullsPlacement {
 	}
 	p.Position = saved
 	return ast.OrderNullsUnspecified
+}
+
+// matchOrderCollation consumes an optional COLLATE 'locale' modifier, which sorts a
+// string column by the locale's rules.
+func (p *parser) matchOrderCollation() {
+	if !p.IsKeyword(kwCollate) || p.Peek().Kind != tokenString {
+		return
+	}
+	p.Advance()
+	p.Advance()
 }
 
 // parseOrderByFillBoundaries consumes any combination of `FROM expr`, `TO expr`, and

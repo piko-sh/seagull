@@ -109,7 +109,7 @@ func baseQueryShapeDiagnostics(subject *DiagnosticContext) []diag.SourceError {
 			diag.CodeCountSemanticsWrapped,
 			diag.SeverityHint,
 			"a dynamic: runtime query returns rows other than those it reads, "+
-				"through GROUP BY, HAVING, DISTINCT, an aggregate or window function, or a compound; "+
+				"through GROUP BY, HAVING, DISTINCT, an aggregate, window or set-returning function, or a compound; "+
 				".Count(ctx) wraps the original in a subquery so the count reflects outer-result rows "+
 				"rather than the underlying table",
 		))

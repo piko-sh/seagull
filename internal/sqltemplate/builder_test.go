@@ -303,7 +303,31 @@ func TestBuildCountsTheRowsOfARuntimeBuilderQuery(t *testing.T) {
 			wrapped:  true,
 			configure: func(input *sqltemplate.Input) {
 				input.Query.DynamicRuntime = true
-				input.Aggregated = true
+				input.ItemsWrapCount = true
+			},
+		},
+		{
+			name:     "an ORDER BY that returns a set is kept in the wrapped count",
+			engine:   postgres.New(),
+			sql:      "SELECT id FROM items WHERE owner = $1 ORDER BY unnest(tags) LIMIT 10",
+			template: "SELECT id FROM items WHERE ⟨where:owner = ⟨p0⟩⟩ ⟨order:ORDER BY unnest(tags)⟩ ⟨pagination:LIMIT 10⟩⟨arguments p0⟩",
+			count:    "SELECT COUNT(*) FROM (SELECT id FROM items WHERE ⟨where:owner = ⟨p0⟩⟩ ORDER BY unnest(tags)) sub⟨arguments p0⟩",
+			wrapped:  true,
+			configure: func(input *sqltemplate.Input) {
+				input.Query.DynamicRuntime = true
+				input.OrderByAddsRows = true
+			},
+		},
+		{
+			name:     "an ORDER BY that returns a set is kept before the clauses that stay last",
+			engine:   clickhouse.New(),
+			sql:      "SELECT id FROM items ORDER BY arrayJoin(tags) LIMIT 5 SETTINGS max_threads = 1",
+			template: "SELECT id FROM items⟨where⟩ ⟨order:ORDER BY arrayJoin(tags)⟩ ⟨pagination:LIMIT 5⟩ SETTINGS max_threads = 1",
+			count:    "SELECT COUNT(*) FROM (SELECT id FROM items⟨where⟩ ORDER BY arrayJoin(tags)) sub SETTINGS max_threads = 1",
+			wrapped:  true,
+			configure: func(input *sqltemplate.Input) {
+				input.Query.DynamicRuntime = true
+				input.OrderByAddsRows = true
 			},
 		},
 		{
