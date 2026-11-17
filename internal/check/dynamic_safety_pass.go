@@ -90,6 +90,16 @@ func (*dynamicSafetyPass) Analyse(_ context.Context, subject *DiagnosticContext)
 // Returns []diag.SourceError which holds the base-SQL shape diagnostics.
 func baseQueryShapeDiagnostics(subject *DiagnosticContext) []diag.SourceError {
 	var diagnostics []diag.SourceError
+	if changesData(subject) {
+		diagnostics = append(diagnostics, diagbuild.Block(
+			subject.Filename,
+			subject.Query.Line,
+			diag.CodeRuntimeBuilderChangesData,
+			diag.SeverityError,
+			"a dynamic: runtime query's statement changes data, and each of the builder's terminals, Count "+
+				"among them, would run it again; leave dynamic: runtime out and filter or count the returned rows in Go",
+		))
+	}
 
 	if hasCondition(&subject.Query.Template) {
 		diagnostics = append(diagnostics, diagbuild.Block(
@@ -109,7 +119,8 @@ func baseQueryShapeDiagnostics(subject *DiagnosticContext) []diag.SourceError {
 			diag.CodeCountSemanticsWrapped,
 			diag.SeverityHint,
 			"a dynamic: runtime query returns rows other than those it reads, "+
-				"through GROUP BY, HAVING, DISTINCT, an aggregate, window or set-returning function, or a compound; "+
+				"through GROUP BY, HAVING, DISTINCT, an aggregate, window or set-returning function, its own LIMIT, "+
+				"or a compound; "+
 				".Count(ctx) wraps the original in a subquery so the count reflects outer-result rows "+
 				"rather than the underlying table",
 		))
@@ -159,4 +170,22 @@ func lowercasedOutputColumnNameSet(columns []sqlmodel.OutputColumn) map[string]s
 		result[strings.ToLower(columns[index].Name)] = struct{}{}
 	}
 	return result
+}
+
+// changesData reports a query whose statement changes data, through a data-modifying
+// common table expression, a data-changing statement or a call to a function that changes
+// data, rather than only locking the rows it reads.
+//
+// Takes subject (*DiagnosticContext) which holds the query and its analysis.
+//
+// Returns bool which is true when running the statement again changes data again.
+func changesData(subject *DiagnosticContext) bool {
+	raw := subject.RawAnalysis
+	if raw == nil {
+		return false
+	}
+	if raw.ChangesData || raw.DataChange != 0 {
+		return true
+	}
+	return !subject.Query.ReadOnly && !raw.Spans.Locking.Known()
 }

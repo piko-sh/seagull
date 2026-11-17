@@ -22,7 +22,10 @@ import (
 	"errors"
 	"fmt"
 
+	"seagull.sh/seagull/internal/diag"
+	"seagull.sh/seagull/internal/emit"
 	"seagull.sh/seagull/internal/gogen"
+	"seagull.sh/seagull/internal/sqlmodel"
 )
 
 var (
@@ -56,6 +59,39 @@ func CheckColumnsReadable(emission *gogen.Emission, query *gogen.Query) error {
 				"mixed with other items); rewrite it as an explicit aliased projection so the generator can "+
 				"wrap it in %s() for typed scanning",
 			query.Analysed.Name, columns[index].Name, errUnwrappableColumn, emission.Dialect().ToJSON)
+	}
+	return nil
+}
+
+// CheckRewrittenShapes refuses a query whose own clauses use a result column the driver
+// reads through a rewrite of the select list, when the driver has no other way to read
+// the column.
+//
+// A cast to text or a conversion to JSON in the select list would change what ORDER BY by
+// its output name or by position, DISTINCT, or a compound statement means, so such a
+// column is left as it is written. A driver that converts its own value of the column
+// still reads it. Any other cannot, and the query is refused with a way to write it
+// instead.
+//
+// Takes emission (*gogen.Emission) which says how the driver reads each column.
+// Takes query (*sqlmodel.AnalysedQuery) which holds the columns and the shape of the
+// statement.
+//
+// Returns []emit.Problem which holds one problem for the query, or nothing when every
+// such column is still read.
+func CheckRewrittenShapes(emission *gogen.Emission, query *sqlmodel.AnalysedQuery) []emit.Problem {
+	for index := range query.OutputColumns {
+		conflict, conflicts := emission.RewriteConflict(query, index)
+		if !conflicts || emission.ConvertsColumn(&query.OutputColumns[index], false) {
+			continue
+		}
+		return []emit.Problem{{
+			Query: query,
+			Code:  diag.CodeEmitterUnsupported,
+			Message: fmt.Sprintf("column %q is read through a rewrite of the select list, which the query uses in %s; %s",
+				query.OutputColumns[index].Name, conflict.Reason, conflict.Suggestion),
+			Severity: diag.SeverityError,
+		}}
 	}
 	return nil
 }

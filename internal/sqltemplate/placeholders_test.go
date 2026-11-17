@@ -102,6 +102,18 @@ func TestBuildMatchesEachPlaceholderToTheFirstParameterItNames(t *testing.T) {
 			},
 		},
 		{
+			name:     "an inferred display name cannot shadow an original placeholder identifier",
+			engine:   sqlite.New(),
+			sql:      "SELECT id FROM items WHERE a = :kind",
+			template: "SELECT id FROM items WHERE a = ⟨p1⟩⟨arguments p1⟩",
+			configure: func(input *sqltemplate.Input) {
+				input.Query.Parameters = []sqlmodel.QueryParameter{
+					{Name: "kind", Number: 1},
+					{Name: "kind_2", Placeholder: "kind", Number: 2},
+				}
+			},
+		},
+		{
 			name:     "a named placeholder is matched by its placeholder identifier before a parameter's name",
 			engine:   sqlite.New(),
 			sql:      "SELECT id FROM items WHERE a = :kind",

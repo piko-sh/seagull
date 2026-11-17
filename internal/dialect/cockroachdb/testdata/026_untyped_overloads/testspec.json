@@ -1,0 +1,4 @@
+{
+  "description": "CockroachDB refuses a placeholder whose fitting overloads disagree on its type (live on v25): pick($1) over float8 and text, and the built-in abs($1), each warn Q005, where PostgreSQL would choose text and float8; weigh($1) has one overload, and a cast settles pick.",
+  "expectedDiagnosticCount": 2
+}

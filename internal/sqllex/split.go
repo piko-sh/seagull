@@ -215,6 +215,12 @@ func (s *splitter) terminatorWithin(token Token) int {
 	if !s.custom && (s.blockDepth > 0 || s.parenthesisDepth > 0) {
 		return -1
 	}
+	if len(s.terminator) == 1 {
+		if offset := strings.IndexByte(token.Raw, s.terminator[0]); offset >= 0 {
+			return token.Start + offset
+		}
+		return -1
+	}
 	for offset := token.Start; offset < token.End; offset++ {
 		if s.terminatorAt(offset) {
 			return offset

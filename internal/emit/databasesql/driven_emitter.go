@@ -85,7 +85,7 @@ func (emitter *Emitter) Emit(ctx context.Context, request *emit.Request) ([]sqlm
 	profile := profileFor(request.Dialect.Drivers, emitter.settings.driver)
 	if bindsNamedValues(&profile, request.Dialect.Placeholders) {
 		copied := *request
-		copied.Queries = chvalues.ArrayLists(request.Queries)
+		copied.Queries = chvalues.FloatParameters(chvalues.ArrayLists(request.Queries), chvalues.NewFloatTransport(&request.Dialect, request.Style.HelperPrefix))
 		request = &copied
 	}
 	prepared := !profile.preparesOnlyInserts && (emitter.settings.prepared == nil || *emitter.settings.prepared)

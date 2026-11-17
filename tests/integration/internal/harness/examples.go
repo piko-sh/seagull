@@ -38,9 +38,11 @@ const (
 )
 
 // RunExamples runs go test on packages of one examples module, pointed at a suite's
-// server, and fails with go test's output when any package fails. A variant that finds no
-// server fails rather than skips. The go command reads the workspace the suite runs in,
-// as make test-examples does, so the examples build against this checkout.
+// server, and fails with go test's output when any package fails.
+//
+// A variant that finds no server fails rather than skips. The go command reads the
+// workspace the suite runs in, as make test-examples does, so the examples build against
+// this checkout.
 //
 // Takes connectionString (string) which is the server's connection string.
 // Takes module (string) which is the examples module, such as postgres.

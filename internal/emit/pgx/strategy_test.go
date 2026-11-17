@@ -94,19 +94,19 @@ func TestPgxBindsASliceOfAnEnumAsGoStrings(t *testing.T) {
 			name:    "an array parameter, whose elements may be NULL",
 			queries: "-- sgl.query(SetMoods, exec)\nUPDATE items SET moods = $1 WHERE id = $2;\n",
 			method:  "SetMoods",
-			wants:   []string{"queries.db.Exec(ctx, setMoodsSQL, sglConvertStringPointers[string](params.Moods), params.ID)"},
+			wants:   []string{"queries.db.Exec(ctx, setMoodsSQL, sglConvertStringPointers[string](sglNonNil(params.Moods)), params.ID)"},
 		},
 		{
 			name:    "an array parameter declaring its elements non-null",
 			queries: "-- sgl.query(SetMoods, exec)\n-- $1 as sgl.param(moods, non_null_elements: true)\nUPDATE items SET moods = $1 WHERE id = $2;\n",
 			method:  "SetMoods",
-			wants:   []string{"queries.db.Exec(ctx, setMoodsSQL, sglConvertStrings[string](params.Moods), params.ID)"},
+			wants:   []string{"queries.db.Exec(ctx, setMoodsSQL, sglConvertStrings[string](sglNonNil(params.Moods)), params.ID)"},
 		},
 		{
 			name:    "an array parameter of a batch",
 			queries: "-- sgl.query(InsertItems, batch)\nINSERT INTO items (id, moods) VALUES ($1, $2);\n",
 			method:  "InsertItems",
-			wants:   []string{"batch.Queue(insertItemsSQL, item.ID, sglConvertStringPointers[string](item.Moods))"},
+			wants:   []string{"batch.Queue(insertItemsSQL, item.ID, sglConvertStringPointers[string](sglNonNil(item.Moods)))"},
 		},
 		{
 			name:    "an enum parameter, which pgx binds as it is",
@@ -156,7 +156,7 @@ func TestPgxScansAnArrayOfAnEnumThroughGoStrings(t *testing.T) {
 			files := generatePgxFrom(t, enumSchema, "-- sgl.query(GetItem, one)\n"+testCase.directive+"SELECT id, mood, moods FROM items WHERE id = $1;\n")
 			method := methodSource(t, files["items.sql.go"], "GetItem")
 
-			require.Contains(t, method, ".Scan(&row.ID, &row.Mood, &raw.Moods)")
+			require.Contains(t, method, "scanned.targets = [3]any{&row.ID, &row.Mood, &raw.Moods}")
 			require.Contains(t, method, testCase.converts)
 			require.Contains(t, files["convert_strings.go"], testCase.helper)
 		})
@@ -170,4 +170,15 @@ func TestPgxWritesNoConversionHelperWithoutAnArrayOfAnEnum(t *testing.T) {
 
 	require.NotContains(t, files, "convert_strings.go")
 	require.NotContains(t, files["items.sql.go"], "raw")
+}
+
+func TestPgxCopyFromSendsANilSliceOfANotNullColumnEmpty(t *testing.T) {
+	t.Parallel()
+
+	files := generatePgxFrom(t, "CREATE TABLE blobs (id BIGINT PRIMARY KEY, data BYTEA NOT NULL, tags TEXT[] NOT NULL);\n",
+		"-- sgl.query(CopyBlobs, copyfrom)\nINSERT INTO blobs (id, data, tags) VALUES ($1, $2, $3);\n")
+	method := methodSource(t, files["items.sql.go"], "CopyBlobs")
+
+	require.Contains(t, method, "sglNonNil(params[i].Data)", "COPY writes a nil slice as NULL, which a NOT NULL column refuses")
+	require.Contains(t, method, "sglNonNil(params[i].Tags)")
 }

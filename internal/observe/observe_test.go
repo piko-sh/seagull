@@ -205,7 +205,7 @@ func TestFromGuardsAFaultyObserverAndLogsItsPanicOnce(t *testing.T) {
 			t.Parallel()
 			var logs bytes.Buffer
 			base := context.WithValue(t.Context(), key{}, "marker")
-			base = logging.ContextWithLogger(base, slog.New(slog.NewJSONHandler(&logs, nil)))
+			base = logging.WithLogger(base, slog.New(slog.NewJSONHandler(&logs, nil)))
 			ctx := observe.ContextWithObserver(base, faultyObserver{start: testCase.start})
 
 			require.NotPanics(t, func() {

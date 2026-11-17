@@ -53,7 +53,9 @@ func (b *catalogueBuilder) applyCreatePartition(mutation *ast.CatalogueMutation)
 	if len(primaryKey) == 0 {
 		primaryKey = slices.Clone(mutation.PrimaryKey)
 	}
-	constraints := append(clonedConstraints(parent.Constraints, mutation.Origin), clonedConstraints(mutation.Constraints, mutation.Origin)...)
+	inherited := clonedConstraints(parent.Constraints, mutation.Origin)
+	b.forgetCopiedKeyNames(inherited)
+	constraints := b.withPrimaryKeyConstraint(append(inherited, clonedConstraints(mutation.Constraints, mutation.Origin)...), primaryKey, "")
 	partition := &sqlmodel.Table{
 		Name:              mutation.TableName,
 		Schema:            schema.Name,
@@ -70,6 +72,7 @@ func (b *catalogueBuilder) applyCreatePartition(mutation *ast.CatalogueMutation)
 	}
 	schema.Tables[b.key(mutation.TableName)] = partition
 	b.recordPartition(partition, parent)
+	b.nameConstraints(partition, 0, true)
 	return nil
 }
 
@@ -183,7 +186,10 @@ func (b *catalogueBuilder) propagatePrimaryKey(parent *sqlmodel.Table) {
 		b.reportInheritanceDepth(parent)
 	}
 	for _, partition := range partitions {
+		dropPrimaryKey(partition)
 		partition.PrimaryKey = slices.Clone(parent.PrimaryKey)
+		partition.Constraints = b.withPrimaryKeyConstraint(partition.Constraints, partition.PrimaryKey, "")
+		b.nameConstraints(partition, 0, false)
 	}
 }
 

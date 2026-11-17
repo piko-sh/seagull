@@ -127,7 +127,9 @@ func (p *parser) analyseViewBody(columnNames []string, subject string) (*ast.Raw
 	p.Position = len(p.Tokens)
 
 	if len(columnNames) > 0 && !slices.ContainsFunc(analysis.OutputColumns, dialectkit.IsStarColumn) {
-		dialectkit.OverlayViewColumnNames(analysis, columnNames, dialectkit.UndeclaredColumnsDropped)
+		if overlayErr := dialectkit.OverlayViewColumnNames(analysis, columnNames, dialectkit.UndeclaredColumnsRefused); overlayErr != nil {
+			return nil, nil, dialectkit.NewParseError(p.Current(), overlayErr.Error())
+		}
 	}
 
 	return analysis, nil, nil
@@ -167,16 +169,17 @@ func (p *parser) parseCreateIndex() (*ast.CatalogueMutation, error) {
 	if _, err := p.ExpectKeyword(keywordCREATE); err != nil {
 		return nil, err
 	}
-	p.MatchKeyword(keywordUNIQUE)
+	unique := p.MatchKeyword(keywordUNIQUE)
 	if _, err := p.ExpectKeyword("INDEX"); err != nil {
 		return nil, err
 	}
 
-	if _, err := p.matchIfNotExists(); err != nil {
+	ifNotExists, err := p.matchIfNotExists()
+	if err != nil {
 		return nil, err
 	}
 
-	_, err := p.parseTableName()
+	indexName, err := p.parseTableName()
 	if err != nil {
 		return nil, err
 	}
@@ -190,15 +193,18 @@ func (p *parser) parseCreateIndex() (*ast.CatalogueMutation, error) {
 		return nil, tableError
 	}
 
+	start := p.Position
 	if err := p.skipParenthesised(); err != nil {
 		return nil, err
 	}
+	columns := dialectkit.IndexColumnNames(p.Tokens[start+1:p.Position-1], tokenIdentifier, tokenComma)
+
 	if p.MatchKeyword(keywordWHERE) {
 		p.conditionExpressions(p.Position, len(p.Tokens))
 		p.Position = len(p.Tokens)
 	}
 
-	return ast.NewCatalogueMutation(ast.MutationCreateIndex, "", tableName), nil
+	return ast.NewCatalogueMutation(ast.MutationCreateIndex, "", tableName, ast.WithIndexDefinition(indexName, columns, unique), ast.WithIfNotExists(ifNotExists)), nil
 }
 
 // parseDropIndex parses a DROP INDEX statement.
@@ -216,11 +222,12 @@ func (p *parser) parseDropIndex() (*ast.CatalogueMutation, error) {
 		return nil, err
 	}
 
-	if _, err := p.parseTableName(); err != nil {
+	indexName, err := p.parseTableName()
+	if err != nil {
 		return nil, err
 	}
 
-	return ast.NewCatalogueMutation(ast.MutationDropIndex, "", "", ast.WithIfExists(ifExists)), nil
+	return ast.NewCatalogueMutation(ast.MutationDropIndex, "", "", ast.WithIfExists(ifExists), ast.WithNewName(indexName)), nil
 }
 
 // parseCreateVirtualTable parses a CREATE VIRTUAL TABLE statement and extracts

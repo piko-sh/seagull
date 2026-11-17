@@ -22,7 +22,9 @@ import (
 	"slices"
 	"strings"
 
+	"seagull.sh/seagull/internal/dialect"
 	"seagull.sh/seagull/internal/dialect/ast"
+	"seagull.sh/seagull/internal/dialect/dialectkit"
 	"seagull.sh/seagull/internal/sqlmodel"
 )
 
@@ -63,6 +65,9 @@ func (p *parser) parseCreateTable(engine *Dialect) (*ast.CatalogueMutation, erro
 	schema, tableName, nameError := p.parseSchemaQualifiedName()
 	if nameError != nil {
 		return nil, nameError
+	}
+	if word := p.Tokens[p.Position-1].Keyword(tokenIdentifier); p.reservedNames.RefusesTable(word) {
+		return nil, dialectkit.NewParseError(p.Tokens[p.Position-1], dialectkit.ReservedNameMessage(word, "table"))
 	}
 	if replace {
 		created, createError := p.parseCreateTableRest(engine, schema, tableName, ifNotExists)
@@ -143,6 +148,10 @@ func (p *parser) parseCreateTableDefinition(engine *Dialect, schema, tableName s
 	}
 	p.Advance()
 
+	if column := p.nullKeyColumn(primaryKeyColumns); column != "" {
+		return nil, p.syntaxErrorAt("MySQL keeps every primary key column NOT NULL, so " + column + " cannot be declared NULL")
+	}
+
 	comment, err := p.parseTableOptions()
 	if err != nil {
 		return nil, err
@@ -160,6 +169,7 @@ func (p *parser) parseCreateTableDefinition(engine *Dialect, schema, tableName s
 		ast.WithConstraints(constraints),
 	)
 	mutation.Comment = comment
+	p.attachDeclaredIndexes(mutation)
 	return mutation, nil
 }
 
@@ -207,6 +217,8 @@ func (p *parser) parseCreateTableBody(
 	var primaryKeyColumns []string
 	var tableConstraintPrimaryKey []string
 	var constraints []sqlmodel.Constraint
+	p.keyNames = &[]string{}
+	defer func() { p.keyNames = nil }()
 
 	for !p.AtEnd() && p.Current().Kind != tokenRightParen {
 		if p.isMySQLTableConstraint() {
@@ -218,6 +230,8 @@ func (p *parser) parseCreateTableBody(
 			constraints = appendConstraint(constraints, constraint)
 		} else if err := p.appendColumnDefinition(engine, &columns, &primaryKeyColumns); err != nil {
 			return nil, nil, nil, err
+		} else {
+			constraints = append(constraints, p.takeColumnConstraints()...)
 		}
 		if err := p.endTableElement(); err != nil {
 			return nil, nil, nil, err
@@ -241,7 +255,7 @@ func (p *parser) parseCreateTableBody(
 //
 // Returns error when the column definition is malformed.
 func (p *parser) appendColumnDefinition(engine *Dialect, columns *[]sqlmodel.Column, primaryKeyColumns *[]string) error {
-	column, columnPrimaryKey, columnError := p.parseMySQLColumnDefinition(engine)
+	column, columnPrimaryKey, columnError := p.parseMySQLColumnDefinition(engine, false)
 	if columnError != nil {
 		return columnError
 	}
@@ -307,7 +321,11 @@ func (p *parser) parseMySQLTableConstraint() ([]string, *sqlmodel.Constraint, er
 		return p.parseTableIndexOrUnique(constraintName, true)
 	case p.MatchKeyword(keywordKEY), p.MatchKeyword(keywordINDEX):
 		return p.parseTableIndexOrUnique(constraintName, false)
-	case p.MatchKeyword("FULLTEXT"), p.MatchKeyword("SPATIAL"), p.MatchKeyword("VECTOR"):
+	case p.MatchKeyword("FULLTEXT"):
+		p.MatchKeyword(keywordKEY)
+		p.MatchKeyword(keywordINDEX)
+		return p.parseFullTextTableIndex()
+	case p.MatchKeyword("SPATIAL"), p.MatchKeyword("VECTOR"):
 		p.MatchKeyword(keywordKEY)
 		p.MatchKeyword(keywordINDEX)
 		return p.parseTableIndexOrUnique(constraintName, false)
@@ -358,20 +376,16 @@ func (p *parser) parseTablePrimaryKey() ([]string, *sqlmodel.Constraint, error) 
 	return columns, nil, nil
 }
 
-// parseTableIndexOrUnique parses a UNIQUE, INDEX, KEY, FULLTEXT, SPATIAL or VECTOR table
-// clause: an optional index name, an optional index type, the key parts and the index
-// options.
+// parseFullTextTableIndex parses the rest of a FULLTEXT table clause, an optional index
+// name and the key parts, and queues the index for its statement to record.
 //
-// Takes constraintName (string) which is the optional constraint name.
-// Takes isUnique (bool) which selects UNIQUE versus plain index parsing.
-//
-// Returns []string which is always nil since these clauses do not affect the primary key.
-// Returns *sqlmodel.Constraint which describes the unique constraint, or nil for a plain
-// index clause.
+// Returns []string which is always nil, since the clause does not affect the primary key.
+// Returns *sqlmodel.Constraint which is always nil.
 // Returns error when the key part list is missing or malformed.
-func (p *parser) parseTableIndexOrUnique(constraintName string, isUnique bool) ([]string, *sqlmodel.Constraint, error) {
+func (p *parser) parseFullTextTableIndex() ([]string, *sqlmodel.Constraint, error) {
+	name := ""
 	if p.Current().Kind == tokenIdentifier && !p.IsKeyword(keywordUSING) {
-		p.Advance()
+		name = p.Advance().Value
 	}
 	p.skipIndexOptions()
 	if p.Current().Kind != tokenLeftParen {
@@ -382,7 +396,42 @@ func (p *parser) parseTableIndexOrUnique(constraintName string, isUnique bool) (
 		return nil, nil, columnError
 	}
 	p.skipIndexOptions()
+	name = p.nameKey(name, columns)
+	if name == "" && len(columns) > 0 {
+		name = columns[0]
+	}
+	p.declaredIndexes = append(p.declaredIndexes, declaredIndex{name: name, columns: columns, fullText: true})
+	return nil, nil, nil
+}
+
+// parseTableIndexOrUnique parses a UNIQUE, INDEX, KEY, FULLTEXT, SPATIAL or VECTOR table
+// clause: an optional index name, an optional index type, the key parts and the index
+// options.
+//
+// Takes constraintName (string) which is the optional constraint name, which an index
+// name after the keyword replaces, as it names the index.
+// Takes isUnique (bool) which selects UNIQUE versus plain index parsing.
+//
+// Returns []string which is always nil since these clauses do not affect the primary key.
+// Returns *sqlmodel.Constraint which describes the unique constraint, or nil for a plain
+// index clause.
+// Returns error when the key part list is missing or malformed.
+func (p *parser) parseTableIndexOrUnique(constraintName string, isUnique bool) ([]string, *sqlmodel.Constraint, error) {
+	if p.Current().Kind == tokenIdentifier && !p.IsKeyword(keywordUSING) {
+		constraintName = p.Advance().Value
+	}
+	p.skipIndexOptions()
+	if p.Current().Kind != tokenLeftParen {
+		return nil, nil, p.syntaxErrorAt("expected '(' to open the index key parts")
+	}
+	columns, columnError := p.parseMySQLColumnList()
+	if columnError != nil {
+		return nil, nil, columnError
+	}
+	p.skipIndexOptions()
+	constraintName = p.nameKey(constraintName, columns)
 	if !isUnique {
+		p.declaredIndexes = append(p.declaredIndexes, declaredIndex{name: constraintName, columns: columns, fullText: false})
 		return nil, nil, nil
 	}
 	return nil, &sqlmodel.Constraint{
@@ -404,14 +453,18 @@ func (p *parser) parseTableIndexOrUnique(constraintName string, isUnique bool) (
 // Returns *sqlmodel.Constraint which describes the CHECK constraint.
 // Returns error when the condition is missing or malformed.
 func (p *parser) parseTableCheck(constraintName string) ([]string, *sqlmodel.Constraint, error) {
-	if err := p.parseCheckBody(); err != nil {
+	named, err := p.parseCheckBody()
+	if err != nil {
 		return nil, nil, err
+	}
+	if p.referencesNeedColumns {
+		named = nil
 	}
 	return nil, &sqlmodel.Constraint{
 		Name:           constraintName,
 		Kind:           sqlmodel.ConstraintCheck,
 		ForeignTable:   "",
-		Columns:        nil,
+		Columns:        distinctFold(named),
 		ForeignColumns: nil,
 		Origin:         sqlmodel.MigrationOrigin{},
 	}, nil
@@ -461,7 +514,7 @@ func (p *parser) parseTableForeignKey(constraintName string) ([]string, *sqlmode
 // Returns error when REFERENCES, the table's name or the column list is missing or
 // malformed.
 func (p *parser) parseMySQLForeignKeyReference() (string, []string, error) {
-	if _, err := p.ExpectKeyword("REFERENCES"); err != nil {
+	if _, err := p.ExpectKeyword(keywordREFERENCES); err != nil {
 		return "", nil, err
 	}
 	_, tableName, nameError := p.parseSchemaQualifiedName()
@@ -475,6 +528,8 @@ func (p *parser) parseMySQLForeignKeyReference() (string, []string, error) {
 			return "", nil, columnError
 		}
 		columns = parsed
+	} else if p.referencesNeedColumns {
+		return "", nil, p.syntaxErrorAt("MariaDB needs the referenced columns after REFERENCES " + tableName)
 	}
 	p.skipForeignKeyActions()
 	return tableName, columns, nil
@@ -643,7 +698,7 @@ func (p *parser) parseAlterTableAction(
 		return p.parseAlterTableAdd(engine, schema, tableName)
 	}
 	if p.MatchKeyword(keywordDROP) {
-		return p.parseAlterTableDrop(schema, tableName)
+		return p.parseAlterTableDrop(engine, schema, tableName)
 	}
 	if p.MatchKeyword("MODIFY") {
 		return p.parseAlterTableModify(engine, schema, tableName)
@@ -653,6 +708,9 @@ func (p *parser) parseAlterTableAction(
 	}
 	if p.MatchKeyword("RENAME") {
 		return p.parseAlterTableRename(schema, tableName)
+	}
+	if p.MatchKeyword("ALTER") {
+		return p.parseAlterTableAlterColumn(schema, tableName)
 	}
 
 	return nil, p.skipAlterTableMiscAction()
@@ -696,6 +754,7 @@ func (p *parser) parseAlterTableAdd(
 				ast.WithColumnNullability(false),
 			))
 		}
+		p.attachDeclaredIndexes(mutation)
 		return mutation, nil
 	}
 
@@ -706,7 +765,7 @@ func (p *parser) parseAlterTableAdd(
 		return p.parseAlterTableAddColumns(engine, schema, tableName, ifNotExists)
 	}
 
-	column, _, columnError := p.parseMySQLColumnDefinition(engine)
+	column, _, columnError := p.parseMySQLColumnDefinition(engine, false)
 	if columnError != nil {
 		return nil, columnError
 	}
@@ -716,14 +775,16 @@ func (p *parser) parseAlterTableAdd(
 		return nil, placementError
 	}
 
-	return ast.NewCatalogueMutation(
+	mutation := ast.NewCatalogueMutation(
 		ast.MutationAlterTableAddColumn,
 		schema,
 		tableName,
 		ast.WithColumns([]sqlmodel.Column{column}),
 		ast.WithIfNotExists(ifNotExists),
 		ast.WithPlacement(placement.Kind, placement.Anchor),
-	), nil
+	)
+	p.attachColumnConstraints(mutation, schema, tableName)
+	return mutation, nil
 }
 
 // parseAlterTableAddColumns parses the parenthesised column list of ADD [COLUMN] (column,
@@ -743,7 +804,7 @@ func (p *parser) parseAlterTableAddColumns(
 	p.Advance()
 	var added []*ast.CatalogueMutation
 	for {
-		column, _, columnError := p.parseMySQLColumnDefinition(engine)
+		column, _, columnError := p.parseMySQLColumnDefinition(engine, false)
 		if columnError != nil {
 			return nil, columnError
 		}
@@ -764,47 +825,43 @@ func (p *parser) parseAlterTableAddColumns(
 		return nil, p.syntaxErrorAt("expected ',' or ')' after a column definition")
 	}
 	p.Advance()
+	p.attachColumnConstraints(added[len(added)-1], schema, tableName)
 	return collectAlterTableActions(added), nil
 }
 
 // parseAlterTableDrop parses a DROP COLUMN/CONSTRAINT/INDEX/etc. action.
 //
+// Takes engine (*Dialect) which supplies the index dependency rule.
 // Takes schema (string) which is the schema name of the target table.
 // Takes tableName (string) which is the target table name.
 //
 // Returns *ast.CatalogueMutation which describes the drop, or nil when the dropped item
 // does not affect the catalogue.
 // Returns error when the action clause is malformed.
-func (p *parser) parseAlterTableDrop(schema, tableName string) (*ast.CatalogueMutation, error) {
+func (p *parser) parseAlterTableDrop(engine *Dialect, schema, tableName string) (*ast.CatalogueMutation, error) {
 	if p.MatchKeyword(keywordPRIMARY) {
 		p.MatchKeyword(keywordKEY)
-		return nil, nil
+		return droppedPrimaryKey(schema, tableName), nil
 	}
 	if p.MatchKeyword(keywordINDEX) || p.MatchKeyword(keywordKEY) {
-		p.matchIfExists()
-		_, err := p.parseIdentifierOrKeyword()
-		return nil, err
+		ifExists := p.matchIfExists()
+		indexName, err := p.parseIdentifierOrKeyword()
+		if err != nil {
+			return nil, err
+		}
+		if strings.EqualFold(indexName, primaryKeyName) {
+			return droppedPrimaryKey(schema, tableName), nil
+		}
+		return ast.NewCatalogueMutation(ast.MutationDropIndex, schema, tableName, ast.WithNewName(indexName), ast.WithIfExists(ifExists)), nil
 	}
 	if p.MatchKeyword(keywordFOREIGN) {
 		if _, err := p.ExpectKeyword(keywordKEY); err != nil {
 			return nil, err
 		}
-		p.matchIfExists()
-		_, err := p.parseIdentifierOrKeyword()
-		return nil, err
+		return p.parseDroppedConstraint(schema, tableName)
 	}
 	if p.MatchKeyword(keywordCONSTRAINT) || p.MatchKeyword(keywordCHECK) {
-		p.matchIfExists()
-		constraintName, nameError := p.parseIdentifierOrKeyword()
-		if nameError != nil {
-			return nil, nameError
-		}
-		return ast.NewCatalogueMutation(
-			ast.MutationAlterTableDropConstraint,
-			schema,
-			tableName,
-			ast.WithConstraintName(constraintName),
-		), nil
+		return p.parseDroppedConstraint(schema, tableName)
 	}
 
 	p.MatchKeyword(keywordCOLUMN)
@@ -820,6 +877,7 @@ func (p *parser) parseAlterTableDrop(schema, tableName string) (*ast.CatalogueMu
 		schema,
 		tableName,
 		ast.WithColumnName(columnName),
+		ast.WithDroppedColumnIndexes(engine.settings.DroppedColumnIndexes),
 	)
 	mutation.IfColumnExists = ifColumnExists
 	return mutation, nil
@@ -839,7 +897,7 @@ func (p *parser) parseAlterTableModify(
 	p.MatchKeyword(keywordCOLUMN)
 	ifColumnExists := p.matchIfExists()
 
-	column, _, columnError := p.parseMySQLColumnDefinition(engine)
+	column, _, columnError := p.parseMySQLColumnDefinition(engine, true)
 	if columnError != nil {
 		return nil, columnError
 	}
@@ -858,6 +916,9 @@ func (p *parser) parseAlterTableModify(
 		ast.WithPlacement(placement.Kind, placement.Anchor),
 	)
 	mutation.IfColumnExists = ifColumnExists
+	mutation.DropsColumnChecks = engine.settings.ConstraintNames == dialect.ConstraintNamesMariaDB
+	mutation.RefusesNullKey = p.takeExplicitNull()
+	p.attachColumnConstraints(mutation, schema, tableName)
 	return mutation, nil
 }
 
@@ -882,7 +943,7 @@ func (p *parser) parseAlterTableChange(
 		return nil, oldError
 	}
 
-	column, _, columnError := p.parseMySQLColumnDefinition(engine)
+	column, _, columnError := p.parseMySQLColumnDefinition(engine, true)
 	if columnError != nil {
 		return nil, columnError
 	}
@@ -901,6 +962,9 @@ func (p *parser) parseAlterTableChange(
 		ast.WithPlacement(placement.Kind, placement.Anchor),
 	)
 	change.IfColumnExists = ifColumnExists
+	change.DropsColumnChecks = engine.settings.ConstraintNames == dialect.ConstraintNamesMariaDB
+	change.RefusesNullKey = p.takeExplicitNull()
+	p.attachColumnConstraints(change, schema, tableName)
 	if strings.EqualFold(oldName, column.Name) {
 		return change, nil
 	}

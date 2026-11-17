@@ -29,9 +29,8 @@
         "Name": "avg_price",
         "Nullable": true,
         "SQLType": {
-          "Category": "float",
-          "EngineName": "double",
-          "Width": 64
+          "Category": "decimal",
+          "EngineName": "decimal"
         },
         "SourceColumn": "avg_price",
         "SourceQualifier": "s"

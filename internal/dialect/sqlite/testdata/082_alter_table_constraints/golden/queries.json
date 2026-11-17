@@ -1,0 +1,81 @@
+[
+  {
+    "Command": "many",
+    "Filename": "gauges.sql",
+    "Line": 1,
+    "Name": "ListGauges",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "gauges",
+        "SourceTable": "gauges"
+      },
+      {
+        "Name": "reading",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "reading",
+        "SourceQualifier": "gauges",
+        "SourceTable": "gauges"
+      },
+      {
+        "Name": "level",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "level",
+        "SourceQualifier": "gauges",
+        "SourceTable": "gauges"
+      },
+      {
+        "Name": "depth",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "depth",
+        "SourceQualifier": "gauges",
+        "SourceTable": "gauges"
+      },
+      {
+        "Name": "scale",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "scale",
+        "SourceQualifier": "gauges",
+        "SourceTable": "gauges"
+      },
+      {
+        "Name": "offset_value",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "integer",
+          "Width": 64
+        },
+        "SourceColumn": "offset_value",
+        "SourceQualifier": "gauges",
+        "SourceTable": "gauges"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListGauges, command: many)\nSELECT id, reading, level, depth, scale, offset_value FROM gauges;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:reading⟩, ⟨c2:level⟩, ⟨c3:depth⟩, ⟨c4:scale⟩, ⟨c5:offset_value⟩ FROM gauges;"
+  }
+]

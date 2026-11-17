@@ -118,6 +118,18 @@ const (
 	// serialised golden files.
 	TypeCategoryAggregateState = sqlmodel.TypeCategoryAggregateState
 
+	// TemporalKindDate is a calendar date with no time of day.
+	TemporalKindDate = sqlmodel.TemporalKindDate
+
+	// TemporalKindTime is a time of day with no date.
+	TemporalKindTime = sqlmodel.TemporalKindTime
+
+	// TemporalKindTimestamp is a date and a time of day together.
+	TemporalKindTimestamp = sqlmodel.TemporalKindTimestamp
+
+	// TemporalKindInterval is a length of time rather than a point in it.
+	TemporalKindInterval = sqlmodel.TemporalKindInterval
+
 	// MaxTypeDepth is how deeply Seagull follows the element, key, field and member types
 	// nested in a SQL type.
 	//
@@ -232,3 +244,7 @@ func NewSQLType(category SQLTypeCategory, engineName string) SQLType {
 // SQLTypeCategory classifies SQL types into the broad categories the generator maps to Go
 // types.
 type SQLTypeCategory = sqlmodel.SQLTypeCategory
+
+// TemporalKind distinguishes the kinds of temporal type: a date, a time of day, a
+// timestamp or an interval.
+type TemporalKind = sqlmodel.TemporalKind

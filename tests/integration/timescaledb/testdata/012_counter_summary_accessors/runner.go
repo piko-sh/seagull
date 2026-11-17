@@ -80,10 +80,10 @@ func main() {
 	}
 
 	if err := json.NewEncoder(os.Stdout).Encode(map[string]any{
-		"slope_value":     round(row.SlopeValue),
-		"intercept_value": round(row.InterceptValue),
-		"first_value":     round(row.FirstValue),
-		"last_value":      round(row.LastValue),
+		"slope_value":     round(row.SlopeValue.Ptr()),
+		"intercept_value": round(row.InterceptValue.Ptr()),
+		"first_value":     round(row.FirstValue.Ptr()),
+		"last_value":      round(row.LastValue.Ptr()),
 	}); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

@@ -1,0 +1,26 @@
+{
+  "description": "CURRENT_TIME, CURRENT_TIMESTAMP, LOCALTIME and LOCALTIMESTAMP are keywords DuckDB refuses with parentheses (Catalog Error: Scalar Function with name current_time does not exist).",
+  "expectedDiagnosticCount": 4,
+  "diagnostics": [
+    {
+      "severity": "error",
+      "code": "Q010",
+      "messageContains": "DuckDB writes CURRENT_TIME without parentheses"
+    },
+    {
+      "severity": "error",
+      "code": "Q010",
+      "messageContains": "DuckDB writes CURRENT_TIMESTAMP without parentheses"
+    },
+    {
+      "severity": "error",
+      "code": "Q010",
+      "messageContains": "DuckDB writes LOCALTIME without parentheses"
+    },
+    {
+      "severity": "error",
+      "code": "Q010",
+      "messageContains": "DuckDB writes LOCALTIMESTAMP without parentheses"
+    }
+  ]
+}

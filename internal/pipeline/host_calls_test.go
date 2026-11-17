@@ -208,7 +208,7 @@ func TestASchemaSourceThatPanicsIsReturnedAsAnError(t *testing.T) {
 			t.Parallel()
 
 			logger, _ := recordingLogger()
-			err := testCase.run(logging.ContextWithLogger(t.Context(), logger))
+			err := testCase.run(logging.WithLogger(t.Context(), logger))
 			require.ErrorIs(t, err, fault.ErrPanic)
 			assert.ErrorContains(t, err, "building catalogue: schema source BuildCatalogue: panic: source exploded")
 		})
@@ -252,7 +252,7 @@ func TestEveryRunRecoversAPanicThatEscapesADialectCall(t *testing.T) {
 			t.Parallel()
 
 			logger, logs := recordingLogger()
-			err := testCase.run(logging.ContextWithLogger(t.Context(), logger))
+			err := testCase.run(logging.WithLogger(t.Context(), logger))
 			require.ErrorIs(t, err, fault.ErrPanic)
 			assert.EqualError(t, err, testCase.operation+": panic: the dialect broke")
 			assert.Equal(t, 1, strings.Count(logs.String(), "recovered a panic"))

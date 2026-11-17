@@ -1,0 +1,12 @@
+CREATE TABLE gauges (low INT, high INT, level INT CHECK (level > 0), CHECK (low < high));
+ALTER TABLE gauges RENAME COLUMN low TO minimum;
+ALTER TABLE gauges CHANGE high maximum INT;
+ALTER TABLE gauges RENAME COLUMN level TO reading;
+ALTER TABLE gauges DROP COLUMN low;
+CREATE TABLE inline_null_key (id INT NULL PRIMARY KEY);
+CREATE TABLE table_null_key (id INT NULL, PRIMARY KEY (id));
+CREATE TABLE keys_kept (id INT PRIMARY KEY, a INT UNIQUE, b INT, INDEX b_index (b));
+ALTER TABLE keys_kept MODIFY id INT NULL;
+CREATE TABLE twice_indexed (a INT, b INT, INDEX i (a), INDEX i (b));
+CREATE INDEX b_index ON keys_kept (a);
+ALTER TABLE keys_kept ADD INDEX a (b);

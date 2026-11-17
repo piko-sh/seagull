@@ -55,7 +55,7 @@
       }
     ],
     "ReadOnly": true,
-    "SQL": "-- sgl.query(name: OrderLines, command: many)\nSELECT jt.sku, jt.price, jt.placed_at\nFROM orders,\n     JSON_TABLE(orders.lines, '$[*]' COLUMNS (\n         sku VARCHAR(40) PATH '$.sku',\n         price DECIMAL(10, 2) PATH '$.price',\n         placed_at DATETIME(3) PATH '$.placed_at'\n     )) AS jt\nWHERE orders.id = ?;",
-    "Template": "SELECT ⟨c0:jt.sku⟩, ⟨c1:jt.price⟩, ⟨c2:jt.placed_at⟩\\nFROM orders,\\n     JSON_TABLE(orders.lines, '$[*]' COLUMNS (\\n         sku VARCHAR(40) PATH '$.sku',\\n         price DECIMAL(10, 2) PATH '$.price',\\n         placed_at DATETIME(3) PATH '$.placed_at'\\n     )) AS jt\\nWHERE orders.id = ⟨p0⟩;⟨arguments p0⟩"
+    "SQL": "-- sgl.query(name: OrderLines, command: many)\nSELECT jt.sku, jt.price, jt.placed_at\nFROM orders,\n     JSON_TABLE(orders.line_items, '$[*]' COLUMNS (\n         sku VARCHAR(40) PATH '$.sku',\n         price DECIMAL(10, 2) PATH '$.price',\n         placed_at DATETIME(3) PATH '$.placed_at'\n     )) AS jt\nWHERE orders.id = ?;",
+    "Template": "SELECT ⟨c0:jt.sku⟩, ⟨c1:jt.price⟩, ⟨c2:jt.placed_at⟩\\nFROM orders,\\n     JSON_TABLE(orders.line_items, '$[*]' COLUMNS (\\n         sku VARCHAR(40) PATH '$.sku',\\n         price DECIMAL(10, 2) PATH '$.price',\\n         placed_at DATETIME(3) PATH '$.placed_at'\\n     )) AS jt\\nWHERE orders.id = ⟨p0⟩;⟨arguments p0⟩"
   }
 ]

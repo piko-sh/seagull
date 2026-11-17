@@ -36,10 +36,11 @@ func CloneQueries(queries []*sqlmodel.AnalysedQuery) []*sqlmodel.AnalysedQuery {
 		copied := *query
 		copied.GroupByKey = slices.Clone(query.GroupByKey)
 		copied.InsertColumns = slices.Clone(query.InsertColumns)
+		copied.ResultShape.Named = slices.Clone(query.ResultShape.Named)
 		copied.Template = cloneTemplate(query.Template)
-		if query.CountTemplate != nil {
-			copied.CountTemplate = new(cloneTemplate(*query.CountTemplate))
-		}
+		copied.CountTemplate = cloneOptionalTemplate(query.CountTemplate)
+		copied.FilteredTemplate = cloneOptionalTemplate(query.FilteredTemplate)
+		copied.FilteredCountTemplate = cloneOptionalTemplate(query.FilteredCountTemplate)
 		copied.AllowedColumns = cloneValues(query.AllowedColumns, func(column sqlmodel.AllowedColumn) sqlmodel.AllowedColumn {
 			column.SQLType = cloneSQLType(column.SQLType)
 			return column
@@ -75,6 +76,18 @@ func cloneTemplate(template sqlmodel.SQLTemplate) sqlmodel.SQLTemplate {
 	template.Arguments = slices.Clone(template.Arguments)
 	template.Segments = cloneValues(template.Segments, cloneSegment)
 	return template
+}
+
+// cloneOptionalTemplate copies a template a query may leave out.
+//
+// Takes template (*sqlmodel.SQLTemplate) which is the template, or nil.
+//
+// Returns *sqlmodel.SQLTemplate which is the copy, or nil for nil.
+func cloneOptionalTemplate(template *sqlmodel.SQLTemplate) *sqlmodel.SQLTemplate {
+	if template == nil {
+		return nil
+	}
+	return new(cloneTemplate(*template))
 }
 
 // cloneSegment copies nested segments and expanded star columns.

@@ -40,6 +40,9 @@ const (
 	// keywordCOLLATE is the SQL COLLATE keyword.
 	keywordCOLLATE = "COLLATE"
 
+	// keywordCOLUMN is the SQL COLUMN keyword of ALTER TABLE actions.
+	keywordCOLUMN = "COLUMN"
+
 	// keywordCONFLICT is the SQL ON CONFLICT clause keyword.
 	keywordCONFLICT = "CONFLICT"
 

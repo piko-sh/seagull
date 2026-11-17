@@ -62,10 +62,10 @@ func main() {
 	queries := db.New(conn)
 	output := results{}
 	output.record("add_books", func() (any, error) {
-		if err := queries.AddBook(ctx, db.AddBookParams{ID: 1, Title: "The Murder at the Vicarage", Pages: &pages, Published: &published}); err != nil {
+		if err := queries.AddBook(ctx, db.AddBookParams{ID: 1, Title: "The Murder at the Vicarage", Pages: db.NullOf(pages), Published: db.NullOf(published)}); err != nil {
 			return nil, err
 		}
-		return "added", queries.AddBook(ctx, db.AddBookParams{ID: 2, Title: "Strong Poison", Pages: nil, Published: nil})
+		return "added", queries.AddBook(ctx, db.AddBookParams{ID: 2, Title: "Strong Poison", Pages: db.Null[int64]{}, Published: db.Null[time.Time]{}})
 	})
 	output.record("model_book", func() (any, error) {
 		var book db.Books

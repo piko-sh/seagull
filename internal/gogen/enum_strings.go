@@ -39,6 +39,22 @@ const (
 	// pointers to one string type to pointers to another, such as sglConvertStringPointers.
 	SuffixConvertStringPointers = "ConvertStringPointers"
 
+	// SuffixScanNumber is the suffix of the function returning the scanner that reads a
+	// narrow number without database/sql's conversion through text, sglScanNumber.
+	SuffixScanNumber = "ScanNumber"
+
+	// SuffixScanArray is the suffix of the function returning the scanner that reads an
+	// array's text form into a slice.
+	SuffixScanArray = "ScanArray"
+
+	// SuffixArrayLiteral is the suffix of the function writing a slice as an array's text
+	// form, which a slice's list is bound as.
+	SuffixArrayLiteral = "ArrayLiteral"
+
+	// SuffixNonNil is the suffix of the function binding a nil slice written into a column
+	// that refuses NULL as an empty one.
+	SuffixNonNil = "NonNil"
+
 	// SuffixConvertStringMap is the suffix of the helper that converts the values of a map
 	// from one string type to another, such as sglConvertStringMap.
 	SuffixConvertStringMap = "ConvertStringMap"

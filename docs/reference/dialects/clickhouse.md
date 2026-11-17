@@ -124,7 +124,7 @@ kiosks, err := queries.KioskAt(ctx, map[string]any{"lon": -4.9389, "lat": 50.541
 ```
 
 With the native driver, pass the generated anonymous struct instead; the
-[composite-parameter integration caller](../../../tests/integration/clickhouse/testdata/079_composite_parameters_native/runner.go)
+[composite-parameter integration caller](../../../tests/integration/clickhouse/testdata/076_composite_parameters_native/runner.go)
 constructs it through the `Location` field of `OpenKioskParams`.
 
 The same `{name:Type}` token can appear multiple times in one query.
@@ -189,7 +189,8 @@ dropped. A locally refused native batch writes no rows. A multi-statement batch 
 retain earlier successful statements when a later statement is refused.
 
 `NULL` in a `Nullable(IPv4)` or `Nullable(IPv6)` value is a nil pointer, a `*netip.Addr`
-(a `*net.IP` behind `database/sql`), which is how the generated code reads it. A pointer to
+(a `*net.IP` behind `database/sql`), which is how the generated code reads it. Addresses stay
+pointers rather than `Null` values, as the drivers hand them over in their own types. A pointer to
 the zero address is refused rather than written as `NULL`: the read side never returns one,
 so every value the generated code reads is written back as it was read, and an address left
 unset by mistake fails instead of silently becoming `NULL`.
@@ -231,7 +232,7 @@ holds data. `{flag:Bool}` and `{true:UInt8}` stay placeholders.
 The rows after `INSERT ... FORMAT` are the format's own data, so inline `JSONEachRow`
 rows such as `{"id": 9}` keep their braces too.
 
-ClickHouse itself (verified on 25.4) evaluates a tuple in a `VALUES` row that holds a
+ClickHouse itself (verified on 25.4 and 26.8) evaluates a tuple in a `VALUES` row that holds a
 function call, such as `(170141183460469231731687303715884105727, map('k', 1))`, as an
 expression, reading a bare integer literal beyond the `UInt64` range there as a `Float64`:
 the row goes in without an error, holding another number or the whole tuple's default,
@@ -247,7 +248,7 @@ during normalisation and surfaces the resulting Go type:
 |---|---|
 | `UInt64` | `uint64` |
 | `Int32` | `int32` |
-| `Nullable(String)` | `*string` |
+| `Nullable(String)` | `Null[string]` |
 | `Array(String)` | `[]string` |
 | `Array(Nullable(UInt32))` | `[]*uint32` |
 | `LowCardinality(String)` | `string` (storage hint only) |
@@ -270,8 +271,8 @@ An `Enum8` or `Enum16` label may hold a doubled quote or a backslash escape, as 
 `'it''s'` or `'x\'y'`, in a column's type and in a placeholder's tag; the label is the
 text the server returns.
 
-Nullable scalar values generally become pointers, such as `*string`. Nil-capable types
-can represent NULL directly: `Nullable(JSON)` remains `JSON`, with nil for NULL.
+Nullable scalar values become the generated `Null` type, such as `Null[string]`. Nil-capable
+types can represent NULL directly: `Nullable(JSON)` remains `JSON`, with nil for NULL.
 `LowCardinality(T)` keeps the Go representation of `T`.
 
 Generated enum types bind and scan through strings where the driver requires them.
@@ -377,6 +378,16 @@ alias of a later item reads a column of that name, or is reported as an unknown 
 when there is none: give aliases names no column has, or order the items so an alias comes
 first.
 
+Sources a comma separates in `FROM`, as in `FROM boats, crew`, are joined as `CROSS JOIN`
+joins them, and may sit beside explicit joins.
+
+A qualifier may name a table by its own name though an alias renames it, as in
+`SELECT crew.boat FROM crew AS mates`; a relation of that name in an enclosing query
+takes it first. ClickHouse 26.8 runs a correlated scalar subquery, one that reads a column
+of the query around it, by default, and returns `NULL` for a row it matches nothing for,
+even from `count()`, so such a subquery reads as nullable. An uncorrelated one keeps the
+nullability of what it selects.
+
 ### ARRAY JOIN
 
 `ARRAY JOIN` unfolds an array into one row per element, and Seagull types each name as the
@@ -396,8 +407,8 @@ server does:
   `ARRAY JOIN arrayMap(m -> m * 2, legs.minutes) AS doubled`, is typed by its
   expression.
 - `LEFT ARRAY JOIN` keeps a row whose array is empty and gives its element the default
-  value of the element's type, an empty string or `0`, not `NULL`, so the element is a
-  pointer only when its type is `Nullable(T)`.
+  value of the element's type, an empty string or `0`, not `NULL`, so the element is
+  nullable only when its type is `Nullable(T)`.
 - A `Map` unfolds into one `Tuple(keys K, values V)` per entry, as ClickHouse gives it: a
   struct with fields `Keys` and `Values` (`driver: clickhouse`), a `map[string]any` behind
   `database/sql`. After `ARRAY JOIN attributes AS entry`, `entry.keys` and `entry.1` are the
@@ -411,7 +422,7 @@ ClickHouse fills the columns of an unmatched outer-join row according to the
 `join_use_nulls` setting. With the server's default, `0`, an unmatched row gets each
 column's default value, such as `0` or an empty string, rather than `NULL`. Seagull
 assumes that default: a column on the side a `LEFT`, `RIGHT` or `FULL` join can leave
-unmatched keeps its own nullability, so it is a pointer only when its type is
+unmatched keeps its own nullability, so it is nullable only when its type is
 `Nullable(T)`.
 
 A query that sets the option itself is analysed with its own setting:
@@ -423,7 +434,7 @@ LEFT JOIN sightings AS s ON s.gull_id = g.id
 SETTINGS join_use_nulls = 1;
 ```
 
-Here `Beach` is a `*string`, `nil` for a gull with no sighting. When the server, the
+Here `Beach` is a `Null[string]`, NULL for a gull with no sighting. When the server, the
 user's profile or the connection sets `join_use_nulls = 1` for every query, say so in the
 database's dialect options, and every outer join is analysed that way:
 
@@ -490,7 +501,7 @@ elements as columns of their own instead, as `pair.1, pair.2` or
 
 An expression in a list may carry an alias, as in `tuple(1 AS x, 'a' AS y)`,
 `(id AS key, name AS label)`, `plus(id AS key, 1)` or `[1 AS first, 2]`. The alias leaves
-the expression's type as it is, and ClickHouse 25.4, with
+the expression's type as it is, and ClickHouse 26.8, with
 `enable_named_columns_in_function_tuple` off as it is by default, names no element of a
 tuple after one: `toTypeName(tuple(1 AS x, 'a' AS y))` is `Tuple(UInt8, String)`. Such a
 tuple is unnamed, read by position into a `[]any` with both drivers, inside an `Array` or
@@ -542,10 +553,9 @@ select-list item:
 - a `Map` keyed by an `IPv4` or `IPv6` address, whose block the drivers cannot decode: key
   it by the address's text, as `CAST(m AS Map(String, String))` does;
 - a `Map` keyed by an `Array`, a `Tuple` or a `Map`, whose Go types clickhouse-go cannot key
-  a Go map by, or by a `Decimal`, whose type name it splits at the comma, so it cannot
-  decode the block either: select `mapKeys(m)` and `mapValues(m)`. A `Map` keyed by a
-  `DateTime64` with a time zone, as in `Map(DateTime64(3, 'UTC'), String)`, fails the same
-  way, but Seagull keeps no time zone in the type and does not refuse it;
+  a Go map by, so it cannot decode the block either, or by a `Decimal`, which it reads as a
+  `decimal.Decimal` holding a pointer, so a lookup by an equal key misses: select
+  `mapKeys(m)` and `mapValues(m)`;
 - an unnamed `Tuple` holding such an integer, which the native driver cannot read into a
   slice and `database/sql` fails on or reads as `NULL`: name its elements, as
   `CAST(x AS Tuple(a UInt8, b Int128))` does, or make the integer `Nullable`;
@@ -573,7 +583,7 @@ bytes compare with the document written):
 
 A `NULL` reads as a nil `JSON`, and a `JSON` value an interface holds, such as an element
 of a tuple's `map[string]any` behind `database/sql` or of a tuple's `[]any`, reads as the
-package's `JSON` type. clickhouse-go v2.48 panics building any Go map of
+package's `JSON` type. clickhouse-go (v2.48 to v2.51) panics building any Go map of
 `Map(K, JSON)` values, so `database/sql` cannot read such a column, and neither driver can
 read one inside an `Array`, a `Map` or a `Tuple`, as in `Array(Map(String, JSON))`: both are
 refused with [Q059](../diagnostics.md#q059); cast the `Map` so its values are
@@ -633,7 +643,7 @@ GROUP BY region WITH ROLLUP
 SETTINGS group_by_use_nulls = 1;
 ```
 
-Here `Region` is a `*string`, `nil` on the grand total row. When the server, the user's
+Here `Region` is a `Null[string]`, NULL on the grand total row. When the server, the user's
 profile or the connection sets `group_by_use_nulls = 1` for every query, set
 `group_by_use_nulls: true` under the database's `dialect_options`, or pass
 `dialect_engine_clickhouse.WithGroupByUseNulls(true)` to `dialect_engine_clickhouse.New` in Go.
@@ -822,11 +832,11 @@ ClickHouse has no `RETURNING` clause: Seagull reports one on an `INSERT`, `UPDAT
 ## Complex types
 
 ClickHouse's variant, dynamic, and aggregate-state types read as follows (verified
-with clickhouse-go v2.48 on ClickHouse 25.4):
+with clickhouse-go v2.48 on ClickHouse 25.4 and v2.51 on 26.8):
 
 | ClickHouse type | Generated Go type |
 |---|---|
-| `SimpleAggregateFunction(f, T)` | the Go type of `T`, as `uint64` for `SimpleAggregateFunction(sum, UInt64)` and `*string` for `SimpleAggregateFunction(max, Nullable(String))`: the column holds plain values of `T`, which both drivers read and bind as `T` |
+| `SimpleAggregateFunction(f, T)` | the Go type of `T`, as `uint64` for `SimpleAggregateFunction(sum, UInt64)` and `Null[string]` for `SimpleAggregateFunction(max, Nullable(String))`: the column holds plain values of `T`, which both drivers read and bind as `T` |
 | `Dynamic`, and a path of a `JSON` column such as `data.a.b` | `any`, holding the value of the type the row stores, or `nil`; natively the generated code reads it through `sglScanNativeComposite`, since the native driver scans such a value into no interface value, and behind `database/sql` the `any` holds the driver's `chcol.Variant`, which encodes to JSON as its value; an `Array(Dynamic)` is a `[]any` |
 | `AggregateFunction(f, T)` | refused with [Q059](../diagnostics.md#q059) wherever a result holds one: neither driver decodes the state. Read its value with `finalizeAggregation(x)`, typed as the aggregate's result (`UInt64` for a `uniq` state), or the aggregate's `-Merge` combinator, as `uniqMerge(x)` |
 | `Variant(A, B, ...)` | refused with Q059 wherever a result holds one: both drivers read a `Variant` only into their own `chcol.Variant`. Select the value as text with `toString(x)`, and its member's type name with `variantType(x)`; `variantElement(x, 'T')` is typed `any` for a `Variant` of several members, since Seagull cannot read the type name it is given |
@@ -866,7 +876,9 @@ unbalanced parenthesis or bracket, in a query or in DDL, an empty select item, a
 `SELECT , 1` or `SELECT 1,, 2`, an `AS` without its alias, and a malformed scalar,
 `EXISTS` or `IN` subquery. A trailing comma before `FROM`, as in `SELECT a, b, FROM t`, is
 accepted, as ClickHouse accepts it, while a column named `from` after a comma still reads
-as a column, as in `SELECT a, from FROM t`. Statements that hold no query, such as
+as a column, as in `SELECT a, from FROM t`. A table named `from`, quoted, takes an alias
+only after `AS`: ClickHouse refuses `FROM "from" t` and `JOIN "from" t`, so Seagull does
+too. Statements that hold no query, such as
 `SHOW`, `SYSTEM` or `OPTIMIZE`, generate with no output.
 
 Replay refuses what ClickHouse refuses: creating a table under a name a table already

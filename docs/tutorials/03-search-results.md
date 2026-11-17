@@ -63,7 +63,7 @@ Append this code before the final `return nil` in `run`:
 	if err := queries.AddProject(ctx, "Harbour"); err != nil {
 		return err
 	}
-	if err := queries.AssignProject(ctx, store.AssignProjectParams{ProjectID: new(int64(1)), ID: task.ID}); err != nil {
+	if err := queries.AssignProject(ctx, store.AssignProjectParams{ProjectID: store.NullOf(int64(1)), ID: task.ID}); err != nil {
 		return err
 	}
 	rows, err := queries.SearchTasks(ctx, store.SearchTasksParams{})
@@ -71,14 +71,14 @@ Append this code before the final `return nil` in `run`:
 		return err
 	}
 	for _, row := range rows {
-		if row.Projects == nil || row.Projects.Name == nil {
+		if row.Projects == nil || !row.Projects.Name.Valid {
 			return fmt.Errorf("project missing")
 		}
-		fmt.Fprintln(out, row.Title, "in", *row.Projects.Name)
+		fmt.Fprintln(out, row.Title, "in", row.Projects.Name.V)
 	}
 ```
 
-The empty parameter struct uses the default page size and leaves the title filter off. The caller checks the nested pointers before reading the project name.
+The empty parameter struct uses the default page size and leaves the title filter off. The caller checks that the project is present and that its name is not NULL before reading the name.
 
 ```sh
 go run .

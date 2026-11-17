@@ -421,6 +421,10 @@ func (p *parser) parsePostfixOperators(left ast.Expression) ast.Expression {
 // Returns ast.Expression which is the term, or an UnknownExpression for a token that
 // starts none.
 func (p *parser) parsePrimaryExpression() ast.Expression {
+	if p.AtEnd() {
+		p.missingOperand = true
+		return &ast.UnknownExpression{}
+	}
 	current := p.Current()
 	switch current.Kind {
 	case tokenNumber:
@@ -799,7 +803,7 @@ func (p *parser) parseExpressionList(closing tokenKind) []ast.Expression {
 }
 
 // skipElementAlias consumes the `AS name` an expression in a list carries. The name
-// leaves the expression's value and type as they are: ClickHouse 25.4 does not name a
+// leaves the expression's value and type as they are: ClickHouse 26.8 does not name a
 // tuple's elements after it, so tuple(1 AS x, 'a' AS y) is a Tuple(UInt8, String) whose
 // elements are read by position.
 func (p *parser) skipElementAlias() {

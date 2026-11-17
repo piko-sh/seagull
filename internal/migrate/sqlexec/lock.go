@@ -161,6 +161,10 @@ type lockHandle struct {
 	// second connection for it.
 	transaction *sql.Tx
 
+	// database is the pool a lease was taken through, which its release deletes it through;
+	// nil for session and row locks.
+	database *sql.DB
+
 	// cancel ends the context the lock transaction was begun on, which ends the transaction
 	// and its session; nil for session locks. Release calls it when the commit outlasts
 	// lockReleaseTimeout, and always once the commit is done.
@@ -236,7 +240,7 @@ func (lock *postgresAdvisoryLock) Acquire(ctx context.Context, database *sql.DB)
 		discardConnection(connection)
 		return lockHandle{}, withContextCause(ctx, fmt.Errorf("acquiring %s advisory lock: %w", lock.label, lockError))
 	}
-	return lockHandle{connection: connection, transaction: nil, name: lock.key, cancel: nil, discard: false}, nil
+	return lockHandle{connection: connection, transaction: nil, name: lock.key, cancel: nil, discard: false, database: nil}, nil
 }
 
 // TryAcquire pins a connection and runs pg_try_advisory_lock.
@@ -264,7 +268,7 @@ func (lock *postgresAdvisoryLock) TryAcquire(ctx context.Context, database *sql.
 		_ = connection.Close()
 		return lockHandle{}, migrate.ErrLockNotAcquired
 	}
-	return lockHandle{connection: connection, transaction: nil, name: lock.key, cancel: nil, discard: false}, nil
+	return lockHandle{connection: connection, transaction: nil, name: lock.key, cancel: nil, discard: false, database: nil}, nil
 }
 
 // Release runs pg_advisory_unlock on a context detached from cancellation, then returns
@@ -421,7 +425,7 @@ func (lock *pollingAdvisoryLock) TryAcquire(ctx context.Context, database *sql.D
 		_ = connection.Close()
 		return lockHandle{}, migrate.ErrLockNotAcquired
 	}
-	return lockHandle{connection: connection, transaction: nil, name: name, cancel: nil, discard: false}, nil
+	return lockHandle{connection: connection, transaction: nil, name: name, cancel: nil, discard: false, database: nil}, nil
 }
 
 // Release runs the release query on a context detached from cancellation, then returns
@@ -457,7 +461,7 @@ func (lock *pollingAdvisoryLock) poll(ctx context.Context, connection *sql.Conn,
 	acquired, queryError := queryLockResult(ctx, connection, lock.waitSQL, name)
 	switch {
 	case queryError == nil && acquired:
-		return lockHandle{connection: connection, transaction: nil, name: name, cancel: nil, discard: false}, true, nil
+		return lockHandle{connection: connection, transaction: nil, name: name, cancel: nil, discard: false, database: nil}, true, nil
 	case ctx.Err() != nil:
 		discardConnection(connection)
 		return lockHandle{}, true, fmt.Errorf("waiting for %s lock %s: %w", lock.label, lock.key, context.Cause(ctx))
@@ -718,21 +722,27 @@ func (lock *tableLock) lockRow(
 			discardConnection(connection)
 			return lockHandle{}, fmt.Errorf("acquiring %s lock: %w", lock.label, lockError)
 		}
-		_ = finishSession(lockHandle{connection: connection, transaction: nil, name: lock.table, cancel: nil, discard: false}, rollbackError)
+		_ = finishSession(lockHandle{connection: connection, transaction: nil, name: lock.table, cancel: nil, discard: false, database: nil}, rollbackError)
 		return lockHandle{}, migrate.ErrLockNotAcquired
 	}
-	return lockHandle{connection: connection, transaction: transaction, name: lock.table, cancel: cancel, discard: false}, nil
+	return lockHandle{connection: connection, transaction: transaction, name: lock.table, cancel: cancel, discard: false, database: nil}, nil
 }
 
-// createTable runs the lock table's CREATE TABLE IF NOT EXISTS, retrying when a
-// concurrent session created the table first. IF NOT EXISTS is not race-safe on
-// PostgreSQL: the loser of two concurrent creates fails with a unique violation on the
-// catalogue, and by then the winner's table exists.
+// createTable runs the lock table's CREATE TABLE IF NOT EXISTS, unless the table can be
+// read, retrying when a concurrent session created the table first.
+//
+// IF NOT EXISTS is not race-safe on PostgreSQL: the loser of two concurrent creates fails
+// with a unique violation on the catalogue, and by then the winner's table exists. A
+// readable table is not created again, as a user who may not create one is refused even
+// IF NOT EXISTS.
 //
 // Takes connection (*sql.Conn) which is the pinned connection.
 //
 // Returns error when the table cannot be created.
 func (lock *tableLock) createTable(ctx context.Context, connection *sql.Conn) error {
+	if readTable(ctx, connection, lock.table) == nil {
+		return nil
+	}
 	var createError error
 	for range tableLockCreateAttempts {
 		if _, createError = connection.ExecContext(ctx, lock.createSQL); createError == nil || !isDuplicateObjectError(createError) {

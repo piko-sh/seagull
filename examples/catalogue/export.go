@@ -154,6 +154,29 @@ func Export(ctx context.Context, examplesDirectory, out string) (*Manifest, erro
 	return writeExport(ctx, curriculum, examplesDirectory, out, variants)
 }
 
+// ExportPartial builds the manifest and copies the variants that are ready, as Export
+// does, but skips a variant whose directory is missing or fails its own checks instead of
+// refusing the whole export. The concepts are exported in full, so a documentation sync
+// is not held up by an unfinished example.
+//
+// Takes examplesDirectory (string) which is the examples directory.
+// Takes out (string) which receives manifest.json and the files; it must be empty or
+// absent.
+//
+// Returns *Manifest which is the exported manifest.
+// Returns error when out is not empty, the curriculum cannot be loaded, a file cannot be
+// copied or is larger than the export allows, or the context is done.
+func ExportPartial(ctx context.Context, examplesDirectory, out string) (*Manifest, error) {
+	if err := requireEmpty(out); err != nil {
+		return nil, err
+	}
+	curriculum, err := Load(examplesDirectory)
+	if err != nil {
+		return nil, err
+	}
+	return writeExport(ctx, curriculum, examplesDirectory, out, curriculum.readyVariants(examplesDirectory))
+}
+
 // writeExport copies the named variants into out and writes the manifest beside them.
 //
 // Takes curriculum (*Curriculum) which is the loaded curriculum.

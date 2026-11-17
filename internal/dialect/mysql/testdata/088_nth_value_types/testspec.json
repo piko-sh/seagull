@@ -1,0 +1,4 @@
+{
+  "description": "NTH_VALUE returns the type of the column it reads, as MySQL types it, so NTH_VALUE of a BIGINT column is a nullable BIGINT.",
+  "expectedDiagnosticCount": 0
+}

@@ -165,28 +165,67 @@ func (s *querySplitter) blocks() []QueryBlock {
 	return blocks
 }
 
-// blockStarts finds where each block begins: the start of the file, and each opener,
-// moved up over the comment lines directly above it.
+// blockStarts finds block boundaries while preserving ownership of directive
+// continuations.
 //
 // Returns []blockStart which holds the starts in file order.
 func (s *querySplitter) blockStarts() []blockStart {
 	starts := []blockStart{{offset: 0, opened: false}}
 	floor := 0
+	depth, previousLine := 0, 0
 	sawCode := false
 	for index, token := range s.tokens {
 		if !token.Kind.IsNoise() {
 			sawCode = true
+			depth = 0
 			continue
 		}
-		if !s.opensBlock(token, sawCode) {
-			continue
+		if s.opensBlock(token, sawCode) {
+			start := s.leadingCommentStart(index, floor)
+			starts = append(starts, blockStart{offset: start, opened: true})
+			floor = index + 1
+			sawCode = false
+			depth = 0
 		}
-		start := s.leadingCommentStart(index, floor)
-		starts = append(starts, blockStart{offset: start, opened: true})
-		floor = index + 1
-		sawCode = false
+		var owned bool
+		depth, previousLine, owned = s.directiveContinuation(token, depth, previousLine)
+		if owned {
+			floor = index + 1
+		}
 	}
 	return starts
+}
+
+// directiveContinuation tracks which comments belong to an open directive.
+//
+// Takes token (sqllex.Token) which is the next comment or whitespace token.
+// Takes depth (int) which counts open directive brackets.
+// Takes previousLine (int) which identifies the preceding directive comment line.
+//
+// Returns nextDepth (int) which is the updated bracket depth.
+// Returns nextLine (int) which is the latest directive comment line.
+// Returns owned (bool) which prevents the comment from moving into another query's prose.
+func (s *querySplitter) directiveContinuation(token sqllex.Token, depth, previousLine int) (nextDepth, nextLine int, owned bool) {
+	comment, isComment := syntax.ReadDirectiveComment(s.text, s.lines, token, s.syntax.Lexicon.LinePrefix)
+	if !isComment {
+		if token.Kind != sqllex.KindWhitespace {
+			depth = 0
+		}
+		return depth, previousLine, false
+	}
+	line := s.lines.Line(token.Start)
+	if line != previousLine+1 {
+		depth = 0
+	}
+	if depth <= 0 && !s.looksLikeDirective(token) {
+		return depth, line, false
+	}
+	change, unterminated, _ := syntax.LineDepth(comment.Body)
+	depth = max(depth+change, 0)
+	if unterminated >= 0 {
+		depth = 0
+	}
+	return depth, line, true
 }
 
 // opensBlock reports whether a token opens a block.
@@ -244,8 +283,7 @@ func (s *querySplitter) leadingCommentStart(openerIndex, floor int) int {
 //
 // Takes token (sqllex.Token) which is the comment.
 //
-// Returns bool which is true when the comment's text opens a call with a recognised
-// prefix, or holds " as <prefix>." for one.
+// Returns bool which is true for a recognised call or parameter binding.
 func (s *querySplitter) looksLikeDirective(token sqllex.Token) bool {
 	comment, isDirectiveComment := syntax.ReadDirectiveComment(s.text, s.lines, token, s.syntax.Lexicon.LinePrefix)
 	if !isDirectiveComment {
@@ -255,12 +293,10 @@ func (s *querySplitter) looksLikeDirective(token sqllex.Token) bool {
 	if s.syntax.Prefixes.Match(prefix) != namespace.KindNone && (syntax.OpensCall(rest) || strings.HasPrefix(rest, ".")) {
 		return true
 	}
-	for _, recognised := range slices.Concat(s.syntax.Prefixes.Accepted(), s.syntax.Prefixes.Foreign) {
-		if strings.Contains(comment.Body, " as "+recognised+".") {
-			return true
-		}
-	}
-	return false
+	prefixes := s.syntax.Prefixes
+	prefixes.Aliases = slices.Concat(prefixes.Aliases, prefixes.Foreign)
+	prefixes.Foreign = nil
+	return syntax.IsDirectiveText(comment.Body, prefixes)
 }
 
 // holdsQuery reports whether a stretch of the file holds anything a query block is made

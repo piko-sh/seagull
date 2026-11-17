@@ -19,6 +19,7 @@
 package sqlfile
 
 import (
+	"bytes"
 	"cmp"
 	"context"
 	"crypto/sha256"
@@ -39,6 +40,9 @@ const (
 	// upMigrationForm is the name form of an up migration, as diagnostics write it.
 	upMigrationForm = "<version>_<name>.up.sql"
 
+	// downMigrationForm is the name form of a down migration, as diagnostics write it.
+	downMigrationForm = "<version>_<name>.down.sql"
+
 	// upMigrationSuffix ends the name of every up migration.
 	upMigrationSuffix = ".up.sql"
 
@@ -55,6 +59,19 @@ var (
 	// convention. The version is a numeric prefix, the name is a descriptive segment, and
 	// the direction is either "up" or "down".
 	migrationFilePattern = regexp.MustCompile(`^(\d+)_(.+)\.(up|down)\.sql$`)
+
+	// migrationLookAlike matches a lower-cased name that starts with a version number, with
+	// or without a leading v.
+	migrationLookAlike = regexp.MustCompile(`^v?\d+`)
+
+	// utf8ByteOrderMark is the byte order mark an editor may write at the start of a file.
+	utf8ByteOrderMark = []byte{0xEF, 0xBB, 0xBF}
+
+	// crlf is a Windows line ending.
+	crlf = []byte("\r\n")
+
+	// lf is the line ending a CRLF is normalised to.
+	lf = []byte("\n")
 )
 
 // parsedMigrationFilename holds the fields extracted from a
@@ -86,8 +103,15 @@ func ReadMigrationFilesVersioned(
 	fileReader FileReader,
 	directory string,
 ) ([]MigrationFile, error) {
-	files, err := ListMigrationFiles(ctx, fileReader, directory)
+	entries, err := readMigrationDirectory(ctx, fileReader, directory)
 	if err != nil {
+		return nil, err
+	}
+	files, err := migrationFilesOf(entries)
+	if err != nil {
+		return nil, err
+	}
+	if err := refuseMisnamedMigrations(entries); err != nil {
 		return nil, err
 	}
 	for index := range files {
@@ -115,11 +139,35 @@ func ListMigrationFiles(
 	fileReader FileReader,
 	directory string,
 ) ([]MigrationFile, error) {
-	entries, readError := fileReader.ReadDir(ctx, directory)
-	if readError != nil {
-		return nil, fmt.Errorf("reading migration directory %s: %w", directory, readError)
+	entries, err := readMigrationDirectory(ctx, fileReader, directory)
+	if err != nil {
+		return nil, err
 	}
+	return migrationFilesOf(entries)
+}
 
+// readMigrationDirectory reads the entries of a migration directory.
+//
+// Takes fileReader (FileReader) which provides filesystem access.
+// Takes directory (string) which is the path to the migration files.
+//
+// Returns []os.DirEntry which holds the entries sorted by name.
+// Returns error when the directory cannot be read.
+func readMigrationDirectory(ctx context.Context, fileReader FileReader, directory string) ([]os.DirEntry, error) {
+	entries, err := fileReader.ReadDir(ctx, directory)
+	if err != nil {
+		return nil, fmt.Errorf("reading migration directory %s: %w", directory, err)
+	}
+	return entries, nil
+}
+
+// migrationFilesOf selects the migration files of a directory's entries and orders them.
+//
+// Takes entries ([]os.DirEntry) which are the directory's entries.
+//
+// Returns []MigrationFile which holds the files in version order, up before down.
+// Returns error when a version overflows.
+func migrationFilesOf(entries []os.DirEntry) ([]MigrationFile, error) {
 	var files []MigrationFile
 	for _, entry := range entries {
 		if entry.IsDir() || isSpecialFile(entry) {
@@ -135,12 +183,13 @@ func ListMigrationFiles(
 		}
 
 		files = append(files, MigrationFile{
-			Version:  parsed.version,
-			Name:     parsed.name,
-			Down:     parsed.down,
-			Filename: entry.Name(),
-			Content:  nil,
-			Checksum: "",
+			Version:        parsed.version,
+			Name:           parsed.name,
+			Down:           parsed.down,
+			Filename:       entry.Name(),
+			Content:        nil,
+			Checksum:       "",
+			LegacyChecksum: "",
 		})
 	}
 
@@ -164,7 +213,7 @@ func ReadMigrationContent(ctx context.Context, fileReader FileReader, directory 
 		return fmt.Errorf("reading migration file %s: %w", filePath, err)
 	}
 	file.Content = content
-	file.Checksum = computeChecksum(content)
+	file.Checksum, file.LegacyChecksum = contentChecksums(content)
 	return nil
 }
 
@@ -290,6 +339,43 @@ func parseMigrationFilename(filename string) (parsedMigrationFilename, bool, err
 	return parsedMigrationFilename{name: matches[2], version: version, down: down}, true, nil
 }
 
+// refuseMisnamedMigrations fails for a file in the migration directory that looks like a
+// migration but is not named as one. Such a file would otherwise never run, and nothing
+// would say so.
+//
+// Takes entries ([]os.DirEntry) which are the migration directory's entries.
+//
+// Returns error which wraps errMisnamedMigration for such a file.
+func refuseMisnamedMigrations(entries []os.DirEntry) error {
+	for _, entry := range entries {
+		if entry.IsDir() || isSpecialFile(entry) || !looksLikeMigration(entry.Name()) {
+			continue
+		}
+
+		if _, matched, _ := parseMigrationFilename(entry.Name()); !matched {
+			return fmt.Errorf("%w: %s looks like a migration but is not named %s or %s, so it would never run",
+				errMisnamedMigration, entry.Name(), upMigrationForm, downMigrationForm)
+		}
+	}
+	return nil
+}
+
+// looksLikeMigration reports whether a file the migration pattern does not match was
+// probably meant as a migration. That is an .sql file, in any letter case, whose name
+// starts with a version number, with or without a leading v, or names an up or down
+// direction.
+//
+// Takes filename (string) which is the directory entry name.
+//
+// Returns bool which is true for such a file.
+func looksLikeMigration(filename string) bool {
+	lower := strings.ToLower(filename)
+	if !strings.HasSuffix(lower, sqlFileSuffix) || strings.HasPrefix(lower, ".") {
+		return false
+	}
+	return migrationLookAlike.MatchString(lower) || strings.Contains(lower, ".up.") || strings.Contains(lower, ".down.")
+}
+
 // computeChecksum returns the SHA-256 hex digest of the given content.
 //
 // Takes content ([]byte) which holds the raw bytes to hash.
@@ -298,6 +384,29 @@ func parseMigrationFilename(filename string) (parsedMigrationFilename, bool, err
 func computeChecksum(content []byte) string {
 	hash := sha256.Sum256(content)
 	return hex.EncodeToString(hash[:])
+}
+
+// contentChecksums returns the checksum a file's content is recorded under and, when it
+// differs, the checksum earlier releases recorded for the same bytes.
+//
+// The recorded checksum is the SHA-256 digest of the content with a leading UTF-8 byte
+// order mark removed and each CRLF line ending written as LF, so a checkout that only
+// changes line endings, or an editor that adds a byte order mark, does not look like an
+// edited migration. Content with neither hashes as it always did.
+//
+// Takes content ([]byte) which holds the file's bytes.
+//
+// Returns checksum (string) which is the checksum of the normalised content.
+// Returns legacy (string) which is the checksum of the bytes as written when normalising
+// changed them, or empty.
+func contentChecksums(content []byte) (checksum, legacy string) {
+	normalised := bytes.TrimPrefix(content, utf8ByteOrderMark)
+	normalised = bytes.ReplaceAll(normalised, crlf, lf)
+	checksum = computeChecksum(normalised)
+	if len(normalised) == len(content) {
+		return checksum, ""
+	}
+	return checksum, computeChecksum(content)
 }
 
 // skippedMigrationFiles lists the .sql files of a migration directory the runner skips:

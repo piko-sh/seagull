@@ -85,6 +85,10 @@ code generation. Warnings and hints do neither, and are findings only under
 | [Q069](#q069) | warning | Part of a statement not analysed |
 | [Q070](#q070) | error | Panic recovered while handling a statement |
 | [Q071](#q071) | warning | View columns did not settle |
+| [Q072](#q072) | error | Runtime builder over a statement that changes data |
+| [Q073](#q073) | error | Migration controls its own transaction |
+| [Q074](#q074) | warning | Full-text search without a matching index |
+| [Q075](#q075) | error | Runtime builder over picked rows without distinct column names |
 
 ## Q001
 
@@ -287,9 +291,9 @@ This is informational. Check that the fixed conditions should always apply along
 
 **Count query wraps the original query** (hint)
 
-The count query generated for a `dynamic: runtime` query wraps the original statement as `SELECT COUNT(*) FROM (...) sub`, because the rows the statement returns are not the rows it reads: it uses `GROUP BY`, `HAVING`, `DISTINCT`, an aggregate, a window function or a set-returning function such as `unnest` in its select list, a set-returning function in its `ORDER BY`, a clause that shapes its rows after `HAVING`, or it is compound. The count therefore reports the number of result rows, not the number of rows in the underlying table.
+The count query for a `dynamic: runtime` query wraps the original statement in `SELECT COUNT(*) FROM (...)` when its result rows differ from the rows it reads. This includes grouping, aggregates, window or set-returning functions, `DISTINCT`, compound queries, and clauses that pick rows such as `LIMIT`, `OFFSET`, `FETCH` and `DISTINCT ON`. The count reports result rows after those clauses, including any limit the query sets.
 
-This is informational; no change is needed.
+This is informational. No change is needed.
 
 ## Q024
 
@@ -758,3 +762,35 @@ A panic is a bug in the code that panicked rather than a problem with the SQL, t
 On SQLite and DuckDB a view keeps the query that defines it rather than the columns it had when it was created, so changing a table it reads changes the view's columns. After each change to a table or view, Seagull derives the columns of such views again, and repeats while any view's columns still change, so that a view reading another view follows too. It does the same for the views of a schema read from a database, typing them from their definitions. It stops after a fixed number of rounds, so views whose columns keep changing cannot hold up the run, and this warning says it stopped before every view settled: the columns of some views may not match those the engine reports.
 
 Look for views that read each other in a cycle, directly or through other views, and break the cycle. Shorten long chains of views that read views, or drop and create the affected views again after the change to their tables, so their columns are derived from the tables as they now are.
+
+## Q072
+
+**Runtime builder over a statement that changes data** (error)
+
+A `dynamic: runtime` builder runs its statement on every terminal call. A data-modifying CTE or function would therefore change data again when callers use `Count` or another terminal.
+
+Remove `dynamic: runtime` from the write query. Use a separate read query if callers need to filter or count the resulting data.
+
+## Q073
+
+**Migration controls its own transaction** (error)
+
+The runner refuses a migration that contains `BEGIN`, `START TRANSACTION`, `COMMIT`, `END`, `ROLLBACK`, `SAVEPOINT` or `RELEASE` before running any statement. These statements can end the runner's transaction and leave changes without a history record.
+
+Remove the transaction-control statement. Mark a migration that must run without a transaction with `sgl.migration(no_transaction: true)`.
+
+## Q074
+
+**Full-text search without a matching index** (warning)
+
+A MySQL or MariaDB `MATCH (columns) AGAINST (...)` search lacks a `FULLTEXT` index covering exactly those columns, in any order. Separate indexes on `title` and `body` do not serve `MATCH (title, body)`. The engine also refuses a search across two tables.
+
+Add a matching `FULLTEXT` index or change the search to use an existing one. Seagull warns because a matching index may exist outside the migrations it reads.
+
+## Q075
+
+**Runtime builder over picked rows without distinct column names** (error)
+
+A `dynamic: runtime` query with its own `LIMIT`, `OFFSET`, `FETCH`, `DISTINCT ON`, `QUALIFY` or `LIMIT n BY` applies builder methods to the rows it selects. Those methods need distinct output column names. Duplicate or unnamed columns cannot be addressed by name, and some engines refuse the derived table the builder uses.
+
+Give the columns distinct aliases, such as `SELECT a.id AS author_id, b.id AS book_id ...`.

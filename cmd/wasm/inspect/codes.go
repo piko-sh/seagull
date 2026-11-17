@@ -245,6 +245,28 @@ var reproductions = map[string]reproduction{
 		dialect: sqlite,
 		queries: "-- sgl.query(GetAuthor, one)\nSELECT id, name FROM authors WHERE id = ?1;\n",
 	},
+	"Q072": {
+		files:   nil,
+		dialect: postgres,
+		queries: "-- sgl.query(name: Rename, command: many, dynamic: runtime)\n" +
+			"WITH renamed AS (UPDATE authors SET name = upper(name) RETURNING id, name) SELECT id, name FROM renamed;\n",
+	},
+	"Q073": {
+		files:   map[string]string{"db/migrations/0002_wrapped.up.sql": "BEGIN;\nCREATE TABLE books (id INTEGER PRIMARY KEY);\nCOMMIT;\n"},
+		dialect: sqlite,
+		queries: "-- sgl.query(GetAuthor, one)\nSELECT id, name FROM authors WHERE id = ?1;\n",
+	},
+	"Q074": {
+		files:   map[string]string{"db/migrations/0002_notes.up.sql": "CREATE TABLE notes (id BIGINT PRIMARY KEY, body TEXT NOT NULL);\n"},
+		dialect: mysql,
+		queries: "-- sgl.query(SearchNotes, many)\nSELECT id FROM notes WHERE MATCH (body) AGAINST (?);\n",
+	},
+	"Q075": {
+		files:   nil,
+		dialect: postgres,
+		queries: "-- sgl.query(name: LatestBooks, command: many, dynamic: runtime)\n" +
+			"SELECT authors.id, books.id FROM books JOIN authors ON authors.id = books.author_id ORDER BY books.id DESC LIMIT 10;\n",
+	},
 }
 
 // codeViews documents every diagnostic code, reproducing an example for each code the

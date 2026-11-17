@@ -1,0 +1,7 @@
+{
+  "description": "A BOOLEAN column reads as a boolean, also inside parentheses. CAST(x AS BOOLEAN) takes SQLite's numeric affinity, so CAST(2.5 AS BOOLEAN) is 2.5 and the cast reads as a number, not a boolean. COALESCE over that cast and a BOOLEAN column has no one type, so it reads as any with a Q063 warning.",
+  "expectedDiagnosticCount": 1,
+  "diagnostics": [
+    {"code": "Q063", "severity": "warning", "filename": "readings.sql", "onLine": 2}
+  ]
+}

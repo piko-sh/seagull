@@ -1,0 +1,8 @@
+CREATE SCHEMA billing;
+CREATE TABLE billing.accounts (id INT8 NOT NULL, CONSTRAINT accounts_key PRIMARY KEY (id));
+CREATE TABLE pets (id INT8 NOT NULL PRIMARY KEY, tag STRING, account INT8, age INT4 NOT NULL, weight INT4 DEFAULT 1,
+    CONSTRAINT pets_tag UNIQUE (tag),
+    CONSTRAINT pets_account FOREIGN KEY (account) REFERENCES billing.accounts (id));
+DROP INDEX pets@pets_tag CASCADE;
+ALTER TABLE pets ALTER COLUMN age SET DEFAULT 0;
+ALTER TABLE pets ALTER COLUMN weight DROP DEFAULT;

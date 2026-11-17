@@ -87,6 +87,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        1
+      ]
+    },
     "SQL": "-- sgl.query(ColumnBeforeAlias, many)\nSELECT name AS id, id + 1 AS next_id FROM gulls ORDER BY next_id;",
     "Template": "SELECT ⟨c0 aliased:name⟩ AS id, ⟨c1 aliased:id + 1⟩ AS next_id FROM gulls ORDER BY next_id;"
   }

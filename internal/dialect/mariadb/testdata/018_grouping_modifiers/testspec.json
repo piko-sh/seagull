@@ -1,0 +1,4 @@
+{
+  "description": "MariaDB groups only WITH ROLLUP, making its keys nullable, and has no ROLLUP (keys), CUBE or GROUPING SETS grouping.",
+  "expectedDiagnosticCount": 3
+}

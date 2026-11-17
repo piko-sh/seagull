@@ -35,17 +35,16 @@ log(x double) double
 log(base double, x double) double
 log10(x double) double
 log2(x double) double
-mod(y any, x any) any
+mod(y any, x any) any zero-nulls=1
 degrees(x double) double
 radians(x double) double
 pi() double never-null
 random() double never-null
-setseed(seed double) double
+setseed(seed double) double called-on-null
 factorial(x bigint) numeric
 gcd(a bigint, b bigint) bigint
 lcm(a bigint, b bigint) bigint
-width_bucket(operand numeric, low numeric, high numeric, count integer) integer
-even(x numeric) numeric
+even(x numeric) double
 isnan(x double) boolean
 isinf(x double) boolean
 isinf(x timestamp) boolean
@@ -53,7 +52,7 @@ isinf(x timestamptz) boolean
 isfinite(x double) boolean
 isfinite(x timestamp) boolean
 isfinite(x timestamptz) boolean
-bit_count(x any) bigint
+bit_count(x any) tinyint
 fmod(x double, y double) double
 fdiv(x double, y double) double
 round_even(x numeric, n integer) double
@@ -111,11 +110,10 @@ left(string varchar, n integer) varchar
 right(string varchar, n integer) varchar
 
 concat(value any) varchar never-null variadic=1
-concat_ws(separator varchar, value any) varchar never-null variadic=2
+concat_ws(separator varchar, value any) varchar nulling-argument=0 variadic=2
 format(formatstr varchar, value any) varchar variadic=1
 printf(formatstr varchar, value any) varchar variadic=1
 
-initcap(x varchar) varchar
 translate(string varchar, from varchar, to varchar) varchar
 ascii(x varchar) integer
 chr(x integer) varchar
@@ -184,15 +182,17 @@ now() timestamptz never-null
 current_timestamp() timestamptz never-null
 current_date() date never-null
 today() date never-null
-current_time() time never-null
+current_time() timetz never-null
+localtime() time never-null
+localtimestamp() timestamp never-null
 age(timestamp timestamptz, timestamp timestamptz) interval
 age(timestamp timestamptz) interval
-date_part(field varchar, source timestamptz) double
-date_part(field varchar, source interval) double
+date_part(field varchar, source timestamptz) bigint
+date_part(field varchar, source interval) bigint
 date_trunc(field varchar, source timestamptz) timestamptz
 date_trunc(field varchar, source interval) interval
-extract(field varchar, source timestamptz) numeric
-extract(field varchar, source interval) numeric
+extract(field varchar, source timestamptz) bigint
+extract(field varchar, source interval) bigint
 make_date(year integer, month integer, day integer) date
 make_time(hour integer, min integer, sec double) time
 make_timestamp(year integer, month integer, day integer, hour integer, min integer, sec double) timestamp
@@ -200,10 +200,6 @@ make_timestamptz(year integer, month integer, day integer, hour integer, min int
 make_timestamptz(year integer, month integer, day integer, hour integer, min integer, sec double, timezone varchar) timestamptz
 to_timestamp(epoch double) timestamptz
 to_timestamp(text varchar, format varchar) timestamptz
-to_date(text varchar, format varchar) date
-to_char(timestamp timestamptz, format varchar) varchar
-to_char(interval interval, format varchar) varchar
-to_char(value numeric, format varchar) varchar
 strftime(timestamp timestamptz, format varchar) varchar
 strftime(timestamp timestamp, format varchar) varchar
 strftime(date date, format varchar) varchar
@@ -258,6 +254,7 @@ try_strptime(string varchar, format varchar) timestamp called-on-null
 timezone(zone varchar, value timestamptz) timestamptz
 transaction_timestamp() timestamptz never-null
 get_current_timestamp() timestamptz never-null
+get_current_time() timetz never-null
 current_localtimestamp() timestamp never-null
 current_localtime() time never-null
 
@@ -430,7 +427,6 @@ arg_max_null(arg any, key any) any called-on-null aggregate return-type-from=1
 
 bool_and(x boolean) boolean called-on-null aggregate
 bool_or(x boolean) boolean called-on-null aggregate
-every(x boolean) boolean called-on-null aggregate
 bit_and(x any) any called-on-null aggregate
 bit_or(x any) any called-on-null aggregate
 bit_xor(x any) any called-on-null aggregate
@@ -514,12 +510,13 @@ if(condition boolean, then any, otherwise any) any called-on-null return-type-fr
 ifnull(expression any, alternative any) any called-on-null
 try(expression any) any called-on-null return-type-from=1
 
-to_char(value integer, format varchar) varchar
-to_number(text varchar, format varchar) numeric
 
 current_database() varchar never-null
 current_schema() varchar never-null
 current_user() varchar never-null
+user() varchar never-null
+current_role() varchar never-null
+session_user() varchar never-null
 version() varchar never-null
 uuid() uuid never-null
 gen_random_uuid() uuid never-null
@@ -531,7 +528,7 @@ pg_typeof(value any) varchar never-null
 
 columns(selector any) any called-on-null variadic=0
 typeof(value any) varchar never-null
-hash(value any) bigint
+hash(value any) ubigint
 union_tag(union any) varchar
 union_extract(union any, tag varchar) any called-on-null
 union_value(value any) any called-on-null variadic=0

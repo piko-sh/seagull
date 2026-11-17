@@ -43,6 +43,18 @@ const (
 	// inlineJSONFileSuffix ends the name of the file declaring the inline JSON type, after
 	// the helper prefix.
 	inlineJSONFileSuffix = "_json.go"
+
+	// inlineNullFileSuffix ends the name of the file declaring the generated Null type,
+	// after the helper prefix.
+	inlineNullFileSuffix = "_null.go"
+
+	// jsonCodecFileSuffix ends the name of the file declaring the JSON codec setting, after
+	// the helper prefix.
+	jsonCodecFileSuffix = "_json_codec.go"
+
+	// NullPgxFileSuffix ends the name of the file holding the pgx scanner methods of the
+	// generated Null type, after the helper prefix.
+	NullPgxFileSuffix = "_null_pgx.go"
 )
 
 var (
@@ -52,8 +64,8 @@ var (
 	// or arguments. Reservation tests check the list against generated code.
 	defaultLocals = []string{
 		"args", "batch", "builder", "chunk", "ctx", "db", "end", "entry", "err", "exists", "filter",
-		"groupIndex", "item", "offset", "pagination",
-		"query", "raw", "results", "row", "rows", "values", "yield",
+		"groupIndex", "item", "offset", "owns", "pagination",
+		"query", "raw", "results", "row", "rows", "scanned", "values", "yield",
 	}
 
 	// defaultDeclarations lists the package-level identifiers the built-in emitters declare
@@ -63,6 +75,7 @@ var (
 		"DBTX", "New", "NewWithReplica", "OrderAsc", "OrderDesc", "OrderDirection", "Prepare",
 		"PreparedDBTX", "Queries", "dbtxWrapper", "preparedTx", "queryNameMap", "queryNamePrefixNames",
 		"queryNamePrefixes",
+		"JSONCodec", "SetJSONCodec",
 	}
 
 	// defaultHelperSuffixes lists helper declarations named with the configured prefix.
@@ -88,39 +101,53 @@ var (
 		"ClickHouseComposite",
 		"ClickHouseDigitGroup", "ClickHouseDocumentDepth", "ClickHouseDocumentText", "ClickHouseDuration", "ClickHouseEncoded",
 		"ClickHouseEncodedDocument", "ClickHouseEpoch",
-		"ClickHouseFollow", "ClickHouseHasText",
+		"ClickHouseFollow", "ClickHouseHasText", "ClickHouseHoldsNull",
 		"ClickHouseIsNumber", "ClickHouseIsNumberText", "ClickHouseLoose", "ClickHouseLooseDocument", "ClickHouseLooseInterface",
 		"ClickHouseLooseList", "ClickHouseLooseMap", "ClickHouseLooseType", "ClickHouseMaxDepth", "ClickHouseMayHold",
 		"ClickHouseMethods",
-		"ClickHouseMoment", "ClickHouseNanosecondDigits", "ClickHouseNullable", "ClickHouseNumber", "ClickHouseParseShape",
+		"ClickHouseMoment", "ClickHouseNanosecondDigits", "ClickHouseNullable", "ClickHouseNumber", "ClickHouseParseShape", "ClickHouseFloatValue", "ClickHouseNumberText", "ClickHouseFloatBits",
 		"ClickHouseQuotedEscaper", "ClickHouseReadElement", "ClickHouseReadElements", "ClickHouseReadName",
 		"ClickHouseReadShape", "ClickHouseRefusalCleaner", "ClickHouseResolve", "ClickHouseScalar",
 		"ClickHouseShape", "ClickHouseShapedValue", "ClickHouseShapes", "ClickHouseText", "ClickHouseTextEscaper", "ClickHouseTime",
 		"ClickHouseTupleElements", "ClickHouseUnsigned", "ClickHouseValue", "ClickHouseWhole", "ClickHouseWritesDurations",
 		"ColumnExpressionRegex", "ConvertStringMap", "ConvertStringPointers", "ConvertStrings", "DecodeEngineJSON", "DecodeJSONColumn", "Dereference", "DriverBasic",
-		"DriverBinary", "DriverComposite", "DriverCompositeMap", "DriverCompositeScanner", "DriverCompositeSlice",
+		"DriverBinary", "BinaryArguments", "NilBinary", "BinaryPointerBound", "DriverComposite", "DriverCompositeMap", "DriverCompositeScanner", "DriverCompositeSlice",
 		"DriverCompositeStruct", "DriverConvert", "DriverDecimalText", "DriverDecimalValue", "DriverField", "DriverFieldName", "DriverJSON",
 		"DriverInferredList", "DriverIntervalClock", "DriverIntervalPart", "DriverIntervalText", "DriverList",
 		"DriverMaxDepth", "DriverNumberType", "DriverReadsDocuments", "DriverReadsOwnTypes", "DriverRefusal", "DriverText",
-		"DriverTooDeep", "DriverValue", "Edit", "EmptyExclusion", "EmptyMembership", "EngineJSONElements", "EngineJSONText", "EngineJSONValue", "ExtractColumnRoot",
-		"Filter", "FilterCount", "FilterInto", "MapEntries", "OrderedMap", "ReadList", "ReadMap", "ReadScalar", "ScalarHolds", "ScalarKind",
+		"DriverNullValue", "DriverTooDeep", "DriverUnsigned", "DecimalBase", "IsFloat", "IntDigits", "NullsFirstByDefault", "UnsignedDecimalBase", "UnsignedArguments", "UnsignedScalar", "DriverValue",
+		"Edit", "EmptyExclusion", "EmptyMembership", "EngineJSONElements", "EngineJSONText", "EngineJSONValue", "ExtractColumnRoot",
+		"Filter", "FilterCount", "FilterInto", "WriteFilterValue", "FilterFloat", "FilterFloatDepth", "FilterFloat32Bits",
+		"MapEntries", "OrderedMap", "ReadList", "ReadMap", "ReadScalar", "ScalarHolds", "ScalarKind",
 		"Unreadable", "IsMultiOperator", "IsUnaryOperator", "JSONDocument", "JSONElementNulls", "JSONNull", "JSONNulls", "JSONScanner",
 		"JSONValueNulls", "LimitAfter",
+		"JSONCodecHolder", "JSONCodecInUse", "JSONDecodedTypes", "JSONMarshal", "JSONPretoucher", "JSONUnmarshal",
+		"JSONRefusals", "JSONRefusesNulls", "JSONRefusesNullsIn",
+		"ArrayBool", "ArrayElement", "ArrayFloat", "ArrayInteger", "ArrayItem", "ArrayItems", "ArrayNextItem", "ArrayQuotedItem",
+		"ArrayScanner", "ArraySpace", "ArrayText", "FillArray", "FillArrayPointers", "FillArrayValues", "ScanArray", "EndedWith", "StatementClosed",
+		"ArrayAfterItem", "ArrayNarrowBits", "ArrayWideBits",
+		"ArrayLiteral", "NonNil", "ArrayLiteralBase", "ArrayLiteralDigits", "ArrayLiteralSize", "LiteralElement", "WriteArrayDereferenced", "WriteArrayElement", "WriteArrayPointer",
+		"WriteArrayText",
+		"DuckDBAppend", "DuckDBAppendChunk", "DuckDBAppendRow", "DuckDBAppender", "DuckDBContextRows",
+		"ClickHouseBatch", "ClickHouseBatches",
 		"LimitBefore", "List", "ListNumbered", "ListPrefix", "ListSuffix", "ListSuffixed",
 		"ListMark", "MaxBindVariables", "MaxColumnExpressionLength", "MicrosecondsPerHour",
-		"MicrosecondsPerMinute", "MicrosecondsPerSecond", "Minus", "MonthsPerYear", "MultiValueLen", "NewOrder",
-		"NewPredicate", "NormaliseDirection", "OffsetAfter", "OffsetBefore", "Order", "OverrideJSONScanner", "OverrideScanner",
+		"MicrosecondsPerMinute", "MicrosecondsPerSecond", "Minus", "MonthsPerYear", "MultiValueLen",
+		"NarrowNumber", "NewOrder", "NullStoreFloat", "NullStoreInteger", "NumberScanner",
+		"ScanNumber", "StoreExact",
+		"NewPredicate", "PredicateBare", "PredicateList", "PredicateScalar", "PredicateShape", "NormaliseDirection", "OffsetAfter", "OffsetBefore", "Order", "OverrideJSONScanner", "OverrideScanner",
 		"Pagination", "PaginationCount", "PaginationInto", "Predicate", "ReadClickHouseDocuments", "ReadClickHouseLooseText", "ReadClickHouseText",
 		"ReadDriverDecimal", "ReadDriverLeaf", "ReadDriverNull",
 		"ReadDriverShape", "ReadDriverStruct", "ReadDriverValue", "ReadOverride",
 		"ReadOverrideJSON", "ReadOverrideText", "ReflectSlice", "ResolveColumn", "ScanDriverComposite", "ScanInto",
 		"ScanOverride", "ScanOverrideJSON", "SimpleColumn", "Splice", "SplitCast", "UnboundedLimit", "UnmarshalsJSON", "UnmarshalsText",
 		"WhereClose", "WhereOpen", "WrapError", "WrapResult", "WriteBindPlaceholder",
+		"OrderAscending", "OrderDescending", "OrderGap", "OrderSeparator",
 	}
 
 	// defaultSentinelSuffixes lists the unexported sentinel errors the built-in emitters
 	// name err and the helper prefix in Go casing, so sgl gives errSglClickHouseValue.
-	defaultSentinelSuffixes = []string{"ClickHouseAppend", "ClickHouseShape", "ClickHouseValue"}
+	defaultSentinelSuffixes = []string{"ArrayText", "ClickHouseAppend", "ClickHouseShape", "ClickHouseValue"}
 
 	// defaultErrorValueSuffixes lists the exported error values the built-in emitters name
 	// Err and the error prefix in Go casing, so sgl gives ErrSglUnknownColumn.
@@ -129,13 +156,17 @@ var (
 	// defaultMethods lists the methods and fields the built-in emitters declare on Queries.
 	defaultMethods = []string{"RunInTx", "WithTx", "db", "reader", "wrapDBTX", "wrapper", "writer"}
 
+	// prefixedFileSuffixes lists the ends of the file names the built-in emitters write
+	// after the helper prefix.
+	prefixedFileSuffixes = []string{inlineJSONFileSuffix, inlineNullFileSuffix, NullPgxFileSuffix, jsonCodecFileSuffix}
+
 	// defaultFiles lists the files the built-in emitters write besides the query files and
 	// the inline JSON file, whose name starts with the helper prefix.
 	defaultFiles = []string{
-		"bind_limits.go", "clickhouse_appending.go", "clickhouse_composites.go", "clickhouse_documents.go", "clickhouse_values.go",
-		"convert_strings.go", "driver_composites.go", "error_wrapping.go",
+		"bind_limits.go", "clickhouse_appending.go", "clickhouse_batches.go", "clickhouse_composites.go", "clickhouse_documents.go", "clickhouse_values.go",
+		"convert_strings.go", "driver_composites.go", "duckdb_appending.go", "error_wrapping.go",
 		"driver_values.go", "models.go", "prepared.go", "querier.go", interfaceFile, "runtime_helpers.go",
-		"slice_helpers.go", "sortable.go", "value_reading.go",
+		"array_literals.go", "required_slices.go", "scan_arrays.go", "scan_numbers.go", "slice_helpers.go", "sortable.go", "value_reading.go",
 	}
 )
 
@@ -171,13 +202,17 @@ func DefaultReservation(_ *dialect.Facts, style *emit.Style) emit.Reservation {
 	for _, suffix := range defaultErrorValueSuffixes {
 		declarations = append(declarations, errorValuePrefix+goast.SnakeToPascalCase(style.ErrorPrefix)+suffix)
 	}
+	files := slices.Clone(defaultFiles)
+	for _, suffix := range prefixedFileSuffixes {
+		files = append(files, style.HelperPrefix+suffix)
+	}
 	return emit.Reservation{
 		Receiver:     defaultReceiver,
 		Locals:       slices.Clone(defaultLocals),
 		Imports:      defaultImports(style),
 		Declarations: declarations,
 		Methods:      slices.Clone(defaultMethods),
-		Files:        append(slices.Clone(defaultFiles), style.HelperPrefix+inlineJSONFileSuffix),
+		Files:        files,
 	}
 }
 

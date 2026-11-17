@@ -1,0 +1,2 @@
+CREATE TABLE a (k INT PRIMARY KEY, v INT);
+CREATE VIEW full_list (x, y) AS SELECT k, v FROM a;

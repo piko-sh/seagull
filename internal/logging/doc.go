@@ -19,7 +19,13 @@
 // Package logging carries the logger a host attaches to a context.
 //
 // Seagull logs warnings and errors by default, with Debug, LevelInternal and LevelTrace
-// detail for diagnosing the analyser. It resolves the logger per call rather than
+// detail for diagnosing the analyser. It resolves the logger from the context rather than
 // capturing one at construction, so a host can scope a logger to a single generation or
-// migration run and still have later calls honour a changed process default.
+// migration run. From binds the resolved logger into the context it returns, so one call
+// chain shares one logger, and a chain started after the host changes the process default
+// honours the new default.
+//
+// A logger the caller binds into the context wins over one configured on a generator or
+// migrator, which applies it with WithFallbackLogger. Records logged before any context
+// exists can be kept in a Deferred and replayed through the first call's logger.
 package logging

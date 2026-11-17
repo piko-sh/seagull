@@ -75,27 +75,7 @@ func (c connection) QueryRowContext(ctx context.Context, query string, arguments
 	return c.DB.QueryRowContext(ctx, query, arguments...)
 }
 
-// run prices the fish, lands three catches and reads the market back, all through the SQL
-// functions that migration 0002 creates. Seagull reads each CREATE FUNCTION when it
-// builds the schema: the argument and return types type the queries that call it, and
-// what it says about data access, along with what its body does, decides whether those
-// queries are read-only, which picks the writer or the reader.
-//
-//   - land_catch says MODIFIES SQL DATA and its body inserts a row, so LandCatch goes to
-//     the writer. Its body is a BEGIN ... END block, which a migration can hold without
-//     DELIMITER, as Seagull splits the file into statements itself;
-//   - price_pence says NO SQL, so BoatHaul, which calls it, goes to the reader;
-//   - species_price says MODIFIES SQL DATA, which Seagull takes to mean it writes, but
-//     its body only reads. MySQL never checks these characteristics against the body. The
-//     sgl.migration(readonly: true) line above it in the migration says so, and
-//     SpeciesPrice goes to the reader.
-//
-// With binary logging on, as it is by default, MySQL refuses a function that is not
-// DETERMINISTIC, NO SQL or READS SQL DATA, so the two MODIFIES SQL DATA functions are
-// declared DETERMINISTIC too.
-//
-// A function's result can be NULL, so the columns are pointers: species_price finds no
-// row for a fish with no price.
+// run calls migration-defined SQL functions to price fish landings.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes output (io.Writer) which receives each call's connection and result.
@@ -137,11 +117,11 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 		if err != nil {
 			return fmt.Errorf("pricing %s: %w", species, err)
 		}
-		if price.PencePerKilo == nil {
+		if !price.PencePerKilo.Valid {
 			fmt.Fprintf(output, "SpeciesPrice on the %s: %s has no price\n", last, species)
 			continue
 		}
-		fmt.Fprintf(output, "SpeciesPrice on the %s: %s fetches %dp a kilo\n", last, species, *price.PencePerKilo)
+		fmt.Fprintf(output, "SpeciesPrice on the %s: %s fetches %dp a kilo\n", last, species, price.PencePerKilo.V)
 	}
 
 	haul, err := queries.BoatHaul(ctx, "Kittiwake")
@@ -155,14 +135,14 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 	return nil
 }
 
-// orNull formats a nullable field, or returns NULL when the field is nil.
+// orNull formats a nullable field, or returns NULL when it holds none.
 //
-// Takes value (*T) which is a nullable field.
+// Takes value (store.Null[T]) which is a nullable field.
 //
 // Returns string which is the text to print.
-func orNull[T any](value *T) string {
-	if value == nil {
+func orNull[T any](value store.Null[T]) string {
+	if !value.Valid {
 		return "NULL"
 	}
-	return fmt.Sprint(*value)
+	return fmt.Sprint(value.V)
 }

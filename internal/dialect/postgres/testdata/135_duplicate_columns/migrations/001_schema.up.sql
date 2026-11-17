@@ -1,0 +1,1 @@
+CREATE TABLE dup (id INT PRIMARY KEY, a INT, A INT);

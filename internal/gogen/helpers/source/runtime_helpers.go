@@ -19,8 +19,10 @@
 package source
 
 import (
+	"database/sql/driver"
 	"errors"
 	"fmt"
+	"math"
 	"reflect"
 	"regexp"
 	"slices"
@@ -44,10 +46,65 @@ const sglBindSuffix = ""
 //sgl:inline numbered
 const sglBindNumbered = true
 
+// sglBindFloatAsText preserves subnormal floats with a native cast from text.
+//
+//sgl:inline castFloats
+const sglBindFloatAsText = true
+
+// sglFilterFloatDepth bounds pointer traversal in runtime filter values.
+const sglFilterFloatDepth = 32
+
+// sglFilterFloat32Bits is the native width of a Go float32.
+const sglFilterFloat32Bits = 32
+
+// sglDecimalBase is the base placeholder numbers and float bits are written in.
+const sglDecimalBase = 10
+
+// sglIntDigits is the most bytes an int is written in, the length of the smallest int64.
+const sglIntDigits = len("-9223372036854775808")
+
 // sglOffsetFirst writes the offset clause before the limit clause.
 //
 //sgl:inline offsetFirst
 const sglOffsetFirst = false
+
+// sglNullsFirstAscending reports whether NULL sorts first in an ascending key with no
+// placement.
+//
+//sgl:inline nullsFirstAscending
+const sglNullsFirstAscending = false
+
+// sglNullsFirstDescending reports whether NULL sorts first in a descending key with no
+// placement.
+//
+//sgl:inline nullsFirstDescending
+const sglNullsFirstDescending = true
+
+// sglNullsByIsNull reports an engine without NULLS FIRST and NULLS LAST, whose placement
+// other than its own is written as a key on whether the column is NULL.
+//
+//sgl:inline nullsByIsNull
+const sglNullsByIsNull = false
+
+// sglDistinctNullsDefaultOnly reports an engine that refuses a placement other than its
+// own in a SELECT DISTINCT.
+//
+//sgl:inline distinctNullsDefaultOnly
+const sglDistinctNullsDefaultOnly = false
+
+const (
+	// sglOrderAscending is the SQL ascending direction.
+	sglOrderAscending = "ASC"
+
+	// sglOrderDescending is the SQL descending direction.
+	sglOrderDescending = "DESC"
+
+	// sglOrderGap separates an ordering key from its direction.
+	sglOrderGap = " "
+
+	// sglOrderSeparator separates ordering keys.
+	sglOrderSeparator = ", "
+)
 
 // sglMaxColumnExpressionLength bounds the column-expression string the validator regex
 // evaluates. RE2 is linear-time but the bare-identifier alternation tolerates arbitrary
@@ -92,6 +149,21 @@ const sglOffsetAfter = " ROWS"
 //
 //sgl:data unboundedLimit
 const sglUnboundedLimit = ""
+
+// sglPredicateShape says what a condition writes after its operator.
+type sglPredicateShape uint8
+
+const (
+	// sglPredicateBare writes nothing after the operator. It is a unary operator, or the
+	// test written for an empty list.
+	sglPredicateBare sglPredicateShape = iota
+
+	// sglPredicateScalar writes one placeholder for its value.
+	sglPredicateScalar
+
+	// sglPredicateList writes a placeholder for each of its values, in parentheses.
+	sglPredicateList
+)
 
 // ErrSglUnknownColumn is returned by a runtime builder's All, One or Count terminal when
 // Where or OrderBy was given a column the query does not select. Callers can match it
@@ -175,18 +247,40 @@ var sglCastAfter = []string{")"}
 //sgl:data castTypes
 var sglCastTypes = []string{"WHOLE", "TEXT"}
 
-// sglPredicate is one condition a runtime builder's Where adds: its text up to its value,
-// and the values it binds, written after it as one placeholder, as a list of them in
-// parentheses, or not at all.
+// sglPredicate holds one condition added by a runtime builder's Where.
+//
+// A scalar value stays outside a slice so adding a scalar condition does not allocate.
 type sglPredicate struct {
-	// text is the validated condition prefix or complete unary expression.
-	text string
+	// value is the argument a scalar condition binds.
+	value any
 
-	// values holds the arguments bound by the condition.
+	// column is the validated column expression.
+	column string
+
+	// operator is the operator as the caller wrote it, or the dialect's test for an empty
+	// list.
+	operator string
+
+	// values holds the arguments a list condition binds.
 	values []any
 
-	// list reports whether the values require a parenthesised list.
-	list bool
+	// shape says what the condition writes after its operator.
+	shape sglPredicateShape
+}
+
+// bound returns how many arguments a condition binds.
+//
+// Returns int which is one for a scalar, the list's length for a list, and zero
+// otherwise.
+func (predicate *sglPredicate) bound() int {
+	switch predicate.shape {
+	case sglPredicateScalar:
+		return 1
+	case sglPredicateList:
+		return len(predicate.values)
+	default:
+		return 0
+	}
 }
 
 // sglNormaliseDirection trims surrounding whitespace and folds the caller-supplied
@@ -205,7 +299,9 @@ func sglNormaliseDirection(direction string) string {
 // expression with its column replaced by the column's qualified source, and any
 // conversion written in the dialect's own spelling.
 //
-// An expression holding a backslash or a NUL is refused whatever the grammar allows.
+// A selected column's exact name resolves to that column before the grammar applies, so a
+// column whose name holds a dot or another character the grammar reads is still found. An
+// expression holding a backslash or a NUL is refused whatever the grammar allows.
 //
 // Takes column (string) which is the requested column expression.
 // Takes allowed (map[string]string) which maps permitted column names to their SQL
@@ -219,8 +315,7 @@ func sglResolveColumn(column string, allowed map[string]string) (string, bool) {
 	if len(trimmed) > sglMaxColumnExpressionLength || strings.ContainsAny(trimmed, unsafeText) {
 		return "", false
 	}
-	if sglSimpleColumn(trimmed) {
-		resolved, ok := allowed[trimmed]
+	if resolved, ok := allowed[trimmed]; ok || sglSimpleColumn(trimmed) {
 		return resolved, ok
 	}
 	if !sglColumnExpressionRegex.MatchString(trimmed) {
@@ -457,10 +552,9 @@ func sglNewPredicate(column, operator string, value any, allowed map[string]stri
 	if !sglAllowedOperators[operator] {
 		return sglPredicate{}, ErrSglUnknownOperator
 	}
-	const space = " "
 	switch {
 	case sglIsUnaryOperator(operator):
-		return sglPredicate{text: resolved + space + operator, values: nil, list: false}, nil
+		return sglPredicate{value: nil, column: resolved, operator: operator, values: nil, shape: sglPredicateBare}, nil
 	case sglIsMultiOperator(operator):
 		count := sglMultiValueLen(value)
 		if count > sglMaxBindVariables {
@@ -471,26 +565,33 @@ func sglNewPredicate(column, operator string, value any, allowed map[string]stri
 			if strings.EqualFold(strings.TrimSpace(operator), "NOT IN") {
 				empty = sglEmptyExclusion
 			}
-			return sglPredicate{text: resolved + space + empty, values: nil, list: false}, nil
+			return sglPredicate{value: nil, column: resolved, operator: empty, values: nil, shape: sglPredicateBare}, nil
 		}
-		return sglPredicate{text: resolved + space + operator + space, values: sglReflectSlice(value), list: true}, nil
+		return sglPredicate{value: nil, column: resolved, operator: operator, values: sglReflectSlice(value), shape: sglPredicateList}, nil
 	default:
-		return sglPredicate{text: resolved + space + operator + space, values: []any{value}, list: false}, nil
+		return sglPredicate{value: value, column: resolved, operator: operator, values: nil, shape: sglPredicateScalar}, nil
 	}
 }
 
-// sglNewOrder checks a caller's ordering and returns the SQL to write for it: the column
-// must be one the query selects and the direction one the allow-list holds, whatever its
-// case. The error is ErrSglUnknownColumn or ErrSglUnknownDirection.
+// sglNewOrder validates an ordering and returns its SQL expression.
+//
+// The column must be selected by the query and the direction must be allowed, regardless
+// of case. A failed check returns ErrSglUnknownColumn or ErrSglUnknownDirection.
+//
+// A NULL placement the engine gives anyway is left out, so it runs everywhere, a SELECT
+// DISTINCT included. Another is written with NULLS FIRST or NULLS LAST. An engine without
+// them gets a key on whether the column is NULL. An engine that refuses such a placement
+// in a SELECT DISTINCT gets ErrSglUnknownDirection there.
 //
 // Takes column (string) which is the requested column expression.
 // Takes direction (string) which is the requested ordering direction.
 // Takes allowed (map[string]string) which maps permitted column names to their SQL
 // expressions.
+// Takes distinct (bool) which is true for a query that selects DISTINCT rows.
 //
 // Returns string which is the validated ordering expression.
 // Returns error when the column or direction is not allowed.
-func sglNewOrder(column, direction string, allowed map[string]string) (string, error) {
+func sglNewOrder(column, direction string, allowed map[string]string, distinct bool) (string, error) {
 	resolved, ok := sglResolveColumn(column, allowed)
 	if !ok {
 		return "", ErrSglUnknownColumn
@@ -499,7 +600,40 @@ func sglNewOrder(column, direction string, allowed map[string]string) (string, e
 	if !sglAllowedDirections[normalised] {
 		return "", ErrSglUnknownDirection
 	}
-	return resolved + " " + normalised, nil
+	order, placement, placed := strings.Cut(normalised, " NULLS ")
+	if !placed {
+		return resolved + sglOrderGap + order, nil
+	}
+	nullsFirst := placement == "FIRST"
+	if nullsFirst == sglNullsFirstByDefault(order) {
+		return resolved + sglOrderGap + order, nil
+	}
+	switch {
+	case distinct && sglDistinctNullsDefaultOnly:
+		return "", fmt.Errorf("%w: the engine cannot place NULLs %s in a SELECT DISTINCT, as the placement is not in its select list",
+			ErrSglUnknownDirection, strings.ToLower(placement))
+	case sglNullsByIsNull:
+		nullOrder := sglOrderAscending
+		if nullsFirst {
+			nullOrder = sglOrderDescending
+		}
+		return "(" + resolved + " IS NULL) " + nullOrder + sglOrderSeparator + resolved + sglOrderGap + order, nil
+	default:
+		return resolved + sglOrderGap + normalised, nil
+	}
+}
+
+// sglNullsFirstByDefault reports whether the engine sorts NULL first in a key with a
+// direction and no placement.
+//
+// Takes order (string) which is ASC or DESC.
+//
+// Returns bool which is true when NULL comes first.
+func sglNullsFirstByDefault(order string) bool {
+	if order == sglOrderAscending {
+		return sglNullsFirstAscending
+	}
+	return order == sglOrderDescending && sglNullsFirstDescending
 }
 
 // sglWriteBindPlaceholder appends a placeholder without allocating its digits.
@@ -507,11 +641,10 @@ func sglNewOrder(column, direction string, allowed map[string]string) (string, e
 // Takes builder (*strings.Builder) which receives the placeholder text.
 // Takes number (int) which is the placeholder's one-based binding number.
 func sglWriteBindPlaceholder(builder *strings.Builder, number int) {
-	const decimalBase = 10
 	builder.WriteString(sglBindPrefix)
 	if sglBindNumbered {
-		var digits [20]byte
-		builder.Write(strconv.AppendInt(digits[:0], int64(number), decimalBase))
+		var digits [sglIntDigits]byte
+		builder.Write(strconv.AppendInt(digits[:0], int64(number), sglDecimalBase))
 	}
 	builder.WriteString(sglBindSuffix)
 }
@@ -523,8 +656,8 @@ func sglWriteBindPlaceholder(builder *strings.Builder, number int) {
 // Returns int which is the total number of filter arguments.
 func sglFilterCount(predicates []sglPredicate) int {
 	count := 0
-	for _, predicate := range predicates {
-		count += len(predicate.values)
+	for index := range predicates {
+		count += predicates[index].bound()
 	}
 	return count
 }
@@ -554,39 +687,72 @@ func sglFilter(predicates []sglPredicate, next int) (string, []any) {
 // Returns string which is the conditions joined with AND, or empty for no conditions.
 // Returns []any which holds the argument buffer with filter values appended.
 func sglFilterInto(predicates []sglPredicate, next int, values []any) (string, []any) {
-	const decimalBase = 10
 	var builder strings.Builder
 	start := len(values)
 	size := 0
 	width := len(sglBindPrefix) + len(sglBindSuffix) + 2
 	if sglBindNumbered {
-		var digits [20]byte
-		width += len(strconv.AppendInt(digits[:0], int64(next+sglFilterCount(predicates)-1), decimalBase))
+		var digits [sglIntDigits]byte
+		width += len(strconv.AppendInt(digits[:0], int64(next+sglFilterCount(predicates)-1), sglDecimalBase))
 	}
-	for _, predicate := range predicates {
-		size += len(predicate.text) + len(" AND ()") + len(predicate.values)*width
+	for index := range predicates {
+		predicate := &predicates[index]
+		size += len(predicate.column) + len(predicate.operator) + len(" AND   ()") + predicate.bound()*width
 	}
 	builder.Grow(size)
-	for index, predicate := range predicates {
+	for index := range predicates {
+		predicate := &predicates[index]
 		if index > 0 {
 			builder.WriteString(" AND ")
 		}
-		builder.WriteString(predicate.text)
-		if predicate.list {
-			builder.WriteString("(")
-		}
-		for position, value := range predicate.values {
-			if position > 0 {
-				builder.WriteString(", ")
+		builder.WriteString(predicate.column)
+		builder.WriteByte(' ')
+		builder.WriteString(predicate.operator)
+		switch predicate.shape {
+		case sglPredicateScalar:
+			builder.WriteByte(' ')
+			values = append(values, sglWriteFilterValue(&builder, next+len(values)-start, predicate.value))
+		case sglPredicateList:
+			builder.WriteString(" (")
+			for position, value := range predicate.values {
+				if position > 0 {
+					builder.WriteString(", ")
+				}
+				values = append(values, sglWriteFilterValue(&builder, next+len(values)-start, value))
 			}
-			sglWriteBindPlaceholder(&builder, next+len(values)-start)
-			values = append(values, value)
-		}
-		if predicate.list {
-			builder.WriteString(")")
+			builder.WriteByte(')')
+		default:
 		}
 	}
 	return builder.String(), values
+}
+
+// sglWriteFilterValue writes a placeholder and adapts its floating-point value.
+//
+// Takes builder (*strings.Builder) which receives the SQL expression.
+// Takes next (int) which numbers the placeholder.
+// Takes value (any) which holds the filter argument.
+//
+// Returns any which preserves the value through the native driver.
+func sglWriteFilterValue(builder *strings.Builder, next int, value any) any {
+	if sglBindFloatAsText {
+		current, original := sglFilterFloat(value)
+		value = original
+		if sglIsFloat(current) {
+			bits := current.Type().Bits()
+			number := math.Float64bits(current.Float())
+			if bits == sglFilterFloat32Bits {
+				number = uint64(math.Float32bits(float32(current.Float())))
+			}
+			width := strconv.Itoa(bits)
+			builder.WriteString("reinterpretAsFloat" + width + "(CAST(")
+			sglWriteBindPlaceholder(builder, next)
+			builder.WriteString(" AS UInt" + width + "))")
+			return strconv.FormatUint(number, sglDecimalBase)
+		}
+	}
+	sglWriteBindPlaceholder(builder, next)
+	return value
 }
 
 // sglWhereOpen returns the edit that opens the parentheses around the condition a query
@@ -699,7 +865,8 @@ func sglPaginationInto(limit, offset, next int, values []any) (string, []any) {
 		return "", values
 	}
 	var builder strings.Builder
-	builder.Grow(len(sglLimitBefore) + len(sglLimitAfter) + len(sglOffsetBefore) + len(sglOffsetAfter) + len(sglUnboundedLimit) + 2*(len(sglBindPrefix)+len(sglBindSuffix)+21))
+	clause := len(" ") + len(sglBindPrefix) + len(sglBindSuffix) + sglIntDigits
+	builder.Grow(len(sglLimitBefore) + len(sglLimitAfter) + len(sglOffsetBefore) + len(sglOffsetAfter) + len(sglUnboundedLimit) + 2*clause)
 	start := len(values)
 	write := func(before, after string, value int) {
 		builder.WriteByte(' ')
@@ -746,4 +913,41 @@ func sglAt(text string, at int) []sglEdit {
 		return nil
 	}
 	return []sglEdit{{Text: text, Start: at, End: at}}
+}
+
+// sglIsFloat reports whether a filter value is a floating-point number.
+//
+// Takes value (reflect.Value) which is the value, or an invalid one for NULL.
+//
+// Returns bool which is true for a float32 or a float64 kind.
+func sglIsFloat(value reflect.Value) bool {
+	if !value.IsValid() {
+		return false
+	}
+	kind := value.Kind()
+	return kind == reflect.Float32 || kind == reflect.Float64
+}
+
+// sglFilterFloat follows scalar pointers without changing unrelated argument values.
+//
+// Takes value (any) which is the supplied runtime filter value.
+//
+// Returns reflect.Value which exposes a scalar or an invalid value for NULL.
+// Returns any which preserves the original argument or normalises a nil pointer.
+func sglFilterFloat(value any) (reflect.Value, any) {
+	current := reflect.ValueOf(value)
+	for depth := 0; current.IsValid() && depth < sglFilterFloatDepth; depth++ {
+		pointer := current.Kind() == reflect.Pointer || current.Kind() == reflect.Interface
+		if pointer && current.IsNil() {
+			return reflect.Value{}, nil
+		}
+		if _, ok := reflect.TypeAssert[driver.Valuer](current); ok {
+			return reflect.Value{}, value
+		}
+		if !pointer {
+			break
+		}
+		current = current.Elem()
+	}
+	return current, value
 }

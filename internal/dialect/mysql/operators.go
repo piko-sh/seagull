@@ -127,7 +127,7 @@ func (engine *Dialect) binaryResult(operator string, left, right sqlmodel.SQLTyp
 func (engine *Dialect) temporalDifferenceResult(left, right sqlmodel.SQLType) sqlmodel.SQLType {
 	scale := max(fractionalSeconds(left), fractionalSeconds(right))
 	if scale == 0 {
-		return engine.NormaliseTypeName("bigint")
+		return engine.NormaliseTypeName(bigintTypeName)
 	}
 	difference := engine.NormaliseTypeName("decimal")
 	difference.Scale = &scale
@@ -167,23 +167,25 @@ func (engine *Dialect) integerDivisionResult(left, right sqlmodel.SQLType) sqlmo
 	if left.Unsigned || right.Unsigned {
 		return engine.NormaliseTypeName("bigint unsigned")
 	}
-	return engine.NormaliseTypeName("bigint")
+	return engine.NormaliseTypeName(bigintTypeName)
 }
 
-// unaryResult types NOT as a boolean that is NULL when its operand is and ~ as a BIGINT
-// UNSIGNED, and leaves every other prefix operator to the structural default.
+// unaryResult types Boolean, bitwise and integer negation operators.
 //
 // Takes operator (string) which is the operator.
+// Takes operand (sqlmodel.SQLType) which is the operand's type.
 //
 // Returns sqlmodel.SQLType which is the result's type.
 // Returns sqlmodel.FunctionNullableBehaviour which says when the result is NULL.
 // Returns bool which is false for an operator left to the structural default.
-func (engine *Dialect) unaryResult(operator string) (sqlmodel.SQLType, sqlmodel.FunctionNullableBehaviour, bool) {
+func (engine *Dialect) unaryResult(operator string, operand sqlmodel.SQLType) (sqlmodel.SQLType, sqlmodel.FunctionNullableBehaviour, bool) {
 	switch {
 	case strings.EqualFold(operator, keywordNOT):
 		return engine.NormaliseTypeName("boolean"), sqlmodel.FunctionNullableReturnsNullOnNull, true
 	case operator == "~":
 		return engine.NormaliseTypeName("bigint unsigned"), sqlmodel.FunctionNullableReturnsNullOnNull, true
+	case operator == "-" && operand.Category == sqlmodel.TypeCategoryInteger:
+		return engine.NormaliseTypeName(bigintTypeName), sqlmodel.FunctionNullableReturnsNullOnNull, true
 	default:
 		return sqlmodel.SQLType{}, sqlmodel.FunctionNullableReturnsNullOnNull, false
 	}

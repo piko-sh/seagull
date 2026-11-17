@@ -21,5 +21,5 @@ type Landings struct {
 	OnIce    bool            `json:"on_ice"`
 	LandedAt time.Time       `json:"landed_at"`
 	Tag      string          `json:"tag"`
-	Notes    *string         `json:"notes"`
+	Notes    Null[string]    `json:"notes"`
 }

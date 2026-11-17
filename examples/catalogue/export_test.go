@@ -147,6 +147,41 @@ func TestExportCopiesEveryVariantAndWritesTheManifest(t *testing.T) {
 	require.Len(t, written.Concepts, 1)
 }
 
+func TestExportPartialSkipsAVariantThatIsNotReady(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		spoil func(t *testing.T, examples string)
+	}{
+		{name: "a missing variant directory", spoil: func(t *testing.T, examples string) {
+			t.Helper()
+			require.NoError(t, os.RemoveAll(filepath.Join(examples, "sqlite", "001_first_query")))
+		}},
+		{name: "a variant without its example.yaml", spoil: func(t *testing.T, examples string) {
+			t.Helper()
+			require.NoError(t, os.Remove(filepath.Join(examples, "sqlite", "001_first_query", VariantFile)))
+		}},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			examples := writeExamples(t, nil)
+			test.spoil(t, examples)
+
+			_, err := Export(t.Context(), examples, filepath.Join(t.TempDir(), "full"))
+			require.Error(t, err)
+
+			manifest, err := ExportPartial(t.Context(), examples, filepath.Join(t.TempDir(), "partial"))
+			require.NoError(t, err)
+			require.Len(t, manifest.Variants, 1)
+			require.Equal(t, "postgres/001_first_query", manifest.Variants[0].Directory)
+			require.Len(t, manifest.Concepts, 1)
+		})
+	}
+}
+
 func TestExportRefusesWhatItCannotExport(t *testing.T) {
 	t.Parallel()
 

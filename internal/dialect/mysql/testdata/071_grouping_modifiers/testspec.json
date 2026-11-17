@@ -1,0 +1,4 @@
+{
+  "description": "MySQL groups WITH ROLLUP and by ROLLUP (keys), each making its keys nullable, and has no CUBE or GROUPING SETS grouping.",
+  "expectedDiagnosticCount": 2
+}

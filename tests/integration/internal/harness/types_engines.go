@@ -84,7 +84,7 @@ var (
 	// duckDBTypeNames reads the names typeof gives the DuckDB fixture's numeric results.
 	duckDBTypeNames = sizedNumericTypeNames(
 		[]string{"TINYINT", "SMALLINT", "INTEGER", "BIGINT", "HUGEINT"},
-		[]string{"UTINYINT", "USMALLINT", "UINTEGER", "UBIGINT"},
+		[]string{"UTINYINT", "USMALLINT", "UINTEGER", "UBIGINT", "UHUGEINT"},
 		[]string{"FLOAT", "DOUBLE"},
 	)
 
@@ -156,7 +156,9 @@ func MySQLNumericProbes() []string {
 // Returns ReportedType which is the type.
 // Returns bool which is false for a name it does not know.
 func MySQLTypeName(name string) (ReportedType, bool) {
-	reported, known := mySQLTypeNames[strings.TrimPrefix(strings.ToUpper(strings.TrimSpace(name)), "UNSIGNED ")]
+	name, unsigned := strings.CutPrefix(strings.ToUpper(strings.TrimSpace(name)), "UNSIGNED ")
+	reported, known := mySQLTypeNames[name]
+	reported.Unsigned = unsigned && reported.Category == dialect.TypeCategoryInteger
 	return reported, known
 }
 

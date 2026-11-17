@@ -18,7 +18,7 @@ In a configured project, name the query you want to inspect:
 sgl describe ListBooksByAuthor
 ```
 
-The output includes its SQL, parameters, result columns and generated signature. In the [library example](../../examples/tooling/043_describe_and_schema), the nullable subtitle becomes `*string`, while the author-name parameter is a non-null string.
+The output includes its SQL, parameters, result columns and generated signature. In the [library example](../../examples/tooling/043_describe_and_schema), the nullable subtitle becomes `Null[string]`, while the author-name parameter is a non-null string.
 
 For machine-readable output or a project with several databases:
 

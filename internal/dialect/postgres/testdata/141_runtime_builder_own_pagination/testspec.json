@@ -1,0 +1,10 @@
+{
+  "description": "A runtime builder over a query that picks its own rows, by LIMIT, OFFSET, FETCH or DISTINCT ON, reads the statement's rows from a derived table, so Where, OrderBy, Limit, Offset and Count apply to the rows the query returns and name columns by output name. The query with a WHERE gets no Q022 hint, and each count wraps the statement.",
+  "expectedDiagnosticCount": 4,
+  "diagnostics": [
+    {"code": "Q023", "severity": "hint", "filename": "builders.sql", "onLine": 1},
+    {"code": "Q023", "severity": "hint", "filename": "builders.sql", "onLine": 4},
+    {"code": "Q023", "severity": "hint", "filename": "builders.sql", "onLine": 7},
+    {"code": "Q023", "severity": "hint", "filename": "builders.sql", "onLine": 10}
+  ]
+}

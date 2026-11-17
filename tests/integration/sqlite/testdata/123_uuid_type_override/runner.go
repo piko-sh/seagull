@@ -61,10 +61,10 @@ func main() {
 	identifier := "0b9f8e2c-6d1a-4f3e-9a7b-5c4d3e2f1a0b"
 	owner := "7d444840-9dc0-11d1-b245-5ffdce74fad2"
 	output.record("add_accounts", func() (any, error) {
-		if err := queries.AddAccount(ctx, db.AddAccountParams{ID: identifier, OwnerID: &owner, Name: "primary"}); err != nil {
+		if err := queries.AddAccount(ctx, db.AddAccountParams{ID: identifier, OwnerID: db.NullOf(owner), Name: "primary"}); err != nil {
 			return nil, err
 		}
-		return "added", queries.AddAccount(ctx, db.AddAccountParams{ID: owner, OwnerID: nil, Name: "owner"})
+		return "added", queries.AddAccount(ctx, db.AddAccountParams{ID: owner, OwnerID: db.Null[string]{}, Name: "owner"})
 	})
 	output.record("account_by_id", func() (any, error) { return queries.GetAccount(ctx, identifier) })
 	output.record("owner_by_id", func() (any, error) { return queries.GetAccount(ctx, owner) })

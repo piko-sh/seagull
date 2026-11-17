@@ -1,0 +1,4 @@
+{
+  "description": "Foreign keys follow renames: a renamed table is renamed in the foreign keys that reference it, and a renamed column is renamed in the foreign keys that reference it.",
+  "expectedDiagnosticCount": 0
+}

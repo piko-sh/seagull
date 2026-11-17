@@ -1,0 +1,4 @@
+{
+  "description": "DROP INDEX table@name CASCADE drops the unique constraint the index backs, SET DEFAULT and DROP DEFAULT change whether a column has a default, and a foreign key to another schema keeps that schema.",
+  "expectedDiagnosticCount": 0
+}

@@ -23,8 +23,7 @@
           "Category": "text",
           "EngineName": "String"
         },
-        "SourceColumn": "tag",
-        "SourceQualifier": "tag"
+        "SourceColumn": "tag"
       }
     ],
     "Parameters": [

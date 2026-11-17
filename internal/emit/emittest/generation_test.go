@@ -129,7 +129,7 @@ func TestGenerationRecordsAPanicAsTheCasesErrorAndLogsItOnce(t *testing.T) {
 
 			current := newSubject(&Suite{Name: "panics", New: testCase.emitter}, postgres.New(), &runtimeLane{})
 			var output bytes.Buffer
-			ctx := logging.ContextWithLogger(t.Context(), slog.New(slog.NewTextHandler(&output, nil)))
+			ctx := logging.WithLogger(t.Context(), slog.New(slog.NewTextHandler(&output, nil)))
 
 			first := current.generation(ctx, caseCommands)
 			again := current.generation(ctx, caseCommands)

@@ -92,7 +92,7 @@ func TestEmbedAsNamesTheNestedFieldAndType(t *testing.T) {
 	assert.Contains(t, source, "type ListEmployeesManager struct")
 	assert.Regexp(t, `\n\tManager\s+\*ListEmployeesManager\n`, source)
 	assert.Contains(t, source, "row.Manager = &ListEmployeesManager{ID: embedRows.Manager.ID, Name: embedRows.Manager.Name}")
-	assert.Contains(t, source, "if embedRows.Manager.ID != nil {")
+	assert.Contains(t, source, "if embedRows.Manager.ID.Valid {")
 	assert.NotContains(t, source, "ListEmployeesEmployees")
 }
 
@@ -120,7 +120,7 @@ FROM employees e
 LEFT JOIN employees m ON e.manager_id = m.id
 ORDER BY e.id;
 `,
-			wantScan:  "rows.Scan(&row.Report.ID, &row.Report.Name, &row.ID, &row.Name)",
+			wantScan:  "scanArgs := []any{&row.Report.ID, &row.Report.Name, &row.ID, &row.Name}",
 			wantField: `\n\tReport\s+ListEmployeesReport\n`,
 		},
 		{

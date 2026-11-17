@@ -62,7 +62,21 @@ run_modules() {
     done
 }
 
-# run_suites runs go test in every integration suite module, or in the one named.
+# suite_timeout prints the go test timeout of an integration suite. CockroachDB's schema
+# changes are slow enough that its full suite outgrows the others' limit.
+# Arguments:
+#   $1 - Suite directory, relative to SEAGULL_ROOT
+# Outputs:
+#   The timeout, such as 60m
+suite_timeout() {
+    case "$1" in
+        tests/integration/cockroachdb) printf '180m\n' ;;
+        *) printf '60m\n' ;;
+    esac
+}
+
+# run_suites runs go test in every integration suite module, or in the one named, each
+# under its own timeout.
 # Globals:
 #   INTEGRATION_DIRS - Read
 #   SEAGULL_ROOT - Read
@@ -77,8 +91,10 @@ run_suites() {
         if [[ -n "$only" && "$dir" != "tests/integration/${only}" ]]; then
             continue
         fi
-        seagull::log::info "go test -tags integration $* ($dir)"
-        ( cd "${SEAGULL_ROOT}/${dir}" && "${GO}" test -tags integration "$@" ./... ) || return 1
+        local timeout
+        timeout="$(suite_timeout "$dir")"
+        seagull::log::info "go test -tags integration $* -timeout=${timeout} ($dir)"
+        ( cd "${SEAGULL_ROOT}/${dir}" && "${GO}" test -tags integration "$@" -timeout="${timeout}" ./... ) || return 1
     done
 }
 
@@ -150,7 +166,7 @@ test_compile() {
 # Arguments:
 #   $1 - Suite to run, such as postgres (defaults to every suite)
 test_integration() {
-    run_suites "${1:-}" -count=1 -timeout=60m
+    run_suites "${1:-}" -count=1
 }
 
 # test_examples vets, builds and tests every examples module, then fails if any did.

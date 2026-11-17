@@ -26,6 +26,8 @@ import (
 	"log/slog"
 	"path"
 	"slices"
+	"strconv"
+	"strings"
 
 	"seagull.sh/seagull/internal/app"
 	"seagull.sh/seagull/internal/dialect"
@@ -156,6 +158,40 @@ func templateProblems(info *dialect.Info, caseDirectory string, query *sqlmodel.
 	if len(query.Template.Segments) == 0 {
 		return []string{where + " has no template"}
 	}
+	rendered, err := renderTemplate(info, query)
+	if err != nil {
+		return []string{fmt.Sprintf("%s: the template does not render: %v", where, err)}
+	}
+	renderedTokens, renderedErr := significantTokens(info.Lexical, rendered.SQL)
+	lexicon := syntax.Lexicon{LinePrefix: info.Comments.LinePrefix, Rules: info.Lexical}
+	kept := syntax.StripDirectives(query.SQL, lexicon, namespace.Default())
+	keptTokens, keptErr := significantTokens(info.Lexical, kept)
+	if renderedErr != nil || keptErr != nil {
+		return []string{fmt.Sprintf("%s: the rendered or kept SQL does not read under Info.Lexical", where)}
+	}
+	var problems []string
+	if bound := boundArguments(&info.Placeholders, renderedTokens); bound != len(query.Template.Arguments) {
+		problems = append(problems, fmt.Sprintf("%s: %q binds %d arguments, but the template lists %d", where, rendered.SQL, bound,
+			len(query.Template.Arguments)))
+	}
+	if !slices.Equal(textTokens(renderedTokens), textTokens(keptTokens)) {
+		problems = append(problems, fmt.Sprintf("%s: %q does not read as the kept SQL %q but for its placeholders", where, rendered.SQL, kept))
+	}
+	problems = append(problems, templateBindingProblems(info, query, rendered, keptTokens, renderedTokens)...)
+	return append(problems, templatePreservationProblems(info, query, rendered)...)
+}
+
+// renderTemplate renders a query's template in the executed form.
+//
+// A statement a builder query wraps in a derived table is unwrapped again, so it compares
+// with the SQL as written.
+//
+// Takes info (*dialect.Info) which describes the dialect.
+// Takes query (*sqlmodel.AnalysedQuery) which is the query.
+//
+// Returns emitkit.Rendered which holds the SQL and its driver arguments.
+// Returns error when the template does not render.
+func renderTemplate(info *dialect.Info, query *sqlmodel.AnalysedQuery) (emitkit.Rendered, error) {
 	renderer := &emitkit.Renderer{
 		WrapColumn:   nil,
 		Query:        query,
@@ -173,46 +209,107 @@ func templateProblems(info *dialect.Info, caseDirectory string, query *sqlmodel.
 	}
 	rendered, err := emitkit.Render(query.Template, renderer)
 	if err != nil {
-		return []string{fmt.Sprintf("%s: the template does not render: %v", where, err)}
+		return emitkit.Rendered{}, err
 	}
-	renderedTokens, renderedErr := significantTokens(info.Lexical, rendered.SQL)
-	lexicon := syntax.Lexicon{LinePrefix: info.Comments.LinePrefix, Rules: info.Lexical}
-	keptTokens, keptErr := significantTokens(info.Lexical, syntax.StripDirectives(query.SQL, lexicon, namespace.Default()))
-	if renderedErr != nil || keptErr != nil {
-		return []string{fmt.Sprintf("%s: the rendered or kept SQL does not read under Info.Lexical", where)}
+	if unwrapped, wrapped := unwrapDerived(info, query, rendered.SQL); wrapped {
+		rendered.SQL = unwrapped
 	}
-	var problems []string
-	if bound := boundArguments(info.Placeholders.Execution, renderedTokens); bound != len(query.Template.Arguments) {
-		problems = append(problems, fmt.Sprintf("%s: %q binds %d arguments, but the template lists %d", where, rendered.SQL, bound,
-			len(query.Template.Arguments)))
-	}
-	if !slices.Equal(textTokens(renderedTokens), textTokens(keptTokens)) {
-		problems = append(problems, fmt.Sprintf("%s: %q does not read as the kept SQL %q but for its placeholders", where, rendered.SQL,
-			syntax.StripDirectives(query.SQL, lexicon, namespace.Default())))
-	}
-	return problems
+	return rendered, nil
 }
 
-// boundArguments counts the arguments SQL written in a form binds: one per placeholder
-// for an anonymous form, and one per distinct placeholder otherwise.
+// unwrapDerived removes the wrapper around a builder query's statement.
 //
-// Takes form (dialect.PlaceholderSigil) which is the form the SQL is written in.
+// A compound statement is wrapped when a dialect would apply ORDER BY or LIMIT only to
+// its last branch. A runtime builder query that picks its own rows is also wrapped.
+//
+// Takes info (*dialect.Info) which describes the dialect.
+// Takes query (*sqlmodel.AnalysedQuery) which is the query.
+// Takes rendered (string) which is the rendered SQL.
+//
+// Returns string which is the SQL without the wrapping.
+// Returns bool which is true when the SQL was wrapped exactly as expected.
+func unwrapDerived(info *dialect.Info, query *sqlmodel.AnalysedQuery, rendered string) (string, bool) {
+	const open, closing = "SELECT * FROM (", ") AS result_rows"
+	if !wrapsDerived(info, query) {
+		return rendered, false
+	}
+	start := strings.Index(rendered, open)
+	end := strings.LastIndex(rendered, closing)
+	if start < 0 || end < start {
+		return rendered, false
+	}
+	return rendered[:start] + rendered[start+len(open):end] + rendered[end+len(closing):], true
+}
+
+// wrapsDerived reports whether the builder wraps the query's statement in a derived
+// table.
+//
+// Takes info (*dialect.Info) which describes the dialect.
+// Takes query (*sqlmodel.AnalysedQuery) which is the query.
+//
+// Returns bool which is true for a compound statement wrapsCompound reports and for a
+// runtime builder query that picks its own rows.
+func wrapsDerived(info *dialect.Info, query *sqlmodel.AnalysedQuery) bool {
+	return wrapsCompound(info, query) || query.DynamicRuntime && query.ReadsResultRows
+}
+
+// wrapsCompound reports whether the builder wraps the query's compound statement.
+//
+// Takes info (*dialect.Info) which describes the dialect.
+// Takes query (*sqlmodel.AnalysedQuery) which is the query.
+//
+// Returns bool which is true for a dynamic compound query on a dialect whose trailing
+// clauses bind to the last branch alone.
+func wrapsCompound(info *dialect.Info, query *sqlmodel.AnalysedQuery) bool {
+	dynamic := query.IsDynamic || query.DynamicRuntime
+	return info.Pagination.CompoundBindsLastBranch && dynamic && query.ResultShape.Compound
+}
+
+// boundArguments counts executed arguments by placeholder identity.
+//
+// Anonymous occurrences bind separately. Named and numbered occurrences share a binding
+// regardless of leading zeros or type annotation spelling.
+//
+// Takes forms (*dialect.Placeholders) which describes accepted and executed forms.
 // Takes tokens ([]sqllex.Token) which are the SQL's significant tokens.
 //
 // Returns int which is the number of arguments.
-func boundArguments(form dialect.PlaceholderSigil, tokens []sqllex.Token) int {
+func boundArguments(forms *dialect.Placeholders, tokens []sqllex.Token) int {
 	distinct := make(map[string]bool)
 	count := 0
 	for _, token := range tokens {
-		if token.Kind == sqllex.KindParameter {
-			count++
-			distinct[token.Raw] = true
+		if token.Kind != sqllex.KindParameter {
+			continue
 		}
+		count++
+		distinct[placeholderIdentity(forms, token.Raw)] = true
 	}
-	if form.Kind == dialect.PlaceholderAnonymous {
+	if forms.Execution.Kind == dialect.PlaceholderAnonymous {
 		return count
 	}
 	return len(distinct)
+}
+
+// placeholderIdentity names the binding one executed placeholder stands for.
+//
+// Takes forms (*dialect.Placeholders) which describes accepted and executed forms.
+// Takes raw (string) which is the placeholder as written.
+//
+// Returns string which is the name, the number, or the raw text when the form does not
+// read.
+func placeholderIdentity(forms *dialect.Placeholders, raw string) string {
+	reading, ok := forms.Read(raw)
+	if !ok {
+		return raw
+	}
+	switch forms.Execution.Kind {
+	case dialect.PlaceholderNamed:
+		return reading.Name
+	case dialect.PlaceholderNumbered:
+		return strconv.Itoa(reading.Number)
+	case dialect.PlaceholderAnonymous:
+	}
+	return raw
 }
 
 // textTokens returns the text of the tokens that are not placeholders.

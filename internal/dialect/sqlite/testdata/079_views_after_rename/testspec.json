@@ -1,0 +1,4 @@
+{
+  "description": "SQLite rewrites a view that reads a renamed table, so a query reading the view is generated.",
+  "expectedDiagnosticCount": 0
+}

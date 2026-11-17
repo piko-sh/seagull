@@ -1,0 +1,10 @@
+CREATE TABLE authors (
+  id BIGINT NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL
+);
+
+CREATE TABLE books (
+  id BIGINT NOT NULL PRIMARY KEY,
+  author_id BIGINT NOT NULL REFERENCES authors (id),
+  title TEXT NOT NULL
+);

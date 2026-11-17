@@ -1,0 +1,20 @@
+[
+  {
+    "Code": "Q075",
+    "Column": 1,
+    "EndColumn": 105,
+    "EndLine": 2,
+    "Filename": "builders.sql",
+    "Line": 2,
+    "Message": "a dynamic: runtime query that picks its own rows, by LIMIT, OFFSET, FETCH, DISTINCT ON or a clause such as QUALIFY, is read from a derived table by its output names, so each output column needs a name no other has; give the columns distinct aliases",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q023",
+    "Column": 1,
+    "Filename": "builders.sql",
+    "Line": 4,
+    "Message": "a dynamic: runtime query returns rows other than those it reads, through GROUP BY, HAVING, DISTINCT, an aggregate, window or set-returning function, its own LIMIT, or a compound; .Count(ctx) wraps the original in a subquery so the count reflects outer-result rows rather than the underlying table",
+    "Severity": "hint"
+  }
+]

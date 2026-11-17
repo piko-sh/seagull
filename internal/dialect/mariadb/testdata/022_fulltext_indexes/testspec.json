@@ -1,0 +1,1 @@
+{"description": "MATCH ... AGAINST needs a FULLTEXT index of exactly the columns it names, in any order: an inline FULLTEXT KEY, CREATE FULLTEXT INDEX and ALTER TABLE ADD FULLTEXT INDEX each declare one; MATCH over notes.txt, which has none, and over posts.id warn Q074, as MySQL and MariaDB refuse both with error 1191.", "expectedDiagnosticCount": 2}

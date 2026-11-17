@@ -61,6 +61,10 @@ type Facts struct {
 	// decoding. It is empty when the dialect provides none.
 	ToJSON string
 
+	// FloatBits describes how the dialect rebuilds a floating-point parameter from its exact
+	// bits. The zero value means it needs no such transport.
+	FloatBits FloatBitsSyntax
+
 	// Filters describes what the generated runtime query builder may write into a predicate
 	// it appends: the dialect's extra comparison operators, the functions that read a path
 	// from a JSON column, and the conversions a filtered column may take.
@@ -99,6 +103,10 @@ type Facts struct {
 	// Returning lists statement kinds that support RETURNING. An empty set means none are
 	// supported.
 	Returning ast.DataChange
+
+	// Ordering describes where the dialect sorts NULL and how it writes a NULL placement the
+	// generated runtime query builder asks for.
+	Ordering OrderingSyntax
 }
 
 // Facts returns the facts of the dialect the Info describes, sharing no slice with it.
@@ -117,9 +125,11 @@ func (info *Info) Facts() Facts {
 		CommentPrefix:   clone.Comments.LinePrefix,
 		TextType:        clone.TextType,
 		ToJSON:          clone.ToJSON,
+		FloatBits:       clone.FloatBits,
 		Filters:         clone.Filters,
 		Lists:           clone.Lists,
 		Pagination:      clone.Pagination,
+		Ordering:        clone.Ordering,
 		JSONOperators:   JSONOperators(clone.OperatorFeatures),
 		Drivers:         clone.Drivers,
 		Lexical:         clone.Lexical,

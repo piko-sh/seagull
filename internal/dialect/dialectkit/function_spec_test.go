@@ -211,6 +211,11 @@ func TestFunctionSpecReportsMalformedLines(t *testing.T) {
 		{name: "schema without a name", line: "f(x decimal) decimal schema=", message: "schema name"},
 		{name: "nulling argument out of range", line: "f(x decimal) decimal nulling-argument=1", message: "names no argument"},
 		{name: "return type source out of range", line: "f(x decimal) decimal return-type-from=2", message: "names no argument"},
+		{name: "empty text position out of range", line: "f(x text) text empty-text-nulls=1", message: "names no argument"},
+		{name: "zero position out of range", line: "f(x decimal) decimal zero-nulls=1", message: "names no argument"},
+		{name: "non-numeric position out of range", line: "f(x text) decimal non-numeric-nulls=1", message: "names no argument"},
+		{name: "position too large", line: "f(x text) text empty-text-nulls=9223372036854775807", message: "too large"},
+		{name: "position not a number", line: "f(x text) text non-numeric-nulls=x", message: "non-negative whole number"},
 		{name: "argument with three words", line: "f(x double precision) decimal", message: "not a type with an optional name"},
 		{name: "empty argument", line: "f(x decimal, ) decimal", message: "not a type with an optional name"},
 	}

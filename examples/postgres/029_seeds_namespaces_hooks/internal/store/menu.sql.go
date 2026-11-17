@@ -20,7 +20,7 @@ func (queries *Queries) ListMenu(ctx context.Context) ([]ListMenuRow, error) {
 	var results []ListMenuRow
 	if rows.Next() {
 		var row ListMenuRow
-		scanArgs := []any{&row.Dish, &row.PricePence}
+		scanArgs := []any{&row.Dish, sglScanNumber(&row.PricePence)}
 		for more := true; more; more = rows.Next() {
 			row = ListMenuRow{}
 			if err := rows.Scan(scanArgs...); err != nil {

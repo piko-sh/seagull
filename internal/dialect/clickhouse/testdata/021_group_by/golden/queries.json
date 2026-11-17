@@ -26,6 +26,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        1
+      ]
+    },
     "SQL": "-- sgl.query(SalesByRegion, many)\nSELECT region, sum(amount) AS total\nFROM sales\nGROUP BY region\nORDER BY total DESC;",
     "Template": "SELECT ⟨c0:region⟩, ⟨c1 aliased:sum(amount)⟩ AS total\\nFROM sales\\nGROUP BY region\\nORDER BY total DESC;"
   }

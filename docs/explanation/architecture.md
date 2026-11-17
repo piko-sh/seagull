@@ -90,18 +90,3 @@ Each call across one of these contracts is guarded, because the code on the othe
 The migration runtime, `sdk/migrate` over `internal/migrate` and `internal/migrate/sqlexec`, links neither the analyser, a dialect's parser nor the emitters. It reaches each engine only through the engine's lexical leaf, `internal/dialect/<engine>/lexical`, which depends on `internal/sqllex`, which uses only the standard library. This lets a runtime split scripts using the same rules as generation without bringing in the compiler, and is why `sdk/migrate` names the lexical rule types a custom backend needs rather than importing `sdk/dialect`.
 
 `depguard` in `.golangci.yml` enforces the import boundaries, and `independence_test.go` at the root checks that each engine builds only itself and its declared base and that the migration runtime links no analyser or dialect parser. Conformance tests check that dialect statement splitting agrees with the shared scanner, while the dialect and emitter suites exercise the contracts through the whole pipeline.
-
-## Generated files
-
-A generated package contains the driver calls and any runtime helpers its queries need. Its file layout is listed below; the [generated Go reference](../reference/generated-go.md) describes their calling contracts.
-
-<!-- generated-file-table: overview (make generate-all) -->
-| File | Contents |
-|---|---|
-| `querier.go` | `DBTX`, `Queries`, constructors, transaction helpers. |
-| `querier_interface.go` | The `Querier` interface listing every query method, when `go.interface.enabled` is set. |
-| `models.go` | One struct per table, and the named types the plan declares: a string type with a constant per value and a `Valid` method for each enum, and a struct type for each DuckDB `STRUCT` or ClickHouse named `Tuple` the mapping reads as a struct. PostgreSQL composite types map to `any`. |
-| `prepared.go` | The prepared-statement cache, when enabled (`go.prepared: true` in `sgl`, on by default in the library's `emit_driver_databasesql.New()`). |
-| `<name>.sql.go` | The methods for one query file. |
-| `sortable.go`, `bind_limits.go`, `slice_helpers.go`, `runtime_helpers.go`, `sgl_json.go`, `driver_values.go`, `driver_composites.go`, `clickhouse_values.go`, `clickhouse_appending.go`, `clickhouse_composites.go`, `clickhouse_documents.go`, `value_reading.go`, `error_wrapping.go`, `convert_strings.go`, `query_names.go` | Small runtime helpers, each written only when a query needs it, so generated code needs nothing from Seagull. They are real Go sources in the repository, compiled and tested, and rendered into the package (see [generated Go](../reference/generated-go.md#helper-files)). |
-<!-- end generated-file-table -->

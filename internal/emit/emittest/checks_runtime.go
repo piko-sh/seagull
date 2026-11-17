@@ -29,6 +29,12 @@ import (
 )
 
 const (
+	// checkDetailSeparator separates a check subject from its details.
+	checkDetailSeparator = ": "
+
+	// runtimeStatementProblemFormat formats a recorded SQL discrepancy.
+	runtimeStatementProblemFormat = "%s: %s: %q"
+
 	// queryItemsNotIn is the slice query that tests exclusion.
 	queryItemsNotIn = "ItemsNotIn"
 
@@ -92,7 +98,7 @@ func (current *subject) overCalls(ctx context.Context, caseNames, labels []strin
 		case result.unavailable != "":
 			unavailable = append(unavailable, result.unavailable)
 		case result.failure != "":
-			problems = append(problems, "case "+name+": "+result.failure)
+			problems = append(problems, casePrefix+name+checkDetailSeparator+result.failure)
 		default:
 			for _, call := range result.calls {
 				if labels == nil || slices.Contains(labels, call.label) {
@@ -120,11 +126,11 @@ func (current *subject) bindingVisit() callVisit {
 		var problems []string
 		for _, statement := range call.outcome.Statements {
 			for _, problem := range argumentProblems(statement, &current.info) {
-				problems = append(problems, fmt.Sprintf("%s: %s: %q", describeCall(caseName, call), problem, statement.SQL))
+				problems = append(problems, fmt.Sprintf(runtimeStatementProblemFormat, describeCall(caseName, call), problem, statement.SQL))
 			}
 		}
 		for _, problem := range valueProblems(call) {
-			problems = append(problems, describeCall(caseName, call)+": "+problem)
+			problems = append(problems, describeCall(caseName, call)+checkDetailSeparator+problem)
 		}
 		return problems
 	}
@@ -184,7 +190,7 @@ func checkSliceArguments(ctx context.Context, current *subject) knownfailure.Out
 		}
 		for _, statement := range call.outcome.Statements {
 			if problem := listProblem(statement, call, current); problem != "" {
-				problems = append(problems, fmt.Sprintf("%s: %s: %q", describeCall(caseName, call), problem, statement.SQL))
+				problems = append(problems, fmt.Sprintf(runtimeStatementProblemFormat, describeCall(caseName, call), problem, statement.SQL))
 			}
 		}
 		return problems
@@ -303,7 +309,7 @@ func bindsEmptyArray(statement laneStatement, excluded bool) bool {
 // Returns knownfailure.Outcome which holds the problems.
 func checkBatchRows(ctx context.Context, current *subject) knownfailure.Outcome {
 	binding := current.bindingVisit()
-	return current.overCalls(ctx, []string{caseBatch}, nil, func(caseName string, call *laneCall) []string {
+	return current.overCalls(ctx, []string{caseBatch, caseBatchLiterals}, nil, func(caseName string, call *laneCall) []string {
 		problems := binding(caseName, call)
 		if call.outcome == nil {
 			return problems
@@ -332,7 +338,7 @@ func checkBatchRejectsParametersOutsideValues(ctx context.Context, current *subj
 	result := current.generation(ctx, caseBatchSuffix)
 	switch {
 	case result.unusable != "":
-		return knownfailure.NotApplicable("case " + caseBatchSuffix + ": " + result.unusable)
+		return knownfailure.NotApplicable(casePrefix + caseBatchSuffix + checkDetailSeparator + result.unusable)
 	case result.generateError != nil:
 		return knownfailure.OutcomeOf([]string{fmt.Sprintf("case %s: Generate failed instead of reporting a diagnostic: %v", caseBatchSuffix, result.generateError)})
 	case len(errorDiagnostics(result.generated.Diagnostics)) > 0:
@@ -368,7 +374,7 @@ func checkBatchRejectsParametersOutsideValues(ctx context.Context, current *subj
 func checkBatchUpsertsSendEachRowAlone(ctx context.Context, current *subject) knownfailure.Outcome {
 	result := current.generation(ctx, caseBatchUpsert)
 	if result.unusable != "" {
-		return knownfailure.NotApplicable("case " + caseBatchUpsert + ": " + result.unusable)
+		return knownfailure.NotApplicable(casePrefix + caseBatchUpsert + checkDetailSeparator + result.unusable)
 	}
 	binding := current.bindingVisit()
 	return current.overCalls(ctx, []string{caseBatchUpsert}, nil, func(caseName string, call *laneCall) []string {
@@ -416,7 +422,7 @@ func checkSortableOrderBy(ctx context.Context, current *subject) knownfailure.Ou
 		}
 		for _, statement := range call.outcome.Statements {
 			if problem := orderByProblem(statement.SQL, terminator, current); problem != "" {
-				problems = append(problems, fmt.Sprintf("%s: %s: %q", describeCall(caseName, call), problem, statement.SQL))
+				problems = append(problems, fmt.Sprintf(runtimeStatementProblemFormat, describeCall(caseName, call), problem, statement.SQL))
 			}
 		}
 		return problems
@@ -468,7 +474,7 @@ func checkRuntimeBuilderClauses(ctx context.Context, current *subject) knownfail
 		}
 		for _, statement := range call.outcome.Statements {
 			if problem := clauseOrderProblem(statement.SQL, current); problem != "" {
-				problems = append(problems, fmt.Sprintf("%s: %s: %q", describeCall(caseName, call), problem, statement.SQL))
+				problems = append(problems, fmt.Sprintf(runtimeStatementProblemFormat, describeCall(caseName, call), problem, statement.SQL))
 			}
 		}
 		return problems
@@ -668,7 +674,7 @@ func checkNestedEnumsConvertOrRefuse(ctx context.Context, current *subject) know
 		result := current.generation(ctx, name)
 		switch {
 		case result.unusable != "":
-			unusable = append(unusable, casePrefix+name+": "+result.unusable)
+			unusable = append(unusable, casePrefix+name+checkDetailSeparator+result.unusable)
 		case result.generateError != nil:
 			problems = append(problems, fmt.Sprintf("case %s: Generate failed instead of reporting a diagnostic: %v", name, result.generateError))
 		case len(errorDiagnostics(result.generated.Diagnostics)) > 0:

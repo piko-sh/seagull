@@ -17,22 +17,14 @@ func (queries *Queries) AddHut(ctx context.Context, params AddHutParams) error {
 	return err
 }
 
-const bookHutsSQL = `UPDATE huts SET booked = true WHERE number IN ($1) AND NOT booked;`
+const bookHutsSQL = `UPDATE huts SET booked = true WHERE number = ANY($1) AND NOT booked;`
 
 type BookHutsParams struct {
 	Numbers []int64
 }
 
 func (queries *Queries) BookHuts(ctx context.Context, params BookHutsParams) (int64, error) {
-	if err := sglCheckBinds(len(params.Numbers)); err != nil {
-		return 0, err
-	}
-	query := sglSplice(bookHutsSQL, sglList(sglListMark{Empty: `= ANY('{}')`, Operator: 43, Start: 46, End: 50}, 1, len(params.Numbers)))
-	args := make([]any, 0, len(params.Numbers))
-	for _, v := range params.Numbers {
-		args = append(args, v)
-	}
-	results, err := queries.writer.ExecContext(ctx, query, args...)
+	results, err := queries.writer.ExecContext(ctx, bookHutsSQL, sglArrayLiteral(params.Numbers))
 	if err != nil {
 		return 0, err
 	}
@@ -41,7 +33,7 @@ func (queries *Queries) BookHuts(ctx context.Context, params BookHutsParams) (in
 
 const freeHutsInColoursSQL = `SELECT number, colour
 FROM huts
-WHERE beach = $1 AND colour IN ($2) AND NOT booked
+WHERE beach = $1 AND colour = ANY($2) AND NOT booked
 ORDER BY number;`
 
 type FreeHutsInColoursParams struct {
@@ -55,16 +47,7 @@ type FreeHutsInColoursRow struct {
 }
 
 func (queries *Queries) FreeHutsInColours(ctx context.Context, params FreeHutsInColoursParams) ([]FreeHutsInColoursRow, error) {
-	if err := sglCheckBinds(1 + len(params.Colours)); err != nil {
-		return nil, err
-	}
-	query := sglSplice(freeHutsInColoursSQL, sglList(sglListMark{Empty: `= ANY('{}')`, Operator: 60, Start: 63, End: 67}, 2, len(params.Colours)))
-	args := make([]any, 0, 1+len(params.Colours))
-	args = append(args, params.Beach)
-	for _, v := range params.Colours {
-		args = append(args, v)
-	}
-	rows, err := queries.reader.QueryContext(ctx, query, args...)
+	rows, err := queries.reader.QueryContext(ctx, freeHutsInColoursSQL, params.Beach, sglArrayLiteral(params.Colours))
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +72,7 @@ func (queries *Queries) FreeHutsInColours(ctx context.Context, params FreeHutsIn
 
 const hutsOnBeachesSQL = `SELECT number, beach, colour, booked
 FROM huts
-WHERE beach IN ($1)
+WHERE beach = ANY($1)
 ORDER BY number;`
 
 type HutsOnBeachesParams struct {
@@ -104,15 +87,7 @@ type HutsOnBeachesRow struct {
 }
 
 func (queries *Queries) HutsOnBeaches(ctx context.Context, params HutsOnBeachesParams) ([]HutsOnBeachesRow, error) {
-	if err := sglCheckBinds(len(params.Beaches)); err != nil {
-		return nil, err
-	}
-	query := sglSplice(hutsOnBeachesSQL, sglList(sglListMark{Empty: `= ANY('{}')`, Operator: 59, Start: 62, End: 66}, 1, len(params.Beaches)))
-	args := make([]any, 0, len(params.Beaches))
-	for _, v := range params.Beaches {
-		args = append(args, v)
-	}
-	rows, err := queries.reader.QueryContext(ctx, query, args...)
+	rows, err := queries.reader.QueryContext(ctx, hutsOnBeachesSQL, sglArrayLiteral(params.Beaches))
 	if err != nil {
 		return nil, err
 	}

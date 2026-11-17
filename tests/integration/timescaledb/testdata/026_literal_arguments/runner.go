@@ -68,10 +68,10 @@ func main() {
 	output.record("daily", func() (any, error) { return queries.Daily(ctx) })
 	output.record("percentiles", func() (any, error) {
 		row, err := queries.Percentiles(ctx, "a")
-		if err != nil || row.Median == nil || row.SketchMedian == nil {
+		if err != nil || !row.Median.Valid || !row.SketchMedian.Valid {
 			return row, err
 		}
-		return map[string]float64{"median": math.Round(*row.Median), "sketch_median": math.Round(*row.SketchMedian)}, nil
+		return map[string]float64{"median": math.Round(row.Median.V), "sketch_median": math.Round(row.SketchMedian.V)}, nil
 	})
 
 	encoder := json.NewEncoder(os.Stdout)

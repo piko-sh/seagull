@@ -25,6 +25,7 @@ import (
 	"math/big"
 	"net"
 	"net/netip"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -63,6 +64,11 @@ type valuesPoint struct {
 type valuesHidden struct {
 	visible int
 	Name    string
+}
+
+type Null[T any] struct {
+	V     T
+	Valid bool
 }
 
 func (mood valuesMood) String() string {
@@ -146,7 +152,8 @@ func TestClickHouseValueWritesAWholeParameter(t *testing.T) {
 		{name: "a date and time with three digits", value: moment.Add(123456789 * time.Nanosecond), shape: "t3", want: "981173106.123"},
 		{name: "a date and time with nine digits", value: moment.Add(123456789 * time.Nanosecond), shape: "t9", want: "981173106.123456789"},
 		{name: "a date and time keeps its moment in any location", value: moment.In(plusTwo), shape: "t", want: "981173106"},
-		{name: "a date and time before 1970", value: time.Date(1969, 12, 31, 23, 59, 59, 500000000, time.UTC), shape: "t3", want: "-0.500"},
+		{name: "a date and time before 1970", value: time.Date(1969, 12, 31, 23, 58, 59, 500000000, time.UTC), shape: "t3", want: "-60.500"},
+		{name: "a date and time a second before 1970", value: time.Date(1969, 12, 31, 23, 59, 59, 0, time.UTC), shape: "t3", want: "-1.000"},
 		{name: "a pointer to a time is the time", value: &moment, shape: "t", want: "981173106"},
 		{name: "the zero time is a time like any other", value: time.Time{}, shape: "d", want: "0001-01-01"},
 		{name: "the zero time is a moment like any other", value: time.Time{}, shape: "t", want: "-62135596800"},
@@ -349,6 +356,8 @@ func TestClickHouseValueRefusesWhatItCannotWrite(t *testing.T) {
 		{name: "a tuple from a struct with unexported fields", value: valuesHidden{visible: 1, Name: "x"}, shape: "(n,q)", reason: "unexported fields"},
 		{name: "a tuple from a map without field names", value: map[string]int{"a": 1}, shape: "(n)", reason: "only by field names"},
 		{name: "a time where a number belongs", value: time.Unix(0, 0), shape: "n", reason: "cannot be written as a number"},
+		{name: "a date and time less than a second before 1970", value: time.Date(1969, 12, 31, 23, 59, 59, 500000000, time.UTC), shape: "t3",
+			reason: "ClickHouse reads the Unix time -0.500 as after 1970"},
 		{name: "a malformed shape", value: 1, shape: "[n", reason: "malformed ClickHouse parameter shape"},
 		{name: "an unknown shape letter", value: 1, shape: "x", reason: "malformed ClickHouse parameter shape"},
 		{name: "a shape with text left over", value: 1, shape: "nn", reason: "left over"},
@@ -463,4 +472,17 @@ func TestClickHouseNullableHandsTheDriverNilForANilPointer(t *testing.T) {
 			require.Equal(t, testCase.want, sglClickHouseNullable(testCase.value))
 		})
 	}
+}
+
+func TestClickHouseFollowReadsTheGeneratedNullType(t *testing.T) {
+	t.Parallel()
+
+	set, err := sglClickHouseFollow(reflect.ValueOf(Null[string]{V: "gull", Valid: true}), 0)
+	require.NoError(t, err)
+	require.True(t, set.IsValid(), "a set Null follows to its value")
+	require.Equal(t, "gull", set.String())
+
+	unset, err := sglClickHouseFollow(reflect.ValueOf(Null[string]{V: "", Valid: false}), 0)
+	require.NoError(t, err)
+	require.False(t, unset.IsValid(), "an unset Null follows to NULL")
 }

@@ -51,6 +51,14 @@ build-wasm-clean: ## Clean WASM build artefacts
 test: ## Run the library and CLI tests in the default lane
 	@$(HACK_DIR)/test/test.sh quick
 
+.PHONY: test-fuzz
+test-fuzz: ## List or run local fuzz campaigns. ARGS selects targets and budgets
+	@$(HACK_DIR)/test/fuzz.sh $(ARGS)
+
+.PHONY: test-fuzz-tools
+test-fuzz-tools: ## Test the Go fuzz tool (supervisor, reducer, provenance, intake) and the fuzz runner
+	@bash $(HACK_DIR)/test/fuzz-runner-test.sh
+
 .PHONY: test-short
 test-short: ## Run the library and CLI tests with -short
 	@$(HACK_DIR)/test/test.sh short
@@ -167,14 +175,6 @@ generate-config-schema: ## Regenerate the config JSON Schema
 .PHONY: generate-config-schema-validate
 generate-config-schema-validate: ## Check the committed config JSON Schema is current
 	@$(HACK_DIR)/generate/config-schema.sh --validate
-
-.PHONY: generate-generated-files
-generate-generated-files: ## Regenerate the generated-file tables in the docs
-	@$(HACK_DIR)/generate/generated-files.sh
-
-.PHONY: generate-generated-files-validate
-generate-generated-files-validate: ## Check the committed generated-file tables are current
-	@$(HACK_DIR)/generate/generated-files.sh --validate
 
 .PHONY: generate-examples
 generate-examples: ## Regenerate the example projects' generated code

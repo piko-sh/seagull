@@ -1,0 +1,22 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 20,
+    "EndColumn": 21,
+    "EndLine": 2,
+    "Filename": "clock.sql",
+    "Line": 2,
+    "Message": "failed to analyse query \"EmptyRole\": syntax error near \"(\": CURRENT_ROLE takes no parentheses",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 23,
+    "EndColumn": 24,
+    "EndLine": 5,
+    "Filename": "clock.sql",
+    "Line": 5,
+    "Message": "failed to analyse query \"EmptyCatalog\": syntax error near \"(\": CURRENT_CATALOG takes no parentheses",
+    "Severity": "error"
+  }
+]

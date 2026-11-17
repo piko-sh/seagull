@@ -25,6 +25,8 @@ import (
 
 	"seagull.sh/seagull/internal/emit"
 	"seagull.sh/seagull/internal/emit/emitkit"
+	"seagull.sh/seagull/internal/gotypes"
+	"seagull.sh/seagull/internal/sqlmodel"
 	"seagull.sh/seagull/internal/testkit/scaling"
 )
 
@@ -150,6 +152,35 @@ func TestFieldTagsNameEveryRepeatedColumnApartInTimeLinearInTheColumns(t *testin
 			scaling.Linear(t,
 				func() { emitkit.FieldTags(&testCase.style, smaller, nil) },
 				func() { emitkit.FieldTags(&testCase.style, larger, nil) })
+		})
+	}
+}
+
+func TestTagForTypeLeavesOutANullNullValueWithOmitzero(t *testing.T) {
+	t.Parallel()
+
+	null := gotypes.NullValue(sqlmodel.GoType{Name: "*string"})
+	testCases := []struct {
+		name   string
+		tag    string
+		goType sqlmodel.GoType
+		want   string
+	}{
+		{name: "a Null field takes omitzero for omitempty", tag: `json:"note,omitempty"`, goType: null, want: `json:"note,omitzero"`},
+		{name: "other tags stay as they are", tag: `db:"note" json:"note,omitempty" xml:"n"`, goType: null, want: `db:"note" json:"note,omitzero" xml:"n"`},
+		{name: "a tag without omitempty stays as it is", tag: `json:"note"`, goType: null, want: `json:"note"`},
+		{name: "a tag with omitzero already stays as it is", tag: `json:"note,omitempty,omitzero"`, goType: null, want: `json:"note,omitempty,omitzero"`},
+		{name: "a pointer keeps omitempty", tag: `json:"note,omitempty"`, goType: sqlmodel.GoType{Name: "*string"}, want: `json:"note,omitempty"`},
+		{name: "a key ending in json is not the json tag", tag: `xjson:"note,omitempty"`, goType: null, want: `xjson:"note,omitempty"`},
+		{name: "the json tag after a key ending in json", tag: `xjson:"a" json:"note,omitempty"`, goType: null, want: `xjson:"a" json:"note,omitzero"`},
+		{name: "an option starting with omitempty is not omitempty", tag: `json:"note,omitemptyish"`, goType: null, want: `json:"note,omitemptyish"`},
+		{name: "a name of omitempty is not the option", tag: `json:"omitempty"`, goType: null, want: `json:"omitempty"`},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			require.Equal(t, testCase.want, emitkit.TagForType(testCase.tag, testCase.goType))
 		})
 	}
 }

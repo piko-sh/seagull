@@ -1,0 +1,223 @@
+{
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "": {
+      "Tables": {
+        "harbours": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            }
+          ],
+          "Name": "harbours",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ]
+        },
+        "vessels": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "harbour",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "home",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "winter",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "spring",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 3
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            }
+          ],
+          "Constraints": [
+            {
+              "Columns": [
+                "home"
+              ],
+              "ForeignColumns": [
+                "id"
+              ],
+              "ForeignTable": "harbours",
+              "Kind": "foreign-key",
+              "Name": "2",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              }
+            },
+            {
+              "Columns": [
+                "winter"
+              ],
+              "ForeignColumns": [
+                "id"
+              ],
+              "ForeignTable": "harbours",
+              "Kind": "foreign-key",
+              "Name": "7",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              }
+            },
+            {
+              "Columns": [
+                "spring"
+              ],
+              "ForeignColumns": [
+                "id"
+              ],
+              "ForeignTable": "harbours",
+              "Kind": "foreign-key",
+              "Name": "8",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 3
+              }
+            },
+            {
+              "Columns": [
+                "harbour"
+              ],
+              "ForeignColumns": [
+                "id"
+              ],
+              "ForeignTable": "harbours",
+              "Kind": "foreign-key",
+              "Name": "9",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 3
+              }
+            }
+          ],
+          "Indexes": [
+            {
+              "Columns": [
+                "harbour"
+              ],
+              "Name": "harbour",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 3
+              }
+            },
+            {
+              "Columns": [
+                "home"
+              ],
+              "Name": "home",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              }
+            },
+            {
+              "Columns": [
+                "winter"
+              ],
+              "Name": "7",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              }
+            },
+            {
+              "Columns": [
+                "spring"
+              ],
+              "Name": "spring",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 3
+              }
+            }
+          ],
+          "Name": "vessels",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 1
+          },
+          "PrimaryKey": [
+            "id"
+          ]
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    ""
+  ]
+}

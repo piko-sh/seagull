@@ -22,12 +22,16 @@ import (
 	"strconv"
 	"strings"
 
+	"seagull.sh/seagull/internal/dialect"
 	"seagull.sh/seagull/internal/dialect/ast"
 	"seagull.sh/seagull/internal/dialect/dialectkit"
 	"seagull.sh/seagull/internal/dialect/postgres"
 	"seagull.sh/seagull/internal/dialect/postgres/pgext"
 	"seagull.sh/seagull/internal/sqlmodel"
 )
+
+// functionValueArgument names a scalar function input.
+const functionValueArgument = "value"
 
 const (
 	// crdbInternalSchema is the schema under which CockroachDB's crdb_internal.* builtins
@@ -75,16 +79,16 @@ var (
 	// postgresOnlyFunctions lists PostgreSQL functions rejected by CockroachDB 25.1.
 	postgresOnlyFunctions = []string{
 		"any_value", "array_dims", "array_fill", "array_ndims", "bit_xor", "date_bin",
-		"factorial", "gcd", "isfinite", "jsonb_path_exists", "jsonb_path_match",
+		"factorial", "gcd", "grouping", "isfinite", "jsonb_path_exists", "jsonb_path_match",
 		"jsonb_path_query_array", "jsonb_path_query_first", "jsonb_set_lax", "justify_days",
-		"justify_hours", "justify_interval", "lcm", "log10", "make_interval", "make_time", "mode",
+		"justify_hours", "justify_interval", "lcm", "log10", "make_interval", "make_time", "min_scale", "mode",
 		"normalize", "numnode", "pg_advisory_lock", "pg_advisory_lock_shared",
 		"pg_advisory_xact_lock", "pg_advisory_xact_lock_shared", "pg_notify", "pg_size_pretty",
 		"pg_table_size", "pg_total_relation_size", "pg_try_advisory_lock_shared",
 		"pg_try_advisory_xact_lock", "pg_try_advisory_xact_lock_shared", "querytree",
 		"regexp_count", "regexp_instr", "regexp_like", "regexp_match", "regexp_matches",
-		"regexp_substr", "setweight", "starts_with", "strict_word_similarity", "strip", "to_date",
-		"to_number", "ts_headline", "ts_rank_cd", "websearch_to_tsquery", "word_similarity",
+		"regexp_substr", "scale", "setweight", "starts_with", "strict_word_similarity", "strip", "to_date",
+		"to_number", "trim_scale", "ts_headline", "ts_rank_cd", "websearch_to_tsquery", "word_similarity",
 		"int4range", "int8range", "numrange", "tsrange", "tstzrange", "daterange", "isempty",
 		"lower_inc", "upper_inc", "lower_inf", "upper_inf", "range_merge", "range_agg",
 		"date_add", "date_subtract", "jsonb_path_query", "pg_current_xact_id", "pg_current_xact_id_if_assigned",
@@ -122,6 +126,15 @@ func New(options ...postgres.Option) *postgres.Dialect {
 		postgres.WithPostParseHook(rejectPartitionStatements),
 		postgres.WithPostParseHook(addHiddenRowID),
 		postgres.WithPostParseHook(alterPrimaryKey),
+		postgres.WithTableScopedIndexNames(),
+		postgres.WithStrictColumnLists(),
+		postgres.WithoutGroupingModifiers(),
+		postgres.WithEmptyKeywordCalls(),
+		postgres.WithViewsRefusingRename(),
+		postgres.WithConstraintNames(dialect.ConstraintNamesCockroachDB),
+		postgres.WithDistinctOnColumnsOnly(),
+		postgres.WithBareAliasRefusals(cockroachDBBareAliasRefusals),
+		postgres.WithReservedNames(cockroachDBReservedColumns, cockroachDBReservedTables),
 		postgres.WithPostParseHook(addHashShardColumn),
 		postgres.WithInsertKeywords(upsertKeyword),
 		postgres.WithRowValueTypeHook(rowValueType),
@@ -133,6 +146,7 @@ func New(options ...postgres.Option) *postgres.Dialect {
 		postgres.WithAsOfSystemTime(),
 		postgres.WithParametersTypedFromContext(),
 		postgres.WithPromoteTypeHook(widenRealAcrossCategories),
+		postgres.WithOrdering(dialect.OrderingSyntax{NullsFirstAscending: true, NullsFirstDescending: false, NullsByIsNull: false, DistinctNullsDefaultOnly: true}),
 	}, options...)...)
 }
 
@@ -250,7 +264,7 @@ func registerCockroachDBFunctions(builder *postgres.FunctionCatalogueBuilder) {
 	builder.NullOnNull("cluster_id", nil, uuidType).Schema = crdbInternalSchema
 	builder.NeverNull("node_id", nil, integerType).Schema = crdbInternalSchema
 	builder.NullOnNull("locality_value", builder.Args(postgres.Arg{Name: "key", Type: textType}), textType).Schema = crdbInternalSchema
-	builder.NullOnNull("from_ip", builder.Args(postgres.Arg{Name: "value", Type: byteaType}), textType)
+	builder.NullOnNull("from_ip", builder.Args(postgres.Arg{Name: functionValueArgument, Type: byteaType}), textType)
 	builder.NullOnNull("to_ip", builder.Args(postgres.Arg{Name: "address", Type: textType}), byteaType)
 	builder.NullOnNull("experimental_strftime", builder.Args(postgres.Arg{Name: "input", Type: timestamptzType}, postgres.Arg{Name: "format", Type: textType}), textType)
 	builder.NullOnNull("experimental_strptime", builder.Args(postgres.Arg{Name: "input", Type: textType}, postgres.Arg{Name: "format", Type: textType}), timestamptzType)
@@ -269,7 +283,7 @@ func registerCockroachDBFunctions(builder *postgres.FunctionCatalogueBuilder) {
 //
 // Takes builder (*postgres.FunctionCatalogueBuilder) which receives the signatures.
 func registerRetypedFunctions(builder *postgres.FunctionCatalogueBuilder) {
-	value := builder.Args(postgres.Arg{Name: "value", Type: builder.Any()})
+	value := builder.Args(postgres.Arg{Name: functionValueArgument, Type: builder.Any()})
 	for _, name := range []string{"sha224", "sha256", "sha384", "sha512"} {
 		digest := builder.NullOnNull(name, value, builder.Text())
 		digest.IsVariadic = true
@@ -334,8 +348,8 @@ func registerIdentifierFunctions(builder *postgres.FunctionCatalogueBuilder) {
 	builder.NeverNull("uuid_v4", nil, builder.Bytea())
 	builder.NeverNull("uuid_generate_v4", nil, builder.UUID())
 	builder.NeverNull("follower_read_timestamp", nil, builder.Timestamptz())
-	builder.NullOnNull("ulid_to_uuid", builder.Args(postgres.Arg{Name: "value", Type: builder.Text()}), builder.UUID())
-	builder.NullOnNull("uuid_to_ulid", builder.Args(postgres.Arg{Name: "value", Type: builder.UUID()}), builder.Text())
+	builder.NullOnNull("ulid_to_uuid", builder.Args(postgres.Arg{Name: functionValueArgument, Type: builder.Text()}), builder.UUID())
+	builder.NullOnNull("uuid_to_ulid", builder.Args(postgres.Arg{Name: functionValueArgument, Type: builder.UUID()}), builder.Text())
 }
 
 // registerFuzzyMatchingFunctions registers CockroachDB's fuzzy string matching functions:

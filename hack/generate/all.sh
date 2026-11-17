@@ -64,7 +64,6 @@ run_generator() {
 run_all() {
     run_generator "Diagnostic reference" "${GENERATE_DIR}/diagnostics.sh" "$@"
     run_generator "Config JSON Schema" "${GENERATE_DIR}/config-schema.sh" "$@"
-    run_generator "Generated-file tables" "${GENERATE_DIR}/generated-files.sh" "$@"
     run_generator "Example projects" "${GENERATE_DIR}/examples.sh" "$@"
     run_generator "Tutorial checkpoints" "${GENERATE_DIR}/tutorials.sh" "$@"
 }

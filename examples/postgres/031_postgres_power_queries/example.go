@@ -30,20 +30,7 @@ import (
 	"seagull.sh/seagull/examples/postgres/031_postgres_power_queries/internal/store"
 )
 
-// run records a week of landings at a small harbour and reads them back with five queries
-// that lean on PostgreSQL's own SQL. Seagull types each of them:
-//
-//   - LatestLandings uses DISTINCT ON to keep the first row of each boat in ORDER BY
-//     order, which is its latest landing;
-//   - BiggestLandings runs a LIMIT 2 subquery once per boat with LEFT JOIN LATERAL, so
-//     the subquery can see boats.id; a boat with no landings still appears, which makes
-//     the subquery's columns pointers;
-//   - SearchNotes matches a generated tsvector column against websearch_to_tsquery, which
-//     takes the syntax people type into search boxes, and ranks with ts_rank;
-//   - BoatGear expands each boat's JSONB gear into key and value rows with jsonb_each, a
-//     function used as a table; value stays store.JSON;
-//   - ArchiveLandings moves old landings in one statement: the DELETE inside the CTE
-//     hands its RETURNING rows to the INSERT, and the INSERT's RETURNING comes back.
+// run reads harbour landings with PostgreSQL-specific queries.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes output (io.Writer) which receives each query's result.
@@ -71,11 +58,11 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 	}
 	fmt.Fprintln(output, "two biggest landings per boat (LEFT JOIN LATERAL):")
 	for _, landing := range biggest {
-		if landing.Species == nil || landing.Kilos == nil {
+		if !landing.Species.Valid || !landing.Kilos.Valid {
 			fmt.Fprintf(output, "  %-9s nothing landed\n", landing.Name)
 			continue
 		}
-		fmt.Fprintf(output, "  %-9s %-8s %3dkg\n", landing.Name, *landing.Species, *landing.Kilos)
+		fmt.Fprintf(output, "  %-9s %-8s %3dkg\n", landing.Name, landing.Species.V, landing.Kilos.V)
 	}
 
 	for _, terms := range []string{"mackerel", "crab or pollock"} {
@@ -155,14 +142,14 @@ func july(day int) time.Time {
 	return time.Date(2026, time.July, day, 0, 0, 0, 0, time.UTC)
 }
 
-// formatRank formats a ts_rank score to four places, or returns NULL when it is nil.
+// formatRank formats a ts_rank score to four places, or returns NULL when it holds none.
 //
-// Takes rank (*float32) which is the score.
+// Takes rank (store.Null[float32]) which is the score.
 //
 // Returns string which is the text to print.
-func formatRank(rank *float32) string {
-	if rank == nil {
+func formatRank(rank store.Null[float32]) string {
+	if !rank.Valid {
 		return "NULL"
 	}
-	return fmt.Sprintf("%.4f", *rank)
+	return fmt.Sprintf("%.4f", rank.V)
 }

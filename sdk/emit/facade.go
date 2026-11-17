@@ -183,6 +183,11 @@ type (
 	// Emit with an error.
 	CheckerPort = emit.CheckerPort
 
+	// NullTypePort is an optional port an EmitterPort implements to take nullable values as
+	// the generated Null[T] value type, which the emitter then declares in the generated
+	// package. Every other emitter gets *T.
+	NullTypePort = emit.NullTypePort
+
 	// ReserverPort is an optional port an EmitterPort implements to say which names its
 	// generated code uses besides those the naming plan chooses, so the plan never chooses
 	// one of them.
@@ -294,6 +299,10 @@ type (
 
 	// AllowedColumn is a column a runtime query builder may filter or sort on.
 	AllowedColumn = sqlmodel.AllowedColumn
+
+	// ResultShape records how a query's own clauses use its result columns, which an emitter
+	// that rewrites a column in the select list must leave meaning the same.
+	ResultShape = sqlmodel.ResultShape
 
 	// SQLTemplate is a query's executable SQL as segments: text as written, and the parts
 	// code generation renders per driver, which are the placeholders, slice lists, output

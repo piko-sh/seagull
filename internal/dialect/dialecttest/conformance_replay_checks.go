@@ -27,6 +27,12 @@ import (
 	"seagull.sh/seagull/internal/sqlmodel"
 )
 
+// replayIDColumn names the replay fixture identifier.
+const replayIDColumn = "id"
+
+// replayNameColumn names the replay fixture label.
+const replayNameColumn = "name"
+
 const (
 	// replayMigration names the migration file the replay checks run after the base one.
 	replayMigration = "002_replay.up.sql"
@@ -113,10 +119,10 @@ func checkIfExistsFormsReplayAsTheEngineDoes(ctx context.Context, _ checkEnviron
 		return failedWith(problem)
 	}
 	var problems []string
-	if columns := catalogueColumnNames(catalogue, "items"); !slices.Equal(columns, []string{"id", "name"}) {
+	if columns := catalogueColumnNames(catalogue, "items"); !slices.Equal(columns, []string{replayIDColumn, replayNameColumn}) {
 		problems = append(problems, fmt.Sprintf("items must keep exactly the columns [id name], got %v", columns))
 	}
-	if columns := relationColumnNames(catalogue, "items_view"); columns != nil && !slices.Equal(columns, []string{"id", "name"}) {
+	if columns := relationColumnNames(catalogue, "items_view"); columns != nil && !slices.Equal(columns, []string{replayIDColumn, replayNameColumn}) {
 		problems = append(problems, fmt.Sprintf("items_view must keep the columns [id name] it was first created with, got %v", columns))
 	}
 	for _, schema := range catalogue.Schemas {
@@ -224,7 +230,7 @@ func checkRenamesReplayAsTheEngineDoes(ctx context.Context, _ checkEnvironment, 
 		problems = append(problems, "items must be gone once it is renamed")
 	}
 	for _, name := range fixture.Replay.RenamedRelations {
-		if columns := relationColumnNames(catalogue, name); !slices.Equal(columns, []string{"id", "name"}) {
+		if columns := relationColumnNames(catalogue, name); !slices.Equal(columns, []string{replayIDColumn, replayNameColumn}) {
 			problems = append(problems, fmt.Sprintf("the relation %s must hold the columns [id name] after the renames, got %v", name, columns))
 		}
 	}
@@ -248,7 +254,7 @@ func checkViewStarsExpandToTheirColumns(ctx context.Context, _ checkEnvironment,
 	}
 	var problems []string
 	for _, name := range []string{"star_view", "qualified_view"} {
-		if columns := relationColumnNames(catalogue, name); !slices.Equal(columns, []string{"id", "name"}) {
+		if columns := relationColumnNames(catalogue, name); !slices.Equal(columns, []string{replayIDColumn, replayNameColumn}) {
 			problems = append(problems, fmt.Sprintf("the view %s must hold the columns [id name] its star stands for, got %v", name, columns))
 		}
 	}
@@ -274,7 +280,7 @@ func checkViewsFollowTheirTablesAsTheDialectSays(ctx context.Context, _ checkEnv
 	if problem != "" {
 		return failedWith(problem)
 	}
-	want := []string{"id", "name"}
+	want := []string{replayIDColumn, replayNameColumn}
 	if fixture.NewDialect().Info().ViewsFollowTheirTables {
 		want = append(want, "extra")
 	}

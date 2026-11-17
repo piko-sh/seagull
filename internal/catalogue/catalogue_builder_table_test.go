@@ -438,3 +438,58 @@ func TestCreateIndexOnAMaterialisedViewIsAccepted(t *testing.T) {
 
 	require.Empty(t, diagnostics)
 }
+
+func TestSettingAColumnDefaultChangesOnlyTheDefault(t *testing.T) {
+	t.Parallel()
+
+	builder, _ := setupBuilderWithTable("items", sqlmodel.Column{Name: "id", Nullable: true}, sqlmodel.Column{Name: "label"})
+	table := builder.Catalogue().LookupTable("public", "items")
+
+	set := ast.NewCatalogueMutation(ast.MutationAlterTableAlterColumn, "public", "items", ast.WithColumnName("id"), ast.WithColumnDefault(true))
+	require.NoError(t, builder.applyAlterTableAlterColumn(set))
+	require.True(t, table.Columns[0].HasDefault)
+	require.True(t, table.Columns[0].Nullable)
+
+	dropped := ast.NewCatalogueMutation(ast.MutationAlterTableAlterColumn, "public", "items", ast.WithColumnName("id"), ast.WithColumnDefault(false))
+	require.NoError(t, builder.applyAlterTableAlterColumn(dropped))
+	require.False(t, table.Columns[0].HasDefault)
+
+	missing := ast.NewCatalogueMutation(ast.MutationAlterTableAlterColumn, "public", "items", ast.WithColumnName("absent"), ast.WithColumnDefault(true))
+	require.Error(t, builder.applyAlterTableAlterColumn(missing))
+}
+
+func TestRedefiningAColumnKeepsWhatTheNewDefinitionLeavesOut(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name    string
+		altered sqlmodel.Column
+		want    sqlmodel.Column
+	}{
+		{
+			name:    "an unstated comment and default are kept",
+			altered: sqlmodel.Column{Name: "id"},
+			want:    sqlmodel.Column{Name: "id", Comment: "the key", HasDefault: true},
+		},
+		{
+			name:    "a stated default replaces the old one but the comment is kept",
+			altered: sqlmodel.Column{Name: "id", HasDefault: true},
+			want:    sqlmodel.Column{Name: "id", Comment: "the key", HasDefault: true},
+		},
+		{
+			name:    "a stated comment is kept as written",
+			altered: sqlmodel.Column{Name: "id", Comment: "new"},
+			want:    sqlmodel.Column{Name: "id", Comment: "new", HasDefault: true},
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			altered := testCase.altered
+			keepUnstated(&altered, &sqlmodel.Column{Name: "id", Comment: "the key", HasDefault: true})
+
+			require.Equal(t, testCase.want, altered)
+		})
+	}
+}

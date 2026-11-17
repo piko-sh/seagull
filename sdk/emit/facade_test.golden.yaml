@@ -9,6 +9,10 @@ AllowedColumn: |- # Kind: Struct
       // Field
       SourceExpression string
       // Field
+      SourceQualifier string
+      // Field
+      SourceColumn string
+      // Field
       SQLType sqlmodel.SQLType
   }
 AnalysedQuery: |- # Kind: Struct
@@ -26,6 +30,10 @@ AnalysedQuery: |- # Kind: Struct
       // Field
       CountTemplate *sqlmodel.SQLTemplate
       // Field
+      FilteredTemplate *sqlmodel.SQLTemplate
+      // Field
+      FilteredCountTemplate *sqlmodel.SQLTemplate
+      // Field
       InsertTarget sqlmodel.TableName
       // Field
       RowModel sqlmodel.TableName
@@ -42,6 +50,8 @@ AnalysedQuery: |- # Kind: Struct
       // Field
       AllowedColumns []sqlmodel.AllowedColumn
       // Field
+      ResultShape sqlmodel.ResultShape
+      // Field
       Line int
       // Field
       Command sqlmodel.QueryCommand
@@ -49,6 +59,8 @@ AnalysedQuery: |- # Kind: Struct
       IsDynamic bool
       // Field
       DynamicRuntime bool
+      // Field
+      ReadsResultRows bool
       // Field
       ReadOnly bool
       // Field
@@ -189,6 +201,10 @@ QueryNaming: |- # Kind: Struct
       // Field
       CountConstant string
       // Field
+      FilteredConstant string
+      // Field
+      FilteredCountConstant string
+      // Field
       Label string
       // Field
       Params string
@@ -200,6 +216,8 @@ QueryNaming: |- # Kind: Struct
       Builder string
       // Field
       AllowedColumns string
+      // Field
+      FilteredColumns string
       // Field
       OrderBy string
       // Field
@@ -289,6 +307,17 @@ ReserverPort: |- # Kind: Interface
   interface {
       Reserve(*dialect.Facts, *emit.Style) emit.Reservation
   }
+ResultShape: |- # Kind: Struct
+  struct {
+      // Field
+      Named []int
+      // Field
+      Distinct bool
+      // Field
+      Compound bool
+      // Field
+      Ordinal bool
+  }
 SQLSegment: |- # Kind: Struct
   struct {
       // Field
@@ -362,6 +391,8 @@ Style: |- # Kind: Struct
       KeepStars bool
       // Field
       EmptySlices bool
+      // Field
+      NullablePointers bool
       // Field
       ReuseModels bool
       // Field

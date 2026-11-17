@@ -59,6 +59,7 @@ keys are described in [configuration](configuration.md#generated-code-go).
 | `JSONTags` | Controls column fields' JSON tag case, omission and `omitempty`. |
 | `StructTags` | Adds tags by key, substituting `{name}` with the column name. Column-specific tags can override them. |
 | `EmptySlices` | Returns an empty slice from a `many` method with no rows. |
+| `NullablePointers` | Writes a nullable value as a pointer, `*T`, rather than as the generated `Null[T]`. |
 | `DocComments` | Includes query descriptions and schema comments as Go documentation. |
 | `ReuseModels` | Reuses a table model when the analysed result matches it. |
 | `KeepStars` | Preserves `SELECT *`, `RETURNING *` and `table.*` instead of expanding their columns. |

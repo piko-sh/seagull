@@ -96,6 +96,19 @@
               ],
               "ForeignTable": "authors",
               "Kind": "foreign-key",
+              "Name": "books_ibfk_1",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              }
+            }
+          ],
+          "Indexes": [
+            {
+              "Columns": [
+                "author_id"
+              ],
+              "Name": "author_id",
               "Origin": {
                 "Filename": "001_schema.up.sql",
                 "Statement": 1

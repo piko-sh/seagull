@@ -13,8 +13,8 @@ FROM read_parquet($1)
 ORDER BY species;`
 
 type AuctionPricesRow struct {
-	Species    *string `json:"species"`
-	PencePerKg *int32  `json:"pence_per_kg"`
+	Species    Null[string] `json:"species"`
+	PencePerKg Null[int32]  `json:"pence_per_kg"`
 }
 
 func (queries *Queries) AuctionPrices(ctx context.Context, priceFile string) ([]AuctionPricesRow, error) {
@@ -24,12 +24,16 @@ func (queries *Queries) AuctionPrices(ctx context.Context, priceFile string) ([]
 	}
 	defer rows.Close()
 	var results []AuctionPricesRow
-	for rows.Next() {
+	if rows.Next() {
 		var row AuctionPricesRow
-		if err := rows.Scan(&row.Species, &row.PencePerKg); err != nil {
-			return nil, err
+		scanArgs := []any{&row.Species, &row.PencePerKg}
+		for more := true; more; more = rows.Next() {
+			row = AuctionPricesRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -147,8 +151,8 @@ GROUP BY species
 ORDER BY species;`
 
 type HarbourCatchRow struct {
-	Species string `json:"species"`
-	Kg      *int64 `json:"kg"`
+	Species string      `json:"species"`
+	Kg      Null[int64] `json:"kg"`
 }
 
 func (queries *Queries) HarbourCatch(ctx context.Context, harbour string) ([]HarbourCatchRow, error) {
@@ -158,12 +162,16 @@ func (queries *Queries) HarbourCatch(ctx context.Context, harbour string) ([]Har
 	}
 	defer rows.Close()
 	var results []HarbourCatchRow
-	for rows.Next() {
+	if rows.Next() {
 		var row HarbourCatchRow
-		if err := rows.Scan(&row.Species, &row.Kg); err != nil {
-			return nil, err
+		scanArgs := []any{&row.Species, &row.Kg}
+		for more := true; more; more = rows.Next() {
+			row = HarbourCatchRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -193,8 +201,8 @@ GROUP BY landings.boat
 ORDER BY landings.boat;`
 
 type LandingValuesRow struct {
-	Boat       string `json:"boat"`
-	ValuePence *int64 `json:"value_pence"`
+	Boat       string      `json:"boat"`
+	ValuePence Null[int64] `json:"value_pence"`
 }
 
 func (queries *Queries) LandingValues(ctx context.Context, priceFile string) ([]LandingValuesRow, error) {
@@ -204,12 +212,16 @@ func (queries *Queries) LandingValues(ctx context.Context, priceFile string) ([]
 	}
 	defer rows.Close()
 	var results []LandingValuesRow
-	for rows.Next() {
+	if rows.Next() {
 		var row LandingValuesRow
-		if err := rows.Scan(&row.Boat, &row.ValuePence); err != nil {
-			return nil, err
+		scanArgs := []any{&row.Boat, &row.ValuePence}
+		for more := true; more; more = rows.Next() {
+			row = LandingValuesRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -223,8 +235,8 @@ GROUP BY boat
 ORDER BY boat;`
 
 type TonnesPerBoatRow struct {
-	Boat   string   `json:"boat"`
-	Tonnes *float64 `json:"tonnes"`
+	Boat   string        `json:"boat"`
+	Tonnes Null[float64] `json:"tonnes"`
 }
 
 func (queries *Queries) TonnesPerBoat(ctx context.Context) ([]TonnesPerBoatRow, error) {
@@ -234,12 +246,16 @@ func (queries *Queries) TonnesPerBoat(ctx context.Context) ([]TonnesPerBoatRow, 
 	}
 	defer rows.Close()
 	var results []TonnesPerBoatRow
-	for rows.Next() {
+	if rows.Next() {
 		var row TonnesPerBoatRow
-		if err := rows.Scan(&row.Boat, &row.Tonnes); err != nil {
-			return nil, err
+		scanArgs := []any{&row.Boat, &row.Tonnes}
+		for more := true; more; more = rows.Next() {
+			row = TonnesPerBoatRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

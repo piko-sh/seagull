@@ -126,7 +126,7 @@ func TestGuardedRunReportsAPanickingCheckAsAFailureWithItsStackLoggedOnce(t *tes
 			t.Parallel()
 
 			var output bytes.Buffer
-			ctx := logging.ContextWithLogger(t.Context(), slog.New(slog.NewTextHandler(&output, nil)))
+			ctx := logging.WithLogger(t.Context(), slog.New(slog.NewTextHandler(&output, nil)))
 
 			result := guardedRun(ctx, &subject{}, check{name: "Panics", run: testCase.run, toolchain: false})
 
@@ -170,7 +170,7 @@ func TestRunReportsAPanickingEmitterInsteadOfCrashing(t *testing.T) {
 
 			current := newSubject(&Suite{Name: "panics", New: testCase.emitter}, postgres.New(), &runtimeLane{})
 			var output bytes.Buffer
-			ctx := logging.ContextWithLogger(t.Context(), slog.New(slog.NewTextHandler(&output, nil)))
+			ctx := logging.WithLogger(t.Context(), slog.New(slog.NewTextHandler(&output, nil)))
 
 			result := guardedRun(ctx, current, check{name: "GeneratesWithoutError", run: checkGeneratesWithoutError, toolchain: false})
 

@@ -19,6 +19,7 @@
 package dialectkit
 
 import (
+	"fmt"
 	"slices"
 
 	"seagull.sh/seagull/internal/dialect/ast"
@@ -34,9 +35,10 @@ const (
 	// list under their own names, as PostgreSQL does.
 	UndeclaredColumnsKept UndeclaredColumns = iota
 
-	// UndeclaredColumnsDropped drops the projected columns past the end of a shorter
-	// declared list, so the view has exactly the columns it declares.
-	UndeclaredColumnsDropped
+	// UndeclaredColumnsRefused refuses a declared list shorter than the projection, as
+	// CockroachDB, MySQL, MariaDB, SQLite and ClickHouse do. Where the projection holds a
+	// star, whose width is not known yet, the columns past the end of the list are dropped.
+	UndeclaredColumnsRefused
 )
 
 // ChangingRows returns an analyser that records the kind of row change its statement
@@ -106,18 +108,28 @@ func ColumnsFromNames(names []string) []sqlmodel.Column {
 // column list, in order, keeping each column's expression and source so it is still
 // typed. A projected column the list names is no longer a star.
 //
-// A list longer than the projection adds a name-only column for each name past its end,
-// rather than indexing out of bounds; what happens to projected columns past the end of a
-// shorter list is the undeclared argument's choice.
+// Every engine refuses a list longer than a projection with no star, and the undeclared
+// argument says whether a shorter one is taken. Where the projection holds a star the
+// lengths are not compared, a name past the projection's end adds a name-only column, and
+// a refused shorter list drops the columns past its end.
 //
 // Takes analysis (*ast.RawQueryAnalysis) whose output columns are renamed in place; nil
 // is left alone.
 // Takes names ([]string) which is the declared column list.
-// Takes undeclared (UndeclaredColumns) which says whether projected columns the list does
-// not name are kept or dropped.
-func OverlayViewColumnNames(analysis *ast.RawQueryAnalysis, names []string, undeclared UndeclaredColumns) {
+// Takes undeclared (UndeclaredColumns) which says whether a shorter list is taken.
+//
+// Returns error when the list's length is one the engine refuses.
+func OverlayViewColumnNames(analysis *ast.RawQueryAnalysis, names []string, undeclared UndeclaredColumns) error {
 	if analysis == nil {
-		return
+		return nil
+	}
+	if projected := len(analysis.OutputColumns); !slices.ContainsFunc(analysis.OutputColumns, IsStarColumn) {
+		if len(names) > projected {
+			return fmt.Errorf("the view's column list has more names than its query has columns (%d names, %d columns); the engine refuses the surplus names", len(names), projected)
+		}
+		if undeclared == UndeclaredColumnsRefused && len(names) < projected {
+			return fmt.Errorf("the view's column list has fewer names than its query has columns (%d names, %d columns); the engine needs a name for every column", len(names), projected)
+		}
 	}
 	for columnIndex, name := range names {
 		column := ast.RawOutputColumn{
@@ -136,7 +148,8 @@ func OverlayViewColumnNames(analysis *ast.RawQueryAnalysis, names []string, unde
 		}
 		analysis.OutputColumns = append(analysis.OutputColumns, column)
 	}
-	if undeclared == UndeclaredColumnsDropped && len(names) < len(analysis.OutputColumns) {
+	if undeclared == UndeclaredColumnsRefused && len(names) < len(analysis.OutputColumns) {
 		analysis.OutputColumns = analysis.OutputColumns[:len(names)]
 	}
+	return nil
 }

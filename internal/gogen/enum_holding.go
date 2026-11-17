@@ -60,6 +60,10 @@ type EnumHolding struct {
 	// Pointer reports a value held through a pointer, as a nullable one is, or, for
 	// EnumSlice, a slice whose elements are pointers, as an array of nullable elements is.
 	Pointer bool
+
+	// Null reports a value held in the generated Null type, as a nullable one is unless the
+	// style keeps pointers.
+	Null bool
 }
 
 const (
@@ -77,6 +81,9 @@ const (
 
 	// stepField is a struct's field on the way to an enum value.
 	stepField
+
+	// stepNull is the value of the generated Null type on the way to an enum value.
+	stepNull
 )
 
 // Strings returns an expression converting a value held as the holding says to Go's own
@@ -114,6 +121,9 @@ func (h EnumHolding) StringType(imports *goast.ImportTracker) ast.Expr {
 	if h.Pointer {
 		text = &ast.StarExpr{X: text}
 	}
+	if h.Null {
+		return &ast.IndexExpr{X: goastutil.CachedIdent(sqlmodel.NullTypeName), Index: text}
+	}
 	switch h.Shape {
 	case EnumSlice:
 		return &ast.ArrayType{Elt: text}
@@ -142,6 +152,10 @@ func (h EnumHolding) convert(value ast.Expr, target string, vocabulary Vocabular
 		return h.helperCall(SuffixConvertStringMap, value, target, vocabulary)
 	case h.Pointer:
 		return goastutil.CallExpr(&ast.ParenExpr{X: &ast.StarExpr{X: goastutil.CachedIdent(target)}}, value)
+	case h.Null:
+		return goastutil.CompositeLit(&ast.IndexExpr{X: goastutil.CachedIdent(sqlmodel.NullTypeName), Index: goastutil.CachedIdent(target)},
+			goastutil.KeyValueIdent(goast.FieldNullValue, goastutil.CallExpr(goastutil.CachedIdent(target), goastutil.SelectorExprFrom(value, goast.FieldNullValue))),
+			goastutil.KeyValueIdent(goast.FieldNullValid, goastutil.SelectorExprFrom(value, goast.FieldNullValid)))
 	default:
 		return goastutil.CallExpr(goastutil.CachedIdent(target), value)
 	}
@@ -194,6 +208,10 @@ type enumWalk struct {
 func (w *enumWalk) visit(sqlType sqlmodel.SQLType, goType sqlmodel.GoType, path []enumStep, depth int) {
 	if depth >= sqlmodel.MaxTypeDepth {
 		return
+	}
+	if sqlmodel.IsNullValue(goType) {
+		path = slices.Concat(path, []enumStep{stepNull})
+		goType = goType.Composite.Arguments[0]
 	}
 	name, pointer := strings.CutPrefix(goType.Name, pointerPrefix)
 	if pointer {
@@ -268,7 +286,7 @@ func (w *enumWalk) visitStruct(sqlType sqlmodel.SQLType, goType sqlmodel.GoType,
 	case packageType(goType):
 		for index := range sqlType.StructFields {
 			field := sqlType.StructFields[index].SQLType
-			w.visit(field, w.resolver.Resolve(field, field.Nullable), fieldPath, depth+1)
+			w.visit(field, sqlmodel.NullAsPointer(w.resolver.Resolve(field, field.Nullable)), fieldPath, depth+1)
 		}
 	default:
 	}
@@ -290,24 +308,26 @@ func (w *enumWalk) holding(resolved sqlmodel.GoType) EnumHolding {
 		path := w.found[0].path
 		switch {
 		case len(path) == 0:
-			return EnumHolding{Key: nil, Name: name, Shape: EnumValue, Pointer: false}
+			return EnumHolding{Key: nil, Name: name, Shape: EnumValue, Pointer: false, Null: false}
+		case slices.Equal(path, []enumStep{stepNull}):
+			return EnumHolding{Key: nil, Name: name, Shape: EnumValue, Pointer: false, Null: true}
 		case slices.Equal(path, []enumStep{stepPointer}):
-			return EnumHolding{Key: nil, Name: name, Shape: EnumValue, Pointer: true}
+			return EnumHolding{Key: nil, Name: name, Shape: EnumValue, Pointer: true, Null: false}
 		case slices.Equal(path, []enumStep{stepSlice}):
-			return EnumHolding{Key: nil, Name: name, Shape: EnumSlice, Pointer: false}
+			return EnumHolding{Key: nil, Name: name, Shape: EnumSlice, Pointer: false, Null: false}
 		case slices.Equal(path, []enumStep{stepSlice, stepPointer}):
-			return EnumHolding{Key: nil, Name: name, Shape: EnumSlice, Pointer: true}
+			return EnumHolding{Key: nil, Name: name, Shape: EnumSlice, Pointer: true, Null: false}
 		case slices.Equal(path, []enumStep{stepMapValue}):
-			return EnumHolding{Key: resolved.Composite.Key, Name: name, Shape: EnumMap, Pointer: false}
+			return EnumHolding{Key: resolved.Composite.Key, Name: name, Shape: EnumMap, Pointer: false, Null: false}
 		default:
 		}
 	}
 	for _, found := range w.found {
 		if slices.Contains(found.path, stepMapKey) || slices.Contains(found.path, stepMapValue) {
-			return EnumHolding{Key: nil, Name: name, Shape: EnumNestedInMap, Pointer: false}
+			return EnumHolding{Key: nil, Name: name, Shape: EnumNestedInMap, Pointer: false, Null: false}
 		}
 	}
-	return EnumHolding{Key: nil, Name: name, Shape: EnumNested, Pointer: false}
+	return EnumHolding{Key: nil, Name: name, Shape: EnumNested, Pointer: false, Null: false}
 }
 
 // HeldEnum describes how a generated Go type contains an enum.

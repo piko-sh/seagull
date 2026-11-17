@@ -191,7 +191,8 @@ func TestDefaultReservationReservesEveryDeclarationOfTheHelperSources(t *testing
 	reservation := emitkit.DefaultReservation(&dialect.Facts{}, style)
 
 	for _, canonical := range helperSourceDeclarations(t) {
-		if canonical == emit.InlineJSONTypeName || canonical == style.QueryNames.Function {
+		if canonical == emit.InlineJSONTypeName || canonical == emit.InlineNullTypeName ||
+			canonical == emit.InlineNullOfName || canonical == emit.InlineNullFromName || canonical == style.QueryNames.Function {
 			continue
 		}
 		name, _ := styledHelperName(canonical)

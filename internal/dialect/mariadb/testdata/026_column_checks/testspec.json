@@ -1,0 +1,4 @@
+{
+  "description": "A column's own CHECK is a check named after the column, as MariaDB records it. It keeps that name when the column is renamed, and dropping the column or redefining it with MODIFY or CHANGE removes it.",
+  "expectedDiagnosticCount": 0
+}

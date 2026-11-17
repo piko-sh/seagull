@@ -97,10 +97,49 @@
           "Constraints": [
             {
               "Columns": [
+                "id"
+              ],
+              "Kind": "primary-key",
+              "Name": "orders_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            },
+            {
+              "Columns": [
                 "email"
               ],
               "Kind": "unique",
               "Name": "orders_email_key",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            }
+          ],
+          "Indexes": [
+            {
+              "Columns": [
+                "email"
+              ],
+              "Name": "orders_email_idx",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            },
+            {
+              "Columns": [
+                "doc"
+              ],
+              "Name": "orders_doc_idx",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            },
+            {
+              "Columns": [
+                "ordered_on"
+              ],
+              "Name": "orders_ordered_on_idx",
               "Origin": {
                 "Filename": "001_schema.up.sql"
               }

@@ -27,6 +27,9 @@ import (
 	"seagull.sh/seagull/tests/integration/internal/harness"
 )
 
+const cockroachDBDeadlineScale = 4
+
 func TestMain(m *testing.M) {
-	harness.Main(m, startServer, leakcheck.IgnoreNetworkPollers())
+	harness.ScaleDeadlines(cockroachDBDeadlineScale)
+	harness.Main(m, harness.SharedServer("cockroachdb", &testConnectionString, startServer), leakcheck.IgnoreNetworkPollers())
 }

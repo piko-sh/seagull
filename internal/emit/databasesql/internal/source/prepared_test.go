@@ -187,7 +187,7 @@ func namedValues(arguments []driver.NamedValue) []driver.Value {
 	return values
 }
 
-func openFakeDatabase(t *testing.T, refusedQuery string) (*sql.DB, *fakeDatabase) {
+func openFakeDatabase(t testing.TB, refusedQuery string) (*sql.DB, *fakeDatabase) {
 	t.Helper()
 	fake := &fakeDatabase{refusedQuery: refusedQuery}
 	database := sql.OpenDB(fake)
@@ -472,5 +472,39 @@ func TestPreparedTransactionPreservesDoneErrorsAfterWarmCalls(t *testing.T) {
 		_, err = bound.QueryContext(t.Context(), staticQuery)
 		require.ErrorIs(t, err, sql.ErrTxDone)
 		require.ErrorIs(t, bound.QueryRowContext(t.Context(), staticQuery).Err(), sql.ErrTxDone)
+	}
+}
+
+func TestPreparedTransactionBindsEachStatementOnce(t *testing.T) {
+	t.Parallel()
+
+	database, _ := openFakeDatabase(t, "")
+	prepared := prepareStatically(t, database, staticQuery)
+	transaction, err := prepared.BeginTx(t.Context(), nil)
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = transaction.Rollback() })
+	bound, ok := prepared.WrapDBTX(transaction).(*preparedTx)
+	require.True(t, ok)
+	runEveryRoute(t, bound, staticQuery)
+	runEveryRoute(t, bound, staticQuery)
+	require.Len(t, bound.statements, 1)
+}
+
+func BenchmarkPreparedTransactionExec(b *testing.B) {
+	database, _ := openFakeDatabase(b, "")
+	prepared, err := Prepare(b.Context(), database)
+	require.NoError(b, err)
+	prepared.stmts[staticQuery], err = database.PrepareContext(b.Context(), staticQuery)
+	require.NoError(b, err)
+	transaction, err := prepared.BeginTx(b.Context(), nil)
+	require.NoError(b, err)
+	b.Cleanup(func() { _ = transaction.Rollback() })
+	bound, ok := prepared.WrapDBTX(transaction).(*preparedTx)
+	require.True(b, ok)
+	b.ReportAllocs()
+	for b.Loop() {
+		if _, err := bound.ExecContext(b.Context(), staticQuery, 7); err != nil {
+			b.Fatal(err)
+		}
 	}
 }

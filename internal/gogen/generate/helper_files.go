@@ -21,6 +21,7 @@ package generate
 import (
 	"cmp"
 	"context"
+	"fmt"
 	"go/scanner"
 	"go/token"
 	"slices"
@@ -69,6 +70,28 @@ func (names *queryNames) add(constant, label string, rendered *emitkit.Rendered,
 	if prefix := rendered.SQL[:edit]; !names.seenPrefixes[prefix] {
 		names.seenPrefixes[prefix] = true
 		names.prefixes = append(names.prefixes, helpers.QueryNamePrefix{Constant: constant, Length: edit, Name: label})
+	}
+}
+
+// addQuery names the SQL constants a query runs: its own, and a runtime builder's count
+// and filtered constants when it has them.
+//
+// Takes query (*gogen.Query) which is the rendered query.
+// Takes repeatsRow (bool) which is true when the driver repeats a batch's VALUES row.
+func (names *queryNames) addQuery(query *gogen.Query, repeatsRow bool) {
+	forms := []struct {
+		rendered *emitkit.Rendered
+		constant string
+	}{
+		{rendered: &query.Rendered, constant: query.Naming.SQLConstant},
+		{rendered: query.Count, constant: query.Naming.CountConstant},
+		{rendered: query.Filtered, constant: query.Naming.FilteredConstant},
+		{rendered: query.FilteredCount, constant: query.Naming.FilteredCountConstant},
+	}
+	for _, form := range forms {
+		if form.rendered != nil {
+			names.add(form.constant, query.Naming.Label, form.rendered, gogen.FirstEdit(query, form.rendered, repeatsRow))
+		}
 	}
 }
 
@@ -173,17 +196,16 @@ func expandsAnyList(ctx context.Context, emission *gogen.Emission) (bool, error)
 	return false, nil
 }
 
-// queryNamesFile renders the query-names file: the lookup that names the query any SQL
-// the package runs came from, for labelling telemetry.
+// queryNamesFile renders the query-names file. Its lookup names the query any SQL the
+// package runs came from, for labelling telemetry.
 //
-// The lookup holds every query's SQL constant, and a runtime builder's count constant,
-// mapped to the query's label, in the naming plan's order; a constant whose SQL another
-// earlier constant already holds is left out. SQL the generated code edits at run time,
-// writing a slice's list, a sortable ORDER BY, a runtime builder's additions or the rows
-// of a batch whose driver repeats the VALUES row, is named by the longest prefix it
-// starts with: each such constant up to its first edit, so the lookup holds a prefix only
-// where the generated code reads one. A copyfrom query whose method runs no SQL text,
-// streaming its rows through a copy protocol, is left out.
+// The lookup maps every query's SQL constant, and a runtime builder's count and filtered
+// constants, to the query's label, in the naming plan's order. A constant whose SQL an
+// earlier constant already holds is left out. SQL the generated code edits at run time is
+// named by the longest prefix it starts with, which is each such constant up to its first
+// edit. Such edits write a slice's list, a sortable ORDER BY, a runtime builder's
+// additions or the rows of a batch whose driver repeats the VALUES row. A copyfrom query
+// whose method runs no SQL text is left out.
 //
 // Takes emission (*gogen.Emission) which is the package's generation.
 //
@@ -204,10 +226,7 @@ func queryNamesFile(ctx context.Context, emission *gogen.Emission) (sqlmodel.Gen
 		if !runsSQL {
 			continue
 		}
-		names.add(query.Naming.SQLConstant, query.Naming.Label, &query.Rendered, gogen.FirstEdit(query, &query.Rendered, repeatsRow))
-		if query.Count != nil {
-			names.add(query.Naming.CountConstant, query.Naming.Label, query.Count, gogen.FirstEdit(query, query.Count, repeatsRow))
-		}
+		names.addQuery(query, repeatsRow)
 	}
 	slices.SortStableFunc(names.prefixes, func(left, right helpers.QueryNamePrefix) int {
 		return cmp.Compare(right.Length, left.Length)
@@ -243,6 +262,42 @@ func inlineJSONFile(ctx context.Context, emission *gogen.Emission, referenced ma
 		return sqlmodel.GeneratedFile{Name: "", Content: nil}, nil
 	}
 	return helpers.InlineJSON(emission.Request.Package, emission.Vocabulary, needsScanInto, needsType)
+}
+
+// inlineNullFiles renders the file declaring the generated Null type when the generated
+// code refers to the type.
+//
+// It adds the file of the driver's own methods on the type when the driver has some. It
+// renders none when the code does not refer to the type, or when a model or named type of
+// the package has the name.
+//
+// Takes emission (*gogen.Emission) which is the package's generation.
+// Takes referenced (map[string]struct{}) which holds the unqualified identifiers of the
+// files generated so far.
+//
+// Returns []sqlmodel.GeneratedFile which holds the helper files, or none.
+// Returns error when a helper cannot be rendered or the context is done.
+func inlineNullFiles(ctx context.Context, emission *gogen.Emission, referenced map[string]struct{}) ([]sqlmodel.GeneratedFile, error) {
+	if err := stopped(ctx, "the Null type for "+emission.Request.Package); err != nil {
+		return nil, err
+	}
+	_, needed := referenced[emit.InlineNullTypeName]
+	if !needed || declaredByPlan(&emission.Request.Naming, emit.InlineNullTypeName) {
+		return nil, nil
+	}
+	connection := &emission.Driver.Connection
+	file, err := helpers.InlineNull(emission.Request.Package, emission.Vocabulary, connection.NativeValues)
+	if err != nil {
+		return nil, err
+	}
+	if connection.NullMethods == nil {
+		return []sqlmodel.GeneratedFile{file}, nil
+	}
+	driverMethods, err := connection.NullMethods(emission.Request.Package, emission.Vocabulary)
+	if err != nil {
+		return nil, fmt.Errorf("emitting the driver's Null methods: %w", err)
+	}
+	return []sqlmodel.GeneratedFile{file, driverMethods}, nil
 }
 
 // convertStringsFile renders the string conversion helpers used by a package.

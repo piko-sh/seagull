@@ -1,0 +1,3 @@
+{
+  "description": "Runtime filters land after FINAL, SAMPLE and ARRAY JOIN and beside PREWHERE, and their counts agree with the rows."
+}

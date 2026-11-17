@@ -60,6 +60,19 @@ The [engine guide](../../how-to/mysql-mariadb.md) and [runnable examples](../../
 - `CREATE OR REPLACE TABLE` replaces a table with the new definition, in its column list,
   `LIKE` and `AS SELECT` forms and for a `TEMPORARY` table, as MariaDB drops the old table
   first; `CREATE OR REPLACE INDEX`, `DATABASE` and `TRIGGER` replay too. The `mysql` dialect takes `OR REPLACE` only on views.
+- A column's own `CHECK` is a constraint named after the column, as MariaDB records it.
+  `DROP CONSTRAINT` does not reach it; dropping the column, or redefining it with `MODIFY`
+  or `CHANGE`, removes it. MariaDB ends a column definition at its `CHECK`, which only a
+  `REFERENCES` clause may follow, and names nothing but `REFERENCES` with `CONSTRAINT`, so
+  `x INT CHECK (x > 0) NOT NULL` and `x INT CONSTRAINT positive CHECK (x > 0)` are
+  [Q010](../diagnostics.md#q010).
+- Unlike MySQL, renaming a column a check reads is taken, and a primary key's column
+  declared `NULL` stays `NOT NULL`, as MariaDB keeps it.
+- An unnamed foreign key is named by a number alone, as MariaDB 12 names it: `CREATE TABLE`
+  numbers them from 1 and `ALTER TABLE` from one past the highest number the table's foreign
+  keys hold, and renaming the table keeps them, so drop one with
+  ``DROP FOREIGN KEY `1` ``. A `REFERENCES` clause must list the referenced columns, and
+  `MODIFY` and `CHANGE` take none; each of those is [Q010](../diagnostics.md#q010).
 - A column read outside every aggregate of a query that aggregates without `GROUP BY`,
   as in `SELECT title, COUNT(*) FROM books`, is nullable without a diagnostic: MariaDB's
   default mode returns one row, in which the column is `NULL` when nothing matches.

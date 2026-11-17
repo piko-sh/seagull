@@ -1,0 +1,101 @@
+[
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 1,
+    "Name": "ArrowLambdas",
+    "OutputColumns": [
+      {
+        "Name": "high",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int4",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "int4[]"
+        }
+      },
+      {
+        "Name": "total",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ArrowLambdas, many)\nSELECT list_filter(scores, score -\u003e score \u003e $1) AS high,\n       list_reduce(scores, (total, score) -\u003e total + score) AS total\nFROM boats;",
+    "Template": "SELECT ⟨c0 aliased:list_filter(scores, score -\u003e score \u003e ⟨p0⟩)⟩ AS high,\\n       ⟨c1 aliased:list_reduce(scores, (total, score) -\u003e total + score)⟩ AS total\\nFROM boats;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 6,
+    "Name": "KeywordLambdasAndJSONArrows",
+    "OutputColumns": [
+      {
+        "Name": "high",
+        "SQLType": {
+          "Category": "array",
+          "ElementType": {
+            "Category": "integer",
+            "EngineName": "int4",
+            "Nullable": true,
+            "Width": 32
+          },
+          "EngineName": "int4[]"
+        }
+      },
+      {
+        "Name": "harbour",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "json",
+          "EngineName": "json"
+        }
+      },
+      {
+        "Name": "skipper",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(KeywordLambdasAndJSONArrows, many)\nSELECT list_filter(scores, lambda score: score \u003e $1) AS high,\n       log -\u003e '$.harbour' AS harbour,\n       log -\u003e\u003e '$.skipper' AS skipper\nFROM boats;",
+    "Template": "SELECT ⟨c0 aliased:list_filter(scores, lambda score: score \u003e ⟨p0⟩)⟩ AS high,\\n       ⟨c1 aliased:log -\u003e '$.harbour'⟩ AS harbour,\\n       ⟨c2 aliased:log -\u003e\u003e '$.skipper'⟩ AS skipper\\nFROM boats;⟨arguments p0⟩"
+  }
+]

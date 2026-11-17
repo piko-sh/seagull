@@ -11,10 +11,10 @@ import (
 const getOrderSQL = `SELECT id, customer, basket, delivery FROM orders WHERE id = {p_id:UInt64};`
 
 type GetOrderRow struct {
-	ID       uint64  `json:"id"`
-	Customer string  `json:"customer"`
-	Basket   string  `json:"basket"`
-	Delivery *string `json:"delivery"`
+	ID       uint64       `json:"id"`
+	Customer string       `json:"customer"`
+	Basket   string       `json:"basket"`
+	Delivery Null[string] `json:"delivery"`
 }
 
 func (queries *Queries) GetOrder(ctx context.Context, id uint64) (GetOrderRow, error) {
@@ -36,10 +36,10 @@ WHERE JSONExtractString(basket, 'fish') = {p_fish:String}
 ORDER BY id;`
 
 type OrdersWithFishRow struct {
-	ID       uint64  `json:"id"`
-	Customer string  `json:"customer"`
-	Extras   string  `json:"extras"`
-	Address  *string `json:"address"`
+	ID       uint64       `json:"id"`
+	Customer string       `json:"customer"`
+	Extras   string       `json:"extras"`
+	Address  Null[string] `json:"address"`
 }
 
 func (queries *Queries) OrdersWithFish(ctx context.Context, fish string) ([]OrdersWithFishRow, error) {
@@ -49,12 +49,16 @@ func (queries *Queries) OrdersWithFish(ctx context.Context, fish string) ([]Orde
 	}
 	defer rows.Close()
 	var results []OrdersWithFishRow
-	for rows.Next() {
+	if rows.Next() {
 		var row OrdersWithFishRow
-		if err := rows.Scan(&row.ID, &row.Customer, &row.Extras, &row.Address); err != nil {
-			return nil, err
+		scanArgs := []any{&row.ID, &row.Customer, &row.Extras, &row.Address}
+		for more := true; more; more = rows.Next() {
+			row = OrdersWithFishRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -69,7 +73,7 @@ type PlaceOrderParams struct {
 	ID       uint64
 	Customer string
 	Basket   string
-	Delivery *string
+	Delivery Null[string]
 }
 
 func (queries *Queries) PlaceOrder(ctx context.Context, params PlaceOrderParams) error {

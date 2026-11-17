@@ -85,6 +85,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        2
+      ]
+    },
     "SQL": "-- sgl.query(name: SearchNotices, command: many)\nSELECT rowid, title, rank\nFROM notices\nWHERE notices MATCH ?\nORDER BY rank;",
     "Template": "SELECT ⟨c0:rowid⟩, ⟨c1:title⟩, ⟨c2:rank⟩\\nFROM notices\\nWHERE notices MATCH ⟨p0⟩\\nORDER BY rank;⟨arguments p0⟩"
   },

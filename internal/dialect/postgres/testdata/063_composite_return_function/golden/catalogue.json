@@ -132,6 +132,19 @@
               }
             }
           ],
+          "Constraints": [
+            {
+              "Columns": [
+                "id"
+              ],
+              "Kind": "primary-key",
+              "Name": "contacts_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              }
+            }
+          ],
           "Name": "contacts",
           "Origin": {
             "Filename": "001_schema.up.sql",

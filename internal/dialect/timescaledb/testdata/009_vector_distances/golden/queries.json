@@ -100,6 +100,9 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Compound": true
+    },
     "SQL": "-- sgl.query(name: Labelled, command: many)\nSELECT id, label FROM items UNION ALL VALUES (0, 'none');",
     "Template": "SELECT id, label FROM items UNION ALL VALUES (0, 'none');"
   }

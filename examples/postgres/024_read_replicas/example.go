@@ -81,12 +81,13 @@ type sqlStateError interface {
 	error
 
 	// SQLState returns the five-character SQLSTATE code.
+	//
+	// Returns string which is the five-character SQLSTATE code.
 	SQLState() string
 }
 
-// run records sightings and reads them back through Queries built with NewWithReplica,
-// printing which connection each statement went to. It then sends the queries that only
-// look like reads straight to the reader, to show why Seagull routes them to the writer.
+// run routes sighting queries between a primary and a read-only replica. It also sends
+// write and lock queries directly to the replica to show their refusal.
 //
 // Takes writer (*sql.DB) which is the migrated primary database.
 // Takes reader (*sql.DB) which is a read-only connection to the same data.
@@ -112,15 +113,15 @@ func run(ctx context.Context, writer, reader *sql.DB, output io.Writer) error {
 	}
 
 	// LogSighting is a SELECT, but log_sighting inserts a row, so it goes to the writer. A
-	// plpgsql function may return NULL, so ID is a pointer.
+	// plpgsql function may return NULL, so ID is a Null[int64].
 	logged, err := queries.LogSighting(ctx, store.LogSightingParams{Species: "puffin", Place: "the cliffs"})
 	if err != nil {
 		return fmt.Errorf("logging a puffin: %w", err)
 	}
-	if logged.ID == nil {
+	if !logged.ID.Valid {
 		return errors.New("log_sighting returned NULL")
 	}
-	fmt.Fprintf(output, "        logged sighting %d\n", *logged.ID)
+	fmt.Fprintf(output, "        logged sighting %d\n", logged.ID.V)
 
 	// ListSightings calls sighting_label, whose body only concatenates its arguments, so it
 	// stays read-only and goes to the reader. With these non-NULL species and place columns,
@@ -159,10 +160,8 @@ func run(ctx context.Context, writer, reader *sql.DB, output io.Writer) error {
 	return tryOnReader(ctx, store.New(reader), herring.ID, output)
 }
 
-// tryOnReader sends three queries that write or lock straight to the reader, which
-// refuses each one, as a replica would, with SQLSTATE 25006, read_only_sql_transaction.
-// pgx reports a server error as a *pgconn.PgError, and its SQLState method gives the
-// code, which stays the same where the wording of the message does not.
+// tryOnReader sends write and lock queries to the reader and prints their SQLSTATE codes.
+// It requires each query to return a server error with a SQLSTATE code.
 //
 // Takes onReader (*store.Queries) which runs everything on the reader.
 // Takes sighting (int64) which is a sighting to try to lock.

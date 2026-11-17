@@ -546,7 +546,7 @@ linters:
         text: "fieldalignment"
 
       - linters: [ exhaustive ]
-        text: 'switch of type reflect\.Kind'
+        text: 'switch of type reflect\.Kind|missing cases in expression switch: reflect\.'
 
       - path: _test\.go$
         linters: [ exhaustive ]

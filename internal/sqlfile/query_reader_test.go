@@ -414,3 +414,33 @@ func TestSplitQueryFileReportsWhereItStoppedReadingTheFile(t *testing.T) {
 		})
 	}
 }
+
+func TestSplitQueryFileKeepsDirectiveContinuationOwnership(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name  string
+		first string
+	}{
+		{name: "unknown call", first: "-- sgl(\n-- value )"},
+		{name: "query call", first: "-- sgl.query(\n-- First, many)"},
+		{name: "parameter call", first: "-- sgl.query(First, many)\n-- $1 as sgl.param(\n-- id)"},
+		{name: "nested values", first: "-- sgl.query(First, many)\n-- sgl.embed(\n-- Child, fields: [id, score])"},
+		{name: "quoted brackets", first: "-- sgl.query(First, many)\n-- sgl.embed(\n-- \"( )\")"},
+		{name: "unterminated directive", first: "-- sgl.query(First, many)\n-- sgl.embed(\n-- Child,"},
+		{name: "unterminated quoted value", first: "-- sgl.query(First, many)\n-- sgl.embed(\n-- 'Child"},
+	}
+	for _, current := range cases {
+		t.Run(current.name, func(t *testing.T) {
+			t.Parallel()
+
+			second := "-- sgl.query(Second, one)\nSELECT 2;"
+			blocks, truncated := SplitQueryFile([]byte(current.first+"\n"+second), standardSyntax)
+			require.Zero(t, truncated)
+			require.Equal(t, []wantBlock{
+				{sql: current.first, startLine: 1},
+				{sql: second, startLine: strings.Count(current.first, "\n") + 2},
+			}, blocksOf(blocks))
+		})
+	}
+}

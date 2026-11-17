@@ -28,6 +28,12 @@ import (
 	"seagull.sh/seagull/internal/sqlmodel"
 )
 
+// conformanceSamplesMigration names the shared samples migration.
+const conformanceSamplesMigration = "001_samples.up.sql"
+
+// conformanceSamplesQuery names the shared samples query file.
+const conformanceSamplesQuery = "samples.sql"
+
 const (
 	// problemFormat reports a problem described in full.
 	problemFormat = "%s"
@@ -95,8 +101,8 @@ func checkAggregatedNonNullElementsAreNotPointers(ctx context.Context, _ checkEn
 	engine := fixture.NewDialect()
 	query := "SELECT " + fixture.Elements.Aggregate + " AS ids FROM samples"
 	emitter, result, err := runGenerate(ctx, engine,
-		map[string]string{"001_samples.up.sql": fixture.Elements.Migration},
-		map[string]string{"samples.sql": directiveLine(engine, elementQueryName, "one") + query + ";"})
+		map[string]string{conformanceSamplesMigration: fixture.Elements.Migration},
+		map[string]string{conformanceSamplesQuery: directiveLine(engine, elementQueryName, "one") + query + ";"})
 	if err != nil {
 		return failed(generationFatalFormat, err)
 	}
@@ -170,8 +176,8 @@ func elementParameterType(ctx context.Context, engine dialect.DialectPort, fixtu
 	chosen := app.DefaultPreset()
 	chosen.NonNullElements = nonNull
 	emitter, result, err := runGenerate(ctx, engine,
-		map[string]string{"001_samples.up.sql": fixture.Elements.Migration},
-		map[string]string{"samples.sql": directiveLine(engine, parameterQueryName, "many") + query + ";"},
+		map[string]string{conformanceSamplesMigration: fixture.Elements.Migration},
+		map[string]string{conformanceSamplesQuery: directiveLine(engine, parameterQueryName, "many") + query + ";"},
 		app.WithPreset(chosen))
 	if err != nil {
 		return sqlmodel.SQLType{}, "generation itself should not fail fatally: " + err.Error()
@@ -199,8 +205,8 @@ func elementColumnType(ctx context.Context, engine dialect.DialectPort, fixture 
 	chosen := app.DefaultPreset()
 	chosen.NonNullElements = nonNull
 	emitter, result, err := runGenerate(ctx, engine,
-		map[string]string{"001_samples.up.sql": fixture.Elements.Migration},
-		map[string]string{"samples.sql": directiveLine(engine, elementQueryName, "many") + "SELECT readings FROM samples;"},
+		map[string]string{conformanceSamplesMigration: fixture.Elements.Migration},
+		map[string]string{conformanceSamplesQuery: directiveLine(engine, elementQueryName, "many") + "SELECT readings FROM samples;"},
 		app.WithPreset(chosen))
 	if err != nil {
 		return sqlmodel.SQLType{}, "generation itself should not fail fatally: " + err.Error()
@@ -259,8 +265,8 @@ func checkBracketedValuesLeaveLaterParametersTheirColumns(ctx context.Context, _
 // Returns []string which describes each problem found.
 func bracketedValueProblems(ctx context.Context, engine dialect.DialectPort, fixture *Fixture, statement, wantName string) []string {
 	emitter, result, err := runGenerate(ctx, engine,
-		map[string]string{"001_samples.up.sql": fixture.Elements.Migration},
-		map[string]string{"samples.sql": directiveLine(engine, bracketedQueryName, "exec") + statement + ";"})
+		map[string]string{conformanceSamplesMigration: fixture.Elements.Migration},
+		map[string]string{conformanceSamplesQuery: directiveLine(engine, bracketedQueryName, "exec") + statement + ";"})
 	if err != nil {
 		return []string{fmt.Sprintf(generationFatalFormat, err)}
 	}

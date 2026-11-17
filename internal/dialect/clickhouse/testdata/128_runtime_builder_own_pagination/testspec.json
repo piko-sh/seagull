@@ -1,0 +1,8 @@
+{
+  "description": "A runtime builder over a query that writes its own LIMIT or LIMIT n BY reads the statement's rows from a derived table, so Where, OrderBy, Limit, Offset and Count apply to the rows the query returns, and the query with a WHERE gets no Q022 hint.",
+  "expectedDiagnosticCount": 2,
+  "diagnostics": [
+    {"code": "Q023", "severity": "hint", "filename": "builders.sql", "onLine": 1},
+    {"code": "Q023", "severity": "hint", "filename": "builders.sql", "onLine": 4}
+  ]
+}

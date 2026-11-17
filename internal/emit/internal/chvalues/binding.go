@@ -137,10 +137,10 @@ func Bind(vocabulary helpers.Vocabulary, access ast.Expr, parameter *sqlmodel.Qu
 	return goastutil.CallExpr(goastutil.CachedIdent(vocabulary.Helper(suffixValue)), access, goastutil.StrLit(ParameterShape(parameter)))
 }
 
-// BindPositional builds an expression for binding runtime builder parameters through
-// driver.Valuer. Nullable pointer parameters use sglClickHouseNullable to bind NULL
-// safely, since the ClickHouse drivers may otherwise call a value-receiver method on a
-// nil pointer and panic; other parameters remain unchanged.
+// BindPositional preserves floating-point bits and nullable pointer values.
+//
+// Floating-point parameters use the integer representation their templates reconstruct.
+// Nullable pointers bind SQL NULL without invoking methods on a nil receiver.
 //
 // Takes vocabulary (helpers.Vocabulary) which names the helper.
 // Takes access (ast.Expr) which reads the parameter's value.
@@ -149,6 +149,9 @@ func Bind(vocabulary helpers.Vocabulary, access ast.Expr, parameter *sqlmodel.Qu
 //
 // Returns ast.Expr which binds the parameter.
 func BindPositional(vocabulary helpers.Vocabulary, access ast.Expr, parameter *sqlmodel.QueryParameter, types sqlmodel.GoTypeResolver) ast.Expr {
+	if holdsFloatValue(&parameter.SQLType) {
+		return bindPositionalFloat(vocabulary, access, parameter)
+	}
 	if !heldByNullablePointer(parameter, types) {
 		return access
 	}
@@ -273,11 +276,7 @@ func ArrayLists(queries []*sqlmodel.AnalysedQuery) []*sqlmodel.AnalysedQuery {
 		}
 		copied := *query
 		copied.Template.Segments = arrayListSegments(query.Template.Segments)
-		if query.CountTemplate != nil {
-			count := *query.CountTemplate
-			count.Segments = arrayListSegments(count.Segments)
-			copied.CountTemplate = &count
-		}
+		rewriteOptionalTemplates(&copied, arrayListSegments)
 		changed[index] = &copied
 	}
 	if changed == nil {
@@ -519,4 +518,20 @@ func tupleShape(fields []sqlmodel.StructField) string {
 // Returns string which is the quoted name.
 func quotedName(name string) string {
 	return "'" + strings.ReplaceAll(name, "'", "''") + "'"
+}
+
+// rewriteOptionalTemplates replaces a copied query's count and filtered templates with
+// rewritten copies, leaving the templates it shares with the original unchanged.
+//
+// Takes copied (*sqlmodel.AnalysedQuery) which is the copy whose templates are replaced.
+// Takes rewrite (func([]sqlmodel.SQLSegment) []sqlmodel.SQLSegment) which rewrites one
+// template's segments into new ones.
+func rewriteOptionalTemplates(copied *sqlmodel.AnalysedQuery, rewrite func([]sqlmodel.SQLSegment) []sqlmodel.SQLSegment) {
+	for _, template := range []**sqlmodel.SQLTemplate{&copied.CountTemplate, &copied.FilteredTemplate, &copied.FilteredCountTemplate} {
+		if *template != nil {
+			rewritten := **template
+			rewritten.Segments = rewrite(rewritten.Segments)
+			*template = &rewritten
+		}
+	}
 }

@@ -1,0 +1,4 @@
+{
+  "description": "DuckDB 2.0 refuses a lambda written with an arrow, single or with parenthesised parameters, unless the session sets lambda_syntax = 'ENABLE_SINGLE_ARROW' (a Binder Error by default), so each arrow lambda is warned of and still typed as before; a lambda written with the LAMBDA keyword and the JSON -> and ->> operators are not.",
+  "expectedDiagnosticCount": 2
+}

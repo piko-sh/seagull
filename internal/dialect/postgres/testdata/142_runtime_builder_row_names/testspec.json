@@ -1,0 +1,6 @@
+{
+  "description": "A runtime builder over a query that picks its own rows is read from a derived table by output name, so output names that repeat are refused with Q075, while distinct aliases are accepted and a query that picks no rows keeps its own WHERE.",
+  "diagnostics": [
+    {"code": "Q075", "severity": "error", "filename": "builders.sql", "onLine": 2, "messageContains": "distinct aliases"}
+  ]
+}

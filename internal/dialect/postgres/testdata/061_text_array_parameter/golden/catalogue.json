@@ -49,6 +49,18 @@
               }
             }
           ],
+          "Constraints": [
+            {
+              "Columns": [
+                "id"
+              ],
+              "Kind": "primary-key",
+              "Name": "articles_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            }
+          ],
           "Name": "articles",
           "Origin": {
             "Filename": "001_schema.up.sql"

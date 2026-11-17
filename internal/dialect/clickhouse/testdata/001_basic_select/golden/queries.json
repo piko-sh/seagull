@@ -29,6 +29,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(ListUsers, many)\nSELECT id, name FROM users ORDER BY id;",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩ FROM users ORDER BY id;"
   }

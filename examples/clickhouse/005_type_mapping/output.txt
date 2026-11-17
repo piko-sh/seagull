@@ -9,4 +9,4 @@ price      decimal.Decimal  412.50
 on_ice     bool             true
 landed_at  time.Time        2026-05-01T05:30:00Z
 tag        string           04 a2 19 f3
-notes      *string          landed at Newlyn
+notes      store.Null[string] landed at Newlyn

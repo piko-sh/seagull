@@ -1,0 +1,22 @@
+[
+  {
+    "Code": "Q005",
+    "Column": 8,
+    "EndColumn": 12,
+    "EndLine": 2,
+    "Filename": "calls.sql",
+    "Line": 2,
+    "Message": "function \"pick\" is not unique for an argument of unknown type: several overloads fit it equally, so the engine refuses the call; cast the argument to the type of the overload meant",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q005",
+    "Column": 8,
+    "EndColumn": 11,
+    "EndLine": 5,
+    "Filename": "calls.sql",
+    "Line": 5,
+    "Message": "function \"abs\" is not unique for an argument of unknown type: several overloads fit it equally, so the engine refuses the call; cast the argument to the type of the overload meant",
+    "Severity": "warning"
+  }
+]

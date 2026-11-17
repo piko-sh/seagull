@@ -7,9 +7,9 @@ import "context"
 const listusers = `SELECT id, name, email FROM users ORDER BY name;`
 
 type ListUsersRow struct {
-	ID    int32   `json:"id"`
-	Name  string  `json:"name"`
-	Email *string `json:"email"`
+	ID    int32        `json:"id"`
+	Name  string       `json:"name"`
+	Email Null[string] `json:"email"`
 }
 
 func (queries *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
@@ -19,12 +19,16 @@ func (queries *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
 	}
 	defer rows.Close()
 	var results []ListUsersRow
-	for rows.Next() {
+	if rows.Next() {
 		var row ListUsersRow
-		if err := rows.Scan(&row.ID, &row.Name, &row.Email); err != nil {
-			return nil, err
+		scanArgs := []any{&row.ID, &row.Name, &row.Email}
+		for more := true; more; more = rows.Next() {
+			row = ListUsersRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

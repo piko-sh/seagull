@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q063",
+    "Column": 1,
+    "EndColumn": 14,
+    "EndLine": 3,
+    "Filename": "readings.sql",
+    "Line": 2,
+    "Message": "COALESCE has no type both numeric and boolean fit, so the engine may refuse the query or read its values each in its own type; cast the arguments to one type",
+    "Severity": "warning"
+  }
+]

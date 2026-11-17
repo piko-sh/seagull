@@ -3,8 +3,8 @@
 package store
 
 type Readings struct {
-	Station  string  `json:"station"`
-	Minute   uint16  `json:"minute"`
-	HeightCm uint16  `json:"height_cm"`
-	Note     *string `json:"note"`
+	Station  string       `json:"station"`
+	Minute   uint16       `json:"minute"`
+	HeightCm uint16       `json:"height_cm"`
+	Note     Null[string] `json:"note"`
 }

@@ -100,11 +100,13 @@ func bindsAsDriverDecimal(profile *driverProfile, parameter *sqlmodel.QueryParam
 	switch {
 	case profile.bindsDecomposedDecimals || parameter.IsSlice:
 		return false
+	case parameter.IsOptional:
+		return decomposesItself(gogen.ChosenGoType(types, parameter.GoTypeOverride, parameter.SQLType, false))
 	case parameter.Nullable:
 		bound := gogen.ChosenGoType(types, parameter.GoTypeOverride, parameter.SQLType, true)
 		return strings.HasPrefix(bound.Name, "*") && decomposesItself(bound)
 	default:
-		return parameter.IsOptional && decomposesItself(gogen.ChosenGoType(types, parameter.GoTypeOverride, parameter.SQLType, false))
+		return false
 	}
 }
 
@@ -323,6 +325,9 @@ func bindsAsDriverText(profile *driverProfile, parameter *sqlmodel.QueryParamete
 //
 // Returns bool which is true when the parameter is wrapped.
 func bindsAsDriverBinary(profile *driverProfile, parameter *sqlmodel.QueryParameter, types sqlmodel.GoTypeResolver) bool {
+	if bindsNullableBinary(profile, parameter) {
+		return true
+	}
 	if profile.bindsNamedValues || parameter.IsSlice || parameter.SQLType.Category != sqlmodel.TypeCategoryBinary {
 		return false
 	}
@@ -340,6 +345,9 @@ func bindsAsDriverBinary(profile *driverProfile, parameter *sqlmodel.QueryParame
 // Returns bool which is true when some parameter is wrapped.
 func anyParameterBindsAsDriverBinary(profile *driverProfile, queries []*sqlmodel.AnalysedQuery, types sqlmodel.GoTypeResolver) bool {
 	for _, query := range queries {
+		if profile.bindsNilSlicesAsEmpty && query.DynamicRuntime {
+			return true
+		}
 		for index := range query.Parameters {
 			if bindsAsDriverBinary(profile, &query.Parameters[index], types) {
 				return true
@@ -547,4 +555,15 @@ func anyParameterBindsAsInferredList(profile *driverProfile, queries []*sqlmodel
 // Returns ast.Expr which is the wrapped access.
 func inferredListAccess(vocabulary gogen.Vocabulary, access ast.Expr) ast.Expr {
 	return goastutil.CallExpr(goastutil.CachedIdent(vocabulary.Helper(suffixDriverInferredList)), access)
+}
+
+// bindsNullableBinary selects byte slices whose driver loses their NULL state.
+//
+// Takes profile (*driverProfile) which describes native slice binding.
+// Takes parameter (*sqlmodel.QueryParameter) which supplies the binary type and shape.
+//
+// Returns bool which includes nullable, optional and expanded binary parameters.
+func bindsNullableBinary(profile *driverProfile, parameter *sqlmodel.QueryParameter) bool {
+	return profile.bindsNilSlicesAsEmpty && parameter.SQLType.Category == sqlmodel.TypeCategoryBinary &&
+		(parameter.Nullable || parameter.IsOptional || parameter.IsSlice)
 }

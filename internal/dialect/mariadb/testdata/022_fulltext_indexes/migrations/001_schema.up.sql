@@ -1,0 +1,4 @@
+CREATE TABLE posts (id BIGINT PRIMARY KEY, title VARCHAR(200) NOT NULL, body TEXT NOT NULL, FULLTEXT KEY ft_title (title));
+CREATE FULLTEXT INDEX ft_body ON posts (body);
+ALTER TABLE posts ADD FULLTEXT INDEX ft_both (title, body);
+CREATE TABLE notes (id BIGINT PRIMARY KEY, txt TEXT NOT NULL);

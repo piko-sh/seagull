@@ -87,6 +87,14 @@ type Built struct {
 	// does not apply.
 	CountTemplate *sqlmodel.SQLTemplate
 
+	// FilteredTemplate reads the rows of a runtime builder query whose conditions filter its
+	// result rows, wrapped so the conditions follow it, or is nil for any other query.
+	FilteredTemplate *sqlmodel.SQLTemplate
+
+	// FilteredCountTemplate counts the rows FilteredTemplate reads, or is nil when either
+	// template is nil.
+	FilteredCountTemplate *sqlmodel.SQLTemplate
+
 	// InsertTarget is the table an INSERT writes, its schema as written, and is zero for any
 	// other statement.
 	InsertTarget sqlmodel.TableName
@@ -97,6 +105,11 @@ type Built struct {
 	// CountWrapped reports a count template that counts the query's rows by wrapping it in a
 	// subquery, because its rows are not the rows it reads.
 	CountWrapped bool
+
+	// ReadsResultRows reports a runtime builder query whose Template reads the statement's
+	// result rows from a derived table, because the statement picks its own rows. A builder
+	// names its columns there by their output names.
+	ReadsResultRows bool
 }
 
 // Problem is something Build found wrong with a query.
@@ -314,7 +327,8 @@ func (b *builder) reusedStatementTokens(statement ast.ParsedStatement) []sqllex.
 // Returns Built which holds the templates, zero when no template could be made.
 // Returns []Problem which holds the problems found.
 func Build(input *Input) (Built, []Problem) {
-	built := Built{CountTemplate: nil, InsertTarget: insertTarget(input.Analysis), Template: sqlmodel.SQLTemplate{}, CountWrapped: false}
+	built := Built{CountTemplate: nil, FilteredTemplate: nil, FilteredCountTemplate: nil, InsertTarget: insertTarget(input.Analysis),
+		Template: sqlmodel.SQLTemplate{}, CountWrapped: false, ReadsResultRows: false}
 	if input.Analysis == nil || len(input.Statements) == 0 {
 		return built, nil
 	}
@@ -329,15 +343,22 @@ func Build(input *Input) (Built, []Problem) {
 		return built, templateBuilder.problems
 	}
 	segments, written := templateBuilder.segmentsWithin(root, root.span, nil)
+	if written && templateBuilder.wrapsCompound() {
+		segments, written = templateBuilder.wrappedCompound(root)
+	}
 	if !written {
 		templateBuilder.report(diag.CodeInternalNilGuard, ast.Span{}, "the template made from the query's spans could not be written")
 		return built, templateBuilder.problems
+	}
+	if templateBuilder.wrapsPickedRows() && templateBuilder.readableByName() {
+		return templateBuilder.pickedRows(root, built)
 	}
 	built.Template = templateBuilder.withArguments(segments)
 	if count, wrapped, applies := templateBuilder.countTemplate(root); applies {
 		built.CountTemplate = &count
 		built.CountWrapped = wrapped
 	}
+	built.FilteredTemplate, built.FilteredCountTemplate = templateBuilder.filteredTemplates(root, built.CountTemplate != nil)
 	return built, templateBuilder.problems
 }
 

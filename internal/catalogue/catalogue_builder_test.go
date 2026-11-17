@@ -2832,7 +2832,7 @@ func TestApplyMigrationChecksTheTransactionFromTheTokensItReadOnce(t *testing.T)
 
 	diagnostics := applyMigration(t, builder, "001_init.up.sql", migration, 0)
 
-	require.Equal(t, []string{diag.CodeMigrationMixedTransaction}, codesOf(diagnostics))
+	require.Equal(t, []string{diag.CodeMigrationMixedTransaction, diag.CodeMigrationTransactionControl}, codesOf(diagnostics))
 	assert.Zero(t, proceduralBlockCalls)
 	assert.Equal(t, [][]string{
 		{"CREATE", "TABLE", "a", "(", "id", "int", ")"},

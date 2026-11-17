@@ -42,7 +42,7 @@ func (queries *Queries) ListFinds(ctx context.Context, params ListFindsParams) (
 	var results []ListFindsRow
 	if rows.Next() {
 		var row ListFindsRow
-		scanArgs := []any{&row.ID, &row.Creature, &row.Pool, &row.SizeMm}
+		scanArgs := []any{&row.ID, &row.Creature, &row.Pool, sglScanNumber(&row.SizeMm)}
 		for more := true; more; more = rows.Next() {
 			row = ListFindsRow{}
 			if err := rows.Scan(scanArgs...); err != nil {
@@ -110,7 +110,7 @@ func (queries *Queries) SearchFinds(ctx context.Context, params SearchFindsParam
 	var results []SearchFindsRow
 	if rows.Next() {
 		var row SearchFindsRow
-		scanArgs := []any{&row.ID, &row.Creature, &row.Pool, &row.SizeMm}
+		scanArgs := []any{&row.ID, &row.Creature, &row.Pool, sglScanNumber(&row.SizeMm)}
 		for more := true; more; more = rows.Next() {
 			row = SearchFindsRow{}
 			if err := rows.Scan(scanArgs...); err != nil {

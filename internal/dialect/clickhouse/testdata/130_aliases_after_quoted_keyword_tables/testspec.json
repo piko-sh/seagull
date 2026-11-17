@@ -1,0 +1,4 @@
+{
+  "description": "A table named from takes an alias after AS, and a table named after any other quoted keyword takes an alias without AS, as ClickHouse does.",
+  "expectedDiagnosticCount": 0
+}

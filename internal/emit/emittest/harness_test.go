@@ -19,6 +19,8 @@
 package emittest
 
 import (
+	"maps"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -55,5 +57,5 @@ func TestDatabaseSQLHarnessDeclaresTheContract(t *testing.T) {
 	require.Contains(t, source, "\ntype Statement struct {")
 	require.Contains(t, source, "\nfunc Connect() *sql.DB {")
 	require.Contains(t, source, "\nfunc Take() []Statement {")
-	require.Empty(t, DatabaseSQL().Modules)
+	require.Equal(t, []string{duckDBModule}, slices.Collect(maps.Keys(DatabaseSQL().Modules)), "only the DuckDB stand-in")
 }

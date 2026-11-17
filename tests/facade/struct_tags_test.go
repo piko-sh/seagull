@@ -48,8 +48,8 @@ var tagStyleCases = []struct {
 		shape: func(chosen *seagull.Preset) {
 			chosen.JSONTags = seagull.JSONTags{Case: seagull.JSONCaseCamel, Omit: false, OmitEmpty: true}
 		},
-		model:  []string{"`json:\"id,omitempty\"`", "`json:\"authorId,omitempty\"`"},
-		row:    []string{"`json:\"authorId,omitempty\"`"},
+		model:  []string{"`json:\"id,omitempty\"`", "`json:\"authorId,omitzero\"`"},
+		row:    []string{"`json:\"authorId,omitzero\"`"},
 		absent: []string{"json:\"author_id"},
 	},
 	{
@@ -130,10 +130,10 @@ func TestColumnDirectivesGiveStructTagsOverTheConfiguredOnes(t *testing.T) {
 
 	generated := generateFeatureProject(t, target, queries, seagull.DefaultPreset(), overrides)
 
-	require.Contains(t, generated["models.go"], "Title    string `json:\"title\" db:\"title\" validate:\"required,max=200\"`")
-	require.Contains(t, generated["models.go"], "AuthorID *int64 `json:\"author_id\"`")
-	require.Contains(t, generated["posts.sql.go"], "Title    string `json:\"title\" db:\"title\" validate:\"required,max=200\"`")
-	require.Contains(t, generated["posts.sql.go"], "AuthorID *int64 `json:\"author\" binding:\"required\"`")
+	require.Regexp(t, `Title\s+string\s+`+"`"+`json:"title" db:"title" validate:"required,max=200"`, generated["models.go"])
+	require.Regexp(t, `AuthorID\s+Null\[int64\]\s+`+"`"+`json:"author_id"`, generated["models.go"])
+	require.Regexp(t, `Title\s+string\s+`+"`"+`json:"title" db:"title" validate:"required,max=200"`, generated["posts.sql.go"])
+	require.Regexp(t, `AuthorID\s+Null\[int64\]\s+`+"`"+`json:"author" binding:"required"`, generated["posts.sql.go"])
 }
 
 func TestStructTagsAGeneratedFieldCannotCarryAreRefused(t *testing.T) {

@@ -22,11 +22,31 @@ import (
 	"cmp"
 	"context"
 	"slices"
-	"strings"
 
+	"seagull.sh/seagull/internal/dialect"
 	"seagull.sh/seagull/internal/dialect/ast"
 	"seagull.sh/seagull/internal/sqlmodel"
 )
+
+// duplicatedColumn finds a column a table definition declares twice, comparing names as
+// the dialect does, so a definition every engine refuses is refused here rather than
+// built with one column hiding the other.
+//
+// Takes columns ([]sqlmodel.Column) which are the declared columns.
+//
+// Returns string which is the repeated name.
+// Returns bool which is true when a name repeats.
+func (b *catalogueBuilder) duplicatedColumn(columns []sqlmodel.Column) (string, bool) {
+	seen := make(map[string]bool, len(columns))
+	for index := range columns {
+		key := b.key(columns[index].Name)
+		if seen[key] {
+			return columns[index].Name, true
+		}
+		seen[key] = true
+	}
+	return "", false
+}
 
 // applyCreateTable adds a new table to the catalogue, resolving custom column types.
 //
@@ -51,6 +71,9 @@ func (b *catalogueBuilder) applyCreateTable(ctx context.Context, mutation *ast.C
 		}
 		return duplicateObject("table %s already exists", qualifiedName(schema.Name, mutation.TableName))
 	}
+	if name, duplicated := b.duplicatedColumn(mutation.Columns); duplicated {
+		return duplicateObject("column %s is declared more than once in table %s", name, mutation.TableName)
+	}
 
 	columns, parents, local := b.createdTableColumns(ctx, mutation)
 	for index := range columns {
@@ -61,7 +84,12 @@ func (b *catalogueBuilder) applyCreateTable(ctx context.Context, mutation *ast.C
 	if len(mutation.PrimaryKey) > 0 {
 		primaryKey = mutation.PrimaryKey
 	}
-	constraints = append(constraints, mutation.Constraints...)
+	b.forgetCopiedKeyNames(constraints)
+	declaredKey := primaryKey
+	if len(mutation.PrimaryKey) == 0 && slices.ContainsFunc(constraints, isPrimaryKeyConstraint) {
+		declaredKey = nil
+	}
+	constraints = append(constraints, b.declaredKeys(declaredKey, mutation.Constraints)...)
 	for index := range constraints {
 		constraints[index].Origin = mutation.Origin
 	}
@@ -77,10 +105,16 @@ func (b *catalogueBuilder) applyCreateTable(ctx context.Context, mutation *ast.C
 		IsWithoutRowID:    mutation.IsWithoutRowID,
 		Origin:            mutation.Origin,
 		Comment:           mutation.Comment,
-		Indexes:           nil,
+		Indexes:           b.copiedIndexes(mutation),
+	}
+	if err := b.refuseDuplicateKeyNames(nil, table.Constraints); err != nil {
+		return err
 	}
 	schema.Tables[b.key(mutation.TableName)] = table
 	b.recordInheritance(table, parents, local)
+	b.declareNames(table, mutation)
+	b.keepNotNull(table, table.Constraints)
+	b.nameConstraints(table, 0, true)
 	return nil
 }
 
@@ -106,7 +140,8 @@ func (b *catalogueBuilder) queryTableColumns(ctx context.Context, mutation *ast.
 }
 
 // applyDropTable removes a table from the catalogue, with every table that inherits from
-// it. A name that only a view holds leaves the view in place.
+// it. A name that only a view holds leaves the view in place, unless the mutation drops
+// views too.
 //
 // Takes mutation (*ast.CatalogueMutation) which identifies the table to drop.
 //
@@ -117,9 +152,15 @@ func (b *catalogueBuilder) applyDropTable(mutation *ast.CatalogueMutation) error
 	schema := b.schemaHolding(mutation.SchemaName, func(candidate *sqlmodel.Schema) bool { return candidate.Tables[key] != nil })
 	if schema == nil {
 		if b.catalogue.LookupView(mutation.SchemaName, mutation.TableName) != nil {
+			if mutation.DropsView {
+				return b.applyDropView(mutation)
+			}
 			return nil
 		}
 		return missingDropTarget(mutation, tableNotFoundFormat, mutation.TableName, b.searchedSchemas(mutation.SchemaName))
+	}
+	if err := b.applyDropToViews(mutation); err != nil {
+		return err
 	}
 	b.dropInheritors(schema.Tables[key])
 	delete(schema.Tables, key)
@@ -165,6 +206,7 @@ func (b *catalogueBuilder) applyAlterTableAddColumn(mutation *ast.CatalogueMutat
 	for index := range added {
 		b.markLocal(table, added[index].Name)
 	}
+	b.declareNames(table, mutation)
 	if !mutation.Only {
 		b.propagateAddedColumns(table, added)
 	}
@@ -194,11 +236,9 @@ func (b *catalogueBuilder) applyAlterTableDropColumn(mutation *ast.CatalogueMuta
 	if err != nil {
 		return err
 	}
-	prefix := b.key(mutation.DroppedColumnPrefix)
 	filtered := make([]sqlmodel.Column, 0, len(table.Columns))
 	for index := range table.Columns {
-		dropped := b.sameName(table.Columns[index].Name, mutation.ColumnName) ||
-			(prefix != "" && strings.HasPrefix(b.key(table.Columns[index].Name), prefix))
+		dropped := b.columnDroppedBy(table.Columns[index].Name, mutation)
 		if !dropped {
 			filtered = append(filtered, table.Columns[index])
 		}
@@ -206,7 +246,17 @@ func (b *catalogueBuilder) applyAlterTableDropColumn(mutation *ast.CatalogueMuta
 	if len(filtered) == len(table.Columns) {
 		return unknownObject("column %s not found in table %s", mutation.ColumnName, table.Name)
 	}
+	if err := b.checkColumnIndexDependencies(table, mutation); err != nil {
+		return err
+	}
+	if err := b.refuseCheckedColumn(table, mutation.ColumnName, true); err != nil {
+		return err
+	}
 	table.Columns = filtered
+	dropped := func(column string) bool { return b.columnDroppedBy(column, mutation) }
+	dropColumnConstraints(table, sqlmodel.ConstraintCheck, dropped)
+	dropColumnConstraints(table, sqlmodel.ConstraintNotNull, dropped)
+	b.dropIndexColumns(table, mutation)
 	b.propagateDroppedColumn(table, mutation)
 	return nil
 }
@@ -230,18 +280,45 @@ func (b *catalogueBuilder) applyAlterTableAlterColumn(mutation *ast.CatalogueMut
 	if mutation.SetsNotNull || mutation.DropsNotNull {
 		return b.applyColumnNullability(table, mutation)
 	}
+	if mutation.SetsDefault || mutation.DropsDefault {
+		return b.applyColumnDefault(table, mutation)
+	}
 	if len(mutation.Columns) == 0 {
 		return nil
 	}
 	if mutation.SetsType {
 		return b.applyColumnType(table, mutation)
 	}
+	if mutation.RefusesNullKey && b.inPrimaryKey(table, mutation.ColumnName) {
+		return refused(errKeyColumnNotNull, "column %s of table %s is in a primary key, so it cannot be declared NULL",
+			mutation.ColumnName, table.Name)
+	}
+	return b.replaceColumn(table, mutation)
+}
+
+// replaceColumn replaces a table's column with the mutation's definition, as MySQL MODIFY
+// COLUMN does, and moves it where the mutation places it.
+//
+// Takes table (*sqlmodel.Table) which holds the column.
+// Takes mutation (*ast.CatalogueMutation) which names the column and carries the new
+// definition.
+//
+// Returns error when the table has no such column or the placement's anchor is missing.
+func (b *catalogueBuilder) replaceColumn(table *sqlmodel.Table, mutation *ast.CatalogueMutation) error {
 	altered := mutation.Columns[0]
 	b.resolveCustomColumnType(&altered)
 	for index := range table.Columns {
 		if b.sameName(table.Columns[index].Name, mutation.ColumnName) {
 			altered.Origin = table.Columns[index].Origin
+			if mutation.KeepsUnstated {
+				keepUnstated(&altered, &table.Columns[index])
+			}
+			b.keepKeyColumnNotNull(table, &altered, mutation.ColumnName)
 			table.Columns[index] = altered
+			if mutation.DropsColumnChecks {
+				dropColumnConstraints(table, sqlmodel.ConstraintCheck, func(column string) bool { return b.sameName(column, mutation.ColumnName) })
+			}
+			b.renameKeyColumns(table, mutation.ColumnName, altered.Name)
 			b.propagateColumnChange(table, mutation, func(column *sqlmodel.Column) {
 				origin := column.Origin
 				*column = cloneColumn(&altered)
@@ -262,7 +339,7 @@ func (b *catalogueBuilder) applyAlterTableAlterColumn(mutation *ast.CatalogueMut
 //
 // Returns bool which is true for an annotation of a view.
 func (b *catalogueBuilder) annotatesView(mutation *ast.CatalogueMutation) bool {
-	if len(mutation.Columns) > 0 || mutation.ColumnName != "" || mutation.SetsNotNull || mutation.DropsNotNull || mutation.SetsType {
+	if changesColumn(mutation) {
 		return false
 	}
 	return b.catalogue.LookupView(mutation.SchemaName, mutation.TableName) != nil
@@ -278,7 +355,14 @@ func (b *catalogueBuilder) annotatesView(mutation *ast.CatalogueMutation) bool {
 func (b *catalogueBuilder) applyColumnNullability(table *sqlmodel.Table, mutation *ast.CatalogueMutation) error {
 	for index := range table.Columns {
 		if b.sameName(table.Columns[index].Name, mutation.ColumnName) {
+			if mutation.DropsNotNull && b.postgresFamily() && b.inPrimaryKey(table, table.Columns[index].Name) {
+				return refused(errKeyColumnNotNull, "column %s of table %s is in a primary key, so it cannot drop NOT NULL",
+					table.Columns[index].Name, table.Name)
+			}
 			table.Columns[index].Nullable = mutation.DropsNotNull
+			if mutation.DropsNotNull {
+				dropColumnConstraints(table, sqlmodel.ConstraintNotNull, func(column string) bool { return b.sameName(column, mutation.ColumnName) })
+			}
 			b.propagateColumnChange(table, mutation, func(column *sqlmodel.Column) {
 				column.Nullable = mutation.DropsNotNull
 			})
@@ -286,6 +370,26 @@ func (b *catalogueBuilder) applyColumnNullability(table *sqlmodel.Table, mutatio
 		}
 	}
 	return columnNotFound(mutation)
+}
+
+// applyColumnDefault sets whether a table's column has a default, as a SET DEFAULT or
+// DROP DEFAULT does, leaving the rest of the column as it was and moving it where the
+// mutation places it.
+//
+// Takes table (*sqlmodel.Table) which holds the column.
+// Takes mutation (*ast.CatalogueMutation) which names the column and the change.
+//
+// Returns error when the table has no such column or the placement's anchor is missing.
+func (b *catalogueBuilder) applyColumnDefault(table *sqlmodel.Table, mutation *ast.CatalogueMutation) error {
+	column := b.namedColumn(table.Columns, mutation.ColumnName)
+	if column == nil {
+		return columnNotFound(mutation)
+	}
+	column.HasDefault = mutation.SetsDefault
+	b.propagateColumnChange(table, mutation, func(inherited *sqlmodel.Column) {
+		inherited.HasDefault = mutation.SetsDefault
+	})
+	return b.moveColumn(table, column.Name, mutation.Placement)
 }
 
 // applyColumnType changes the type of a table's column, as ALTER COLUMN ...
@@ -341,7 +445,13 @@ func (b *catalogueBuilder) applyAlterTableRenameColumn(mutation *ast.CatalogueMu
 	if !b.sameName(mutation.ColumnName, mutation.NewName) && b.hasColumn(table.Columns, mutation.NewName) {
 		return duplicateObject("column %s already exists in table %s", mutation.NewName, table.Name)
 	}
+	if !b.sameName(mutation.ColumnName, mutation.NewName) {
+		if err := b.refuseCheckedColumn(table, mutation.ColumnName, false); err != nil {
+			return err
+		}
+	}
 	column.Name = mutation.NewName
+	b.renameKeyColumns(table, mutation.ColumnName, mutation.NewName)
 	b.propagateColumnChange(table, mutation, func(inherited *sqlmodel.Column) {
 		inherited.Name = mutation.NewName
 	})
@@ -447,10 +557,16 @@ func (b *catalogueBuilder) renameTable(mutation *ast.CatalogueMutation) error {
 	if b.relationTaken(schema, mutation.NewName, key) {
 		return duplicateObject("relation %s already exists", qualifiedName(schema.Name, mutation.NewName))
 	}
+	if err := b.applyRenameToViews(mutation.TableName, mutation.NewName); err != nil {
+		return err
+	}
 	table := schema.Tables[key]
+	b.retargetForeignKeys(schema.Name, table.Name, schema.Name, mutation.NewName)
+	b.renameGeneratedNames(table, mutation.NewName)
 	delete(schema.Tables, key)
 	table.Name = mutation.NewName
 	schema.Tables[b.key(mutation.NewName)] = table
+	b.restoreBrokenViews()
 	return nil
 }
 
@@ -475,6 +591,7 @@ func (b *catalogueBuilder) moveTable(mutation *ast.CatalogueMutation) error {
 	if b.relationTaken(target, table.Name, "") {
 		return duplicateObject("relation %s already exists", qualifiedName(target.Name, table.Name))
 	}
+	b.retargetForeignKeys(source.Name, table.Name, target.Name, table.Name)
 	delete(source.Tables, key)
 	table.Schema = target.Name
 	target.Tables[key] = table
@@ -589,15 +706,34 @@ func (b *catalogueBuilder) applyAlterTableAddConstraint(mutation *ast.CatalogueM
 	if err != nil {
 		return err
 	}
-	for index := range mutation.Constraints {
-		mutation.Constraints[index].Origin = mutation.Origin
+	added, err := b.newNotNull(table, slices.Clone(mutation.Constraints))
+	if err != nil {
+		return err
 	}
-	table.Constraints = append(table.Constraints, mutation.Constraints...)
+	if err := b.refuseDuplicateKeyNames(table, added); err != nil {
+		return err
+	}
+	for index := range added {
+		added[index].Origin = mutation.Origin
+	}
 	if len(mutation.PrimaryKey) > 0 {
+		added = b.withPrimaryKeyConstraint(added, mutation.PrimaryKey, primaryKeyName(table))
 		if mutation.ReplacesHiddenKey {
 			b.dropHiddenKey(table, mutation.PrimaryKey)
 		}
+		dropPrimaryKey(table)
+	}
+	from := len(table.Constraints)
+	table.Constraints = append(slices.Clip(table.Constraints), added...)
+	b.keepNotNull(table, added)
+	if len(mutation.PrimaryKey) > 0 {
 		table.PrimaryKey = mutation.PrimaryKey
+		if b.mysqlFamily() {
+			b.dropImplicitIndexes(table, mutation.PrimaryKey)
+		}
+	}
+	b.nameConstraints(table, from, false)
+	if len(mutation.PrimaryKey) > 0 {
 		b.propagatePrimaryKey(table)
 	}
 	return nil
@@ -618,7 +754,8 @@ func (b *catalogueBuilder) dropHiddenKey(table *sqlmodel.Table, primaryKey []str
 	})
 }
 
-// applyAlterTableDropConstraint removes a named constraint from an existing table.
+// applyAlterTableDropConstraint removes a named constraint from an existing table, and
+// the primary key when the constraint is the key or the mutation drops the key.
 //
 // Uses a freshly allocated slice rather than the in-place `table.Constraints[:0]`
 // pattern, matching applyAlterTableDropColumn so both drop paths behave the same way. The
@@ -633,47 +770,288 @@ func (b *catalogueBuilder) applyAlterTableDropConstraint(mutation *ast.Catalogue
 	if err != nil {
 		return err
 	}
+	if mutation.DropsPrimaryKey {
+		dropPrimaryKey(table)
+		return nil
+	}
+	if err := b.refuseKeyNotNullDrop(table, mutation.ConstraintName); err != nil {
+		return err
+	}
+	if mutation.RefusesUnknownConstraint {
+		if handled, err := b.dropDeclaredName(table, mutation.ConstraintName); handled || err != nil {
+			return err
+		}
+	}
 	filtered := make([]sqlmodel.Constraint, 0, len(table.Constraints))
 	for _, constraint := range table.Constraints {
-		if constraint.Name != mutation.ConstraintName {
+		switch {
+		case !b.sameName(constraint.Name, mutation.ConstraintName), b.keepsColumnCheck(&constraint):
 			filtered = append(filtered, constraint)
+		case constraint.Kind == sqlmodel.ConstraintPrimaryKey:
+			table.PrimaryKey = nil
+		case constraint.Kind == sqlmodel.ConstraintNotNull:
+			b.allowNull(table, constraint.Columns)
 		}
+	}
+	if len(filtered) == len(table.Constraints) {
+		if column := b.defaultNotNullColumn(table, mutation.ConstraintName); column != "" {
+			b.allowNull(table, []string{column})
+		}
+		b.dropUniqueIndexConstraint(table, mutation.ConstraintName)
 	}
 	table.Constraints = filtered
 	return nil
 }
 
-// applyCreateIndex adds an index record to the target table.
+// dropUniqueIndexConstraint drops the unique index DROP CONSTRAINT names on CockroachDB,
+// which since 26.4 lists every unique index as a unique constraint.
 //
-// Takes mutation (*ast.CatalogueMutation) which holds the index definition.
-//
-// Returns error when no table or view of that name exists, as the engine refuses an index
-// on a missing relation even with IF NOT EXISTS, which only covers the index's own name.
-func (b *catalogueBuilder) applyCreateIndex(mutation *ast.CatalogueMutation) error {
-	table, err := b.findTable(mutation.SchemaName, mutation.TableName)
-	if err != nil {
-		if _, view := b.findView(mutation.SchemaName, mutation.TableName); view != nil {
-			return nil
-		}
-		return err
+// Takes table (*sqlmodel.Table) which holds the index.
+// Takes name (string) which is the name dropped.
+func (b *catalogueBuilder) dropUniqueIndexConstraint(table *sqlmodel.Table, name string) {
+	if b.constraintNames != dialect.ConstraintNamesCockroachDB {
+		return
 	}
-	table.Indexes = append(table.Indexes, sqlmodel.Index{
-		Name:      mutation.NewName,
-		Origin:    mutation.Origin,
-		Columns:   nil,
-		IsUnique:  false,
-		IsPrimary: false,
+	table.Indexes = slices.DeleteFunc(slices.Clone(table.Indexes), func(index sqlmodel.Index) bool {
+		return index.IsUnique && !index.IsPrimary && b.sameName(index.Name, name)
 	})
+}
+
+// declaredNames are the names a SQLite table's definitions give its keys, which DROP
+// CONSTRAINT refuses to drop, and its columns' DEFAULT and COLLATE clauses, which DROP
+// CONSTRAINT drops, leaving the clause as it was.
+type declaredNames struct {
+	// keys holds the primary key and unique constraint names.
+	keys []string
+
+	// attributes holds the DEFAULT and COLLATE names.
+	attributes []string
+}
+
+// declareNames records the key and attribute names a CREATE TABLE or ADD COLUMN gives.
+//
+// Takes table (*sqlmodel.Table) which is the table.
+// Takes mutation (*ast.CatalogueMutation) which holds the names.
+func (b *catalogueBuilder) declareNames(table *sqlmodel.Table, mutation *ast.CatalogueMutation) {
+	if b.declaredNames == nil || len(mutation.KeyNames)+len(mutation.AttributeNames) == 0 {
+		return
+	}
+	names := b.declaredNames[table]
+	if names == nil {
+		names = &declaredNames{keys: nil, attributes: nil}
+		b.declaredNames[table] = names
+	}
+	names.keys = append(names.keys, mutation.KeyNames...)
+	names.attributes = append(names.attributes, mutation.AttributeNames...)
+}
+
+// dropDeclaredName applies a SQLite DROP CONSTRAINT to the names the catalogue holds no
+// constraint for: it refuses a key's name or a unique constraint's, drops an attribute's
+// name, and refuses a name the table does not have, as SQLite 3.54 does.
+//
+// Takes table (*sqlmodel.Table) which is the table.
+// Takes name (string) which is the name dropped.
+//
+// Returns bool which is true when the name was dealt with here.
+// Returns error when SQLite refuses the drop.
+func (b *catalogueBuilder) dropDeclaredName(table *sqlmodel.Table, name string) (bool, error) {
+	names := b.declaredNames[table]
+	isKey := func(candidate string) bool { return b.sameName(candidate, name) }
+	if names != nil && slices.ContainsFunc(names.keys, isKey) ||
+		slices.ContainsFunc(table.Constraints, func(constraint sqlmodel.Constraint) bool {
+			return b.sameName(constraint.Name, name) &&
+				(constraint.Kind == sqlmodel.ConstraintUnique || constraint.Kind == sqlmodel.ConstraintPrimaryKey)
+		}) {
+		return true, refused(errKeyConstraintDrop, "constraint %s of table %s is a primary key or unique constraint, which "+
+			"cannot be dropped", name, table.Name)
+	}
+	if slices.ContainsFunc(table.Constraints, func(constraint sqlmodel.Constraint) bool { return b.sameName(constraint.Name, name) }) {
+		return false, nil
+	}
+	if names != nil && slices.ContainsFunc(names.attributes, isKey) {
+		names.attributes = slices.DeleteFunc(names.attributes, isKey)
+		return true, nil
+	}
+	return true, unknownObject("constraint %s not found in table %s", name, table.Name)
+}
+
+// keepKeyColumnNotNull keeps a primary key's column NOT NULL when MODIFY or CHANGE
+// redefines it, as MariaDB does with a definition that says NULL.
+//
+// Takes table (*sqlmodel.Table) which holds the key.
+// Takes altered (*sqlmodel.Column) which is the new definition, changed in place.
+// Takes name (string) which is the column's name before the change.
+func (b *catalogueBuilder) keepKeyColumnNotNull(table *sqlmodel.Table, altered *sqlmodel.Column, name string) {
+	if b.mysqlFamily() && b.inPrimaryKey(table, name) {
+		altered.Nullable = false
+	}
+}
+
+// refuseCheckedColumn refuses renaming a column a MySQL check reads, or dropping one a
+// check reads with another column, as MySQL refuses both with error 3959. Dropping the
+// only column a check reads drops the check.
+//
+// Takes table (*sqlmodel.Table) which holds the checks.
+// Takes column (string) which is the column renamed or dropped.
+// Takes dropping (bool) which is true for a drop.
+//
+// Returns error when a check holds on to the column.
+func (b *catalogueBuilder) refuseCheckedColumn(table *sqlmodel.Table, column string, dropping bool) error {
+	if b.constraintNames != dialect.ConstraintNamesMySQL || column == "" {
+		return nil
+	}
+	for _, constraint := range table.Constraints {
+		if constraint.Kind != sqlmodel.ConstraintCheck ||
+			!slices.ContainsFunc(constraint.Columns, func(name string) bool { return b.sameName(name, column) }) {
+			continue
+		}
+		if dropping && len(constraint.Columns) == 1 {
+			continue
+		}
+		return refused(errCheckUsesColumn, "check constraint %s of table %s uses column %s, so it cannot be dropped or renamed",
+			constraint.Name, table.Name, column)
+	}
 	return nil
 }
 
-// applyDropIndex ignores DROP INDEX mutations; query analysis does not use index records.
+// keepNotNull keeps the columns NOT NULL constraints name from holding NULL.
 //
-// The mutation argument is unused.
+// Takes table (*sqlmodel.Table) which holds the columns.
+// Takes constraints ([]sqlmodel.Constraint) which are the constraints added.
+func (b *catalogueBuilder) keepNotNull(table *sqlmodel.Table, constraints []sqlmodel.Constraint) {
+	for _, constraint := range constraints {
+		if constraint.Kind != sqlmodel.ConstraintNotNull {
+			continue
+		}
+		for index := range table.Columns {
+			if slices.ContainsFunc(constraint.Columns, func(name string) bool { return b.sameName(name, table.Columns[index].Name) }) {
+				table.Columns[index].Nullable = false
+			}
+		}
+	}
+}
+
+// newNotNull leaves out of the constraints ALTER TABLE adds a NOT NULL constraint on a
+// column that holds no NULL already, under the same name or none, and refuses one under
+// another name, as PostgreSQL does.
 //
-// Returns error (always nil).
-func (*catalogueBuilder) applyDropIndex(_ *ast.CatalogueMutation) error {
+// Takes table (*sqlmodel.Table) which holds the columns.
+// Takes added ([]sqlmodel.Constraint) which are the constraints the statement adds.
+//
+// Returns []sqlmodel.Constraint which holds the constraints to add.
+// Returns error when a NOT NULL constraint renames the one a column has.
+func (b *catalogueBuilder) newNotNull(table *sqlmodel.Table, added []sqlmodel.Constraint) ([]sqlmodel.Constraint, error) {
+	if b.constraintNames != dialect.ConstraintNamesPostgres {
+		return added, nil
+	}
+	kept := added[:0]
+	for _, constraint := range added {
+		var column *sqlmodel.Column
+		if constraint.Kind == sqlmodel.ConstraintNotNull && len(constraint.Columns) == 1 {
+			column = b.namedColumn(table.Columns, constraint.Columns[0])
+		}
+		if column == nil || column.Nullable {
+			kept = append(kept, constraint)
+			continue
+		}
+		if existing := b.notNullName(table, column); constraint.Name != "" && !b.sameName(existing, constraint.Name) {
+			return nil, refused(errNotNullTaken, "column %s of table %s has the NOT NULL constraint %s, so %s cannot be added",
+				column.Name, table.Name, existing, constraint.Name)
+		}
+	}
+	return kept, nil
+}
+
+// notNullName returns the name of the NOT NULL constraint that keeps a column from
+// holding NULL on PostgreSQL: the name a migration gave it, or the one PostgreSQL 18
+// generates.
+//
+// Takes table (*sqlmodel.Table) which holds the column.
+// Takes column (*sqlmodel.Column) which is the column, which holds no NULL.
+//
+// Returns string which is the name.
+func (b *catalogueBuilder) notNullName(table *sqlmodel.Table, column *sqlmodel.Column) string {
+	for _, constraint := range table.Constraints {
+		if constraint.Kind == sqlmodel.ConstraintNotNull && len(constraint.Columns) == 1 && b.sameName(constraint.Columns[0], column.Name) {
+			return constraint.Name
+		}
+	}
+	return b.postgresNotNullName(table, column.Name)
+}
+
+// defaultNotNullColumn finds the column whose unnamed NOT NULL constraint PostgreSQL 18
+// names as given, so DROP CONSTRAINT of that name lets the column hold NULL.
+//
+// Takes table (*sqlmodel.Table) which holds the columns.
+// Takes name (string) which is the constraint's name.
+//
+// Returns string which is the column's name, or empty on another engine or when no
+// column's constraint has the name.
+func (b *catalogueBuilder) defaultNotNullColumn(table *sqlmodel.Table, name string) string {
+	if b.constraintNames != dialect.ConstraintNamesPostgres {
+		return ""
+	}
+	for index := range table.Columns {
+		column := &table.Columns[index]
+		if !column.Nullable && b.sameName(b.notNullName(table, column), name) {
+			return column.Name
+		}
+	}
+	return ""
+}
+
+// refuseKeyNotNullDrop refuses dropping the NOT NULL constraint of a primary key's
+// column, which PostgreSQL refuses as the column is in a primary key.
+//
+// Takes table (*sqlmodel.Table) which holds the constraint.
+// Takes name (string) which is the constraint dropped.
+//
+// Returns error when the constraint keeps a key column from holding NULL.
+func (b *catalogueBuilder) refuseKeyNotNullDrop(table *sqlmodel.Table, name string) error {
+	if b.constraintNames != dialect.ConstraintNamesPostgres {
+		return nil
+	}
+	for index := range table.Columns {
+		column := &table.Columns[index]
+		if !column.Nullable && b.inPrimaryKey(table, column.Name) && b.sameName(b.notNullName(table, column), name) {
+			return refused(errKeyColumnNotNull, "column %s of table %s is in a primary key, so its NOT NULL constraint %s cannot be dropped",
+				column.Name, table.Name, name)
+		}
+	}
 	return nil
+}
+
+// inPrimaryKey reports whether a column is one of a table's primary key columns.
+//
+// Takes table (*sqlmodel.Table) which is the table.
+// Takes column (string) which is the column's name.
+//
+// Returns bool which is true when the key holds it.
+func (b *catalogueBuilder) inPrimaryKey(table *sqlmodel.Table, column string) bool {
+	return slices.ContainsFunc(table.PrimaryKey, func(name string) bool { return b.sameName(name, column) })
+}
+
+// allowNull lets columns hold NULL, as dropping the NOT NULL constraint that kept them
+// from it does.
+//
+// Takes table (*sqlmodel.Table) which holds the columns.
+// Takes names ([]string) which name the columns.
+func (b *catalogueBuilder) allowNull(table *sqlmodel.Table, names []string) {
+	for index := range table.Columns {
+		if slices.ContainsFunc(names, func(name string) bool { return b.sameName(name, table.Columns[index].Name) }) {
+			table.Columns[index].Nullable = true
+		}
+	}
+}
+
+// keepsColumnCheck reports whether DROP CONSTRAINT leaves a check alone, as MariaDB does
+// with a check a column declares, which only dropping or redefining the column removes.
+//
+// Takes constraint (*sqlmodel.Constraint) which is the constraint named.
+//
+// Returns bool which is true for a MariaDB column check.
+func (b *catalogueBuilder) keepsColumnCheck(constraint *sqlmodel.Constraint) bool {
+	return b.constraintNames == dialect.ConstraintNamesMariaDB && constraint.Kind == sqlmodel.ConstraintCheck && len(constraint.Columns) > 0
 }
 
 // applyComment records or removes comments on catalogue tables, views, columns and enums.
@@ -745,4 +1123,50 @@ func (b *catalogueBuilder) namedColumn(columns []sqlmodel.Column, name string) *
 // Returns error which describes the missing column.
 func columnNotFound(mutation *ast.CatalogueMutation) error {
 	return unknownObject("column %s not found in table %s", mutation.ColumnName, mutation.TableName)
+}
+
+// keepUnstated gives a redefined column the comment, and the default or generation
+// expression, of the column it replaces where its definition states none.
+//
+// Takes altered (*sqlmodel.Column) which is the new definition.
+// Takes previous (*sqlmodel.Column) which is the column it replaces.
+func keepUnstated(altered, previous *sqlmodel.Column) {
+	if altered.Comment == "" {
+		altered.Comment = previous.Comment
+	}
+	if altered.HasDefault || altered.IsGenerated {
+		return
+	}
+	altered.HasDefault = previous.HasDefault
+	altered.IsGenerated = previous.IsGenerated
+	altered.GeneratedKind = previous.GeneratedKind
+	altered.Hidden = previous.Hidden
+}
+
+// changesColumn reports whether an ALTER TABLE mutation changes a column rather than
+// annotating the relation itself.
+//
+// Takes mutation (*ast.CatalogueMutation) which is the mutation.
+//
+// Returns bool which is true when it names, adds or alters a column.
+func changesColumn(mutation *ast.CatalogueMutation) bool {
+	if len(mutation.Columns) > 0 || mutation.ColumnName != "" {
+		return true
+	}
+	return mutation.SetsNotNull || mutation.DropsNotNull || mutation.SetsType || mutation.SetsDefault || mutation.DropsDefault
+}
+
+// dropColumnConstraints removes the constraints of a kind that constrain only columns a
+// change drops or redefines. One naming no columns is kept, since what it reads is not
+// known.
+//
+// Takes table (*sqlmodel.Table) which holds the constraints.
+// Takes kind (sqlmodel.ConstraintKind) which is the kind removed.
+// Takes dropped (func(string) bool) which reports whether a column goes.
+func dropColumnConstraints(table *sqlmodel.Table, kind sqlmodel.ConstraintKind, dropped func(string) bool) {
+	table.Constraints = slices.DeleteFunc(slices.Clone(table.Constraints), func(constraint sqlmodel.Constraint) bool {
+		return constraint.Kind == kind && len(constraint.Columns) > 0 && !slices.ContainsFunc(constraint.Columns, func(column string) bool {
+			return !dropped(column)
+		})
+	})
 }

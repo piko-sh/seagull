@@ -1,0 +1,4 @@
+{
+  "description": "SQLite has no WITH ROLLUP or GROUPING SETS grouping, so a GROUP BY key followed by either is refused rather than read as one key.",
+  "expectedDiagnosticCount": 2
+}

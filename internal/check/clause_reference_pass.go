@@ -125,6 +125,10 @@ type referenceChecker struct {
 
 	// selectAliases is the set of clauses a select-list alias is visible in.
 	selectAliases ast.Clause
+
+	// constantMembership refuses an IN list member read from the row, for an engine that
+	// tests membership only against constants, parameters and subqueries.
+	constantMembership bool
 }
 
 // newReferenceChecker returns the checker of one query's references.
@@ -137,13 +141,14 @@ type referenceChecker struct {
 // Returns *referenceChecker which has reported nothing yet.
 func newReferenceChecker(builder *resolve.ScopeBuilder, facts *dialectFacts, subject *DiagnosticContext) *referenceChecker {
 	return &referenceChecker{
-		builder:       builder,
-		problems:      newQueryReporter(subject.Filename, subject.Query.SQL, subject.Query.Line),
-		reported:      newReportIndex(subject.ExistingDiagnostics),
-		seen:          make(map[referenceKey]struct{}),
-		visited:       make(map[*ast.RawQueryAnalysis]struct{}),
-		systemColumns: facts.info.SystemColumns,
-		selectAliases: facts.info.SelectAliases,
+		builder:            builder,
+		problems:           newQueryReporter(subject.Filename, subject.Query.SQL, subject.Query.Line),
+		reported:           newReportIndex(subject.ExistingDiagnostics),
+		seen:               make(map[referenceKey]struct{}),
+		visited:            make(map[*ast.RawQueryAnalysis]struct{}),
+		systemColumns:      facts.info.SystemColumns,
+		selectAliases:      facts.info.SelectAliases,
+		constantMembership: facts.info.ConstantMembershipLists,
 	}
 }
 
@@ -318,12 +323,30 @@ func (c *referenceChecker) checkExpression(ctx context.Context, expression ast.E
 			continue
 		case *ast.FunctionCallExpression:
 			c.checkFunction(ctx, typed, here)
+		case *ast.InListExpression:
+			c.checkMembership(typed, here)
 		}
 		mark := len(stack)
 		for child := range ast.Children(pending.expression) {
 			stack = append(stack, pendingExpression{expression: child, lambdaParameters: pending.lambdaParameters})
 		}
 		slices.Reverse(stack[mark:])
+	}
+}
+
+// checkMembership reports a member of an IN list that reads a column of the row, on an
+// engine that tests membership only against constants, parameters and subqueries.
+//
+// Takes list (*ast.InListExpression) which is the membership test.
+// Takes where (expressionContext) which says where it sits.
+func (c *referenceChecker) checkMembership(list *ast.InListExpression, where expressionContext) {
+	if !c.constantMembership || list == nil {
+		return
+	}
+	for _, member := range list.Values {
+		if problem := resolve.RowDependentMember(member, where.scope, where.lambdaParameters); problem != nil {
+			c.report(ast.Span{Start: problem.Span.Start, End: problem.Span.End}, problem.Code, problem.Severity, problem.Message, problem.Suggestion)
+		}
 	}
 }
 

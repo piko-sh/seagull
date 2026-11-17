@@ -321,7 +321,7 @@ func TestTableValuedFunctionOfSeveralCallsJoinsTheirColumns(t *testing.T) {
 	}
 }
 
-func TestTableValuedFunctionOfSeveralCallsTakesATypedAliasList(t *testing.T) {
+func TestTableValuedFunctionOfSeveralCallsRefusesATypedAliasList(t *testing.T) {
 	t.Parallel()
 
 	textType := sqlmodel.SQLType{EngineName: "text", Category: sqlmodel.TypeCategoryText}
@@ -350,11 +350,12 @@ func TestTableValuedFunctionOfSeveralCallsTakesATypedAliasList(t *testing.T) {
 		}, callTypers{arguments: untypedArguments, scalarCall: nil})
 	require.NoError(t, interruption)
 
-	require.Nil(t, diagnostic)
+	require.NotNil(t, diagnostic, "the engine refuses a column definition list for several calls")
+	require.Contains(t, diagnostic.Message, "AS t(name, price)")
 	require.Equal(t, []ast.ScopedColumn{
 		{Name: "name", SQLType: textType, Nullable: true},
 		{Name: "price", SQLType: decimalType, Nullable: true},
-	}, columns)
+	}, columns, "the definitions still type the columns, so the rest of the query is analysed")
 }
 
 func untypedArguments(context.Context, []ast.Expression) []sqlmodel.SQLType {
@@ -702,14 +703,15 @@ func TestResolveTableValuedFunctionColumns(t *testing.T) {
 			wantColumns: []string{"key", "value"},
 		},
 		{
-			name:   "explicit typed column definitions win over lookup",
+			name:   "typed column definitions for a function with columns of its own are reported",
 			engine: builtinEngine,
 			reference: ast.RawTableValuedFunctionReference{
 				FunctionName:      "json_each",
 				Alias:             "je",
 				ColumnDefinitions: []ast.TVFColumnDefinition{{Name: "n", TypeName: "int4"}},
 			},
-			wantColumns: []string{"n"},
+			wantColumns:    []string{"n"},
+			wantDiagnostic: true,
 		},
 		{
 			name:           "unknown function resolves to nil columns without a diagnostic",

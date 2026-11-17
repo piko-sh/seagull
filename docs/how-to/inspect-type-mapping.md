@@ -49,7 +49,7 @@ Call the generated method and inspect the Go values, rather than assuming an SQL
 	fmt.Fprintf(output, "landed_at  %-10T %s\n", landing.LandedAt, landing.LandedAt.Format(time.RFC3339))
 	// %T prints []byte as []uint8, since byte is an alias for uint8.
 	fmt.Fprintf(output, "tag        %-10T % x\n", landing.Tag, landing.Tag)
-	fmt.Fprintf(output, "notes      %-10T %s\n", landing.Notes, *landing.Notes)
+	fmt.Fprintf(output, "notes      %-10T %s\n", landing.Notes, landing.Notes.V)
 ```
 
 The `%T` output below shows the actual types for this driver. If a mapping does not fit the application, [add an override](override-types.md) and repeat the read with representative values.
@@ -77,7 +77,7 @@ length_cm  float64    31.5
 on_ice     bool       true
 landed_at  time.Time  2026-05-01T05:30:00Z
 tag        []uint8    04 a2 19 f3
-notes      *string    landed at Newlyn
+notes      store.Null[string] landed at Newlyn
 ```
 
 ## Check declared names and cast behaviour

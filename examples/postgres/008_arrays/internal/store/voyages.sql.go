@@ -4,7 +4,7 @@ package store
 
 import "context"
 
-const listVoyagesSQL = `SELECT id, boat, to_json(ports) AS "ports", to_json(catch_kg) AS "catch_kg", to_json(sightings) AS "sightings" FROM voyages ORDER BY id;`
+const listVoyagesSQL = `SELECT id, boat, ports, catch_kg, sightings FROM voyages ORDER BY id;`
 
 type ListVoyagesRow struct {
 	ID        int64     `json:"id"`
@@ -23,7 +23,7 @@ func (queries *Queries) ListVoyages(ctx context.Context) ([]ListVoyagesRow, erro
 	var results []ListVoyagesRow
 	for rows.Next() {
 		var row ListVoyagesRow
-		if err := rows.Scan(&row.ID, &row.Boat, sglScanInto(&row.Ports), sglScanInto(&row.CatchKg), sglScanInto(&row.Sightings)); err != nil {
+		if err := rows.Scan(&row.ID, &row.Boat, sglScanArray(&row.Ports), sglScanArray(&row.CatchKg), sglScanArray(&row.Sightings)); err != nil {
 			return nil, err
 		}
 		results = append(results, row)
@@ -44,7 +44,7 @@ type LogVoyageParams struct {
 }
 
 func (queries *Queries) LogVoyage(ctx context.Context, params LogVoyageParams) error {
-	_, err := queries.writer.ExecContext(ctx, logVoyageSQL, params.Boat, params.Ports, params.CatchKg, params.Sightings)
+	_, err := queries.writer.ExecContext(ctx, logVoyageSQL, params.Boat, sglNonNil(params.Ports), sglNonNil(params.CatchKg), params.Sightings)
 	return err
 }
 
@@ -54,9 +54,9 @@ WHERE $1::text = ANY(ports)
 ORDER BY id;`
 
 type VoyagesCallingAtRow struct {
-	Boat      string  `json:"boat"`
-	FirstPort *string `json:"first_port"`
-	Stops     int32   `json:"stops"`
+	Boat      string       `json:"boat"`
+	FirstPort Null[string] `json:"first_port"`
+	Stops     int32        `json:"stops"`
 }
 
 func (queries *Queries) VoyagesCallingAt(ctx context.Context, port string) ([]VoyagesCallingAtRow, error) {
@@ -66,12 +66,16 @@ func (queries *Queries) VoyagesCallingAt(ctx context.Context, port string) ([]Vo
 	}
 	defer rows.Close()
 	var results []VoyagesCallingAtRow
-	for rows.Next() {
+	if rows.Next() {
 		var row VoyagesCallingAtRow
-		if err := rows.Scan(&row.Boat, &row.FirstPort, &row.Stops); err != nil {
-			return nil, err
+		scanArgs := []any{&row.Boat, &row.FirstPort, sglScanNumber(&row.Stops)}
+		for more := true; more; more = rows.Next() {
+			row = VoyagesCallingAtRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -79,7 +83,7 @@ func (queries *Queries) VoyagesCallingAt(ctx context.Context, port string) ([]Vo
 	return results, nil
 }
 
-const voyagesPerBoatSQL = `SELECT boat, to_json(array_agg(id ORDER BY id)) AS voyages
+const voyagesPerBoatSQL = `SELECT boat, array_agg(id ORDER BY id) AS voyages
 FROM voyages
 GROUP BY boat
 ORDER BY boat;`
@@ -98,7 +102,7 @@ func (queries *Queries) VoyagesPerBoat(ctx context.Context) ([]VoyagesPerBoatRow
 	var results []VoyagesPerBoatRow
 	for rows.Next() {
 		var row VoyagesPerBoatRow
-		if err := rows.Scan(&row.Boat, sglScanInto(&row.Voyages)); err != nil {
+		if err := rows.Scan(&row.Boat, sglScanArray(&row.Voyages)); err != nil {
 			return nil, err
 		}
 		results = append(results, row)

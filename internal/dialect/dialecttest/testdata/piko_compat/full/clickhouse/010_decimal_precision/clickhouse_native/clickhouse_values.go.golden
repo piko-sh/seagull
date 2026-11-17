@@ -55,6 +55,17 @@ func pikoClickHouseShapedValue(value any, shape pikoClickHouseShape) string {
 	}
 	return text
 }
+func pikoClickHouseFloatValue(value any, shape string, named bool) any {
+	current, err := pikoClickHouseFollow(reflect.ValueOf(value), 0)
+	if err == nil && !current.IsValid() {
+		return "NULL"
+	}
+	text := pikoClickHouseValue(value, shape)
+	if named {
+		return pikoClickHouseTextEscaper.Replace(text)
+	}
+	return text
+}
 func pikoClickHouseWhole(value reflect.Value, shape pikoClickHouseShape) (string, error) {
 	current, err := pikoClickHouseFollow(value, 0)
 	if err != nil {
@@ -94,7 +105,7 @@ func pikoClickHouseAppendElement(text []byte, value reflect.Value, shape pikoCli
 	if err != nil {
 		return nil, err
 	}
-	if shape.kind == 'n' {
+	if shape.kind == 'n' || shape.kind == 'f' || shape.kind == 'F' {
 		return append(text, scalar...), nil
 	}
 	text = append(text, '\'')
@@ -123,17 +134,35 @@ func pikoClickHouseAppendNumber(text []byte, value reflect.Value) []byte {
 	return strconv.AppendFloat(text, number, 'g', -1, value.Type().Bits())
 }
 func pikoClickHouseFollow(value reflect.Value, depth int) (reflect.Value, error) {
-	for value.IsValid() && (value.Kind() == reflect.Pointer || value.Kind() == reflect.Interface) {
-		if value.IsNil() {
-			return reflect.Value{}, nil
+	for value.IsValid() {
+		switch {
+		case value.Kind() == reflect.Pointer || value.Kind() == reflect.Interface:
+			if value.IsNil() {
+				return reflect.Value{}, nil
+			}
+			value = value.Elem()
+		case pikoClickHouseHoldsNull(value):
+			if !value.FieldByName("Valid").Bool() {
+				return reflect.Value{}, nil
+			}
+			value = value.Field(0)
+		default:
+			return value, nil
 		}
 		depth++
 		if depth > pikoClickHouseMaxDepth {
 			return reflect.Value{}, fmt.Errorf("%w: it nests more than %d levels deep or refers to itself", errPikoClickHouseValue, pikoClickHouseMaxDepth)
 		}
-		value = value.Elem()
 	}
 	return value, nil
+}
+func pikoClickHouseHoldsNull(value reflect.Value) bool {
+	if value.Kind() != reflect.Struct || value.NumField() != 2 || !strings.HasPrefix(value.Type().Name(), "Null[") {
+		return false
+	}
+	valid := value.Type().Field(1)
+	held := value.Type().Field(0).Name
+	return held == "V" && valid.Name == "Valid" && valid.Type.Kind() == reflect.Bool
 }
 func pikoClickHouseResolve(value reflect.Value, shape pikoClickHouseShape) pikoClickHouseShape {
 	if shape.kind != 'a' {
@@ -276,7 +305,10 @@ func pikoClickHouseTupleElements(value reflect.Value, shape pikoClickHouseShape)
 	return elements, nil
 }
 func pikoClickHouseScalar(value reflect.Value, shape pikoClickHouseShape) (string, error) {
-	if shape.kind == '4' || shape.kind == '6' {
+	switch shape.kind {
+	case 'f', 'F':
+		return pikoClickHouseFloatBits(value, shape.kind == 'F')
+	case '4', '6':
 		address, isAddress, failure := pikoClickHouseAddress(value, shape.kind)
 		if failure != "" {
 			return "", fmt.Errorf("%w: %s", errPikoClickHouseValue, failure)
@@ -335,7 +367,12 @@ func pikoClickHouseTime(moment time.Time, shape pikoClickHouseShape) (string, er
 	case 'd':
 		return moment.Format("2006-01-02"), nil
 	case 't':
-		return pikoClickHouseEpoch(moment, shape.digits), nil
+		epoch := pikoClickHouseEpoch(moment, shape.digits)
+		if strings.HasPrefix(epoch, "-0.") {
+			return "", fmt.Errorf("%w: %s is less than a second before 1970, and ClickHouse reads the Unix time %s as after 1970, so it cannot be sent faithfully",
+				errPikoClickHouseValue, moment.UTC().Format(time.RFC3339Nano), epoch)
+		}
+		return epoch, nil
 	case 'q':
 		return moment.Format(time.RFC3339Nano), nil
 	default:
@@ -481,7 +518,7 @@ func pikoClickHouseReadShape(text string, depth int) (pikoClickHouseShape, strin
 	}
 	shape.kind, text = text[0], text[1:]
 	switch shape.kind {
-	case 'q', 'n', 'd', 'a', '4', '6':
+	case 'q', 'n', 'd', 'a', '4', '6', 'f', 'F':
 		return shape, text, nil
 	case 't':
 		shape.digits = 0
@@ -553,4 +590,32 @@ func pikoClickHouseReadName(text string) (name string, rest string, err error) {
 		break
 	}
 	return "", "", fmt.Errorf("%w: a tuple field's name is not closed by '=", errPikoClickHouseShape)
+}
+func pikoClickHouseNumberText(value reflect.Value) (string, error) {
+	if pikoClickHouseIsNumber(value) {
+		return pikoClickHouseNumber(value), nil
+	}
+	return pikoClickHouseText(value)
+}
+func pikoClickHouseFloatBits(value reflect.Value, narrow bool) (string, error) {
+	const floatBits = 64
+	const decimalBase = 10
+	var number float64
+	if value.Kind() == reflect.Float32 || value.Kind() == reflect.Float64 {
+		number = value.Float()
+	} else {
+		text, err := pikoClickHouseNumberText(value)
+		if err != nil {
+			return "", err
+		}
+		parsed, err := strconv.ParseFloat(text, floatBits)
+		if err != nil {
+			return "", fmt.Errorf("%w: %w", errPikoClickHouseValue, err)
+		}
+		number = parsed
+	}
+	if narrow {
+		return strconv.FormatUint(uint64(math.Float32bits(float32(number))), decimalBase), nil
+	}
+	return strconv.FormatUint(math.Float64bits(number), decimalBase), nil
 }

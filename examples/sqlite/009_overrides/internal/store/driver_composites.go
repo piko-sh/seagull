@@ -143,7 +143,7 @@ func sglReadDriverShape(target reflect.Value, value reflect.Value) error {
 func sglReadDriverLeaf(target reflect.Value, source any) (bool, error) {
 	address := target.Addr().Interface()
 	if unmarshaler, ok := address.(json.Unmarshaler); ok {
-		encoded, err := json.Marshal(source)
+		encoded, err := sglJSONMarshal(source)
 		if err != nil {
 			return true, err
 		}

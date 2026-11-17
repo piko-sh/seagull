@@ -88,6 +88,11 @@ type ScopeRules struct {
 	// nil when the dialect has no such values.
 	RowValues dialect.RowValueTyperPort
 
+	// KeywordValues types the bare keywords that read a column of their own query's FROM
+	// clause when one has the name and their own value otherwise, as a
+	// dialect.KeywordValuePort does, or is nil for a dialect with none.
+	KeywordValues func(name string) (sqlmodel.SQLType, bool)
+
 	// RowIDAliases lists the names the implicit row identifier column answers to; empty when
 	// the dialect has no such column.
 	RowIDAliases []string
@@ -117,6 +122,14 @@ type ScopeRules struct {
 	// over a column of the same name: the dialect's Info.SelectAliases where it is a
 	// dialect.AliasPrecedencePort whose aliases shadow columns, and none otherwise.
 	ShadowingAliases ast.Clause
+
+	// TableNameQualifiers reports that a qualifier may name an aliased table by its own name
+	// when no alias in scope matches, as a dialect.TableNameQualifierPort says.
+	TableNameQualifiers bool
+
+	// NullableCorrelation reports that a correlated scalar subquery may be NULL, as a
+	// dialect.CorrelatedSubqueryPort says.
+	NullableCorrelation bool
 }
 
 // isSystemColumn reports whether a column name is one of the columns every table has
@@ -216,14 +229,26 @@ func (budget *suggestionBudget) take() bool {
 func ScopeRulesFor(engine TypeRules) ScopeRules {
 	info := engine.Info()
 	rules := ScopeRules{
-		RowValues:        nil,
-		RowIDType:        sqlmodel.NewSQLType(sqlmodel.TypeCategoryUnknown, ""),
-		RowIDAliases:     info.RowIDAliases,
-		SystemColumns:    info.SystemColumns,
-		Identifiers:      info.Identifiers,
-		AliasOperands:    info.SelectAliasOperands & info.SelectAliases,
-		LateralAliases:   info.SelectAliases.Includes(ast.ClauseSelectList),
-		ShadowingAliases: 0,
+		RowValues:           nil,
+		RowIDType:           sqlmodel.NewSQLType(sqlmodel.TypeCategoryUnknown, ""),
+		RowIDAliases:        info.RowIDAliases,
+		SystemColumns:       info.SystemColumns,
+		Identifiers:         info.Identifiers,
+		AliasOperands:       info.SelectAliasOperands & info.SelectAliases,
+		LateralAliases:      info.SelectAliases.Includes(ast.ClauseSelectList),
+		ShadowingAliases:    0,
+		TableNameQualifiers: false,
+		NullableCorrelation: false,
+		KeywordValues:       nil,
+	}
+	if keywords, valued := engine.(dialect.KeywordValuePort); valued {
+		rules.KeywordValues = keywords.KeywordValue
+	}
+	if qualifiers, names := engine.(dialect.TableNameQualifierPort); names {
+		rules.TableNameQualifiers = qualifiers.QualifiersNameAliasedTables()
+	}
+	if correlation, typed := engine.(dialect.CorrelatedSubqueryPort); typed {
+		rules.NullableCorrelation = correlation.CorrelatedSubqueriesNullable()
 	}
 	if precedence, ranks := engine.(dialect.AliasPrecedencePort); ranks && precedence.SelectAliasesShadowColumns() {
 		rules.ShadowingAliases = info.SelectAliases

@@ -52,6 +52,9 @@ type Shapes struct {
 //
 // Returns ast.Expr which calls the generated value formatter with a compiled descriptor.
 func (shapes *Shapes) Bind(vocabulary helpers.Vocabulary, access ast.Expr, parameter *sqlmodel.QueryParameter) ast.Expr {
+	if holdsFloatValue(&parameter.SQLType) {
+		return bindNamedFloat(vocabulary, access, parameter)
+	}
 	return goastutil.CallExpr(goastutil.CachedIdent(vocabulary.Helper("ClickHouseShapedValue")),
 		access, shapes.reference(vocabulary, ParameterShape(parameter)))
 }

@@ -50,6 +50,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        1
+      ]
+    },
     "SQL": "-- sgl.query(name: FindSimilar, command: many)\nSELECT id, vec_distance_L2(embedding, ?) AS distance FROM vectors ORDER BY distance LIMIT ?",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:vec_distance_L2(embedding, ⟨p0⟩)⟩ AS distance FROM vectors ORDER BY distance LIMIT ⟨p1⟩⟨arguments p0 p1⟩"
   }

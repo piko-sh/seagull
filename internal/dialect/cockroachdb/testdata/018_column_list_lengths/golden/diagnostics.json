@@ -1,0 +1,32 @@
+[
+  {
+    "Code": "Q020",
+    "Column": 1,
+    "EndColumn": 54,
+    "EndLine": 5,
+    "Filename": "column_lists.sql",
+    "Line": 5,
+    "Message": "CTE \"t\" has 2 columns but its column list names 1; this engine needs a name for every column",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q020",
+    "Column": 1,
+    "EndColumn": 57,
+    "EndLine": 8,
+    "Filename": "column_lists.sql",
+    "Line": 8,
+    "Message": "CTE \"t\" has 2 columns but its column list names 3; this engine refuses the surplus names",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q020",
+    "Column": 1,
+    "EndColumn": 52,
+    "EndLine": 17,
+    "Filename": "column_lists.sql",
+    "Line": 17,
+    "Message": "derived table \"d\" has 2 columns but its column list names 3; this engine refuses the surplus names",
+    "Severity": "error"
+  }
+]

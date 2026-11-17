@@ -28,28 +28,7 @@ import (
 	"seagull.sh/seagull/examples/postgres/008_arrays_pgx/internal/store"
 )
 
-// run logs three fishing voyages and reads them back through pgx. An array column becomes
-// a typed Go slice: TEXT[] gives []*string and BIGINT[] gives []*int64, and array_agg
-// gives a slice of its argument's type, here []int64: the id column it collects is NOT
-// NULL, so the array can hold no NULL and its elements are plain values. These are the
-// database/sql emitter's types, but pgx encodes and decodes PostgreSQL arrays itself, so
-// the generated SQL is the SQL you wrote, with no to_json() wrapper. A nil slice is sent
-// as NULL, a NULL array scans to a nil slice, and an empty array to an empty one.
-//
-// The elements are pointers because PostgreSQL can hold NULL in any array, whatever the
-// column's type says, so a NULL element reads as nil, which elements prints as NULL.
-// Parameters take the same pointers, so LogVoyage takes []*int64 for catch_kg and
-// []*string for sightings, and a nil element writes NULL; values builds them from plain
-// values. When the data never holds a NULL element, non_null_elements: true opts out, in
-// an sgl.column line of a query or migration or as go.types.non_null_elements in
-// sgl.yaml: the elements then read and bind as plain values, and a NULL one fails the
-// read. The migration declares it for ports, as a voyage never calls at a NULL port, so
-// Ports is a plain []string in the model, the row and the parameters alike.
-//
-// VoyagesCallingAt searches inside an array with $1::text = ANY(ports). The cast gives
-// the parameter its type, for Seagull, which would otherwise leave it as any, and for
-// CockroachDB, which cannot work it out from ANY. ports[1] reads one element, and is
-// *string because a missing element is NULL.
+// run records fishing voyages through pgx and reads their arrays.
 //
 // Takes pool (*pgxpool.Pool) which is a pool on a migrated database.
 // Takes output (io.Writer) which receives the voyages and the searches.
@@ -87,7 +66,7 @@ func run(ctx context.Context, pool *pgxpool.Pool, output io.Writer) error {
 	}
 	fmt.Fprintln(output, "\ncalling at Mousehole:")
 	for _, voyage := range calling {
-		fmt.Fprintf(output, "  %-10s  from %s, %d stops\n", voyage.Boat, *voyage.FirstPort, voyage.Stops)
+		fmt.Fprintf(output, "  %-10s  from %s, %d stops\n", voyage.Boat, voyage.FirstPort.V, voyage.Stops)
 	}
 
 	perBoat, err := queries.VoyagesPerBoat(ctx)

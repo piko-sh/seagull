@@ -262,6 +262,9 @@ func bookkeepingTables(database *config.Database, info *dialect.Facts, registere
 		strings.ToLower(names.Seeds),
 		strings.ToLower(names.MigrationLock),
 		strings.ToLower(names.SeedLock),
+		strings.ToLower(names.MigrationLease),
+		strings.ToLower(names.SeedLease),
+		strings.ToLower(names.SeedProgress),
 	}
 }
 
@@ -280,6 +283,8 @@ func backendOptions(section *config.Migrate) []migrate.BackendOption {
 		options = append(options, migrate.WithLock(migrate.LockAdvisory))
 	case "table":
 		options = append(options, migrate.WithLock(migrate.LockTable))
+	case "lease":
+		options = append(options, migrate.WithLock(migrate.LockLease))
 	case "none":
 		options = append(options, migrate.WithLock(migrate.LockNone))
 	default:

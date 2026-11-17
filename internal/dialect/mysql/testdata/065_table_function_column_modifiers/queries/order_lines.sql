@@ -1,7 +1,7 @@
 -- sgl.query(name: OrderLines, command: many)
 SELECT jt.sku, jt.price, jt.placed_at
 FROM orders,
-     JSON_TABLE(orders.lines, '$[*]' COLUMNS (
+     JSON_TABLE(orders.line_items, '$[*]' COLUMNS (
          sku VARCHAR(40) PATH '$.sku',
          price DECIMAL(10, 2) PATH '$.price',
          placed_at DATETIME(3) PATH '$.placed_at'

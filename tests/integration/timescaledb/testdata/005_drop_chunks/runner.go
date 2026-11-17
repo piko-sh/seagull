@@ -57,7 +57,7 @@ func main() {
 		err = queries.InsertChunkEvent(ctx, db.InsertChunkEventParams{
 			Ts:      baseline.AddDate(0, 0, day),
 			EventID: int64(day + 1),
-			Payload: new(fmt.Sprintf("event %d", day+1)),
+			Payload: db.NullOf(fmt.Sprintf("event %d", day+1)),
 		})
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)

@@ -41,8 +41,8 @@
       }
     ],
     "ReadOnly": true,
-    "SQL": "-- sgl.query(name: GetDoubledQuantities, command: many)\nSELECT id, name, list_transform(quantities, x -\u003e x * 2) AS doubled FROM inventories;",
-    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2 aliased:list_transform(quantities, x -\u003e x * 2)⟩ AS doubled FROM inventories;"
+    "SQL": "-- sgl.query(name: GetDoubledQuantities, command: many)\nSELECT id, name, list_transform(quantities, lambda x: x * 2) AS doubled FROM inventories;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2 aliased:list_transform(quantities, lambda x: x * 2)⟩ AS doubled FROM inventories;"
   },
   {
     "Command": "many",
@@ -86,7 +86,7 @@
       }
     ],
     "ReadOnly": true,
-    "SQL": "-- sgl.query(name: GetPositiveQuantities, command: many)\nSELECT id, name, list_filter(quantities, x -\u003e x \u003e 0) AS positive FROM inventories;",
-    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2 aliased:list_filter(quantities, x -\u003e x \u003e 0)⟩ AS positive FROM inventories;"
+    "SQL": "-- sgl.query(name: GetPositiveQuantities, command: many)\nSELECT id, name, list_filter(quantities, lambda x: x \u003e 0) AS positive FROM inventories;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2 aliased:list_filter(quantities, lambda x: x \u003e 0)⟩ AS positive FROM inventories;"
   }
 ]

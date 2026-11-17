@@ -20,32 +20,37 @@ ClickHouse `Int64` both become `int64` without relying on their spellings.
 
 | SQL type, by structure | Not null | Nullable |
 |---|---|---|
-| Signed integer of 8, 16, 32 or 64 bits (24-bit `MEDIUMINT` widens to 32) | `int8`, `int16`, `int32`, `int64` | pointer |
-| Unsigned integer of 8, 16, 32 or 64 bits (MySQL `UNSIGNED`, ClickHouse `UInt*`, DuckDB `U*`) | `uint8`, `uint16`, `uint32`, `uint64` | pointer |
-| Integer wider than 64 bits (`Int128`, `UInt256`, `HUGEINT`, ...) | `string` (BigInt slot) | `*string` |
-| Integer whose width the dialect does not know | `int64` | `*int64` |
-| 32-bit float (`real`, MySQL and DuckDB `FLOAT`, MySQL `FLOAT(p)` up to 24 bits and `FLOAT4`, `Float32`) | `float32` | `*float32` |
-| 64-bit float (`double precision`, `DOUBLE`, MySQL `FLOAT(p)` of 25 to 53 bits and `FLOAT8`, `Float64`, SQLite `REAL` and `FLOAT`) | `float64` | `*float64` |
-| Exact decimal (`numeric`, `decimal`) | `apd.Decimal` (Decimal slot) | `*apd.Decimal` |
-| Money (`money`) | `string` (Money slot): the text the engine writes, with its currency symbol and group separators, which no decimal type reads | `*string` |
-| Boolean, and a comparison on every engine but ClickHouse | `bool` | `*bool` |
-| Text of any kind, a bit string (`bit`, `varbit`) included | `string` | `*string` |
+| Signed integer of 8, 16, 32 or 64 bits (24-bit `MEDIUMINT` widens to 32) | `int8`, `int16`, `int32`, `int64` | `Null` of it |
+| Unsigned integer of 8, 16, 32 or 64 bits (MySQL `UNSIGNED`, ClickHouse `UInt*`, DuckDB `U*`) | `uint8`, `uint16`, `uint32`, `uint64` | `Null` of it |
+| Integer wider than 64 bits (`Int128`, `UInt256`, `HUGEINT`, ...) | `string` (BigInt slot) | `Null[string]` |
+| Integer whose width the dialect does not know | `int64` | `Null[int64]` |
+| 32-bit float (`real`, MySQL and DuckDB `FLOAT`, MySQL `FLOAT(p)` up to 24 bits and `FLOAT4`, `Float32`) | `float32` | `Null[float32]` |
+| 64-bit float (`double precision`, `DOUBLE`, MySQL `FLOAT(p)` of 25 to 53 bits and `FLOAT8`, `Float64`, SQLite `REAL` and `FLOAT`) | `float64` | `Null[float64]` |
+| Exact decimal (`numeric`, `decimal`) | `apd.Decimal` (Decimal slot) | `Null[apd.Decimal]` |
+| Money (`money`) | `string` (Money slot): the text the engine writes, with its currency symbol and group separators, which no decimal type reads | `Null[string]` |
+| Boolean, and a comparison on every engine but ClickHouse | `bool` | `Null[bool]` |
+| Text of any kind, a bit string (`bit`, `varbit`) included | `string` | `Null[string]` |
 | Binary (`bytea`, `blob`) | `[]byte` | `[]byte` |
-| Date or timestamp, with or without a time zone | `time.Time` | `*time.Time` |
-| Time of day (`time`) | `time.Time` (TimeOfDay slot) | `*time.Time` |
-| Time of day with a time zone (`timetz`) | `string` (TimeOfDay slot when it is set) | `*string` |
-| Interval | `string` (Interval slot) | `*string` |
+| Date or timestamp, with or without a time zone | `time.Time` | `Null[time.Time]` |
+| Time of day (`time`) | `time.Time` (TimeOfDay slot) | `Null[time.Time]` |
+| Time of day with a time zone (`timetz`) | `string` (TimeOfDay slot when it is set) | `Null[string]` |
+| Interval | `string` (Interval slot) | `Null[string]` |
 | JSON | `JSON` (emitted in `sgl_json.go`, JSON slot) | `JSON` |
-| UUID | `uuid.UUID` | `*uuid.UUID` |
+| UUID | `uuid.UUID` | `Null[uuid.UUID]` |
 | Single IP address (ClickHouse `IPv4`, `IPv6`) | `netip.Addr` (IPAddress slot) | `*netip.Addr` |
 | Network with a prefix, hardware address (`inet`, `cidr`, `macaddr`) | `any` | `any` |
-| Enum | a string type declared in `models.go`, with a constant per value (Enum slot) | a pointer to it |
+| Enum | a string type declared in `models.go`, with a constant per value (Enum slot) | `Null` of it |
 | Array | a slice of the element's Go type, a pointer where the element may be NULL (see [elements that may be NULL](#elements-that-may-be-null)) | the same |
 | Map (ClickHouse `Map(K, V)`, DuckDB `MAP(K, V)`) | `map[K]V` of the key's and value's Go types, the value a pointer where it may be NULL (Map slot) | the same |
 | Struct of named fields (ClickHouse named `Tuple`, DuckDB `STRUCT`) | a struct type declared in `models.go`, with a field of each field's Go type tagged with its SQL name (Struct slot) | a pointer to it |
 | PostgreSQL composite type (`CREATE TYPE ... AS (...)`) | `any`; a field selected from it, as `(address).street`, maps as the field's type | `any` |
 | Tuple with positional fields (ClickHouse `Tuple(T, U)`, `tuple(a, b)`, `(a, b)`) | `[]any`, holding the fields in order | the same |
 | Union, aggregate state | `JSON` for a union, `[]byte` for an aggregate state | the same |
+
+A nullable value is a `Null[T]`, a struct the generated package declares in `sgl_null.go`
+whose `V` field holds the value and whose `Valid` field is false for NULL (see
+[NULL values](#null-values)). A type that can already hold nothing, such as a slice, a map,
+`any` or `JSON`, stays as it is.
 
 Every SQLite integer spelling (`INTEGER`, `INT`, `SMALLINT`, a foreign key, a rowid alias)
 is a signed 64-bit integer, because SQLite stores every integer in up to eight bytes, so
@@ -82,7 +87,7 @@ ClickHouse has no boolean result for a test: a comparison, `BETWEEN`, `IN`, `IS 
 
 `apd.Decimal` is [`github.com/cockroachdb/apd/v3`](https://github.com/cockroachdb/apd), an
 arbitrary-precision decimal implementing Scanner and Valuer. Generated methods adapt
-nullable decimal pointers for drivers that cannot bind them directly. A runtime
+nullable decimals for drivers that cannot bind them directly. A runtime
 builder's `Where` passes values to the driver as given: pass a decimal by value.
 `uuid.UUID` comes from [`github.com/google/uuid`](https://github.com/google/uuid).
 
@@ -183,13 +188,21 @@ paths can disappear. Go encoding also escapes `<`, `>` and `&`. `toJSONString(co
 returns the server's own text, which can quote large integers.
 See [ClickHouse JSON columns](dialects/clickhouse.md#json-columns) for driver restrictions.
 
-The `database/sql` emitter reads a PostgreSQL or CockroachDB array through the dialect's
-to-JSON function, which writes some elements in the engine's own form rather than the one
-Go's JSON decoder takes; the generated `sglScanInto` reads those too: a timestamp without
+The `database/sql` emitter reads a PostgreSQL, TimescaleDB or CockroachDB array of text,
+integers, floats or booleans, or of UUIDs held as strings, from the text form the driver
+returns, with the generated `sglScanArray`: no conversion to JSON, so `NaN` and `Infinity`
+elements read too, and a `NULL` element is refused by a slice of values, as is an array of
+more than one dimension. It reads any other array through the dialect's to-JSON function,
+which writes some elements in the engine's own form rather than the one Go's JSON decoder
+takes; the generated `sglScanInto` reads those too: a timestamp without
 a zone, as UTC, and a date into a `time.Time`, a number into a string or a type that
 unmarshals itself from text, such as `apd.Decimal`, and binary data written as `\x` and hex
 digits into a `[]byte`. So `timestamp[]`, `date[]`, `numeric[]` and `bytea[]` columns read on
 every emitter.
+
+Every document the generated code encodes or decodes goes through the package's JSON
+codec, `encoding/json` unless the program installs another with `SetJSONCodec` (see
+[choosing the JSON codec](generated-go.md#choosing-the-json-codec-setjsoncodec)).
 
 `apd.Decimal`'s text and JSON marshalling methods have pointer receivers. A row struct that
 holds an `apd.Decimal` by value loses the number when passed to `json.Marshal` by value, so
@@ -252,7 +265,7 @@ Seagull applies the first rule that matches, in this order:
    for the base type applies to it.
 
    The `go` value follows the `go_type:` rules above, with two differences: name the value
-   type, without `*`, since a nullable column becomes a pointer automatically, and keep `[]`
+   type, without `*`, since a nullable column becomes a `Null` of it automatically, and keep `[]`
    to built-in element types such as `[]byte`. An unusable value is Q049, reported against
    `sgl.yaml`.
 
@@ -312,7 +325,7 @@ Pattern parameters, parameters compared with computed expressions, and parameter
 ### What an override type must support
 
 An override names a Go type of your own, which the generated code binds, writes in every
-command (`exec`, `batch`, `copyfrom`) and scans, alone, as a pointer for a nullable column
+command (`exec`, `batch`, `copyfrom`) and scans, alone, as the value of a `Null` for a nullable column
 and as the element of a slice for an array. Every emitter supports, on every one of those
 paths:
 
@@ -375,6 +388,33 @@ comparisons and `count(*)` are non-null; `COALESCE` is non-null when it has a no
 alternative. Use a column directive's `nullable:` only when you can assert whether the
 result may be NULL at execution time.
 
+### NULL values
+
+Most nullable scalar columns, parameters and results use the generated `Null[T]` type:
+
+```go
+type Null[T any] struct {
+	V     T
+	Valid bool
+}
+```
+
+`Valid` is false for NULL, and `V` is then the zero value of `T`. The fields match the
+standard library's `sql.Null[T]`. `Get` returns both
+fields. `Ptr` returns a pointer to a copy, or nil for NULL. `IsZero` reports NULL.
+Use `NullOf(value)` or `NullFrom(pointer)` to construct a value. A `Null` scans and binds
+on every emitter. Its JSON form is its value or `null`. With
+`go.json_tags.omitempty`, a `Null` field uses `omitzero` to omit NULL values.
+
+Nullable elements and map values stay pointers, as in `[]*int32`. So do an outer-joined
+embed, nullable structs, composites, maps, arrays and network addresses. Nullable fields
+in generated struct types also use pointers.
+Types already represented by pointers, such as DuckDB `HUGEINT` as `*big.Int`, keep
+them. Nullable types chosen by a `go_type` directive or column override also use
+pointers. To use pointers for all nullable values, set `go.nullable_pointers: true` or
+`Preset.NullablePointers`. A custom emitter uses pointers unless it implements
+`NullTypePort`.
+
 ### Elements that may be NULL
 
 PostgreSQL-family arrays and DuckDB lists, arrays and map values can hold NULL elements
@@ -418,7 +458,11 @@ in its place: pgx refuses it itself, and the `database/sql` helpers refuse it wi
 
 A nil Go slice passed for an array or list parameter binds `NULL`, and an empty non-nil
 slice binds an empty array, on PostgreSQL, CockroachDB, TimescaleDB and DuckDB, with every
-emitter: `UPDATE posts SET tags = $1` stores `NULL` for `nil` and `{}` for `[]string{}`.
+emitter: `UPDATE posts SET tags = $1` stores `NULL` for `nil` and `{}` for `[]string{}`
+when `tags` takes `NULL`. A nil slice, or a nil `[]byte`, written into a column that refuses
+`NULL`, by an `INSERT`, an `UPDATE`'s `SET` or a batch, binds the empty value instead, on
+every engine, so `nil` stores `{}` or an empty blob rather than failing the column's
+`NOT NULL`. A nil value compared in a `WHERE` clause still binds `NULL`.
 ClickHouse has no `NULL` array, since an `Array` cannot be `Nullable`, so there a nil
 slice binds an empty array. A `kind: slice` list is not an array parameter: it expands into
 the `IN` list, where a nil and an empty slice both write the dialect's empty-list test (see

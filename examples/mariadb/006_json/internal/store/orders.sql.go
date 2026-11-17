@@ -32,10 +32,10 @@ WHERE JSON_UNQUOTE(JSON_EXTRACT(basket, '$.fish')) = ?
 ORDER BY id;`
 
 type OrdersWithFishRow struct {
-	ID       int64   `json:"id"`
-	Customer string  `json:"customer"`
-	Extras   JSON    `json:"extras"`
-	Address  *string `json:"address"`
+	ID       int64        `json:"id"`
+	Customer string       `json:"customer"`
+	Extras   JSON         `json:"extras"`
+	Address  Null[string] `json:"address"`
 }
 
 func (queries *Queries) OrdersWithFish(ctx context.Context, fish string) ([]OrdersWithFishRow, error) {

@@ -167,9 +167,9 @@ func TestNativeDriverReadsEveryJSONColumnThroughTheConversion(t *testing.T) {
 		"SELECT o.id, o.name, d.id, d.data FROM owners o INNER JOIN documents d ON d.id = o.id;\n")
 	queries := files["events.sql.go"]
 
-	require.Contains(t, methodSource(t, queries, "GetDocument"), ".Scan(&row.ID, sglScanNativeComposite(&row.Data), "+
+	require.Contains(t, methodSource(t, queries, "GetDocument"), "scanned.targets = [8]any{&row.ID, sglScanNativeComposite(&row.Data), "+
 		"sglScanNativeComposite(&row.Optional), sglScanNativeComposite(&row.Listed), &raw.Keyed, sglScanNativeComposite(&row.OptionalKeyed), "+
-		"&raw.Pair, &raw.Unnamed)")
+		"&raw.Pair, &raw.Unnamed}")
 	require.Contains(t, methodSource(t, queries, "GetDocument"), "Keyed   sglNativeEntries")
 	require.Contains(t, methodSource(t, queries, "GetDocument"), "sglReadNativeColumn(&row.Keyed, raw.Keyed)")
 	require.Contains(t, methodSource(t, queries, "GetDocument"), "Unnamed []any")
@@ -190,7 +190,7 @@ func TestNativeDriverReadsAJSONColumnWhoseGoTypeAnOverrideChoseThroughTheConvers
 		"-- sgl.column(data, go_type: \"encoding/json.RawMessage\")\n"+
 		"SELECT data FROM documents WHERE id = {id:UInt64};\n")
 
-	require.Contains(t, methodSource(t, files["events.sql.go"], "GetRaw"), ".Scan(sglScanNativeComposite(&row.Data))")
+	require.Contains(t, methodSource(t, files["events.sql.go"], "GetRaw"), "scanned.targets = [1]any{sglScanNativeComposite(&row.Data)}")
 	require.Contains(t, files["clickhouse_composites.go"], "DeserializeClickHouseJSON(document *chcol.JSON) error {")
 	require.Contains(t, files, "clickhouse_documents.go")
 }

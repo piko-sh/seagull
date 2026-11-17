@@ -177,6 +177,11 @@ func PlanPackage(request *emit.Request, reservation emit.Reservation, style Name
 	if use.inlineJSON {
 		planner.scope.take(emit.InlineJSONTypeName)
 	}
+	if use.inlineNull {
+		planner.scope.take(emit.InlineNullTypeName)
+		planner.scope.take(emit.InlineNullOfName)
+		planner.scope.take(emit.InlineNullFromName)
+	}
 	planUsedImports(planner.naming.Imports, use.packages, request.Style.PackageNames, planner.scope, planner.body)
 	queries := planningOrder(request.Queries)
 	types := newTypePlanner(request.Catalogue, style.NamedTypes, planner.scope)

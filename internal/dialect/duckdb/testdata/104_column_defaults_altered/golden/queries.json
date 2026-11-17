@@ -1,0 +1,42 @@
+[
+  {
+    "Command": "exec",
+    "Filename": "pets.sql",
+    "InsertColumns": [
+      "id",
+      "weight"
+    ],
+    "InsertTarget": {
+      "Name": "pets"
+    },
+    "Line": 1,
+    "Name": "AddPet",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "weight",
+        "Nullable": true,
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: AddPet, command: exec)\nINSERT INTO pets (id, weight) VALUES ($1, $2);",
+    "Template": "INSERT INTO pets (id, weight) VALUES ⟨values:(⟨p0⟩, ⟨p1⟩)⟩;⟨arguments p0 p1⟩"
+  }
+]

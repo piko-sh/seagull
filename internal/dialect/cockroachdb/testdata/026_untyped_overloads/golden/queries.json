@@ -1,0 +1,128 @@
+[
+  {
+    "Command": "one",
+    "Filename": "calls.sql",
+    "Line": 1,
+    "Name": "PickUnknown",
+    "OutputColumns": [
+      {
+        "Name": "picked",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "x",
+        "Number": 1,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: PickUnknown, command: one)\nSELECT pick($1) AS picked;",
+    "Template": "SELECT ⟨c0 aliased:pick(⟨p0⟩)⟩ AS picked;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "calls.sql",
+    "Line": 4,
+    "Name": "AbsUnknown",
+    "OutputColumns": [
+      {
+        "Name": "absolute",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "x",
+        "Number": 1,
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AbsUnknown, command: one)\nSELECT abs($1) AS absolute;",
+    "Template": "SELECT ⟨c0 aliased:abs(⟨p0⟩)⟩ AS absolute;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "calls.sql",
+    "Line": 7,
+    "Name": "WeighUnknown",
+    "OutputColumns": [
+      {
+        "Name": "weighed",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "x",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: WeighUnknown, command: one)\nSELECT weigh($1) AS weighed;",
+    "Template": "SELECT ⟨c0 aliased:weigh(⟨p0⟩)⟩ AS weighed;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "calls.sql",
+    "Line": 10,
+    "Name": "PickTyped",
+    "OutputColumns": [
+      {
+        "Name": "picked",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "cast",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: PickTyped, command: one)\nSELECT pick($1::TEXT) AS picked;",
+    "Template": "SELECT ⟨c0 aliased:pick(⟨p0⟩::TEXT)⟩ AS picked;⟨arguments p0⟩"
+  }
+]

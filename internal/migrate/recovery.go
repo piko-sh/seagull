@@ -138,7 +138,7 @@ type RepairResult struct {
 // when the executor cannot rewrite the history, or the failure to take the lock or write
 // the history, joined with any failure to release the lock.
 func (service *Migrator) Force(ctx context.Context, version int64) (err error) {
-	ctx = service.contextFor(ctx)
+	ctx, logger := logging.From(service.contextFor(ctx))
 	ctx, end := observe.From(ctx).Start(ctx, observe.StageMigrateForce, slog.Int64(logFieldVersion, version))
 	defer func() { end(err) }()
 	editor, editable := service.executor.(HistoryEditorPort)
@@ -176,7 +176,7 @@ func (service *Migrator) Force(ctx context.Context, version int64) (err error) {
 	if recordError := editor.RecordApplied(ctx, upRecord(upFile, buildDownChecksumMap(allFiles)[version], nil)); recordError != nil {
 		return fmt.Errorf("forcing migration %d: %w", version, recordError)
 	}
-	logging.LoggerFrom(ctx).WarnContext(ctx, "forced migration as applied without running it",
+	logger.WarnContext(ctx, "forced migration as applied without running it",
 		slog.Int64(logFieldVersion, version),
 		slog.String("name", upFile.Name),
 	)
@@ -267,7 +267,7 @@ func (service *Migrator) Repair(ctx context.Context, options RepairOptions) (_ R
 	if planError != nil {
 		return RepairResult{}, planError
 	}
-	if !reflect.DeepEqual(current, options.Plan) {
+	if current == nil || options.Plan == nil || !reflect.DeepEqual(canonicalPlan(*current), canonicalPlan(*options.Plan)) {
 		return RepairResult{}, ErrRepairOutOfDate
 	}
 	return service.applyRepair(ctx, editor, allFiles, options)
@@ -303,6 +303,7 @@ func (service *Migrator) lockedHistory(ctx context.Context) ([]AppliedMigration,
 // Returns RepairResult which lists what changed.
 // Returns error when the history cannot be written; what changed before it stays.
 func (*Migrator) applyRepair(ctx context.Context, editor HistoryEditorPort, allFiles []sqlfile.MigrationFile, options RepairOptions) (RepairResult, error) {
+	ctx, logger := logging.From(ctx)
 	upFiles := upFilesByVersion(allFiles)
 	downChecksums := buildDownChecksumMap(allFiles)
 	result := RepairResult{Rebaselined: nil, Resolved: nil}
@@ -330,7 +331,7 @@ func (*Migrator) applyRepair(ctx context.Context, editor HistoryEditorPort, allF
 		}
 		result.Resolved = append(result.Resolved, dirty.Version)
 	}
-	logging.LoggerFrom(ctx).WarnContext(ctx, "repaired migration history",
+	logger.WarnContext(ctx, "repaired migration history",
 		slog.Any("rebaselined", result.Rebaselined),
 		slog.Any("resolved", result.Resolved),
 	)
@@ -391,6 +392,7 @@ func planRepair(editor HistoryEditorPort, allFiles []sqlfile.MigrationFile, appl
 		wanted[version] = struct{}{}
 	}
 	downChecksums := buildDownChecksumMap(allFiles)
+	downFiles := buildDownFileMap(allFiles)
 	for index := range applied {
 		row := &applied[index]
 		if _, isWanted := wanted[row.Version]; len(versions) > 0 && !isWanted {
@@ -410,9 +412,9 @@ func planRepair(editor HistoryEditorPort, allFiles []sqlfile.MigrationFile, appl
 				Statements:    statements,
 				LastStatement: lastCompletedStatement(*row),
 				Version:       row.Version,
-				ChecksumMatch: row.Checksum == upFile.Checksum,
+				ChecksumMatch: upFile.MatchesChecksum(row.Checksum),
 			})
-		case checksumsChanged(row, upFile.Checksum, downChecksums[row.Version]):
+		case checksumsChanged(row, &upFile, downFiles[row.Version]):
 			plan.Changed = append(plan.Changed, ChangedMigration{
 				Name:                 upFile.Name,
 				RecordedChecksum:     row.Checksum,
@@ -431,12 +433,13 @@ func planRepair(editor HistoryEditorPort, allFiles []sqlfile.MigrationFile, appl
 // Up and Down check them.
 //
 // Takes row (*AppliedMigration) which is the history row.
-// Takes upChecksum (string) which is the up file's checksum now.
-// Takes downChecksum (string) which is the down file's checksum now, or empty.
+// Takes upFile (*sqlfile.MigrationFile) which is the up file now.
+// Takes downFile (sqlfile.MigrationFile) which is the down file now, or the zero file
+// when there is none.
 //
 // Returns bool which is true when a recorded checksum differs from its file's.
-func checksumsChanged(row *AppliedMigration, upChecksum, downChecksum string) bool {
-	return row.Checksum != upChecksum || (row.DownChecksum != "" && row.DownChecksum != downChecksum)
+func checksumsChanged(row *AppliedMigration, upFile *sqlfile.MigrationFile, downFile sqlfile.MigrationFile) bool {
+	return !upFile.MatchesChecksum(row.Checksum) || (row.DownChecksum != "" && !downFile.MatchesChecksum(row.DownChecksum))
 }
 
 // upFilesByVersion indexes the up files by version.
@@ -452,4 +455,40 @@ func upFilesByVersion(allFiles []sqlfile.MigrationFile) map[int64]sqlfile.Migrat
 		}
 	}
 	return upFiles
+}
+
+// canonicalPlan writes every empty list of a repair plan as nil, so a plan that went
+// through a serialisation that writes an empty list for a nil one, or the reverse, still
+// equals the plan it was made from.
+//
+// Takes plan (RepairPlan) which is the plan. It is not changed.
+//
+// Returns RepairPlan which is the plan with its empty lists nil.
+func canonicalPlan(plan RepairPlan) RepairPlan {
+	plan.Versions = nilIfEmpty(plan.Versions)
+	plan.Changed = nilIfEmpty(plan.Changed)
+	plan.Missing = nilIfEmpty(plan.Missing)
+	if len(plan.Dirty) == 0 {
+		plan.Dirty = nil
+		return plan
+	}
+	dirty := make([]DirtyMigration, len(plan.Dirty))
+	for index, migration := range plan.Dirty {
+		migration.Statements = nilIfEmpty(migration.Statements)
+		dirty[index] = migration
+	}
+	plan.Dirty = dirty
+	return plan
+}
+
+// nilIfEmpty returns nil for an empty slice and the slice otherwise.
+//
+// Takes values ([]T) which is the slice.
+//
+// Returns []T which is nil when values is empty.
+func nilIfEmpty[T any](values []T) []T {
+	if len(values) == 0 {
+		return nil
+	}
+	return values
 }

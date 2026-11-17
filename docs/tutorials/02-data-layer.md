@@ -23,7 +23,7 @@ Create `db/migrations/0002_notes.up.sql`:
 ALTER TABLE tasks ADD COLUMN notes TEXT;
 ```
 
-There is no `NOT NULL` constraint, so a task can have no note. Seagull represents this value as a string pointer.
+There is no `NOT NULL` constraint, so a task can have no note. Seagull represents this value as a `store.Null[string]`, whose `Valid` field is false when the note is NULL and whose `V` field holds the note otherwise.
 
 Append these queries to `db/queries/tasks.sql`:
 
@@ -46,17 +46,17 @@ SELECT id, title, notes FROM tasks WHERE id = ?;
 Append this code inside `run`, before its final `return nil`:
 
 ```go
-	if err := queries.SetNotes(ctx, store.SetNotesParams{Notes: new("Bring chips"), ID: task.ID}); err != nil {
+	if err := queries.SetNotes(ctx, store.SetNotesParams{Notes: store.NullOf("Bring chips"), ID: task.ID}); err != nil {
 		return err
 	}
 	found, ok, err := queries.FindTask(ctx, task.ID)
 	if err != nil {
 		return err
 	}
-	if !ok || found.Notes == nil {
+	if !ok || !found.Notes.Valid {
 		return fmt.Errorf("task or notes missing")
 	}
-	fmt.Fprintln(out, *found.Notes)
+	fmt.Fprintln(out, found.Notes.V)
 	_, ok, err = queries.FindTask(ctx, 999)
 	if err != nil {
 		return err
@@ -64,7 +64,7 @@ Append this code inside `run`, before its final `return nil`:
 	fmt.Fprintln(out, "missing:", !ok)
 ```
 
-The first lookup checks that both the task and its note exist before reading the pointer. The second asks for ID 999, which this application has not created.
+The first lookup checks that both the task and its note exist before reading the note. The second asks for ID 999, which this application has not created.
 
 ```sh
 go run .
@@ -76,6 +76,6 @@ Bring chips
 missing: true
 ```
 
-The note is present, while the second row is missing. A present task with NULL notes would instead have `ok == true` and `found.Notes == nil`.
+The note is present, while the second row is missing. A present task with NULL notes would instead have `ok == true` and `found.Notes.Valid == false`.
 
 Continue with [search and results](03-search-results.md). See [null and missing rows](../how-to/null-and-missing-rows.md) when choosing the contract for an application query.

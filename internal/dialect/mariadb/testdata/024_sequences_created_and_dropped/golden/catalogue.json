@@ -1,0 +1,35 @@
+{
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "": {
+      "Sequences": {
+        "invoice_numbers": {
+          "Name": "invoice_numbers",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          }
+        },
+        "order_numbers": {
+          "Name": "order_numbers",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 2
+          }
+        },
+        "receipt_numbers": {
+          "Name": "receipt_numbers",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 1
+          }
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    ""
+  ]
+}

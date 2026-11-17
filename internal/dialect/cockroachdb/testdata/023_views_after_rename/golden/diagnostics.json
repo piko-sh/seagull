@@ -1,0 +1,10 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 1,
+    "Filename": "001_schema.up.sql",
+    "Line": 3,
+    "Message": "cannot rename table src because view v reads it",
+    "Severity": "error"
+  }
+]

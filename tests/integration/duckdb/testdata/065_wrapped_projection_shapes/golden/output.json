@@ -1,0 +1,86 @@
+{
+  "alias_ordered_amounts": [
+    {
+      "amount": "9.00",
+      "id": 1
+    },
+    {
+      "amount": "10.00",
+      "id": 2
+    },
+    {
+      "amount": "100.50",
+      "id": 3
+    }
+  ],
+  "distinct_amounts": 3,
+  "distinct_amounts_error": null,
+  "distinct_waits": [
+    {
+      "wait": "02:00:00"
+    },
+    {
+      "wait": "1 day"
+    }
+  ],
+  "distinct_waits_direct": [
+    {
+      "wait": "02:00:00"
+    },
+    {
+      "wait": "1 day"
+    }
+  ],
+  "native_distinct_waits": 2,
+  "native_intervals_equal": true,
+  "ordered_amounts": [
+    {
+      "amount": "9.00",
+      "id": 1
+    },
+    {
+      "amount": "10.00",
+      "id": 2
+    },
+    {
+      "amount": "100.50",
+      "id": 3
+    }
+  ],
+  "ordinal_ordered_amounts": [
+    {
+      "amount": "9.00",
+      "id": 1
+    },
+    {
+      "amount": "10.00",
+      "id": 2
+    },
+    {
+      "amount": "100.50",
+      "id": 3
+    }
+  ],
+  "union_amounts": [
+    {
+      "amount": "9.00"
+    },
+    {
+      "amount": "10.00"
+    },
+    {
+      "amount": "100.50"
+    }
+  ],
+  "union_amounts_direct": [
+    {
+      "amount": "9.00"
+    },
+    {
+      "amount": "10.00"
+    },
+    {
+      "amount": "100.50"
+    }
+  ]
+}

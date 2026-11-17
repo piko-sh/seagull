@@ -130,9 +130,12 @@ func TestRenderCompositesReadsJSONDocumentsThroughTheSharedReading(t *testing.T)
 
 	reading, err := valuereading.Render(acmeVocabulary(), "store")
 	require.NoError(t, err)
-	want := append(acmeNames(compositeHelpers, documentHelpers, entriesHelpers, chvalues.DocumentHelpers, valuereading.Helpers), "JSON")
+	codec := sqlmodel.GeneratedFile{Name: "codec.go", Content: []byte("package store\n\nfunc acmeJSONMarshal(any) ([]byte, error) { return nil, nil }\n\n" +
+		"func acmeJSONUnmarshal([]byte, any) error { return nil }\n")}
+	want := append(acmeNames(compositeHelpers, documentHelpers, entriesHelpers, chvalues.DocumentHelpers, valuereading.Helpers), "JSON",
+		"acmeJSONMarshal", "acmeJSONUnmarshal")
 	slices.Sort(want)
-	require.Equal(t, want, checkedNames(t, composites, documents, reading, jsonType), "the helper lists name every declaration of the files")
+	require.Equal(t, want, checkedNames(t, composites, documents, reading, jsonType, codec), "the helper lists name every declaration of the files")
 }
 
 func TestColumnReadingConvertsTheValuesTheDriverReadsInGoTypesOfItsOwn(t *testing.T) {

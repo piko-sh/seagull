@@ -1,0 +1,4 @@
+{
+  "description": "A column's own CHECK is a check on that column, named as MySQL numbers it. Dropping the column drops it, MODIFY keeps it, and the CHECK of a CHANGE COLUMN definition is added.",
+  "expectedDiagnosticCount": 0
+}

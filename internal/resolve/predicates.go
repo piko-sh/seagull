@@ -20,7 +20,9 @@ package resolve
 
 import (
 	"context"
+	"slices"
 
+	"seagull.sh/seagull/internal/diag"
 	"seagull.sh/seagull/internal/dialect"
 	"seagull.sh/seagull/internal/dialect/ast"
 	"seagull.sh/seagull/internal/sqlmodel"
@@ -52,6 +54,11 @@ func (r *TypeResolver) resolvePredicate(
 	for index, operand := range operands {
 		sqlType, nullable, err := r.resolvePredicateOperand(ctx, operand, listed && index > 0, scope, dataModifying)
 		r.noteOperandProblem(err)
+		if listed && index > 0 && r.constantMembership {
+			if problem := RowDependentMember(operand, scope, nil); problem != nil {
+				r.noteOperandProblem(problem)
+			}
+		}
 		operandTypes[index], operandNullability[index] = sqlType, nullable
 	}
 	quantifiedElements(expression, operandTypes)
@@ -235,4 +242,49 @@ func predicateOperands(expression ast.Expression) []ast.Expression {
 		}
 	}
 	return nil
+}
+
+// RowDependentMember reports a member of an IN list that reads a column of the row, which
+// an engine that tests membership only against constants, parameters and subqueries
+// rejects when the query runs.
+//
+// Takes member (ast.Expression) which is the list member. A subquery inside it is not
+// read.
+// Takes scope (*ScopeChain) which resolves the member's names.
+// Takes lambdaParameters ([]string) which are the names a lambda around the member binds,
+// which are no columns.
+//
+// Returns *Error which is the problem at the first column the member reads, or nil.
+func RowDependentMember(member ast.Expression, scope *ScopeChain, lambdaParameters []string) *Error {
+	if scope == nil {
+		return nil
+	}
+	for node := range ast.Preorder(member) {
+		reference, isColumn := node.(*ast.ColumnRefExpression)
+		if !isColumn || reference == nil || namesLambdaParameter(reference, lambdaParameters) {
+			continue
+		}
+		column, _, err := scope.ResolveColumn(reference.TableAlias, reference.ColumnName)
+		if err != nil || column == nil {
+			continue
+		}
+		problem := newError(diag.CodeExpressionTypeError,
+			"IN compares a value only with constants, parameters or a subquery on this engine, and %q reads a column of the row",
+			reference.ColumnName).withSeverity(diag.SeverityError)
+		problem.Suggestion = "compare with each column separately, such as x <> a AND x <> b, or select the values in a subquery"
+		problem.Span = Span{Start: reference.Span.Start, End: reference.Span.End}
+		return problem
+	}
+	return nil
+}
+
+// namesLambdaParameter reports whether an unqualified column reference names a parameter
+// of a lambda around it rather than a column.
+//
+// Takes reference (*ast.ColumnRefExpression) which is the reference.
+// Takes lambdaParameters ([]string) which are the names the lambdas bind.
+//
+// Returns bool which is true when the reference names a lambda parameter.
+func namesLambdaParameter(reference *ast.ColumnRefExpression, lambdaParameters []string) bool {
+	return reference.TableAlias == "" && slices.Contains(lambdaParameters, reference.ColumnName)
 }

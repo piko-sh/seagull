@@ -189,7 +189,9 @@ func TestCockroachDBFailedMigrationStaysDirtyAndResumes(t *testing.T) {
 	assert.True(t, statuses[1].Dirty)
 	require.NotNil(t, statuses[1].LastStatement)
 	assert.Equal(t, 0, *statuses[1].LastStatement)
-	require.NoError(t, migrator.Validate(t.Context()))
+	var dirty *migrate.DirtyMigrationError
+	require.ErrorAs(t, migrator.Validate(t.Context()), &dirty, "validation reports the dirty migration until it is retried")
+	assert.Equal(t, int64(2), dirty.Version)
 
 	_, err = database.ExecContext(t.Context(), "UPDATE boats SET name = 'Tern' WHERE id = 2")
 	require.NoError(t, err)
@@ -302,7 +304,7 @@ func TestCockroachDBLegacyDirtyMigrationIsUpgradedAndNotResumed(t *testing.T) {
 	var recordedVersion int
 	var statementsHash string
 	require.NoError(t, database.QueryRowContext(ctx, "SELECT splitter_version, statements_hash FROM sgl_migrations WHERE version = 1").Scan(&recordedVersion, &statementsHash))
-	require.Equal(t, 1, recordedVersion)
+	require.Equal(t, 2, recordedVersion, "this release splits statements by splitter version 2")
 	require.Len(t, statementsHash, 64)
 	require.Equal(t, []harness.HistoryEntry{{Version: 1, Dirty: false, LastStatement: 1}}, harness.ReadHistory(t, database))
 }

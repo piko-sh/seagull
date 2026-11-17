@@ -62,7 +62,7 @@ func (queries *Queries) FindSailings(ctx context.Context, params FindSailingsPar
 	var results []FindSailingsRow
 	if rows.Next() {
 		var row FindSailingsRow
-		scanArgs := []any{&row.ID, &row.Origin, &row.Destination, &row.Departs, &row.SeatsFree}
+		scanArgs := []any{&row.ID, &row.Origin, &row.Destination, &row.Departs, sglScanNumber(&row.SeatsFree)}
 		for more := true; more; more = rows.Next() {
 			row = FindSailingsRow{}
 			if err := rows.Scan(scanArgs...); err != nil {
@@ -104,7 +104,7 @@ func (queries *Queries) SailingsDeparting(ctx context.Context, params SailingsDe
 	var results []SailingsDepartingRow
 	if rows.Next() {
 		var row SailingsDepartingRow
-		scanArgs := []any{&row.ID, &row.Origin, &row.Destination, &row.Departs, &row.SeatsFree}
+		scanArgs := []any{&row.ID, &row.Origin, &row.Destination, &row.Departs, sglScanNumber(&row.SeatsFree)}
 		for more := true; more; more = rows.Next() {
 			row = SailingsDepartingRow{}
 			if err := rows.Scan(scanArgs...); err != nil {

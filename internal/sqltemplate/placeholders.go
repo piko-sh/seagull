@@ -56,10 +56,6 @@ type occurrence struct {
 	// parameter is the index into the query's Parameters of the parameter it binds.
 	parameter int
 
-	// ordinal is the placeholder's position among the statement's anonymous ones, counting
-	// from one, for an anonymous form.
-	ordinal int
-
 	// number is the parameter number a numbered form carries, as the dialect recorded it or,
 	// when it recorded none, as the placeholder writes it.
 	number int
@@ -71,8 +67,8 @@ type occurrence struct {
 // parameterIndex finds the parameter a placeholder binds, by the placeholder's name or
 // number.
 type parameterIndex struct {
-	// byName maps each placeholder identifier, or name when a parameter has none, to the
-	// first parameter that carries it.
+	// byName maps placeholder identifiers to parameters before filling gaps with display
+	// names.
 	byName map[string]int
 
 	// byNumber maps each positive parameter number to the first parameter that carries it.
@@ -88,6 +84,12 @@ func newParameterIndex(parameters []sqlmodel.QueryParameter) parameterIndex {
 	index := parameterIndex{byName: make(map[string]int, len(parameters)), byNumber: make(map[int]int, len(parameters))}
 	for position := range parameters {
 		identifier := parameters[position].Placeholder
+		if _, seen := index.byName[identifier]; identifier != "" && !seen {
+			index.byName[identifier] = position
+		}
+	}
+	for position := range parameters {
+		identifier := parameters[position].Placeholder
 		if identifier == "" {
 			identifier = parameters[position].Name
 		}
@@ -101,8 +103,9 @@ func newParameterIndex(parameters []sqlmodel.QueryParameter) parameterIndex {
 	return index
 }
 
-// named returns the parameter a named placeholder binds: the first whose placeholder
-// identifier, or name when it has none, is the placeholder's name.
+// named finds a parameter by its original placeholder identifier or display name.
+//
+// Original identifiers take precedence over display names inferred from SQL context.
 //
 // Takes name (string) which is the placeholder's name.
 //
@@ -136,8 +139,7 @@ func (b *builder) matchPlaceholders() bool {
 	parameters := b.input.Query.Parameters
 	index := newParameterIndex(parameters)
 	occurrences := make([]occurrence, 0, len(b.spans.Placeholders))
-	named := make(map[int]bool)
-	anonymous := 0
+	highest := 0
 	for _, placeholder := range b.spans.Placeholders {
 		current, inside := b.occurrenceOf(placeholder)
 		if !inside {
@@ -147,18 +149,16 @@ func (b *builder) matchPlaceholders() bool {
 		switch current.sigil.Kind {
 		case dialect.PlaceholderNamed:
 			current.parameter = index.named(placeholder.Name)
-			if current.parameter != unmatched {
-				named[current.parameter] = true
-			}
 		case dialect.PlaceholderAnonymous:
-			anonymous++
-			current.ordinal = cmpOr(placeholder.Number, anonymous)
+			current.parameter = index.numbered(highest + 1)
 		default:
 			current.parameter = index.numbered(current.number)
 		}
+		if current.parameter != unmatched {
+			highest = max(highest, parameters[current.parameter].Number)
+		}
 		occurrences = append(occurrences, current)
 	}
-	matchAnonymous(occurrences, positionalParameters(len(parameters), named))
 	for position := range occurrences {
 		if occurrences[position].parameter == unmatched {
 			b.report(diag.CodeInternalNilGuard, occurrences[position].span, "the placeholder %s matches none of the query's parameters",
@@ -185,7 +185,6 @@ func (b *builder) occurrenceOf(placeholder ast.PlaceholderSpan) (occurrence, boo
 		operator:  b.absolute(placeholder.List.Operator),
 		list:      b.absolute(placeholder.List.List),
 		parameter: unmatched,
-		ordinal:   0,
 		number:    placeholder.Number,
 		negated:   placeholder.List.Negated,
 	}
@@ -324,37 +323,6 @@ func (b *builder) checkSortableOrderBy() {
 			b.report(diag.CodeSortableOrderByParameter, current.span,
 				"parameter %q is in the ORDER BY of a sortable query, which the generated code replaces with the caller's "+
 					"ordering, so it would never be bound; move it out of the ORDER BY", parameter.Name)
-		}
-	}
-}
-
-// positionalParameters lists, in order, the parameters no named placeholder binds, which
-// the anonymous placeholders bind in turn.
-//
-// Takes count (int) which is how many parameters the query has.
-// Takes named (map[int]bool) which holds the parameters a named placeholder binds.
-//
-// Returns []int which holds the indices of the positional parameters.
-func positionalParameters(count int, named map[int]bool) []int {
-	positional := make([]int, 0, count)
-	for index := range count {
-		if !named[index] {
-			positional = append(positional, index)
-		}
-	}
-	return positional
-}
-
-// matchAnonymous matches each anonymous placeholder to the positional parameter at its
-// ordinal.
-//
-// Takes occurrences ([]occurrence) which holds the placeholders; it is updated in place.
-// Takes positional ([]int) which lists the positional parameters in order.
-func matchAnonymous(occurrences []occurrence, positional []int) {
-	for index := range occurrences {
-		ordinal := occurrences[index].ordinal
-		if occurrences[index].sigil.Kind == dialect.PlaceholderAnonymous && ordinal > 0 && ordinal <= len(positional) {
-			occurrences[index].parameter = positional[ordinal-1]
 		}
 	}
 }

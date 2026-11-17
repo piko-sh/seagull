@@ -1,0 +1,138 @@
+{
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "": {
+      "Tables": {
+        "stock": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "width",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "quantity",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "price",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "total",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            }
+          ],
+          "Constraints": [
+            {
+              "Columns": [
+                "quantity"
+              ],
+              "Kind": "check",
+              "Name": "qty",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            },
+            {
+              "Kind": "check",
+              "Name": "stock_qty_bound",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            },
+            {
+              "Kind": "check",
+              "Name": "CONSTRAINT_1",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            },
+            {
+              "Columns": [
+                "width"
+              ],
+              "Kind": "check",
+              "Name": "width",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              }
+            },
+            {
+              "Columns": [
+                "total"
+              ],
+              "Kind": "check",
+              "Name": "total",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 6
+              }
+            }
+          ],
+          "Name": "stock",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          },
+          "PrimaryKey": [
+            "id"
+          ]
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    ""
+  ]
+}

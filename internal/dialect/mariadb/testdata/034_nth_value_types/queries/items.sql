@@ -1,0 +1,6 @@
+-- sgl.query(SecondValues, many)
+SELECT
+    id,
+    NTH_VALUE(id, 2) OVER (ORDER BY id ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS second_id,
+    NTH_VALUE(score, 2) OVER (ORDER BY id ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS second_score
+FROM items;

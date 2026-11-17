@@ -28,7 +28,7 @@ func (queries *Queries) StreamEvents(ctx context.Context) func(func(StreamEvents
 		defer rows.Close()
 		for rows.Next() {
 			var row StreamEventsRow
-			if err := rows.Scan(&row.ID, &row.Name, &row.Payload, &row.CreatedAt); err != nil {
+			if err := rows.Scan(pikoScanNumber(&row.ID), &row.Name, &row.Payload, &row.CreatedAt); err != nil {
 				if !yield(StreamEventsRow{}, err) {
 					return
 				}

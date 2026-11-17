@@ -157,8 +157,8 @@ func (p *parser) analyseInsertBody(analysis *ast.RawQueryAnalysis) error {
 	return nil
 }
 
-// parseInsertColumnList reads the parenthesised column list on "INSERT INTO t (col1,
-// col2, ...) ...".
+// parseInsertColumnList reads a parenthesised list of column names: the one on "INSERT
+// INTO t (col1, col2, ...) ...", and a CTE's or a derived table's column list.
 //
 // Returns []string which is the parsed column names in declaration order.
 // Returns error when the list is missing a delimiter or closing parenthesis.

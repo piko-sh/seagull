@@ -22,6 +22,7 @@ import (
 	"cmp"
 	"context"
 	"fmt"
+	"os"
 	"path"
 	"regexp"
 	"slices"
@@ -46,7 +47,8 @@ var (
 // Takes directory (string) which is the path to the seed files directory.
 //
 // Returns []SeedFile which holds the sorted seed files.
-// Returns error when the directory cannot be read or a file cannot be loaded.
+// Returns error when the directory cannot be read, a file cannot be loaded, or a file is
+// named as a migration.
 func ReadSeedFiles(
 	ctx context.Context,
 	fileReader FileReader,
@@ -59,36 +61,13 @@ func ReadSeedFiles(
 
 	var files []SeedFile
 	for _, entry := range entries {
-		if entry.IsDir() || isSpecialFile(entry) {
-			continue
+		file, isSeed, err := readSeedEntry(ctx, fileReader, directory, entry)
+		if err != nil {
+			return nil, err
 		}
-		if !strings.HasSuffix(entry.Name(), ".sql") {
-			continue
+		if isSeed {
+			files = append(files, file)
 		}
-
-		matches := seedFilePattern.FindStringSubmatch(entry.Name())
-		if matches == nil {
-			continue
-		}
-
-		version, parseErr := strconv.ParseInt(matches[1], 10, 64)
-		if parseErr != nil {
-			return nil, fmt.Errorf("parsing version from %s: %w", entry.Name(), parseErr)
-		}
-
-		filePath := path.Join(directory, entry.Name())
-		content, readErr := fileReader.ReadFile(ctx, filePath)
-		if readErr != nil {
-			return nil, fmt.Errorf("reading seed file %s: %w", filePath, readErr)
-		}
-
-		files = append(files, SeedFile{
-			Version:  version,
-			Name:     matches[2],
-			Filename: entry.Name(),
-			Content:  content,
-			Checksum: computeChecksum(content),
-		})
 	}
 
 	slices.SortStableFunc(files, func(left, right SeedFile) int {
@@ -96,6 +75,53 @@ func ReadSeedFiles(
 	})
 
 	return files, nil
+}
+
+// readSeedEntry reads one directory entry as a seed file.
+//
+// Takes fileReader (FileReader) which provides filesystem access.
+// Takes directory (string) which is the path to the seed files directory.
+// Takes entry (os.DirEntry) which is the entry to read.
+//
+// Returns SeedFile which is the seed the entry holds.
+// Returns bool which is false when the entry is not a seed file.
+// Returns error when the entry is named as a migration, its version overflows, or it
+// cannot be read.
+func readSeedEntry(ctx context.Context, fileReader FileReader, directory string, entry os.DirEntry) (SeedFile, bool, error) {
+	name := entry.Name()
+	if entry.IsDir() || isSpecialFile(entry) || !strings.HasSuffix(name, sqlFileSuffix) {
+		return SeedFile{}, false, nil
+	}
+
+	if _, isMigration, _ := parseMigrationFilename(name); isMigration {
+		return SeedFile{}, false, fmt.Errorf("%w: %s in the seed directory is named as a migration. Seeds and migrations need directories of their own",
+			errMisnamedMigration, name)
+	}
+	matches := seedFilePattern.FindStringSubmatch(name)
+	if matches == nil {
+		return SeedFile{}, false, nil
+	}
+
+	version, err := strconv.ParseInt(matches[1], 10, 64)
+	if err != nil {
+		return SeedFile{}, false, fmt.Errorf("parsing version from %s: %w", name, err)
+	}
+
+	filePath := path.Join(directory, name)
+	content, err := fileReader.ReadFile(ctx, filePath)
+	if err != nil {
+		return SeedFile{}, false, fmt.Errorf("reading seed file %s: %w", filePath, err)
+	}
+
+	checksum, legacy := contentChecksums(content)
+	return SeedFile{
+		Version:        version,
+		Name:           matches[2],
+		Filename:       name,
+		Content:        content,
+		Checksum:       checksum,
+		LegacyChecksum: legacy,
+	}, true, nil
 }
 
 // DuplicateSeed finds the first two seed files that share a version, such as two

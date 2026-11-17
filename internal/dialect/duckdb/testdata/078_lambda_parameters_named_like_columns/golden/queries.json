@@ -42,8 +42,8 @@
       }
     ],
     "ReadOnly": true,
-    "SQL": "-- sgl.query(HighScoringBoats, many)\nSELECT id\nFROM boats\nWHERE len(list_filter(scores, score -\u003e score \u003e $1)) \u003e 0\n  AND score = $2;",
-    "Template": "SELECT ⟨c0:id⟩\\nFROM boats\\nWHERE len(list_filter(scores, score -\u003e score \u003e ⟨p0⟩)) \u003e 0\\n  AND score = ⟨p1⟩;⟨arguments p0 p1⟩"
+    "SQL": "-- sgl.query(HighScoringBoats, many)\nSELECT id\nFROM boats\nWHERE len(list_filter(scores, lambda score: score \u003e $1)) \u003e 0\n  AND score = $2;",
+    "Template": "SELECT ⟨c0:id⟩\\nFROM boats\\nWHERE len(list_filter(scores, lambda score: score \u003e ⟨p0⟩)) \u003e 0\\n  AND score = ⟨p1⟩;⟨arguments p0 p1⟩"
   },
   {
     "Command": "many",
@@ -77,8 +77,8 @@
       }
     ],
     "ReadOnly": true,
-    "SQL": "-- sgl.query(BoatsWithHighScores, many)\nSELECT id\nFROM boats\nGROUP BY id\nHAVING len(list_filter(max(scores), score -\u003e score \u003e $1)) \u003e 0;",
-    "Template": "SELECT ⟨c0:id⟩\\nFROM boats\\nGROUP BY id\\nHAVING len(list_filter(max(scores), score -\u003e score \u003e ⟨p0⟩)) \u003e 0;⟨arguments p0⟩"
+    "SQL": "-- sgl.query(BoatsWithHighScores, many)\nSELECT id\nFROM boats\nGROUP BY id\nHAVING len(list_filter(max(scores), lambda score: score \u003e $1)) \u003e 0;",
+    "Template": "SELECT ⟨c0:id⟩\\nFROM boats\\nGROUP BY id\\nHAVING len(list_filter(max(scores), lambda score: score \u003e ⟨p0⟩)) \u003e 0;⟨arguments p0⟩"
   },
   {
     "Command": "many",
@@ -148,8 +148,8 @@
       }
     ],
     "ReadOnly": true,
-    "SQL": "-- sgl.query(BoatsWithOlderCrew, many)\nSELECT id\nFROM boats\nWHERE len(list_filter(crew, tag -\u003e tag.age \u003e $1)) \u003e 0;",
-    "Template": "SELECT ⟨c0:id⟩\\nFROM boats\\nWHERE len(list_filter(crew, tag -\u003e tag.age \u003e ⟨p0⟩)) \u003e 0;⟨arguments p0⟩"
+    "SQL": "-- sgl.query(BoatsWithOlderCrew, many)\nSELECT id\nFROM boats\nWHERE len(list_filter(crew, lambda tag: tag.age \u003e $1)) \u003e 0;",
+    "Template": "SELECT ⟨c0:id⟩\\nFROM boats\\nWHERE len(list_filter(crew, lambda tag: tag.age \u003e ⟨p0⟩)) \u003e 0;⟨arguments p0⟩"
   },
   {
     "Command": "execrows",
@@ -212,7 +212,7 @@
         }
       }
     ],
-    "SQL": "-- sgl.query(DropScore, execrows)\nUPDATE boats\nSET scores = list_filter(scores, score -\u003e score \u003c\u003e $1)\nWHERE id = $2;",
-    "Template": "UPDATE boats\\nSET scores = list_filter(scores, score -\u003e score \u003c\u003e ⟨p0⟩)\\nWHERE id = ⟨p1⟩;⟨arguments p0 p1⟩"
+    "SQL": "-- sgl.query(DropScore, execrows)\nUPDATE boats\nSET scores = list_filter(scores, lambda score: score \u003c\u003e $1)\nWHERE id = $2;",
+    "Template": "UPDATE boats\\nSET scores = list_filter(scores, lambda score: score \u003c\u003e ⟨p0⟩)\\nWHERE id = ⟨p1⟩;⟨arguments p0 p1⟩"
   }
 ]

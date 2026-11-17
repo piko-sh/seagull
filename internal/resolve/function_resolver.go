@@ -398,8 +398,9 @@ func (r *FunctionResolver) resolveCall(
 
 	candidates := r.visibleCandidates(name, schema)
 	var bestMatch *sqlmodel.Function
+	ambiguous := false
 	if len(candidates) > 0 {
-		bestMatch = r.findBestCandidate(candidates, arguments)
+		bestMatch, ambiguous = r.findBestCandidate(candidates, arguments)
 	}
 	if bestMatch == nil {
 		resolved, problem, err := r.tryEngineResolver(ctx, name, schema, engineArgumentTypes)
@@ -424,6 +425,11 @@ func (r *FunctionResolver) resolveCall(
 	}
 	if r.conversionMayGiveNull(bestMatch, arguments) {
 		match.nullableBehaviour = sqlmodel.FunctionNullableCalledOnNull
+	}
+	if ambiguous && match.notice == nil {
+		match.notice = newError(diag.CodeUnknownFunction,
+			"function %q is not unique for an argument of unknown type: several overloads fit it equally, so the engine refuses the call; cast the argument to the type of the overload meant",
+			name).withSeverity(diag.SeverityWarning)
 	}
 	return match, nil, nil
 }
@@ -472,6 +478,8 @@ func (r *FunctionResolver) matchCandidate(
 		returnType:        returnType,
 		nullableBehaviour: candidate.NullableBehaviour,
 		nullingArgument:   candidate.NullingArgument,
+		nullUnlessLiteral: candidate.NullUnlessLiteral,
+		nullOnNonNumeric:  candidate.NullOnNonNumeric,
 		dataAccess:        candidate.DataAccess,
 		isAggregate:       candidate.IsAggregate,
 		returnsSet:        candidate.ReturnsSet,
@@ -541,9 +549,10 @@ func (r *FunctionResolver) convertsToNull(expected sqlmodel.SQLType, argument ca
 func (r *FunctionResolver) visibleCandidates(name string, schema string) []*sqlmodel.Function {
 	candidates := r.functions[strings.ToLower(name)]
 	key := r.catalogue.Key(name)
+	reachesBuiltins := r.reachesBuiltins(name)
 	visible := make([]functionCandidate, 0, len(candidates))
 	for _, candidate := range candidates {
-		if (candidate.builtin || candidate.key == key) && r.reaches(candidate, schema) {
+		if (candidate.builtin && reachesBuiltins || candidate.key == key) && r.reaches(candidate, schema) {
 			visible = append(visible, candidate)
 		}
 	}
@@ -558,6 +567,27 @@ func (r *FunctionResolver) visibleCandidates(name string, schema string) []*sqlm
 		functions[index] = visible[index].function
 	}
 	return functions
+}
+
+// reachesBuiltins reports whether a called name can reach the dialect's built-in
+// functions.
+//
+// In a dialect that folds unquoted names to lower case and compares them exactly, as
+// PostgreSQL does, a quoted name with an upper-case letter, such as "Scale", names only a
+// created function, as every built-in's name is lower case.
+//
+// Takes name (string) which is the canonical called name.
+//
+// Returns bool which is true when the built-ins of the name are candidates.
+func (r *FunctionResolver) reachesBuiltins(name string) bool {
+	if r.catalogue == nil {
+		return true
+	}
+	identifiers := r.catalogue.Identifiers
+	if identifiers.Insensitive || identifiers.Unquoted != sqlmodel.IdentifierFoldingLower {
+		return true
+	}
+	return name == strings.ToLower(name)
 }
 
 // reaches reports whether a call qualified by schema, or unqualified when schema is
@@ -609,10 +639,12 @@ func (r *FunctionResolver) namedArgumentAcceptsNull(name string, argumentName st
 // findBestCandidate scores each candidate overload against the actual argument types and
 // returns the highest-scoring match.
 //
-// When two viable overloads tie on both total score and exact-match count the first such
-// candidate in iteration order is kept (the strict greater-than comparisons below never
-// replace an equal incumbent), so a residual tie resolves to the earliest-considered
-// overload rather than erroring.
+// When the call passes an argument of unknown type, an engine that implements
+// dialect.UntypedArgumentPort chooses among the viable overloads with the most exact
+// matches by the types they declare at each such argument, as PostgreSQL does. It also
+// settles a tie on both total score and exact-match count the same way. A tie it cannot
+// settle is reported as ambiguous, and the first tied overload is kept so the call is
+// still typed. Other engines keep the first tied overload.
 //
 // Takes candidates ([]*sqlmodel.Function) which holds the reachable overloads to
 // evaluate, in tie-break order.
@@ -620,13 +652,14 @@ func (r *FunctionResolver) namedArgumentAcceptsNull(name string, argumentName st
 //
 // Returns *sqlmodel.Function which is the best matching overload, or nil if no candidate
 // is viable.
+// Returns bool which is true when the engine would refuse the call as ambiguous.
 func (r *FunctionResolver) findBestCandidate(
 	candidates []*sqlmodel.Function,
 	arguments []callArgument,
-) *sqlmodel.Function {
-	var bestMatch *sqlmodel.Function
-	bestScore := -1
-	bestExactCount := -1
+) (*sqlmodel.Function, bool) {
+	tied := make([]*sqlmodel.Function, 0, len(candidates))
+	exactPool := make([]*sqlmodel.Function, 0, len(candidates))
+	bestScore, bestExactCount, poolExactCount := -1, -1, -1
 
 	for _, candidate := range candidates {
 		totalScore, exactCount, viable := r.scoreCall(candidate, arguments)
@@ -634,14 +667,85 @@ func (r *FunctionResolver) findBestCandidate(
 			continue
 		}
 
-		if totalScore > bestScore || (totalScore == bestScore && exactCount > bestExactCount) {
-			bestMatch = candidate
+		switch {
+		case totalScore > bestScore || (totalScore == bestScore && exactCount > bestExactCount):
+			tied = append(tied[:0], candidate)
 			bestScore = totalScore
 			bestExactCount = exactCount
+		case totalScore == bestScore && exactCount == bestExactCount:
+			tied = append(tied, candidate)
+		}
+		switch {
+		case exactCount > poolExactCount:
+			exactPool, poolExactCount = append(exactPool[:0], candidate), exactCount
+		case exactCount == poolExactCount:
+			exactPool = append(exactPool, candidate)
 		}
 	}
 
-	return bestMatch
+	if len(tied) == 0 {
+		return nil, false
+	}
+	if _, chooses := r.engine.(dialect.UntypedArgumentPort); chooses && len(exactPool) > 1 && hasUntypedArgument(arguments) {
+		return r.settleTie(exactPool, arguments)
+	}
+	if len(tied) == 1 {
+		return tied[0], false
+	}
+	return r.settleTie(tied, arguments)
+}
+
+// hasUntypedArgument reports whether a call passes an argument of unknown type, such as a
+// placeholder no context types.
+//
+// Takes arguments ([]callArgument) which holds the call-site arguments.
+//
+// Returns bool which is true when one is untyped.
+func hasUntypedArgument(arguments []callArgument) bool {
+	return slices.ContainsFunc(arguments, func(argument callArgument) bool {
+		return argument.sqlType.Category == sqlmodel.TypeCategoryUnknown
+	})
+}
+
+// settleTie chooses among overloads that fit a call equally, by the types they declare at
+// each argument of unknown type, through the engine's dialect.UntypedArgumentPort.
+//
+// Takes tied ([]*sqlmodel.Function) which holds the tied overloads, in tie-break order.
+// Takes arguments ([]callArgument) which holds the call-site arguments.
+//
+// Returns *sqlmodel.Function which is the chosen overload, or the first tied one.
+// Returns bool which is true when the engine would refuse the call as ambiguous.
+func (r *FunctionResolver) settleTie(tied []*sqlmodel.Function, arguments []callArgument) (*sqlmodel.Function, bool) {
+	chooser, chooses := r.engine.(dialect.UntypedArgumentPort)
+	if !chooses || slices.ContainsFunc(arguments, func(argument callArgument) bool { return argument.name != "" }) {
+		return tied[0], false
+	}
+	remaining := tied
+	untyped := false
+	for ordinal := range arguments {
+		if arguments[ordinal].sqlType.Category != sqlmodel.TypeCategoryUnknown {
+			continue
+		}
+		untyped = true
+		declared := make([]sqlmodel.SQLType, 0, len(remaining))
+		for _, candidate := range remaining {
+			if slot, ok := functionArgumentSlot(candidate, ordinal); ok {
+				declared = append(declared, candidate.Arguments[slot].Type)
+			}
+		}
+		chosen, chose := chooser.UntypedArgumentType(declared)
+		if !chose {
+			return tied[0], true
+		}
+		remaining = slices.DeleteFunc(slices.Clone(remaining), func(candidate *sqlmodel.Function) bool {
+			slot, ok := functionArgumentSlot(candidate, ordinal)
+			return !ok || !functionArgumentTypesEqual(candidate.Arguments[slot].Type, chosen)
+		})
+	}
+	if len(remaining) != 1 {
+		return tied[0], untyped
+	}
+	return remaining[0], false
 }
 
 // scoreCandidate scores a single candidate overload against the actual arguments by
@@ -771,6 +875,8 @@ func (r *FunctionResolver) tryEngineResolver(
 		returnType:        resolution.ReturnType,
 		nullableBehaviour: resolution.NullableBehaviour,
 		nullingArgument:   resolution.NullingArgument,
+		nullUnlessLiteral: 0,
+		nullOnNonNumeric:  0,
 		dataAccess:        dataAccess,
 		isAggregate:       resolution.IsAggregate,
 		returnsSet:        resolution.ReturnsSet,
@@ -877,6 +983,13 @@ type FunctionMatch struct {
 	// nullingArgument is the zero-based position of the argument whose NULL makes the result
 	// NULL, read when nullableBehaviour is FunctionNullableNullWhenArgumentNull.
 	nullingArgument int
+
+	// nullUnlessLiteral is the one-based argument whose empty string makes the result NULL.
+	nullUnlessLiteral int
+
+	// nullOnNonNumeric is the one-based argument whose nonnumeric text makes the result
+	// NULL.
+	nullOnNonNumeric int
 
 	// nullableBehaviour holds the nullable propagation behaviour of the matched function.
 	nullableBehaviour sqlmodel.FunctionNullableBehaviour

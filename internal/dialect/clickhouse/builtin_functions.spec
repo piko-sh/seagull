@@ -187,7 +187,7 @@ toWeek(Date) UInt8
 toWeek(Date, UInt64) UInt8
 toISOWeek(Date) UInt8
 toISOYear(Date) UInt16
-toYearWeek(Date) UInt64
+toYearWeek(Date) UInt32
 toYearWeek(Date, UInt64) UInt64
 toDayOfYear(Date) UInt16
 
@@ -363,7 +363,7 @@ regexpExtract(String, String, UInt64) String
 regexpQuoteMeta(String) String
 initcap(String) String
 initcapUTF8(String) String
-ascii(String) Int64
+ascii(String) Int32
 isValidUTF8(String) UInt8
 notILike(String, String) UInt8
 
@@ -427,18 +427,18 @@ CAST(any, String) any
 accurateCast(any, String) any
 accurateCastOrNull(any, String) any
 accurateCastOrDefault(any, any) any
-toInt8(any) Int64
-toInt16(any) Int64
-toInt32(any) Int64
+toInt8(any) Int8
+toInt16(any) Int16
+toInt32(any) Int32
 toInt64(any) Int64
-toInt128(any) Int64
-toInt256(any) Int64
-toUInt8(any) UInt64
-toUInt16(any) UInt64
-toUInt32(any) UInt64
+toInt128(any) Int128
+toInt256(any) Int256
+toUInt8(any) UInt8
+toUInt16(any) UInt16
+toUInt32(any) UInt32
 toUInt64(any) UInt64
-toUInt128(any) UInt64
-toUInt256(any) UInt64
+toUInt128(any) UInt128
+toUInt256(any) UInt256
 toFloat32(any) Float32
 toFloat64(any) Float64
 toDecimal128(any, Int64) Decimal128
@@ -449,42 +449,42 @@ toIPv4(String) IPv4
 toIPv6(String) IPv6
 toBool(any) Bool
 
-toInt8OrNull(any) Int64
-toInt8OrZero(any) Int64
-toInt8OrDefault(any) Int64
-toInt16OrNull(any) Int64
-toInt16OrZero(any) Int64
-toInt16OrDefault(any) Int64
-toInt32OrNull(any) Int64
-toInt32OrZero(any) Int64
-toInt32OrDefault(any) Int64
+toInt8OrNull(any) Int8
+toInt8OrZero(any) Int8
+toInt8OrDefault(any) Int8
+toInt16OrNull(any) Int16
+toInt16OrZero(any) Int16
+toInt16OrDefault(any) Int16
+toInt32OrNull(any) Int32
+toInt32OrZero(any) Int32
+toInt32OrDefault(any) Int32
 toInt64OrNull(any) Int64
 toInt64OrZero(any) Int64
 toInt64OrDefault(any) Int64
-toInt128OrNull(any) Int64
-toInt128OrZero(any) Int64
-toInt128OrDefault(any) Int64
-toInt256OrNull(any) Int64
-toInt256OrZero(any) Int64
-toInt256OrDefault(any) Int64
-toUInt8OrNull(any) UInt64
-toUInt8OrZero(any) UInt64
-toUInt8OrDefault(any) UInt64
-toUInt16OrNull(any) UInt64
-toUInt16OrZero(any) UInt64
-toUInt16OrDefault(any) UInt64
-toUInt32OrNull(any) UInt64
-toUInt32OrZero(any) UInt64
-toUInt32OrDefault(any) UInt64
+toInt128OrNull(any) Int128
+toInt128OrZero(any) Int128
+toInt128OrDefault(any) Int128
+toInt256OrNull(any) Int256
+toInt256OrZero(any) Int256
+toInt256OrDefault(any) Int256
+toUInt8OrNull(any) UInt8
+toUInt8OrZero(any) UInt8
+toUInt8OrDefault(any) UInt8
+toUInt16OrNull(any) UInt16
+toUInt16OrZero(any) UInt16
+toUInt16OrDefault(any) UInt16
+toUInt32OrNull(any) UInt32
+toUInt32OrZero(any) UInt32
+toUInt32OrDefault(any) UInt32
 toUInt64OrNull(any) UInt64
 toUInt64OrZero(any) UInt64
 toUInt64OrDefault(any) UInt64
-toUInt128OrNull(any) UInt64
-toUInt128OrZero(any) UInt64
-toUInt128OrDefault(any) UInt64
-toUInt256OrNull(any) UInt64
-toUInt256OrZero(any) UInt64
-toUInt256OrDefault(any) UInt64
+toUInt128OrNull(any) UInt128
+toUInt128OrZero(any) UInt128
+toUInt128OrDefault(any) UInt128
+toUInt256OrNull(any) UInt256
+toUInt256OrZero(any) UInt256
+toUInt256OrDefault(any) UInt256
 
 toFloat32OrNull(any) Float32
 toFloat64OrNull(any) Float64
@@ -581,8 +581,8 @@ intHash64(any) UInt64
 xxHash64(any) UInt64
 murmurHash2_64(any) UInt64
 murmurHash3_64(any) UInt64
-xxHash32(any) UInt64
-murmurHash3_32(any) UInt64
+xxHash32(any) UInt32
+murmurHash3_32(any) UInt32
 halfMD5(any) UInt64
 sipHash64(any) UInt64
 
@@ -595,8 +595,6 @@ pathFull(String) String
 queryString(String) String
 fragment(String) String
 extractURLParameter(String, String) String
-IPv4ToString(IPv4) String
-IPv6ToString(IPv6) String
 IPv4StringToNum(String) UInt32
 IPv6StringToNum(String) String
 IPv4NumToString(UInt64) String
@@ -653,7 +651,7 @@ hostName() String
 currentDatabase() String
 currentUser() String
 user() String
-uptime() UInt64
+uptime() UInt32
 generateUUIDv4() UUID
 generateUUIDv7() UUID
 generateUUIDv7(any) UUID
@@ -697,8 +695,7 @@ bitNot(Int64) Int64
 bitTest(Int64, Int64) UInt8
 bitTestAll(Int64, Int64) UInt8
 bitTestAny(Int64, Int64) UInt8
-bitCount(Int64) UInt64
-bitPositions(Int64) Array(UInt64)
+bitCount(Int64) UInt8
 
 equals(any, any) UInt8
 notEquals(any, any) UInt8
@@ -712,9 +709,9 @@ isNaN(Float64) UInt8
 isZeroOrNull(any) UInt8
 
 rand() UInt64
-rand32() UInt64
+rand32() UInt32
 rand64() UInt64
-randConstant() UInt64
+randConstant() UInt32
 randCanonical() Float64
 randUniform(Float64, Float64) Float64
 randNormal(Float64, Float64) Float64
@@ -725,7 +722,7 @@ randStudentT(Float64) Float64
 randFisherF(Float64, Float64) Float64
 randPoisson(Float64) UInt64
 randBinomial(UInt64, Float64) UInt64
-randBernoulli(Float64) UInt64
+randBernoulli(Float64) UInt8
 
 encrypt(String, String, String) String
 decrypt(String, String, String) String
@@ -747,7 +744,7 @@ pointInPolygon(any, any) UInt8
 geoToH3(Float64, Float64, UInt64) UInt64
 h3ToGeo(UInt64) any
 h3ToParent(UInt64, UInt64) UInt64
-h3GetResolution(UInt64) UInt64
+h3GetResolution(UInt64) UInt8
 h3IsValid(UInt64) UInt8
 h3kRing(UInt64, UInt64) Array(UInt64)
 geohashEncode(Float64, Float64, UInt64) String
@@ -805,20 +802,18 @@ hudi(String, String) any
 iceberg(String, String) any
 deltaLake(String, String) any
 
-CRC32(String) UInt64
-CRC32IEEE(String) UInt64
+CRC32(String) UInt32
+CRC32IEEE(String) UInt32
 CRC64(String) UInt64
-adler32(String) UInt64
 
 getMacro(String) String
 getSetting(String) any
 getServerPort(String) UInt64
-getCurrentRoles() Array(String)
 hasColumnInTable(String, String, String) UInt8
 queryID() String
 initialQueryID() String
-shardCount() UInt64
-shardNum() UInt64
+shardCount() UInt32
+shardNum() UInt32
 isNullable(any) UInt8
 
 dictGet(String, String, UInt64) any
@@ -843,10 +838,8 @@ dictGetHierarchy(String, UInt64) Array(UInt64)
 dictGetDescendants(String, UInt64) Array(UInt64)
 dictIsIn(String, UInt64, UInt64) UInt8
 
-modelEvaluate(String, any) Float64
 evalMLMethod(any, Float64) Float64
 sigmoid(Float64) Float64
-softmax(Array(Float64)) Array(Float64)
 logTrace(Float64) Float64
 L1Distance(Array(Float64), Array(Float64)) Float64
 L2Distance(Array(Float64), Array(Float64)) Float64
@@ -863,35 +856,30 @@ reinterpretAsDate(any) Date
 reinterpretAsDateTime(any) DateTime
 reinterpretAsUUID(any) UUID
 
-reinterpretAsInt8(any) Int64
-reinterpretAsUInt8(any) UInt64
-reinterpretAsInt16(any) Int64
-reinterpretAsUInt16(any) UInt64
-reinterpretAsInt32(any) Int64
-reinterpretAsUInt32(any) UInt64
+reinterpretAsInt8(any) Int8
+reinterpretAsUInt8(any) UInt8
+reinterpretAsInt16(any) Int16
+reinterpretAsUInt16(any) UInt16
+reinterpretAsInt32(any) Int32
+reinterpretAsUInt32(any) UInt32
 reinterpretAsInt64(any) Int64
 reinterpretAsUInt64(any) UInt64
-reinterpretAsInt128(any) Int64
-reinterpretAsUInt128(any) UInt64
-reinterpretAsInt256(any) Int64
-reinterpretAsUInt256(any) UInt64
+reinterpretAsInt128(any) Int128
+reinterpretAsUInt128(any) UInt128
+reinterpretAsInt256(any) Int256
+reinterpretAsUInt256(any) UInt256
 
 reinterpretAsFloat32(any) Float32
 reinterpretAsFloat64(any) Float64
 
 formatRow(String, any) String variadic=2
 formatRowNoNewline(String, any) String variadic=2
-toStringOrNull(any) String
 
 toBFloat16(any) BFloat16
 toBFloat16OrNull(any) BFloat16
 toBFloat16OrZero(any) BFloat16
-toBFloat16OrDefault(any) BFloat16
 
 toDateTime32(any) DateTime
-toDateTime32OrNull(any) DateTime
-toDateTime32OrZero(any) DateTime
-toDateTime32OrDefault(any) DateTime
 
 parseDateTimeOrNull(String, String) DateTime
 parseDateTimeOrZero(String, String) DateTime
@@ -979,18 +967,6 @@ multiMatchAnyIndex(String, Array(String)) UInt64
 multiFuzzyMatchAny(String, UInt64, Array(String)) UInt8
 multiFuzzyMatchAnyIndex(String, UInt64, Array(String)) UInt64
 multiFuzzyMatchAllIndices(String, UInt64, Array(String)) Array(UInt64)
-multiMatchAnyIndexCaseInsensitive(String, Array(String)) UInt64
-multiFuzzyMatchAnyCaseInsensitive(String, UInt64, Array(String)) UInt8
-multiFuzzyMatchAnyIndexCaseInsensitive(String, UInt64, Array(String)) UInt64
-multiFuzzyMatchAllIndicesCaseInsensitive(String, UInt64, Array(String)) Array(UInt64)
-multiMatchAnyIndexUTF8(String, Array(String)) UInt64
-multiFuzzyMatchAnyUTF8(String, UInt64, Array(String)) UInt8
-multiFuzzyMatchAnyIndexUTF8(String, UInt64, Array(String)) UInt64
-multiFuzzyMatchAllIndicesUTF8(String, UInt64, Array(String)) Array(UInt64)
-multiMatchAnyIndexCaseInsensitiveUTF8(String, Array(String)) UInt64
-multiFuzzyMatchAnyCaseInsensitiveUTF8(String, UInt64, Array(String)) UInt8
-multiFuzzyMatchAnyIndexCaseInsensitiveUTF8(String, UInt64, Array(String)) UInt64
-multiFuzzyMatchAllIndicesCaseInsensitiveUTF8(String, UInt64, Array(String)) Array(UInt64)
 
 countMatchesCaseInsensitive(String, String) UInt64
 countSubstringsCaseInsensitive(String, String) UInt64
@@ -1016,7 +992,7 @@ ngramDistanceCaseInsensitiveUTF8(String, String) Float32
 ngramSearchCaseInsensitiveUTF8(String, String) Float32
 
 highlight(String, Array(String)) String
-hasTokenCaseInsensitiveOrNull(String, String) UInt64
+hasTokenCaseInsensitiveOrNull(String, String) UInt8
 
 arrayUnion(Array(any), Array(any)) Array(any)
 arrayExcept(Array(any), Array(any)) Array(any)
@@ -1101,9 +1077,9 @@ firstSignificantSubdomainCustomRFC(String) String
 firstSignificantSubdomainRFC(String) String
 
 netloc(String) String
-port(String) UInt64
+port(String) UInt16
 port(String, UInt64) UInt64
-portRFC(String) UInt64
+portRFC(String) UInt16
 portRFC(String, UInt64) UInt64
 queryStringAndFragment(String) String
 
@@ -1115,7 +1091,6 @@ topLevelDomainRFC(String) String
 
 editDistance(String, String) UInt64
 editDistanceUTF8(String, String) UInt64
-byteEditDistance(String, String) UInt64
 levenshteinDistance(String, String) UInt64
 damerauLevenshteinDistance(String, String) UInt64
 byteHammingDistance(String, String) UInt64
@@ -1286,8 +1261,7 @@ LinfNormalize(Array(Float64)) Array(Float64)
 LpNormalize(Array(Float64), Float64) Array(Float64)
 
 tupleHammingDistance(any, any) UInt64
-arrayHammingDistance(Array(any), Array(any)) UInt64
-bitHammingDistance(Int64, Int64) UInt64
+bitHammingDistance(Int64, Int64) UInt8
 
 detectCharset(String) String
 detectLanguage(String) String
@@ -1355,7 +1329,7 @@ h3HexAreaKm2(UInt64) Float64
 h3CellAreaM2(UInt64) Float64
 h3CellAreaRads2(UInt64) Float64
 h3NumHexagons(UInt64) UInt64
-h3GetBaseCell(UInt64) UInt64
+h3GetBaseCell(UInt64) UInt8
 h3GetFaces(UInt64) Array(UInt64)
 
 h3ToChildren(UInt64, UInt64) Array(UInt64)
@@ -1371,7 +1345,7 @@ h3IsPentagon(UInt64) UInt8
 h3IndexesAreNeighbors(UInt64, UInt64) UInt8
 
 h3Line(UInt64, UInt64) Array(UInt64)
-h3Distance(UInt64, UInt64) UInt64
+h3Distance(UInt64, UInt64) Int64
 h3HexRing(UInt64, UInt64) Array(UInt64)
 h3PointDistM(Float64, Float64, Float64, Float64) Float64
 h3PointDistKm(Float64, Float64, Float64, Float64) Float64
@@ -1414,8 +1388,8 @@ ceiling(Float64) any
 ceiling(Float64, Int64) any
 trunc(Float64) any
 trunc(Float64, Int64) any
-roundAge(UInt64) UInt64
-roundDuration(UInt64) UInt64
+roundAge(UInt64) UInt8
+roundDuration(UInt64) UInt16
 roundDown(Float64, Array(Float64)) Float64
 roundToExp2(UInt64) UInt64
 
@@ -1445,14 +1419,14 @@ sipHash128Keyed(any, any) FixedString(16)
 sipHash128Reference(any) FixedString(16)
 sipHash128ReferenceKeyed(any, any) FixedString(16)
 
-hiveHash(String) UInt64
+hiveHash(String) Int32
 icebergHash(String) Int32
 javaHash(String) Int32
 javaHashUTF16LE(String) Int32
 jumpConsistentHash(UInt64, Int32) Int32
-kostikConsistentHash(UInt64, Int32) Int32
-kafkaMurmurHash(String) Int32
-gccMurmurHash(String) Int64
+kostikConsistentHash(UInt64, Int32) UInt16
+kafkaMurmurHash(String) UInt32
+gccMurmurHash(String) UInt64
 
 ngramMinHash(String, UInt64, UInt64) Tuple(min UInt64, max UInt64)
 ngramMinHashCaseInsensitive(String, UInt64, UInt64) Tuple(min UInt64, max UInt64)
@@ -1475,7 +1449,7 @@ wordShingleSimHashCaseInsensitive(String, UInt64) UInt64
 wordShingleSimHashUTF8(String, UInt64) UInt64
 wordShingleSimHashCaseInsensitiveUTF8(String, UInt64) UInt64
 
-JSONArrayLength(String) UInt64
+JSONArrayLength(String) UInt64 called-on-null
 JSONExtractKeysAndValues(String, String) Array(Tuple(key String, value String))
 JSONExtractKeysAndValues(String, String, String) Array(Tuple(key String, value String))
 JSONExtractKeysAndValuesRaw(String) Array(Tuple(key String, value String))
@@ -1556,14 +1530,14 @@ mapContainsValueLike(any, String) UInt8
 mapExtractKeyLike(any, String) any
 mapExtractValueLike(any, String) any
 
-extractKeyValuePairs(String) any
-extractKeyValuePairs(String, String) any
-extractKeyValuePairs(String, String, String) any
-extractKeyValuePairs(String, String, String, String) any
-extractKeyValuePairsWithEscaping(String) any
-extractKeyValuePairsWithEscaping(String, String) any
-extractKeyValuePairsWithEscaping(String, String, String) any
-extractKeyValuePairsWithEscaping(String, String, String, String) any
+extractKeyValuePairs(String) Map(String, String)
+extractKeyValuePairs(String, String) Map(String, String)
+extractKeyValuePairs(String, String, String) Map(String, String)
+extractKeyValuePairs(String, String, String, String) Map(String, String)
+extractKeyValuePairsWithEscaping(String) Map(String, String)
+extractKeyValuePairsWithEscaping(String, String) Map(String, String)
+extractKeyValuePairsWithEscaping(String, String, String) Map(String, String)
+extractKeyValuePairsWithEscaping(String, String, String, String) Map(String, String)
 
 char(UInt64) String variadic=1
 bitmaskToArray(Int64) Array(UInt64)

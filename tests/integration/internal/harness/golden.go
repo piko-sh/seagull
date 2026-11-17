@@ -69,9 +69,10 @@ func Normalised(document []byte, normalise func(value any)) ([]byte, error) {
 
 // NormaliseFields returns a Normalise that replaces the value of every object member with
 // one of the given names, at any depth, with replacement, so identifiers and names a
-// database generates compare equal from run to run. Only values of the replacement's kind
-// are replaced when onlySameKind is true, which keeps, say, a string id intact while
-// generated numeric ids are replaced by zero.
+// database generates compare equal from run to run.
+//
+// Only values of the replacement's kind are replaced when onlySameKind is true, which
+// keeps, say, a string id intact while generated numeric ids are replaced by zero.
 //
 // Takes replacement (any) which is the value written in place of each match.
 // Takes onlySameKind (bool) which limits the replacement to values of the same JSON kind
@@ -105,10 +106,12 @@ func NormaliseFields(replacement any, onlySameKind bool, names ...string) func(v
 }
 
 // assertGolden compares a runner's JSON output with a case's golden file, or records it
-// there when the suite is updating its goldens. Both sides pass through the suite's
-// Normalise before they are compared, so values a run cannot reproduce compare equal.
-// Numbers keep the digits they were written with, so a 64-bit integer that differs from
-// the golden only past what a float64 holds still fails the comparison.
+// there when the suite is updating its goldens.
+//
+// Both sides pass through the suite's Normalise before they are compared, so values a run
+// cannot reproduce compare equal. Numbers keep the digits they were written with, so a
+// 64-bit integer that differs from the golden only past what a float64 holds still fails
+// the comparison.
 //
 // Takes goldenPath (string) which is the golden file's path.
 // Takes output ([]byte) which is the runner's output.

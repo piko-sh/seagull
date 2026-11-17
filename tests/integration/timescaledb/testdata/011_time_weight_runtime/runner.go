@@ -87,9 +87,9 @@ func main() {
 	}
 
 	if err := json.NewEncoder(os.Stdout).Encode(map[string]any{
-		"twa":         round(row.Twa),
-		"first_value": round(row.FirstValue),
-		"last_value":  round(row.LastValue),
+		"twa":         round(row.Twa.Ptr()),
+		"first_value": round(row.FirstValue.Ptr()),
+		"last_value":  round(row.LastValue.Ptr()),
 	}); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

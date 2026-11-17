@@ -31,6 +31,17 @@ const (
 	// GoType with an empty Package and this Name, and an emitter whose output refers to it
 	// declares it.
 	InlineJSONTypeName = "JSON"
+
+	// InlineNullTypeName names the generic type the generated package declares for a
+	// nullable value, unless Style.NullablePointers keeps pointers.
+	InlineNullTypeName = sqlmodel.NullTypeName
+
+	// InlineNullOfName names the generated function returning a Null holding a value.
+	InlineNullOfName = "NullOf"
+
+	// InlineNullFromName names the generated function returning a Null holding the value a
+	// pointer points to.
+	InlineNullFromName = "NullFrom"
 )
 
 // EmitterPort turns analysed queries into Go source for one driver API.
@@ -109,6 +120,20 @@ type CheckerPort interface {
 	//
 	// Returns []Problem which holds the problems, or nil when there are none.
 	Check(request *Request) []Problem
+}
+
+// NullTypePort is an optional interface an EmitterPort implements to take nullable values
+// as the generated Null[T] value type.
+//
+// A request to an emitter that implements it maps a nullable value to Null[T], unless
+// Style.NullablePointers keeps pointers, and the emitter declares Null in the generated
+// package. Every other emitter gets *T.
+type NullTypePort interface {
+	// DeclaresNullType reports whether the emitter declares the generated Null type and
+	// reads and binds values of it.
+	//
+	// Returns bool which is true when it does.
+	DeclaresNullType() bool
 }
 
 // ReserverPort is an optional interface an EmitterPort implements to say which names its
@@ -224,6 +249,11 @@ type Style struct {
 	// EmptySlices makes a many method, and a runtime builder's All, return an empty slice
 	// rather than nil when no row matches, so encoding/json writes [] rather than null.
 	EmptySlices bool
+
+	// NullablePointers writes a nullable value as a pointer, *T, rather than as the
+	// generated Null[T] value type. A pointer costs an allocation for every non-NULL value a
+	// row reads.
+	NullablePointers bool
 
 	// ReuseModels reads matching query rows into table models instead of separate Row
 	// structs. A query must read only that table's columns with matching field names, Go

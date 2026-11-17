@@ -39,6 +39,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(ListItems, many)\nSELECT id, name, active FROM items ORDER BY id;",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:active⟩ FROM items ORDER BY id;"
   }

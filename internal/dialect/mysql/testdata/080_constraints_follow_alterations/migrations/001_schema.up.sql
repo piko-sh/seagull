@@ -1,0 +1,14 @@
+CREATE TABLE owners (code BIGINT NOT NULL, email VARCHAR(64), PRIMARY KEY (code), CONSTRAINT owners_email UNIQUE (email));
+CREATE TABLE pets (id BIGINT NOT NULL, owner BIGINT, age INT NOT NULL, weight INT DEFAULT 1, tag VARCHAR(64),
+    PRIMARY KEY (id),
+    CONSTRAINT pets_tag UNIQUE (tag),
+    CONSTRAINT pets_owner FOREIGN KEY (owner) REFERENCES owners (code));
+ALTER TABLE owners RENAME COLUMN code TO owner_id;
+ALTER TABLE owners RENAME COLUMN email TO contact;
+ALTER TABLE owners RENAME TO keepers;
+ALTER TABLE pets DROP FOREIGN KEY pets_owner;
+ALTER TABLE pets DROP PRIMARY KEY;
+ALTER TABLE pets DROP INDEX pets_tag;
+ALTER TABLE pets ALTER COLUMN age SET DEFAULT 0;
+ALTER TABLE pets ALTER weight DROP DEFAULT;
+CREATE TABLE visits (id BIGINT NOT NULL PRIMARY KEY, keeper BIGINT, CONSTRAINT visits_keeper FOREIGN KEY (keeper) REFERENCES keepers (owner_id));

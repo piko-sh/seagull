@@ -57,5 +57,5 @@
       ]
     }
   ],
-  "strict_scores": "error: sql: Scan error on column index 1, name \"scores\": sgl: decode JSON column: element 1: converting NULL to int32 is unsupported"
+  "strict_scores": "error: sql: Scan error on column index 1, name \"scores\": sgl: read array column: element 1: converting NULL to int32 is unsupported"
 }

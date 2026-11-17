@@ -288,6 +288,10 @@ func (p *parser) parseGroupByClause(outputs []ast.RawOutputColumn) ([]ast.Column
 		p.MatchKeyword("DISTINCT")
 	}
 	for {
+		if p.isGroupingModifier() && p.noGroupingModifiers {
+			_ = p.recordSyntaxError(p.syntaxError("this engine has no ROLLUP, CUBE or GROUPING SETS grouping"))
+			return columns, nil
+		}
 		if p.isGroupingModifier() {
 			if sets == nil {
 				sets = &ast.GroupingSets{Keys: nil, FillsDefaults: false}
@@ -463,6 +467,15 @@ func (p *parser) parseOrderByList() {
 	p.skipTokensUntilTerminatorSet(orderByTerminators)
 }
 
+// missingPaginationValue reports whether a LIMIT or OFFSET has no value: the statement
+// ends, a parenthesis closes, or a clause starts where the value belongs.
+//
+// Returns bool which is true when the value is missing.
+func (p *parser) missingPaginationValue() bool {
+	return p.AtEnd() || p.Current().Kind == tokenRightParen || p.Current().Kind == tokenComma ||
+		p.IsKeyword("OFFSET", "FETCH", "FOR", "UNION", "INTERSECT", "EXCEPT", "ORDER", "LIMIT", "RETURNING", "WINDOW", "LOCK")
+}
+
 // consumeParameterOrAdvance consumes a LIMIT/OFFSET value.
 //
 // When the value is a bare placeholder it is registered with the given context
@@ -474,6 +487,10 @@ func (p *parser) parseOrderByList() {
 // Takes context (sqlmodel.ParameterContext) which classifies a bare-placeholder value's
 // syntactic role.
 func (p *parser) consumeParameterOrAdvance(context sqlmodel.ParameterContext) {
+	if p.missingPaginationValue() {
+		_ = p.syntaxError("expected a row count")
+		return
+	}
 	start := p.Position
 	defer p.recordPaginationValue(context, start)
 	if isParameterToken(p.Current().Kind) && p.endsPaginationValue(p.Position+1) {
@@ -566,6 +583,7 @@ func (p *parser) retagLimitOffsetParameters(referenceCountBefore int, context sq
 // parseLimitOffset parses any combination of LIMIT, OFFSET, and FETCH clauses that appear
 // at the end of a SELECT.
 func (p *parser) parseLimitOffset() {
+	p.rowLimited = true
 	p.parseLeadingOffset()
 
 	if p.MatchKeyword(keywordLIMIT) {
@@ -610,8 +628,9 @@ func (p *parser) parseFetchClause() {
 	if !p.MatchKeyword(keywordFETCH) {
 		return
 	}
-	if !p.MatchKeyword(keywordFIRST) {
-		p.MatchKeyword("NEXT")
+	if !p.MatchKeyword(keywordFIRST) && !p.MatchKeyword("NEXT") {
+		_ = p.syntaxError("expected FIRST or NEXT after FETCH")
+		return
 	}
 	if p.IsKeyword(keywordROW, keywordROWS) {
 		p.Advance()

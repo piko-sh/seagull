@@ -28,25 +28,7 @@ import (
 	"seagull.sh/seagull/examples/duckdb/038_duckdb_analytics/internal/store"
 )
 
-// run lands a week of fish at two harbours and analyses it with DuckDB's own SQL, every
-// result typed by Seagull:
-//
-//   - BiggestLandingPerHarbour filters on a window function with QUALIFY, which keeps the
-//     table's types, so no subquery is needed to pick the top row per harbour;
-//   - CatchBySpecies builds one column per species with sum(...) FILTER (WHERE ...); SUM
-//     of an INTEGER is a HUGEINT in DuckDB, so each arrives as *big.Int;
-//   - CatchPivot builds the same columns with PIVOT ... ON species IN (...), one column
-//     per listed species, each a nullable HUGEINT, as a harbour may land none of one;
-//   - TonnesPerBoat calls tonnes, a macro from the migration, and its CAST gives the
-//     result a type, *float64;
-//   - HarbourCatch reads from harbour_landings, a table macro, whose columns Seagull
-//     types from the macro's body, so species is a string, NOT NULL like the landings
-//     column it comes from, and only the total is cast, to a BIGINT, for an *int64;
-//   - AuctionPrices and LandingValues read the auction house's Parquet file with
-//     read_parquet, and the path is a bound parameter. Seagull cannot look inside the
-//     file when it generates, so sgl vet warns Q001 for a column it cannot find, and a
-//     CAST gives each column its type; such columns are pointers, as nothing says they
-//     are NOT NULL.
+// run analyzes fish landings with DuckDB queries.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes priceList (string) which is the path of the auction house's Parquet price list.
@@ -104,7 +86,7 @@ func run(ctx context.Context, database *sql.DB, priceList string, output io.Writ
 	}
 	fmt.Fprintln(output, "tonnes per boat (macro):")
 	for _, boat := range perBoat {
-		fmt.Fprintf(output, "  %-10s %.3f t\n", boat.Boat, *boat.Tonnes)
+		fmt.Fprintf(output, "  %-10s %.3f t\n", boat.Boat, boat.Tonnes.V)
 	}
 
 	newlyn, err := queries.HarbourCatch(ctx, "Newlyn")
@@ -113,7 +95,7 @@ func run(ctx context.Context, database *sql.DB, priceList string, output io.Writ
 	}
 	fmt.Fprintln(output, "Newlyn's catch (table macro):")
 	for _, catch := range newlyn {
-		fmt.Fprintf(output, "  %-8s %dkg\n", catch.Species, *catch.Kg)
+		fmt.Fprintf(output, "  %-8s %dkg\n", catch.Species, catch.Kg.V)
 	}
 
 	prices, err := queries.AuctionPrices(ctx, priceList)
@@ -122,7 +104,7 @@ func run(ctx context.Context, database *sql.DB, priceList string, output io.Writ
 	}
 	fmt.Fprintln(output, "auction prices (read_parquet):")
 	for _, price := range prices {
-		fmt.Fprintf(output, "  %-8s %dp a kg\n", *price.Species, *price.PencePerKg)
+		fmt.Fprintf(output, "  %-8s %dp a kg\n", price.Species.V, price.PencePerKg.V)
 	}
 
 	values, err := queries.LandingValues(ctx, priceList)
@@ -131,7 +113,7 @@ func run(ctx context.Context, database *sql.DB, priceList string, output io.Writ
 	}
 	fmt.Fprintln(output, "value per boat (landings joined to the Parquet file):")
 	for _, boat := range values {
-		fmt.Fprintf(output, "  %-10s £%d.%02d\n", boat.Boat, *boat.ValuePence/100, *boat.ValuePence%100)
+		fmt.Fprintf(output, "  %-10s £%d.%02d\n", boat.Boat, boat.ValuePence.V/100, boat.ValuePence.V%100)
 	}
 	return nil
 }

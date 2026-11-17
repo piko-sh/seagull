@@ -36,6 +36,15 @@ const (
 
 	// passwordSeparator separates the user name from the password in user information.
 	passwordSeparator = ":"
+
+	// assignmentKeyGroup is the submatch of assignment that holds the key.
+	assignmentKeyGroup = 1
+
+	// assignmentSeparatorGroup is the submatch of assignment that holds "=" and its spaces.
+	assignmentSeparatorGroup = 2
+
+	// assignmentValueGroup is the submatch of assignment that holds the value.
+	assignmentValueGroup = 3
 )
 
 var (
@@ -349,7 +358,7 @@ func scanUserInformation(dsn string) result {
 func scanAssignments(scanned result) result {
 	scanned.text = assignment.ReplaceAllStringFunc(scanned.text, func(match string) string {
 		parts := assignment.FindStringSubmatch(match)
-		key, separator, value := parts[1], parts[2], parts[3]
+		key, separator, value := parts[assignmentKeyGroup], parts[assignmentSeparatorGroup], parts[assignmentValueGroup]
 		if !isSecretKey(key) || value == "" || value == Mask {
 			return match
 		}

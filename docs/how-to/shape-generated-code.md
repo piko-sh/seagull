@@ -118,7 +118,7 @@ go:
     omitempty: true
 ```
 
-`author_id` becomes `json:"authorId,omitempty"`. Two columns whose names meet once cased
+`author_id` becomes `json:"authorId,omitzero"` because its nullable field is a `Null` value. A non-null field such as `title` becomes `json:"title,omitempty"`. Two columns whose names meet once cased
 stay apart (`userName`, `userName2`). `omit: true` leaves the `json` tags out, except where
 a column's own struct tags give one.
 

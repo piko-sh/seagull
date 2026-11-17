@@ -1,0 +1,4 @@
+{
+  "description": "MySQL 9 keeps the foreign key an inline column REFERENCES declares, as MariaDB does: in CREATE TABLE and ADD COLUMN, after a CHECK, beside UNIQUE and without a column list, which references the primary key. Each is named vessels_ibfk_n and indexed after its column unless a key leads with it, as MySQL 9.7 shows them after the rename.",
+  "expectedDiagnosticCount": 0
+}

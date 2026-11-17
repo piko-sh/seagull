@@ -253,15 +253,15 @@ func TestEngine_PromoteTypeMixedSignEqualWidthWidensToSigned(t *testing.T) {
 	}
 }
 
-func TestEngine_PromoteTypeMixedSign64BitKeepsLeftOperand(t *testing.T) {
+func TestEngine_PromoteTypeOfAUInt64AndAnInt64HasNoCommonType(t *testing.T) {
 	t.Parallel()
 
 	engine := New()
 	left := sqlmodel.NewIntegerType("Int64", 64, false)
 	right := sqlmodel.NewIntegerType("UInt64", 64, true)
 	result := engine.PromoteType(left, right)
-	assert.Equal(t, "Int64", result.EngineName,
-		"Int64 vs UInt64 is out of scope (stock ClickHouse throws); the left operand is preserved")
+	assert.Equal(t, sqlmodel.TypeCategoryUnknown, result.Category,
+		"no integer holds both an Int64 and a UInt64: ClickHouse reads the pair as a Variant, or refuses it")
 }
 
 func TestEngine_PromoteTypeSameSignWiderRankWins(t *testing.T) {
@@ -628,7 +628,7 @@ func newLoggingContext(t *testing.T) (context.Context, *bytes.Buffer) {
 	t.Helper()
 
 	logs := &bytes.Buffer{}
-	return logging.ContextWithLogger(t.Context(), slog.New(slog.NewJSONHandler(logs, nil))), logs
+	return logging.WithLogger(t.Context(), slog.New(slog.NewJSONHandler(logs, nil))), logs
 }
 
 func decodeLogRecords(t *testing.T, logs *bytes.Buffer) []map[string]any {
@@ -1328,11 +1328,12 @@ func TestPromoteTypeAcrossNumericCategories(t *testing.T) {
 		want  sqlmodel.SQLType
 		name  string
 	}{
-		{name: "a Float32 beside an integer too wide for it gives a Float64", left: float32Type, right: integerType, want: float64Type},
+		{name: "a Float32 beside an integer too wide for it gives a Float64", left: float32Type, right: primitiveType("Int32"), want: float64Type},
 		{name: "a Float32 beside an integer it holds exactly stays a Float32", left: smallInteger, right: float32Type, want: float32Type},
-		{name: "a float absorbs an integer on the left", left: integerType, right: float64Type, want: float64Type},
-		{name: "a float absorbs a decimal on the right", left: float64Type, right: decimalType, want: float64Type},
-		{name: "a decimal beside a Float32 gives a Float64", left: decimalType, right: float32Type, want: float64Type},
+		{name: "a float absorbs an integer of at most 32 bits on the left", left: primitiveType("UInt32"), right: float64Type, want: float64Type},
+		{name: "a float and a 64-bit integer have no common type", left: integerType, right: float64Type, want: noCommonType()},
+		{name: "a float and a decimal have no common type", left: float64Type, right: decimalType, want: noCommonType()},
+		{name: "a decimal and a Float32 have no common type", left: decimalType, right: float32Type, want: noCommonType()},
 		{name: "a decimal absorbs an integer on the right", left: decimalType, right: smallInteger, want: decimalType},
 		{name: "a decimal absorbs an integer on the left", left: integerType, right: decimalType, want: decimalType},
 		{name: "a value that is not a number keeps the left operand", left: textType, right: integerType, want: textType},

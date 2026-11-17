@@ -1,0 +1,4 @@
+{
+  "description": "ClickHouse refuses a table declaring a column twice.",
+  "expectedDiagnosticCount": 1
+}

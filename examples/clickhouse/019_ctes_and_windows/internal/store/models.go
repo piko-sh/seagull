@@ -5,10 +5,10 @@ package store
 import "time"
 
 type Gulls struct {
-	ID       uint64  `json:"id"`
-	Name     string  `json:"name"`
-	ParentID *uint64 `json:"parent_id"`
-	Beach    string  `json:"beach"`
+	ID       uint64       `json:"id"`
+	Name     string       `json:"name"`
+	ParentID Null[uint64] `json:"parent_id"`
+	Beach    string       `json:"beach"`
 }
 
 type Thefts struct {

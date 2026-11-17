@@ -180,7 +180,6 @@ func TestAMapKeyedByATypeClickHouseGoCannotDecodeIsUnreadable(t *testing.T) {
 
 	text := sqlmodel.SQLType{EngineName: "String", Category: sqlmodel.TypeCategoryText}
 	integer := sqlmodel.SQLType{EngineName: "UInt8", Category: sqlmodel.TypeCategoryInteger, Width: 8, Unsigned: true}
-	decimal := sqlmodel.SQLType{EngineName: "Decimal", Category: sqlmodel.TypeCategoryDecimal}
 	uuid := sqlmodel.SQLType{EngineName: "UUID", Category: sqlmodel.TypeCategoryUUID}
 	date := sqlmodel.NewTemporalType("Date", sqlmodel.TemporalKindDate, false)
 	enum := sqlmodel.SQLType{EngineName: "Enum8", Category: sqlmodel.TypeCategoryEnum, EnumValues: []string{"a", "b"}}
@@ -202,9 +201,6 @@ func TestAMapKeyedByATypeClickHouseGoCannotDecodeIsUnreadable(t *testing.T) {
 		{name: "a map keyed by named tuples", sqlType: keyed(named), key: "a Tuple"},
 		{name: "a map keyed by unnamed tuples", sqlType: keyed(unnamed), key: "a Tuple"},
 		{name: "a map keyed by maps", sqlType: keyed(mapped), key: "a Map"},
-		{name: "a map keyed by decimals", sqlType: keyed(decimal), key: "a Decimal"},
-		{name: "an array of maps keyed by decimals", sqlType: sqlmodel.SQLType{EngineName: "Array", Category: sqlmodel.TypeCategoryArray,
-			ElementType: new(keyed(decimal))}, key: "a Decimal"},
 		{name: "a map keyed by text", sqlType: mapped},
 		{name: "a map keyed by UUIDs", sqlType: keyed(uuid)},
 		{name: "a map keyed by dates", sqlType: keyed(date)},
@@ -223,6 +219,33 @@ func TestAMapKeyedByATypeClickHouseGoCannotDecodeIsUnreadable(t *testing.T) {
 			}
 			require.Equal(t, "it holds a Map keyed by "+testCase.key+", which clickhouse-go cannot read: it fails to decode the "+
 				"block, whatever the column is read into", problem.Reason)
+			require.Equal(t, "select mapKeys(m) and mapValues(m), arrays clickhouse-go reads", problem.Suggestion)
+		})
+	}
+}
+
+func TestAMapKeyedByADecimalIsUnreadable(t *testing.T) {
+	t.Parallel()
+
+	text := sqlmodel.SQLType{EngineName: "String", Category: sqlmodel.TypeCategoryText}
+	decimal := sqlmodel.SQLType{EngineName: "Decimal", Category: sqlmodel.TypeCategoryDecimal}
+	keyed := sqlmodel.SQLType{EngineName: "Map", Category: sqlmodel.TypeCategoryMap, KeyType: &decimal, ElementType: &text}
+	testCases := []struct {
+		name    string
+		sqlType sqlmodel.SQLType
+	}{
+		{name: "a map keyed by decimals", sqlType: keyed},
+		{name: "an array of maps keyed by decimals", sqlType: sqlmodel.SQLType{EngineName: "Array", Category: sqlmodel.TypeCategoryArray,
+			ElementType: &keyed}},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			problem, unreadable := New().UnreadableResult(testCase.sqlType)
+			require.True(t, unreadable)
+			require.Equal(t, "it holds a Map keyed by a Decimal, which clickhouse-go reads as a decimal.Decimal: it holds a "+
+				"pointer, so a lookup by an equal key misses", problem.Reason)
 			require.Equal(t, "select mapKeys(m) and mapValues(m), arrays clickhouse-go reads", problem.Suggestion)
 		})
 	}

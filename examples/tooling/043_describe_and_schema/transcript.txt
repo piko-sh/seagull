@@ -27,10 +27,10 @@ Go:
     ORDER BY books.published;`
     
     type ListBooksByAuthorRow struct {
-        ID        int64   `json:"id"`
-        Title     string  `json:"title"`
-        Subtitle  *string `json:"subtitle"`
-        Published int64   `json:"published"`
+        ID        int64        `json:"id"`
+        Title     string       `json:"title"`
+        Subtitle  Null[string] `json:"subtitle"`
+        Published int64        `json:"published"`
     }
     
     func (queries *Queries) ListBooksByAuthor(ctx context.Context, name string) ([]ListBooksByAuthorRow, error)
@@ -58,7 +58,7 @@ Go:
     type AddBookParams struct {
         AuthorID  int64
         Title     string
-        Subtitle  *string
+        Subtitle  Null[string]
         Published int64
     }
     

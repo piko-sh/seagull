@@ -50,7 +50,7 @@ func run() error {
 		return err
 	}
 	queries := db.New(conn)
-	added, err := queries.AddShift(ctx, db.AddShiftParams{StartsAt: "09:30:00", Length: "01:30:00", EndsAt: nil})
+	added, err := queries.AddShift(ctx, db.AddShiftParams{StartsAt: "09:30:00", Length: "01:30:00", EndsAt: db.Null[string]{}})
 	if err != nil {
 		return fmt.Errorf("AddShift: %w", err)
 	}
@@ -66,7 +66,7 @@ func run() error {
 	result := map[string]any{
 		"starts_at":   shift.StartsAt,
 		"length":      shift.Length,
-		"ends_at_nil": shift.EndsAt == nil,
+		"ends_at_nil": !shift.EndsAt.Valid,
 		"longer":      longer,
 	}
 	encoded, err := json.Marshal(result)

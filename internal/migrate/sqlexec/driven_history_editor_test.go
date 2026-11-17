@@ -168,7 +168,6 @@ func TestRecordProgressRefusesWhatItCannotRecord(t *testing.T) {
 	}{
 		{name: "every statement", backend: SQLite(), completed: 6, message: "between 0 and 5 of them, not 6"},
 		{name: "a negative count", backend: SQLite(), completed: -1, message: "not -1"},
-		{name: "progress on an append-only history", backend: ClickHouse(), completed: 2, message: "ClickHouse records no statement progress"},
 	}
 	for _, testCase := range tests {
 		t.Run(testCase.name, func(t *testing.T) {

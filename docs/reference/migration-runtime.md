@@ -51,9 +51,9 @@ completed and an error (`Down` refuses a negative count with an error matching
 | `migrate_backend_cockroachdb.New()` | CockroachDB, with a durable lock table and no migration transactions: CockroachDB has no advisory locks, and does not make schema changes atomic with a transaction. See [CockroachDB](#cockroachdb). |
 | `migrate_backend_postgres.NewPgBouncer()` | PostgreSQL behind PgBouncer in transaction mode, with a lock table. |
 | `migrate_backend_mysql.New()` | MySQL and MariaDB, with `GET_LOCK` locks keyed within the current schema and no migration transactions, since MySQL commits DDL implicitly. See [MySQL and MariaDB](#mysql-and-mariadb). |
-| `migrate_backend_sqlite.New()` | SQLite, with no lock: SQLite serialises writers itself. |
+| `migrate_backend_sqlite.New()` | SQLite, with a lease lock, since SQLite has no session locks. See [Lease locks](#lease-locks). |
 | `migrate_backend_clickhouse.New()` | ClickHouse, with no lock and no transactions: coordinate concurrent runs yourself. |
-| `migrate_backend_duckdb.New()` | DuckDB, with transactions and no lock: a DuckDB file is opened for writing by one process at a time. See [DuckDB](#duckdb). |
+| `migrate_backend_duckdb.New()` | DuckDB, with transactions and a lease lock, which serialises runs within the process that holds the file. See [DuckDB](#duckdb) and [Lease locks](#lease-locks). |
 | `migrate.CustomBackend(spec)` | Any other engine, described by a `migrate.BackendSpec`. See [Other databases and drivers](#other-databases-and-drivers). |
 
 A backend keeps no state between runs, so one value can be built once and shared by any
@@ -93,6 +93,11 @@ lock tables, or a lock mode the database cannot provide) is recorded in the back
 returned by `NewMigrator`, `NewSeeder` and `NewExecutor`, wrapping
 `migrate.ErrInvalidIdentifier` or `migrate.ErrUnsupportedLock`.
 
+The runtime creates a history or seed table only when it cannot read it. Once a user
+with creation rights has initialized the tables, a user with read and write rights can
+run data-only migrations and seeds. Schema changes still need the server's creation
+rights.
+
 ## Statements
 
 The runner splits each file into statements exactly as the dialect does when `sgl generate`
@@ -125,8 +130,11 @@ statement, and a dumped schema replays and runs without it.
 Each migration runs in a transaction with its history row where the database supports
 transactional DDL: PostgreSQL, TimescaleDB, SQLite and DuckDB. The runner recognises the
 statements an engine refuses inside a transaction, and runs a file holding one without
-one: `CREATE INDEX CONCURRENTLY`, `REINDEX CONCURRENTLY` and `VACUUM` on PostgreSQL, a
-leading `VACUUM` on SQLite and DuckDB, and on `migrate_backend_timescaledb.New()` a continuous
+one: on PostgreSQL `CREATE INDEX CONCURRENTLY`, `REINDEX CONCURRENTLY`, `VACUUM`,
+`CREATE` or `DROP` of a `DATABASE` or `TABLESPACE`, `ALTER DATABASE ... SET TABLESPACE`,
+`ALTER SYSTEM`, `REINDEX DATABASE` or `SYSTEM`, a bare `CLUSTER`, `DISCARD ALL`, and
+`ALTER TYPE ... ADD VALUE`, whose new value the same transaction could not use; a
+leading `VACUUM` on SQLite and DuckDB; and on `migrate_backend_timescaledb.New()` a continuous
 aggregate created with data or refreshed with `refresh_continuous_aggregate`. A mention
 inside a string, a quoted identifier or a comment does not count. For anything else, the
 directive at the top of a file turns the transaction off:
@@ -162,9 +170,29 @@ GROUP BY bucket
 WITH NO DATA;
 ```
 
+SQLite ignores `PRAGMA foreign_keys` inside a transaction, which can make a table
+rebuild delete referencing rows through `ON DELETE CASCADE`. For a rebuild, put
+`PRAGMA foreign_keys = OFF` first and `PRAGMA foreign_keys = ON` last, as shown below.
+The runner applies those settings on one connection outside the transaction and
+restores the connection's original setting afterward. It refuses a
+`PRAGMA foreign_keys` between other statements with an error wrapping
+`migrate.ErrSettingInsideTransaction`.
+
+```sql
+PRAGMA foreign_keys = OFF;
+CREATE TABLE tasks_new (id INTEGER PRIMARY KEY, title TEXT NOT NULL, done INTEGER NOT NULL DEFAULT 0);
+INSERT INTO tasks_new (id, title) SELECT id, title FROM tasks;
+DROP TABLE tasks;
+ALTER TABLE tasks_new RENAME TO tasks;
+PRAGMA foreign_keys = ON;
+```
+
 Data-only seeds and their history rows share a transaction on every built-in backend
 except ClickHouse. Schema-changing SQL can break that atomicity on engines whose DDL
-commits implicitly.
+commits implicitly. A seed holding a statement its engine refuses inside a transaction, as
+the runner recognises them for migrations, such as PostgreSQL's `VACUUM`, runs without one,
+a statement at a time, and is recorded once it has run, so a failure part-way keeps the
+statements before it.
 
 When a migration or seed fails inside its transaction, the runner rolls the transaction
 back; if the rollback fails too, that failure is joined to the error it returns.
@@ -182,6 +210,22 @@ retry later. Both apply to a seeder's lock too. The CLI's `--lock-timeout` and
 `--non-blocking` flags set them. A lock that cannot be taken is reported as a
 `*migrate.LockAcquisitionError`, whose `Lock` field says whether it was the `migration`
 or the `seed` lock.
+
+### Lease locks
+
+SQLite and DuckDB have no session locks, so their backends take a lease (`LockLease`). A
+lease is a row in a lease table, `sgl_migration_lock_lease` for migrations and `sgl_seed_lock_lease`
+for seeds under the default namespace, holding the run's owner and an expiry two minutes
+ahead. A run renews its lease every 20 seconds and deletes it when it finishes. Another run
+waits while the lease is held and takes it over once it has expired, so a run that stopped
+without deleting it holds the lock for at most two minutes.
+
+A run in the same machine and PID namespace takes over a lease as soon as its owner
+process ends. A lease from another scope remains until expiry. To clear a lease
+sooner, after making sure no run holds it, delete its row:
+`DELETE FROM sgl_migration_lock_lease`.
+
+### Table locks
 
 The table lock holds a row lock inside an open transaction for the whole run, so the
 migrations themselves run on a second connection. Give the pool at least two connections
@@ -239,14 +283,19 @@ error joined to its own result, alongside the number of migrations it ran.
 ### DuckDB
 
 DuckDB has neither advisory locks nor row locks (it rejects `SELECT ... FOR UPDATE`), so
-`migrate_backend_duckdb.New()` takes no lock. A DuckDB database file is opened for writing by one
-process at a time, so no other process can migrate it while yours has it open. Within one
-process, run a database's migrations through one `Migrator`, whose calls take turns.
-Migrators built on separate executors are not serialised and concurrent transactions
-can fail with a conflict. Use one migrator to coordinate runs and their retries.
+`migrate_backend_duckdb.New()` takes a [lease](#lease-locks). A DuckDB database file is
+opened for writing by one process at a time, so no other process can migrate it while
+yours has it open. Within one process, run a database's migrations through one
+`Migrator`, whose calls take turns.
 
 Each DuckDB migration runs in a transaction with its history row, since DuckDB's DDL is
 transactional. Seed files run whole, because the driver runs every statement of one call.
+
+The backend runs `CHECKPOINT` after each migration and after a history-table change.
+DuckDB 1.5 cannot replay an `ALTER TABLE ... ADD COLUMN` whose default calls a function
+if the process stops before the checkpoint. Keep such a change in a transactional
+migration to narrow that window. DuckDB 2.0 can replay it, but an application may
+still link a driver with DuckDB 1.x.
 
 ### MySQL and MariaDB
 
@@ -270,6 +319,13 @@ files under the rules the generator reads them with when
 statement the runtime runs, and a problem such as an unterminated `"` run is reported as
 the quoted identifier the server would read. `sgl migrate` and `sgl seed` pass it whenever
 `sgl.yaml` sets `dialect_options.ansi_quotes`. Other backends ignore the option.
+
+The history and seed tables record `applied_at` as a `DATETIME(6)` that defaults to
+`UTC_TIMESTAMP(6)`, so it holds times past 2038 and reads the same in every session time
+zone. Releases before this one created it as a `TIMESTAMP(6)`, which refuses every time
+after 2038-01-19 03:14:07 UTC. The first run that applies a migration or a seed changes
+such a column, converting the recorded times as UTC, on one connection whose time zone it
+sets back afterwards.
 
 ### CockroachDB
 
@@ -355,7 +411,12 @@ other engines run as before.
 ## Interrupted runs
 
 An up migration that runs without a transaction is recorded as dirty before its first
-statement, except on an append-only history backend such as ClickHouse. `Up` resumes after the last successfully recorded statement checkpoint;
+statement, except on an append-only history backend such as ClickHouse, which records
+its progress in a table of its own instead (`sgl_migrations_progress` under the default
+names), one row per completed statement, and records no history row until the migration
+completes. `Up` resumes after the last successfully recorded statement checkpoint, and
+refuses with a `*migrate.ResumeMismatchError` to resume a ClickHouse migration whose file
+changed since it stopped;
 committed statements without a checkpoint can run again. Progress writes after successful
 SQL are best-effort: a failed update logs a warning and execution continues, so recorded
 progress can lag the database effects.
@@ -475,8 +536,11 @@ plan under the lock only if the history still matches it; when another run chang
 history meanwhile, it changes nothing and exits 1. An applied migration without a file is
 reported but cannot be repaired.
 
-On ClickHouse, whose history is append-only, `force` and `repair` write a migration's new
-history row before anything is removed. The new row carries the old row's applied time,
+On ClickHouse, whose history is append-only, `repair VERSION` with a completed count
+records that progress in the progress table and removes any history row, so the next
+`Up` resumes after it, and `force` clears the progress so a later run starts from the
+beginning. `force` and `repair` write a migration's new history row before anything is
+removed. The new row carries the old row's applied time,
 which is what makes it replace the old one, so a failed write leaves the old row in place.
 Only when the old row's applied time cannot be read is that row deleted first.
 
@@ -496,7 +560,7 @@ Every `migrate.Option` works with `migrate.NewMigrator`, `migrate.NewSeeder`,
 | `WithLockTimeout(time.Duration)` | Give up on the migration or seed lock after this long, with an error wrapping `ErrLockTimeout`; zero, the default, waits until the context ends. |
 | `WithBeforeMigration`, `WithAfterMigration`, `WithBeforeRun`, `WithAfterRun` | Hooks around each migration or each run, for logging, metrics or environment checks. A nil hook is refused with an error matching `seagull.ErrInvalidConfig`. A hook that returns an error stops the run; a hook that panics stops it with a `*migrate.HookPanicError` rather than crashing the process, and its stack is logged once at warning level. |
 | `WithDirectivePrefixes(canonical, aliases...)` | The prefixes recognised in `-- sgl.migration(no_transaction: true)`; the default is `sgl` and `seagull`. |
-| `WithLogger(*slog.Logger)`, `WithObserver(observe.ObserverPort)` | Where logs and spans go; by default the ones carried by the context. |
+| `WithLogger(*slog.Logger)`, `WithObserver(observe.ObserverPort)` | Where logs and spans go. A logger carried by the context wins over `WithLogger`, and `WithObserver` wins over an observer carried by the context. |
 
 A migrator or seeder reads at most 10,000 entries from its directory, 4 MiB from each
 file and 1 GiB across every file in one call. A larger file fails with an error matching
@@ -582,11 +646,13 @@ held, so an executor whose lock lives in a transaction begins that transaction o
 | `migrate.ErrDirtyRollback` | `Down` or `DownTo` was asked for while a migration is dirty; nothing ran. Finish it with `Up`, or repair it, then roll back. |
 | `*migrate.ResumeMismatchError` | An interrupted migration's recorded progress no longer matches how its file splits, so it is not resumed; resolve it with `Migrator.Repair` (`sgl migrate repair VERSION`). |
 | `*migrate.MissingMigrationFileError` | An applied version has no file any more. |
+| `migrate.ErrTransactionControl` | A migration writes `BEGIN`, `COMMIT`, `ROLLBACK` or another statement that controls the transaction the runner owns; nothing ran. |
+| `migrate.ErrSettingInsideTransaction` | A migration that runs in a transaction changes, between other statements, a setting the engine ignores inside one, such as SQLite's `PRAGMA foreign_keys`; nothing ran. |
 | `*migrate.MigrationExecutionError`, `*migrate.SeedExecutionError` | A statement failed; the error names the file and statement. |
 | `*migrate.LockAcquisitionError` | The migration lock, or from a seeder the seed lock, could not be taken; `Lock` names which. |
 | `migrate.ErrLockLost` | A table lock's transaction ended during the run, so another process may hold the lock; the run stopped before the migration or seed the error names. |
 | `*migrate.DuplicateMigrationVersionError`, `*migrate.DuplicateSeedVersionError` | Two files share a version. |
-| `*migrate.HookPanicError` | A hook panicked; the error carries the panic value, and the stack is logged once at warning level through the migrator's logger (`WithLogger`'s, or the context's). |
+| `*migrate.HookPanicError` | A hook panicked; the error carries the panic value, and the stack is logged once at warning level through the migrator's logger (the context's, or `WithLogger`'s). |
 | `seagull.ErrPanic` | A panic recovered from code the migrator called, such as a hook or a backend's callback; `*migrate.HookPanicError` wraps it. |
 | `seagull.ErrInvalidConfig`, `seagull.ErrFileTooLarge`, `seagull.ErrLimit` | Unusable configuration, a file over the size limit, or more files or bytes than the migrator reads in one call. |
 

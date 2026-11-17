@@ -230,6 +230,10 @@ type View struct {
 	// Comment is the view comment, if any.
 	Comment string
 
+	// Broken explains why the engine no longer resolves the view, as when a table it reads
+	// was renamed on an engine whose views name their tables, or is empty.
+	Broken string
+
 	// Origin records which migration introduced this view.
 	Origin MigrationOrigin
 }
@@ -331,6 +335,10 @@ type Index struct {
 
 	// IsPrimary indicates whether this is the primary key index.
 	IsPrimary bool
+
+	// IsFullText indicates a full-text index, such as MySQL's FULLTEXT, which a full-text
+	// search over exactly its columns needs.
+	IsFullText bool
 }
 
 // Constraint represents a database constraint.
@@ -519,6 +527,16 @@ type Function struct {
 	// ReturnTypeFromArgument is the one-based argument position supplying the result type.
 	// Zero or an unknown argument type uses ReturnType.
 	ReturnTypeFromArgument int
+
+	// NullUnlessLiteral is the one-based position of an argument some of whose values make
+	// the result NULL, as an empty format or a zero divisor does, or zero when there is
+	// none. The result is then nullable unless the call writes that argument as a literal.
+	NullUnlessLiteral int
+
+	// NullOnNonNumeric is the one-based position of an argument whose text that is no number
+	// makes the result NULL, or zero when there is none. The result is then nullable when
+	// that argument is text, bytes or of an unknown type.
+	NullOnNonNumeric int
 
 	// MinArguments is the minimum number of arguments a caller must supply; arguments beyond
 	// this index are optional (they carry defaults).

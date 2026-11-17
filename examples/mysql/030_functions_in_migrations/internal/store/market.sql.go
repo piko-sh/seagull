@@ -11,9 +11,9 @@ WHERE catches.boat = ?
 ORDER BY catches.species;`
 
 type BoatHaulRow struct {
-	Species     string `json:"species"`
-	WeightGrams int32  `json:"weight_grams"`
-	ValuePence  *int32 `json:"value_pence"`
+	Species     string      `json:"species"`
+	WeightGrams int32       `json:"weight_grams"`
+	ValuePence  Null[int32] `json:"value_pence"`
 }
 
 func (queries *Queries) BoatHaul(ctx context.Context, boat string) ([]BoatHaulRow, error) {
@@ -23,12 +23,16 @@ func (queries *Queries) BoatHaul(ctx context.Context, boat string) ([]BoatHaulRo
 	}
 	defer rows.Close()
 	var results []BoatHaulRow
-	for rows.Next() {
+	if rows.Next() {
 		var row BoatHaulRow
-		if err := rows.Scan(&row.Species, &row.WeightGrams, &row.ValuePence); err != nil {
-			return nil, err
+		scanArgs := []any{&row.Species, sglScanNumber(&row.WeightGrams), &row.ValuePence}
+		for more := true; more; more = rows.Next() {
+			row = BoatHaulRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -45,7 +49,7 @@ type LandCatchParams struct {
 }
 
 type LandCatchRow struct {
-	ID *int64 `json:"id"`
+	ID Null[int64] `json:"id"`
 }
 
 func (queries *Queries) LandCatch(ctx context.Context, params LandCatchParams) (LandCatchRow, error) {
@@ -72,7 +76,7 @@ func (queries *Queries) SetPrice(ctx context.Context, params SetPriceParams) err
 const speciesPriceSQL = `SELECT species_price(?) AS pence_per_kilo;`
 
 type SpeciesPriceRow struct {
-	PencePerKilo *int32 `json:"pence_per_kilo"`
+	PencePerKilo Null[int32] `json:"pence_per_kilo"`
 }
 
 func (queries *Queries) SpeciesPrice(ctx context.Context, species string) (SpeciesPriceRow, error) {

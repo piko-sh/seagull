@@ -53,10 +53,14 @@ func (p *parser) parseDropTable() (*ast.CatalogueMutation, error) {
 		return nil, err
 	}
 
-	p.MatchKeyword(keywordCASCADE)
+	cascade := p.MatchKeyword(keywordCASCADE)
 	p.MatchKeyword(keywordRESTRICT)
 
-	return ast.NewCatalogueMutation(ast.MutationDropTable, schema, tableName, ast.WithIfExists(ifExists)), nil
+	mutation := ast.NewCatalogueMutation(ast.MutationDropTable, schema, tableName, ast.WithIfExists(ifExists))
+	if cascade {
+		mutation.EngineSpecific = map[string]string{ast.EngineSpecificCascade: "true"}
+	}
+	return mutation, nil
 }
 
 // parseAlterTable parses an ALTER TABLE statement and dispatches to the matching action
@@ -237,7 +241,7 @@ func (p *parser) parseAlterTableAdd(
 	}
 	p.MatchKeyword(keywordCOLUMN)
 	ifNotExists := p.matchIfNotExists()
-	column, columnPrimaryKey, columnError := p.parsePostgresColumnDefinition(engine)
+	column, keys, columnError := p.parsePostgresColumnDefinition(engine)
 	if columnError != nil {
 		return nil, columnError
 	}
@@ -248,12 +252,17 @@ func (p *parser) parseAlterTableAdd(
 		ast.WithColumns([]sqlmodel.Column{column}),
 		ast.WithIfNotExists(ifNotExists),
 	)
-	if columnPrimaryKey {
+	if keys.primaryKey || len(keys.constraints) > 0 {
+		var primaryKey []string
+		if keys.primaryKey {
+			primaryKey = []string{column.Name}
+		}
 		mutation.AdditionalMutations = []*ast.CatalogueMutation{ast.NewCatalogueMutation(
 			ast.MutationAlterTableAddConstraint,
 			schema,
 			tableName,
-			ast.WithPrimaryKey([]string{column.Name}),
+			ast.WithPrimaryKey(primaryKey),
+			ast.WithConstraints(keys.constraints),
 		)}
 	}
 	return mutation, nil
@@ -293,12 +302,13 @@ func (p *parser) parseAlterTableDrop(schema, tableName string) (*ast.CatalogueMu
 		schema,
 		tableName,
 		ast.WithColumnName(columnName),
+		ast.WithDroppedColumnIndexes(ast.ColumnIndexesDrop),
 	)
 	mutation.IfColumnExists = ifColumnExists
 	return mutation, nil
 }
 
-// parseAlterTableAlterColumn records column type and nullability changes.
+// parseAlterTableAlterColumn records column type, nullability and default changes.
 //
 // Other ALTER COLUMN actions are consumed but do not change the catalogue.
 //
@@ -326,6 +336,10 @@ func (p *parser) parseAlterTableAlterColumn(engine *Dialect, schema, tableName s
 		p.Advance()
 		p.MatchKeyword(keywordNULL)
 		options = append(options, ast.WithColumnNullability(true))
+	case p.IsKeyword(keywordSET) && p.Peek().IsKeyword(tokenIdentifier, keywordDEFAULT):
+		options = append(options, ast.WithColumnDefault(true))
+	case p.IsKeyword(keywordDROP) && p.Peek().IsKeyword(tokenIdentifier, keywordDEFAULT):
+		options = append(options, ast.WithColumnDefault(false))
 	case p.IsKeyword(keywordSET) && p.Peek().IsKeyword(tokenIdentifier, "DATA"):
 		p.Advance()
 		p.Advance()
@@ -582,7 +596,13 @@ func (p *parser) analyseViewBody(columnNames []string) (*ast.RawQueryAnalysis, e
 	}
 
 	if len(columnNames) > 0 && !slices.ContainsFunc(viewAnalysis.OutputColumns, dialectkit.IsStarColumn) {
-		dialectkit.OverlayViewColumnNames(viewAnalysis, columnNames, dialectkit.UndeclaredColumnsKept)
+		undeclared := dialectkit.UndeclaredColumnsKept
+		if p.strictColumnLists {
+			undeclared = dialectkit.UndeclaredColumnsRefused
+		}
+		if err := dialectkit.OverlayViewColumnNames(viewAnalysis, columnNames, undeclared); err != nil {
+			return nil, p.recordSyntaxError(dialectkit.NewParseError(p.Current(), err.Error()))
+		}
 	}
 
 	return viewAnalysis, nil
@@ -658,7 +678,7 @@ func (p *parser) parseCreateIndex() (*ast.CatalogueMutation, error) {
 		return nil, err
 	}
 
-	p.MatchKeyword(keywordUNIQUE)
+	unique := p.MatchKeyword(keywordUNIQUE)
 
 	if err := p.requireKeyword("INDEX"); err != nil {
 		return nil, err
@@ -666,7 +686,7 @@ func (p *parser) parseCreateIndex() (*ast.CatalogueMutation, error) {
 
 	p.MatchKeyword("CONCURRENTLY")
 
-	p.matchIfNotExists()
+	ifNotExists := p.matchIfNotExists()
 
 	indexName := ""
 	if !p.IsKeyword(keywordON) {
@@ -692,11 +712,26 @@ func (p *parser) parseCreateIndex() (*ast.CatalogueMutation, error) {
 		p.Advance()
 	}
 
+	columns, elements, err := p.parseIndexElements()
+	if err != nil {
+		return nil, err
+	}
+	if indexName != "" {
+		elements = nil
+	}
+
+	scope := ast.IndexNamesInRelations
+	if p.tableScopedIndexNames {
+		scope = ast.IndexNamesInTable
+	}
 	return ast.NewCatalogueMutation(
 		ast.MutationCreateIndex,
 		schema,
 		tableName,
-		ast.WithNewName(indexName),
+		ast.WithIndexDefinition(indexName, columns, unique),
+		ast.WithIndexElements(elements),
+		ast.WithIndexScope(scope),
+		ast.WithIfNotExists(ifNotExists),
 	), nil
 }
 
@@ -713,17 +748,45 @@ func (p *parser) parseDropIndex() (*ast.CatalogueMutation, error) {
 
 	ifExists := p.matchIfExists()
 
+	var actions []*ast.CatalogueMutation
+	for {
+		action, err := p.parseDropIndexTarget(ifExists)
+		if err != nil {
+			return nil, err
+		}
+		actions = append(actions, action)
+		if p.Current().Kind != tokenComma {
+			break
+		}
+		p.Advance()
+	}
+	actions[0].AdditionalMutations = actions[1:]
+	return actions[0], nil
+}
+
+// parseDropIndexTarget parses one index a DROP INDEX names. Where index names are local
+// to each table, the name may be written table@index.
+//
+// Takes ifExists (bool) which is true when the statement says IF EXISTS.
+//
+// Returns *ast.CatalogueMutation which drops the index.
+// Returns error when the name fails to parse.
+func (p *parser) parseDropIndexTarget(ifExists bool) (*ast.CatalogueMutation, error) {
 	schema, indexName, err := p.parseSchemaQualifiedName()
 	if err != nil {
 		return nil, err
 	}
-
+	table := ""
+	if p.tableScopedIndexNames && p.Current().Raw == "@" {
+		p.Advance()
+		table = indexName
+		indexName, err = p.parseIdentifierOrKeyword()
+		if err != nil {
+			return nil, err
+		}
+	}
 	return ast.NewCatalogueMutation(
-		ast.MutationDropIndex,
-		schema,
-		"",
-		ast.WithNewName(indexName),
-		ast.WithIfExists(ifExists),
+		ast.MutationDropIndex, schema, table, ast.WithNewName(indexName), ast.WithIfExists(ifExists),
 	), nil
 }
 
@@ -1169,4 +1232,59 @@ func trimViewBodySuffix(tokens []token) []token {
 		return tokens
 	}
 	return tokens[:withIndex]
+}
+
+// namedPrimaryKey records a primary key the migration names, so dropping the constraint
+// by name drops the key.
+//
+// Takes name (string) which is the constraint's name, or empty.
+// Takes columns ([]string) which are the key's columns.
+//
+// Returns *sqlmodel.Constraint which is nil for an unnamed key.
+func namedPrimaryKey(name string, columns []string) *sqlmodel.Constraint {
+	if name == "" || len(columns) == 0 {
+		return nil
+	}
+	return &sqlmodel.Constraint{Name: name, Kind: sqlmodel.ConstraintPrimaryKey, Columns: slices.Clone(columns),
+		ForeignTable: "", ForeignColumns: nil, Origin: sqlmodel.MigrationOrigin{}}
+}
+
+// parseTableNotNull parses a NOT NULL column table constraint, which PostgreSQL 18 takes
+// in CREATE TABLE and ALTER TABLE ADD.
+//
+// Takes constraintName (string) which optionally names the constraint.
+//
+// Returns *sqlmodel.Constraint which keeps the column from holding NULL.
+// Returns error when the column's name is missing.
+func (p *parser) parseTableNotNull(constraintName string) (*sqlmodel.Constraint, error) {
+	p.Advance()
+	p.Advance()
+	column, err := p.requireIdentifierOrKeyword()
+	if err != nil {
+		return nil, err
+	}
+	return &sqlmodel.Constraint{Name: constraintName, Kind: sqlmodel.ConstraintNotNull, Columns: []string{column}, ForeignTable: "",
+		ForeignColumns: nil, Origin: sqlmodel.MigrationOrigin{}}, nil
+}
+
+// isPostgresTableConstraint reports whether the current token starts a table-level
+// constraint clause. A delimited identifier never does, so a column named "check" stays a
+// column.
+//
+// Returns bool which is true for any recognised table-level keyword.
+func (p *parser) isPostgresTableConstraint() bool {
+	switch {
+	case p.IsKeyword(keywordCONSTRAINT, keywordCHECK, "EXCLUDE"):
+		return true
+	case p.namedNotNull && p.IsKeyword(keywordNOT):
+		return p.Peek().IsKeyword(tokenIdentifier, keywordNULL)
+	case p.IsKeyword(keywordPRIMARY):
+		return p.Peek().IsKeyword(tokenIdentifier, keywordKEY)
+	case p.IsKeyword(keywordFOREIGN):
+		return p.Peek().IsKeyword(tokenIdentifier, keywordKEY)
+	case p.IsKeyword(keywordUNIQUE):
+		return p.Peek().Kind == tokenLeftParen || p.Peek().IsKeyword(tokenIdentifier, keywordNULLS)
+	default:
+		return false
+	}
 }

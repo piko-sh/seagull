@@ -44,7 +44,7 @@ type LogVoyageParams struct {
 }
 
 func (queries *Queries) LogVoyage(ctx context.Context, params LogVoyageParams) error {
-	_, err := queries.db.Exec(ctx, logVoyageSQL, params.Boat, params.Ports, params.CatchKg, params.Sightings)
+	_, err := queries.db.Exec(ctx, logVoyageSQL, params.Boat, sglNonNil(params.Ports), sglNonNil(params.CatchKg), params.Sightings)
 	return err
 }
 
@@ -54,9 +54,9 @@ WHERE $1::text = ANY(ports)
 ORDER BY id;`
 
 type VoyagesCallingAtRow struct {
-	Boat      string  `json:"boat"`
-	FirstPort *string `json:"first_port"`
-	Stops     int32   `json:"stops"`
+	Boat      string       `json:"boat"`
+	FirstPort Null[string] `json:"first_port"`
+	Stops     int32        `json:"stops"`
 }
 
 func (queries *Queries) VoyagesCallingAt(ctx context.Context, port string) ([]VoyagesCallingAtRow, error) {
@@ -66,12 +66,16 @@ func (queries *Queries) VoyagesCallingAt(ctx context.Context, port string) ([]Vo
 	}
 	defer rows.Close()
 	var results []VoyagesCallingAtRow
-	for rows.Next() {
+	if rows.Next() {
 		var row VoyagesCallingAtRow
-		if err := rows.Scan(&row.Boat, &row.FirstPort, &row.Stops); err != nil {
-			return nil, err
+		scanArgs := []any{&row.Boat, &row.FirstPort, &row.Stops}
+		for more := true; more; more = rows.Next() {
+			row = VoyagesCallingAtRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

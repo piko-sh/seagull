@@ -933,6 +933,20 @@ func TestTokeniserReadsDollarNamedParameters(t *testing.T) {
 	}
 }
 
+func TestTokeniserPreservesDollarIdentifiers(t *testing.T) {
+	t.Parallel()
+	for _, name := range []string{"price$usd", "price$", "price$$usd", "price$1", "prix$é"} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			tokens, err := tokenise(name)
+			require.NoError(t, err)
+			require.Len(t, tokens, 2)
+			require.Equal(t, tokenIdentifier, tokens[0].Kind)
+			require.Equal(t, name, tokens[0].Value)
+		})
+	}
+}
+
 func TestTokeniserReadsAColonAfterAnOperandAsPunctuation(t *testing.T) {
 	t.Parallel()
 
@@ -975,6 +989,7 @@ func TestTokeniserSpansMatchSharedScanner(t *testing.T) {
 		"SELECT 'a''b', $tag$x;y$tag$, $$z$$, B'10', \"q\"\"x\" /* a /* b */ */ -- c\nFROM t;",
 		"SELECT $1::INTEGER, :name, [1, 2] FROM t;",
 		"SELECT E'it\\'s', e'a\\\\', {'k': 1}, x := 2, a ** b, a // b FROM t;",
+		"SELECT $1$value, 1$value, 'x'$value, )$value, :a$one, list[lo$:hi$];",
 	}
 	for index, sample := range samples {
 		files = append(files, lexdiff.File{Path: "sample " + string(rune('a'+index)), Content: sample})

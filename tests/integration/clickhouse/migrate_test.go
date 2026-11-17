@@ -133,3 +133,27 @@ func TestClickHouseLegacyHistoryIsUpgraded(t *testing.T) {
 	require.Equal(t, 1, labelled)
 	require.Equal(t, "1,2", harness.AppliedVersions(t, migrator))
 }
+
+func TestClickHouseSeedThatFailsPartwayResumesWithoutRepeatingRows(t *testing.T) {
+	ctx := t.Context()
+	database := openMigrationDatabase(t)
+	_, err := database.ExecContext(ctx, "CREATE TABLE seed_rows (id Int64) ENGINE = MergeTree() ORDER BY id")
+	require.NoError(t, err)
+	files := fstest.MapFS{"seeds/0001_rows.sql": {Data: []byte(
+		"INSERT INTO seed_rows VALUES (1);\nINSERT INTO seed_later VALUES (2);\nINSERT INTO seed_rows VALUES (3);\n")}}
+	seeder, err := migrate.NewSeeder(database, migrate_backend_clickhouse.New(), files, "seeds")
+	require.NoError(t, err)
+
+	_, err = seeder.Apply(ctx)
+	require.Error(t, err, "the second statement's table does not exist yet")
+	require.Equal(t, 1, harness.CountOf(t, database, "SELECT count() FROM seed_rows"))
+
+	_, err = database.ExecContext(ctx, "CREATE TABLE seed_later (id Int64) ENGINE = MergeTree() ORDER BY id")
+	require.NoError(t, err)
+	applied, err := seeder.Apply(ctx)
+	require.NoError(t, err)
+	require.Equal(t, 1, applied)
+	require.Equal(t, 1, harness.CountOf(t, database, "SELECT count() FROM seed_rows WHERE id = 1"), "the completed first statement did not run again")
+	require.Equal(t, 2, harness.CountOf(t, database, "SELECT count() FROM seed_rows"))
+	require.Equal(t, 1, harness.CountOf(t, database, "SELECT count() FROM seed_later"))
+}

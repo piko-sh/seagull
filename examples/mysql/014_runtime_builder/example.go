@@ -28,19 +28,7 @@ import (
 	"seagull.sh/seagull/examples/mysql/014_runtime_builder/internal/store"
 )
 
-// run searches the pier's unclaimed lost property. dynamic: runtime turns SearchUnclaimed
-// into a builder: Where, OrderBy, Limit and Offset add to the SQL, and All, One or Count
-// run it. The base query already has WHERE claimed = FALSE, so each Where is joined with
-// AND, which sgl vet points out as hint Q022. The builder inserts its filters, order and
-// limit at the places the query leaves for them, before any LIMIT or trailing semicolon,
-// and Count replaces the SELECT list with COUNT(*), wrapping the whole query instead when
-// it groups or is DISTINCT (Q023).
-//
-// The builder is safe with untrusted input. Where and OrderBy accept only the columns the
-// query selects, so owner_phone, which the table has but the query leaves out, cannot be
-// searched. Operators and directions come from fixed allow-lists, and every value is
-// bound as a parameter, never written into the SQL. A refused input does not panic: the
-// terminal returns ErrSglUnknownColumn, ErrSglUnknownOperator or ErrSglUnknownDirection.
+// run searches lost property with a runtime query builder.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes output (io.Writer) which receives the searches and the refusals.
@@ -61,7 +49,7 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 			return fmt.Errorf("handing in a %s: %w", item.Item, err)
 		}
 	}
-	if _, err := queries.Claim(ctx, store.ClaimParams{OwnerPhone: new("07700 900123"), ID: 5}); err != nil {
+	if _, err := queries.Claim(ctx, store.ClaimParams{OwnerPhone: store.NullOf("07700 900123"), ID: 5}); err != nil {
 		return fmt.Errorf("claiming the phone: %w", err)
 	}
 

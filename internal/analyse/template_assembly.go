@@ -31,7 +31,8 @@ import (
 )
 
 // buildTemplates fills a query's template, count template and insert target from the
-// spans of its statement, and turns the problems found on the way into diagnostics.
+// spans of its statement, and turns the problems found on the way into diagnostics. A
+// query read from a derived table lets its builder name columns by output name alone.
 //
 // Takes query (*sqlmodel.AnalysedQuery) which receives the templates.
 // Takes input (*assembleQueryInput) which holds the block, its statements, the
@@ -56,7 +57,13 @@ func (a *QueryAnalyser) buildTemplates(query *sqlmodel.AnalysedQuery, input *ass
 	})
 	query.Template = built.Template
 	query.CountTemplate = built.CountTemplate
+	query.FilteredTemplate = built.FilteredTemplate
+	query.FilteredCountTemplate = built.FilteredCountTemplate
 	query.InsertTarget = built.InsertTarget
+	if built.ReadsResultRows {
+		query.ReadsResultRows = true
+		query.AllowedColumns = extractCompoundAllowedColumns(input.outputColumns)
+	}
 	return assembly{diagnostics: input.location.templateDiagnostics(problems), countWrapped: built.CountWrapped}
 }
 

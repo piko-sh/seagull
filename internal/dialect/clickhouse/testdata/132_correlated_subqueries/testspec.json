@@ -1,0 +1,4 @@
+{
+  "description": "ClickHouse 26.8 runs a correlated scalar subquery by default and types it Nullable, returning NULL for a row it matches nothing for, even from count() and sum(), so it reads as nullable; an uncorrelated count() stays non-null. A qualifier may name a table by its own name though an alias renames it, and an enclosing query's table of that name takes it first, as ClickHouse 26.8 resolves them.",
+  "expectedDiagnosticCount": 0
+}

@@ -1,0 +1,158 @@
+[
+  {
+    "Command": "one",
+    "Filename": "clock.sql",
+    "Line": 1,
+    "Name": "KeywordForms",
+    "OutputColumns": [
+      {
+        "Name": "time_with_zone",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timetz",
+          "Temporal": "time",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "stamp_with_zone",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "local_time",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "time",
+          "Temporal": "time"
+        }
+      },
+      {
+        "Name": "local_stamp",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp",
+          "Temporal": "timestamp"
+        }
+      },
+      {
+        "Name": "today",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        }
+      },
+      {
+        "Name": "role_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "session_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: KeywordForms, command: one)\nSELECT current_time AS time_with_zone, current_timestamp AS stamp_with_zone, localtime AS local_time,\n       localtimestamp AS local_stamp, current_date AS today, current_role AS role_name,\n       session_user AS session_name\nFROM events WHERE id = $1;",
+    "Template": "SELECT ⟨c0 aliased:current_time⟩ AS time_with_zone, ⟨c1 aliased:current_timestamp⟩ AS stamp_with_zone, ⟨c2 aliased:localtime⟩ AS local_time,\\n       ⟨c3 aliased:localtimestamp⟩ AS local_stamp, ⟨c4 aliased:current_date⟩ AS today, ⟨c5 aliased:current_role⟩ AS role_name,\\n       ⟨c6 aliased:session_user⟩ AS session_name\\nFROM events WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "one",
+    "Filename": "clock.sql",
+    "Line": 7,
+    "Name": "CallForms",
+    "OutputColumns": [
+      {
+        "Name": "today",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        }
+      },
+      {
+        "Name": "user_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "role_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "session_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "schema_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "catalog_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "time_with_zone",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timetz",
+          "Temporal": "time",
+          "TimeZone": true
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CallForms, command: one)\nSELECT current_date() AS today, current_user() AS user_name, current_role() AS role_name,\n       session_user() AS session_name, current_schema() AS schema_name, current_catalog() AS catalog_name,\n       get_current_time() AS time_with_zone\nFROM events WHERE id = $1;",
+    "Template": "SELECT ⟨c0 aliased:current_date()⟩ AS today, ⟨c1 aliased:current_user()⟩ AS user_name, ⟨c2 aliased:current_role()⟩ AS role_name,\\n       ⟨c3 aliased:session_user()⟩ AS session_name, ⟨c4 aliased:current_schema()⟩ AS schema_name, ⟨c5 aliased:current_catalog()⟩ AS catalog_name,\\n       ⟨c6 aliased:get_current_time()⟩ AS time_with_zone\\nFROM events WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

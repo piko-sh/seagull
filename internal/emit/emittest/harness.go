@@ -34,6 +34,10 @@ const (
 	// clickHouseModule is the module path of the clickhouse-go driver.
 	clickHouseModule = "github.com/ClickHouse/clickhouse-go/v2"
 
+	// duckDBModule is the module path of the DuckDB driver, whose appender a DuckDB batch
+	// method opens.
+	duckDBModule = "github.com/duckdb/duckdb-go/v2"
+
 	// stubsRoot is the directory holding the stand-in modules.
 	stubsRoot = "internal/stubs"
 
@@ -44,6 +48,10 @@ const (
 	// clickHouseStub is the directory, under the stubs root, of the clickhouse-go module's
 	// stand-in, named after the package it declares.
 	clickHouseStub = "/clickhouse"
+
+	// duckDBStub is the directory, under the stubs root, of the DuckDB module's stand-in,
+	// named after the package it declares.
+	duckDBStub = "/duckdb"
 
 	// stubsPackage is the import path of the directory holding the stand-in modules.
 	stubsPackage = "seagull.sh/seagull/internal/emit/emittest/" + stubsRoot
@@ -65,7 +73,8 @@ var (
 	//go:embed internal/chrecorder/recorder.go
 	clickHouseRecorder string
 
-	// stubs holds the stand-in modules the pgx and native ClickHouse harnesses build with.
+	// stubs holds the stand-in modules the pgx, native ClickHouse and database/sql harnesses
+	// build with.
 	//
 	//go:embed internal/stubs
 	stubs embed.FS
@@ -126,12 +135,14 @@ func (harness *Harness) mainSource() string {
 	return harness.Source[:location[0]] + "package main" + harness.Source[location[1]:]
 }
 
-// DatabaseSQL returns the harness for code written against database/sql: a driver that
-// records every statement and its arguments as the generated code passed them.
+// DatabaseSQL returns a harness for code generated against database/sql.
 //
-// Returns *Harness which needs no module beside the standard library.
+// Its driver records statements and arguments as passed. A DuckDB stand-in prevents batch
+// methods from opening an appender on the recorder, so their SQL is recorded.
+//
+// Returns *Harness which provides the DuckDB module's stand-in.
 func DatabaseSQL() *Harness {
-	return &Harness{Modules: nil, Name: "database/sql", Source: databaseSQLRecorder}
+	return &Harness{Modules: map[string]fs.FS{duckDBModule: stubModule(duckDBStub)}, Name: "database/sql", Source: databaseSQLRecorder}
 }
 
 // Pgx returns the harness for code written against pgx: a connection that records every

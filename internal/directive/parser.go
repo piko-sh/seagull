@@ -232,7 +232,7 @@ func (p *Parser) parseLogicalLine(
 func (*Parser) looksLikeParameterBinding(content string) bool {
 	upper := strings.ToUpper(content)
 	for index := 0; index+asKeywordLookahead < len(upper); index++ {
-		if upper[index] == ' ' && upper[index+1] == 'A' && upper[index+2] == 'S' &&
+		if (upper[index] == ' ' || upper[index] == '\t') && upper[index+1] == 'A' && upper[index+2] == 'S' &&
 			(upper[index+asKeywordLookahead] == ' ' || upper[index+asKeywordLookahead] == '\t') {
 			return true
 		}

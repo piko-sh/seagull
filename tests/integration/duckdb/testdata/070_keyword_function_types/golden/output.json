@@ -1,0 +1,18 @@
+{
+  "CallForms": {
+    "catalog_read": true,
+    "role_name": "duckdb",
+    "schema_name": "main",
+    "session_name": "duckdb",
+    "today_read": true,
+    "user_name": "duckdb"
+  },
+  "KeywordForms": {
+    "local_stamp_read": true,
+    "role_name": "duckdb",
+    "session_name": "duckdb",
+    "stamp_with_zone_read": true,
+    "time_with_zone_read": true,
+    "today_read": true
+  }
+}

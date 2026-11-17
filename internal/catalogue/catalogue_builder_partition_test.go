@@ -213,7 +213,7 @@ ALTER TABLE measurements_2026 ALTER COLUMN note SET NOT NULL;
 	require.False(t, catalogue.LookupTable("", "measurements_2026").Columns[3].Nullable)
 	require.False(t, catalogue.LookupTable("", "measurements_2027").Columns[3].Nullable)
 	require.False(t, catalogue.LookupTable("", "measurements_2027_low").Columns[3].Nullable, "a partition takes the columns of its parent")
-	require.Len(t, catalogue.LookupTable("", "measurements_2027").Constraints, 1)
+	require.Equal(t, []string{"measurements_2027_pkey", "positive"}, constraintNamesOf(catalogue.LookupTable("", "measurements_2027").Constraints))
 
 	parent.Columns[0].Name = "changed"
 	require.Equal(t, "id", catalogue.LookupTable("", "measurements_2026").Columns[0].Name)

@@ -220,7 +220,7 @@ func (service *Migrator) Status(ctx context.Context) (_ []MigrationStatus, err e
 		if appliedMigration, found := appliedByVersion[file.Version]; found {
 			status.Applied = true
 			status.AppliedAt = appliedMigration.AppliedAt
-			status.ChecksumMatch = appliedMigration.Checksum == file.Checksum
+			status.ChecksumMatch = file.MatchesChecksum(appliedMigration.Checksum)
 			status.Dirty = appliedMigration.Dirty
 			status.LastStatement = appliedMigration.LastStatement
 		}
@@ -231,8 +231,10 @@ func (service *Migrator) Status(ctx context.Context) (_ []MigrationStatus, err e
 	return statuses, nil
 }
 
-// Validate checks that all applied migration checksums match their on-disk files without
-// executing anything. It runs no DDL: a database without a history table validates.
+// Validate checks applied migrations against their files without running DDL.
+//
+// Each applied up file must be present and unchanged, its recorded down file must be
+// unchanged, and no migration may be partly applied. A database without history passes.
 //
 // Returns error when file reading, version querying, or checksum validation fails.
 func (service *Migrator) Validate(ctx context.Context) (err error) {
@@ -258,7 +260,13 @@ func (service *Migrator) Validate(ctx context.Context) (err error) {
 		return fmt.Errorf(errorFormatReadingAppliedVersions, appliedError)
 	}
 
-	return validateChecksums(upFiles, applied)
+	if err := validateChecksums(upFiles, applied); err != nil {
+		return err
+	}
+	if err := validateDownChecksums(buildDownFileMap(allFiles), applied); err != nil {
+		return err
+	}
+	return firstDirty(applied)
 }
 
 // applyUpMigrations reads migration files, validates checksums, acquires the lock,
@@ -424,6 +432,9 @@ func (service *Migrator) rollbackMigrations(
 	if dirtyError := refuseDirtyRollback(applied); dirtyError != nil {
 		return 0, dirtyError
 	}
+	if driftError := validateChecksums(filterByDirection(allFiles, MigrationDirectionUp), applied); driftError != nil {
+		return 0, driftError
+	}
 
 	return service.executeRollbacks(ctx, applied, rollbackCount, downFilesByVersion)
 }
@@ -442,7 +453,7 @@ func (*Migrator) warnSkippedMigrations(
 	if len(skippedVersions) == 0 {
 		return
 	}
-	logger := logging.LoggerFrom(ctx)
+	ctx, logger := logging.From(ctx)
 	for _, version := range skippedVersions {
 		logger.WarnContext(ctx, "applying skipped migration",
 			slog.Int64(logFieldVersion, version),
@@ -540,6 +551,7 @@ func (service *Migrator) applyUpMigration(
 	downChecksum string,
 	retried *AppliedMigration,
 ) error {
+	ctx, logger := logging.From(ctx)
 	hookContext := MigrationHookContext{
 		Version:   migration.Version,
 		Name:      migration.Name,
@@ -570,7 +582,7 @@ func (service *Migrator) applyUpMigration(
 		return hookError
 	}
 
-	logging.LoggerFrom(ctx).Log(ctx, logging.LevelTrace, "applied migration",
+	logger.Log(ctx, logging.LevelTrace, "applied migration",
 		slog.Int64(logFieldVersion, migration.Version),
 		slog.String("name", migration.Name),
 		slog.Int("skip_up_to", record.SkipUpTo),
@@ -580,6 +592,10 @@ func (service *Migrator) applyUpMigration(
 
 // executeRollbacks runs before-run hooks, rolls back the specified number of migrations
 // in reverse order, and runs after-run hooks.
+//
+// Every migration to roll back is checked first: it must have a down file whose checksum,
+// when one was recorded, still matches. A missing or changed down file stops the run
+// before anything is rolled back, rather than after the later migrations have been.
 //
 // Takes applied ([]AppliedMigration) which holds all applied migrations in version order.
 // Takes steps (int) which specifies how many migrations to roll back from the end.
@@ -603,9 +619,14 @@ func (service *Migrator) executeRollbacks(
 	downFiles := make([]sqlfile.MigrationFile, 0, steps)
 	for index := len(applied) - 1; index >= len(applied)-steps; index-- {
 		rollbackVersions = append(rollbackVersions, applied[index].Version)
-		if downFile, exists := downFilesByVersion[applied[index].Version]; exists {
-			downFiles = append(downFiles, downFile)
+		downFile, exists := downFilesByVersion[applied[index].Version]
+		if !exists {
+			return 0, &NoDownMigrationError{Version: applied[index].Version}
 		}
+		if checksumError := validateDownChecksum(ctx, applied[index], downFile); checksumError != nil {
+			return 0, checksumError
+		}
+		downFiles = append(downFiles, downFile)
 	}
 	if directiveError := service.refuseMalformedDirectives(downFiles); directiveError != nil {
 		return 0, directiveError
@@ -652,7 +673,7 @@ func (service *Migrator) executeSingleRollback(
 	appliedMigration AppliedMigration,
 	downFile sqlfile.MigrationFile,
 ) error {
-	logger := logging.LoggerFrom(ctx)
+	ctx, logger := logging.From(ctx)
 	hookContext := MigrationHookContext{
 		Version:   downFile.Version,
 		Name:      downFile.Name,
@@ -1010,13 +1031,14 @@ func resumePoint(ctx context.Context, pending []sqlfile.MigrationFile, applied [
 		return nil, nil
 	}
 	skipUpTo := lastCompletedStatement(*dirtyMigration)
-	if len(pending) == 0 || pending[0].Version != dirtyMigration.Version {
+	if len(pending) == 0 || pending[0].Version != dirtyMigration.Version || dirtyMigration.StatementsHash == InterruptedRollback {
 		return nil, &DirtyMigrationError{
 			Version:       dirtyMigration.Version,
 			LastStatement: skipUpTo,
 		}
 	}
-	logging.LoggerFrom(ctx).Log(ctx, logging.LevelTrace, "retrying dirty migration",
+	_, logger := logging.From(ctx)
+	logger.Log(ctx, logging.LevelTrace, "retrying dirty migration",
 		slog.Int64(logFieldVersion, dirtyMigration.Version),
 		slog.Int("skip_up_to", skipUpTo),
 	)
@@ -1061,14 +1083,10 @@ func findDirtyMigration(applied []AppliedMigration) *AppliedMigration {
 // Returns error which wraps ErrDirtyRollback and a *DirtyMigrationError, or nil when no
 // migration is dirty.
 func refuseDirtyRollback(applied []AppliedMigration) error {
-	dirty := findDirtyMigration(applied)
-	if dirty == nil {
-		return nil
+	if dirtyError := firstDirty(applied); dirtyError != nil {
+		return fmt.Errorf("%w: %w", ErrDirtyRollback, dirtyError)
 	}
-	return fmt.Errorf("%w: %w", ErrDirtyRollback, &DirtyMigrationError{
-		Version:       dirty.Version,
-		LastStatement: lastCompletedStatement(*dirty),
-	})
+	return nil
 }
 
 // validateDownChecksum checks that the down migration file checksum matches the checksum
@@ -1084,7 +1102,7 @@ func validateDownChecksum(
 	downFile sqlfile.MigrationFile,
 ) error {
 	recordedDownChecksum := appliedMigration.DownChecksum
-	if recordedDownChecksum != "" && recordedDownChecksum != downFile.Checksum {
+	if recordedDownChecksum != "" && !downFile.MatchesChecksum(recordedDownChecksum) {
 		return &DownChecksumMismatchError{
 			Version:          downFile.Version,
 			Name:             downFile.Name,
@@ -1093,7 +1111,7 @@ func validateDownChecksum(
 		}
 	}
 	if recordedDownChecksum == "" {
-		logger := logging.LoggerFrom(ctx)
+		_, logger := logging.From(ctx)
 		logger.WarnContext(ctx, "no recorded down checksum for migration, skipping validation",
 			slog.Int64(logFieldVersion, downFile.Version),
 		)
@@ -1294,7 +1312,7 @@ func validateChecksums(
 				Name:    migration.Name,
 			}
 		}
-		if file.Checksum != migration.Checksum {
+		if !file.MatchesChecksum(migration.Checksum) {
 			return &ChecksumMismatchError{
 				Version:         migration.Version,
 				Name:            migration.Name,
@@ -1364,4 +1382,46 @@ func migrationVersions(files []sqlfile.MigrationFile) []int64 {
 		versions[index] = files[index].Version
 	}
 	return versions
+}
+
+// validateDownChecksums checks that the down file of each applied migration whose down
+// checksum was recorded is still the file recorded, so a rollback would undo what was
+// applied.
+//
+// Takes downFiles (map[int64]sqlfile.MigrationFile) which maps versions to their down
+// files.
+// Takes applied ([]AppliedMigration) which holds the applied migrations.
+//
+// Returns error which is a DownChecksumMismatchError for the first down file changed or
+// removed since its migration was applied, or nil.
+func validateDownChecksums(downFiles map[int64]sqlfile.MigrationFile, applied []AppliedMigration) error {
+	for index := range applied {
+		migration := &applied[index]
+		if migration.DownChecksum == "" {
+			continue
+		}
+		file, found := downFiles[migration.Version]
+		if !found || !file.MatchesChecksum(migration.DownChecksum) {
+			return &DownChecksumMismatchError{
+				Version:          migration.Version,
+				Name:             migration.Name,
+				RecordedChecksum: migration.DownChecksum,
+				FileChecksum:     file.Checksum,
+			}
+		}
+	}
+	return nil
+}
+
+// firstDirty reports the first applied migration left partly applied.
+//
+// Takes applied ([]AppliedMigration) which holds the applied migrations.
+//
+// Returns error which is a *DirtyMigrationError for the first dirty migration, or nil.
+func firstDirty(applied []AppliedMigration) error {
+	dirty := findDirtyMigration(applied)
+	if dirty == nil {
+		return nil
+	}
+	return &DirtyMigrationError{Version: dirty.Version, LastStatement: lastCompletedStatement(*dirty)}
 }

@@ -1551,7 +1551,7 @@ func newLoggingContext(t *testing.T) (context.Context, *bytes.Buffer) {
 	t.Helper()
 
 	logs := &bytes.Buffer{}
-	return logging.ContextWithLogger(t.Context(), slog.New(slog.NewJSONHandler(logs, nil))), logs
+	return logging.WithLogger(t.Context(), slog.New(slog.NewJSONHandler(logs, nil))), logs
 }
 
 func loggedRecords(t *testing.T, logs *bytes.Buffer) []map[string]any {
@@ -2910,8 +2910,13 @@ func TestUntypedArgumentTypePrefersDoublePrecisionAmongNumbers(t *testing.T) {
 	_, chooses = engine.UntypedArgumentType([]sqlmodel.SQLType{integer, numeric})
 	assert.False(t, chooses, "without float8 among the overloads PostgreSQL cannot choose")
 
-	_, chooses = engine.UntypedArgumentType([]sqlmodel.SQLType{double, text})
-	assert.False(t, chooses, "a non-numeric overload leaves the choice open")
+	chosen, chooses = engine.UntypedArgumentType([]sqlmodel.SQLType{double, text})
+	require.True(t, chooses, "the string category wins, as PostgreSQL chooses it")
+	assert.Equal(t, "text", chosen.EngineName)
+
+	boolean := engine.NormaliseTypeName("boolean")
+	_, chooses = engine.UntypedArgumentType([]sqlmodel.SQLType{double, boolean})
+	assert.False(t, chooses, "categories without a string among them leave the choice open")
 }
 
 func TestBinaryResultTypesArithmeticBetweenAFloatAndAnotherNumberAsDoublePrecision(t *testing.T) {

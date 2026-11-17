@@ -1,0 +1,96 @@
+[
+  {
+    "Command": "many",
+    "Filename": "vessels.sql",
+    "Line": 1,
+    "Name": "Vessels",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "vessels",
+        "SourceTable": "vessels"
+      },
+      {
+        "Name": "harbour",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "harbour",
+        "SourceQualifier": "vessels",
+        "SourceTable": "vessels"
+      },
+      {
+        "Name": "home",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "home",
+        "SourceQualifier": "vessels",
+        "SourceTable": "vessels"
+      },
+      {
+        "Name": "berth",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "berth",
+        "SourceQualifier": "vessels",
+        "SourceTable": "vessels"
+      },
+      {
+        "Name": "winter",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "winter",
+        "SourceQualifier": "vessels",
+        "SourceTable": "vessels"
+      },
+      {
+        "Name": "spring",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "spring",
+        "SourceQualifier": "vessels",
+        "SourceTable": "vessels"
+      },
+      {
+        "Name": "autumn",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "autumn",
+        "SourceQualifier": "vessels",
+        "SourceTable": "vessels"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Vessels, command: many)\nSELECT id, harbour, home, berth, winter, spring, autumn FROM vessels;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:harbour⟩, ⟨c2:home⟩, ⟨c3:berth⟩, ⟨c4:winter⟩, ⟨c5:spring⟩, ⟨c6:autumn⟩ FROM vessels;"
+  }
+]

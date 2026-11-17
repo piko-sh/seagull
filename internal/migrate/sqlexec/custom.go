@@ -111,13 +111,26 @@ type BackendSpec struct {
 	// " FINAL". Usually empty.
 	HistoryReadModifier string
 
+	// SchemaCheckpoint is a statement run after each migration is applied or rolled back,
+	// and after the history table gains a column, such as DuckDB's CHECKPOINT, which moves
+	// the schema changes from the write-ahead log into the database file.
+	//
+	// It is best-effort: a failure is logged and the run goes on. Empty runs nothing.
+	SchemaCheckpoint string
+
 	// Rules defines the engine's lexical rules for statement splitting and transaction
 	// detection. Zero uses standard SQL.
 	Rules sqllex.Rules
 
 	// DefaultLock is the lock mode used when WithLock is not given. The zero value means
-	// LockNone; LockAdvisory and LockTable need AdvisoryLock and TableLock respectively.
+	// LockNone; LockAdvisory, LockTable and LockLease need AdvisoryLock, TableLock and
+	// LeaseLock respectively.
 	DefaultLock LockMode
+
+	// LeaseLock lets the backend take LockLease, a lease row in a lock table, for an engine
+	// with no session locks. The engine must accept CREATE TABLE IF NOT EXISTS, a primary
+	// key that admits one row, and DELETE, INSERT and UPDATE with the spec's placeholders.
+	LeaseLock bool
 
 	// TransactionalDDL reports that DDL runs inside transactions, so each migration and its
 	// history row commit together. When false every migration takes the non-transactional
@@ -194,8 +207,8 @@ type TableLockSQL struct {
 // Takes options (...BackendOption) which set the namespace, history table and lock mode.
 //
 // Returns Backend which is ready for NewMigrator, NewSeeder or NewExecutor.
-func Custom(spec BackendSpec, options ...BackendOption) Backend {
-	base, err := engineFromSpec(spec)
+func Custom(spec BackendSpec, options ...BackendOption) Backend { //nolint:gocritic // the public signature takes the spec by value
+	base, err := engineFromSpec(&spec)
 	if err != nil {
 		return failedBackend(err)
 	}
@@ -204,15 +217,16 @@ func Custom(spec BackendSpec, options ...BackendOption) Backend {
 
 // engineFromSpec converts a BackendSpec into an engine and validates it.
 //
-// Takes spec (BackendSpec) which describes the engine.
+// Takes spec (*BackendSpec) which describes the engine.
 //
 // Returns *engine which is the validated engine.
 // Returns error which wraps migrate.ErrInvalidConfig when the spec is incomplete.
-func engineFromSpec(spec BackendSpec) (*engine, error) {
+func engineFromSpec(spec *BackendSpec) (*engine, error) {
 	built := &engine{
 		placeholder:         spec.Placeholder,
 		createHistoryTable:  spec.CreateHistoryTable,
 		createSeedTable:     spec.CreateSeedTable,
+		createProgressTable: nil,
 		insertSeed:          spec.InsertSeed,
 		tableExists:         spec.TableExists,
 		deleteHistory:       spec.DeleteHistory,
@@ -226,6 +240,9 @@ func engineFromSpec(spec BackendSpec) (*engine, error) {
 		name:                spec.Name,
 		currentSchemaSQL:    "",
 		historyReadModifier: spec.HistoryReadModifier,
+		schemaCheckpoint:    spec.SchemaCheckpoint,
+		sessionSettings:     nil,
+		appliedAtUpgrade:    nil,
 		defaultLock:         spec.DefaultLock,
 		transactionalDDL:    spec.TransactionalDDL,
 		transactionalSeeds:  spec.TransactionalSeeds,
@@ -246,6 +263,22 @@ func engineFromSpec(spec BackendSpec) (*engine, error) {
 	if built.defaultLock == 0 {
 		built.defaultLock = LockNone
 	}
+	problems := addCustomLocks(built, spec)
+	problems = append(problems, validateEngine(built))
+	if err := errors.Join(problems...); err != nil {
+		return nil, err
+	}
+	return built, nil
+}
+
+// addCustomLocks adds the lock modes a spec describes to an engine, checking that each
+// lock renders everything it needs.
+//
+// Takes built (*engine) which receives the locks.
+// Takes spec (*BackendSpec) which describes them.
+//
+// Returns []error which holds a problem for each incomplete lock.
+func addCustomLocks(built *engine, spec *BackendSpec) []error {
 	var problems []error
 	if spec.AdvisoryLock != nil {
 		problems = append(problems, checkRenderers("AdvisoryLock", map[string]bool{
@@ -260,11 +293,10 @@ func engineFromSpec(spec BackendSpec) (*engine, error) {
 		}))
 		built.locks[LockTable] = customTableLocks(*spec.TableLock)
 	}
-	problems = append(problems, validateEngine(built))
-	if err := errors.Join(problems...); err != nil {
-		return nil, err
+	if spec.LeaseLock {
+		built.locks[LockLease] = leaseLocks(spec.Placeholder)
 	}
-	return built, nil
+	return problems
 }
 
 // validateEngine checks that an engine renders everything a Backend needs and supports
@@ -516,7 +548,7 @@ func renderedInsertSeed(
 		markers[seedPlaceholderChecksum-1],
 		markers[seedPlaceholderDurationMs-1],
 	}
-	text := render(key[0], key[1], key[2], key[3], key[4])
+	text := render(key[0], key[seedPlaceholderVersion], key[seedPlaceholderName], key[seedPlaceholderChecksum], key[seedPlaceholderDurationMs])
 	return func(candidateTable, version, name, checksum, duration string) string {
 		if [...]string{candidateTable, version, name, checksum, duration} == key {
 			return text

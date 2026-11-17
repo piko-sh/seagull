@@ -1,6 +1,6 @@
 ---
 title: Handle NULL and missing rows
-description: "Read nullable result fields as pointers and check them before dereferencing."
+description: "Read nullable result fields as Null values and check them before reading the value."
 section: How-to guides
 subsection: Results
 order: 340
@@ -8,7 +8,7 @@ order: 340
 
 # Handle NULL and missing rows
 
-Distinguish a NULL value from a query that returns no row. A nullable result field is a pointer; a missing `one` result is the driver’s no-rows error unless you declare it optional.
+Distinguish a NULL value from a query that returns no row. A nullable result field is a `Null[T]` whose `Valid` field says whether it holds a value. A missing `one` result is the driver’s no-rows error unless you declare it optional.
 
 ## Read nullable columns and optional joined rows
 
@@ -37,7 +37,7 @@ ORDER BY gulls.id;
 
 `COALESCE` supplies a non-null display name; `COUNT` supplies zero, while the last-sighting aggregate remains nullable.
 
-## Check a field before dereferencing it
+## Check a field before reading its value
 
 Run `sgl generate` and construct `store.New(database)`. Read the rows and format nullable fields:
 
@@ -52,16 +52,18 @@ Run `sgl generate` and construct `store.New(database)`. Read the rows and format
 	}
 ```
 
-The caller’s helper handles nil explicitly:
+The caller’s helper checks `Valid` before it reads `V`:
 
 ```go
-func orNull(value *string) string {
-	if value == nil {
+func orNull(value store.Null[string]) string {
+	if !value.Valid {
 		return "NULL"
 	}
-	return *value
+	return value.V
 }
 ```
+
+`Get` returns the value and the flag together, and `Ptr` returns a pointer to a copy, or nil for NULL, for code that still takes pointers. To set a nullable parameter, write `store.NullOf(value)`, or `store.NullFrom(pointer)` from a pointer, and leave the field zero for NULL.
 
 For a missing whole row, either handle `sql.ErrNoRows`/`pgx.ErrNoRows`, or [declare an optional single-row query](optional-one.md). These are different from a row whose fields contain NULL.
 

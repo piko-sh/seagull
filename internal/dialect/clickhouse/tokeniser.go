@@ -493,7 +493,7 @@ func (t *tokeniser) readIdentifier() (token, error) {
 	startPosition := t.position
 	for t.position < len(t.input) {
 		character, width := utf8.DecodeRuneInString(t.input[t.position:])
-		if !isIdentPart(character) {
+		if !isIdentPart(character) && character != '$' {
 			break
 		}
 		t.position += width

@@ -1,0 +1,6 @@
+{
+  "description": "A NULL UUID parameter binds NULL through database/sql on the DuckDB driver, a nil *uuid.UUID through an optional filter and a Null[uuid.UUID] that is not Valid through a runtime builder's own parameter and an INSERT (check): database/sql calls the Value method of a nil pointer to a type whose Value has a value receiver only through its own guard, so no wrapper is needed; a nil owner matches every row through the optional filter and an owner that is not Valid no row through the builder, and a UUID matches its row.",
+  "expectedDiagnostics": [
+    "Q022"
+  ]
+}

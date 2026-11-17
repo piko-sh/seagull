@@ -108,9 +108,20 @@ type driverProfile struct {
 	// generated.
 	preparesOnlyInserts bool
 
+	// cachesUnboundStatements permits cached statements without bound parameters.
+	cachesUnboundStatements bool
+
 	// reportsRowsAffected reports that the driver's sql.Result counts the rows a statement
 	// changed; clickhouse-go reports none, so execrows and execresult are refused.
 	reportsRowsAffected bool
+
+	// bindsUnsignedAsText preserves wide unsigned parameters through decimal text.
+	bindsUnsignedAsText bool
+
+	// widensNumbers reports a driver that returns every integer as an int64 and every float
+	// as a float64, which database/sql converts into a narrower Go number through text, so
+	// such a column is read through the generated number scanner.
+	widensNumbers bool
 
 	// bindsJSONThroughValuer enables wrappers that bind JSON values through driver.Valuer.
 	bindsJSONThroughValuer bool
@@ -123,6 +134,10 @@ type driverProfile struct {
 	// rather than NULL, so a nullable list parameter goes through the driver-composite
 	// conversion, which binds a nil slice as NULL as every other driver does.
 	bindsNilSlicesAsEmpty bool
+
+	// sendsNilSlicesAsNull reports that the driver sends a nil slice, a []byte included, as
+	// NULL, which a column refusing NULL rejects.
+	sendsNilSlicesAsNull bool
 
 	// bindsDefinedTypesAsIs enables conversion of defined basic Go types to the predeclared
 	// types the driver accepts.
@@ -216,11 +231,15 @@ var (
 		types:                            sqlmodel.TypeSlots{},
 		bindsNamedValues:                 false,
 		preparesOnlyInserts:              false,
+		cachesUnboundStatements:          true,
 		reportsRowsAffected:              true,
 		maxBatchParameters:               0,
 		bindsJSONThroughValuer:           false,
+		bindsUnsignedAsText:              false,
+		widensNumbers:                    true,
 		bindsCompositesAsDriverValues:    false,
 		bindsNilSlicesAsEmpty:            false,
+		sendsNilSlicesAsNull:             true,
 		bindsDefinedTypesAsIs:            false,
 		bindsBytesAsBinary:               false,
 		bindsDecomposedDecimals:          false,
@@ -395,19 +414,25 @@ func mysqlProfile() driverProfile {
 // the driver panics on a list element of a type it does not know. It binds a MAP
 // parameter only from its own duckdb.Map or duckdb.OrderedMap and a STRUCT only from a
 // map keyed by field name, so map, struct and list-of-struct parameters are converted
-// into those forms; and it binds a nil slice as an empty list, so a nullable list
-// parameter is converted too, binding nil as NULL. It binds a value of a defined type as
-// it is, refusing a defined []byte type such as json.RawMessage and panicking on a slice
-// of a defined string type, and binds a []byte as a BLOB, which a VARCHAR will not
-// compare with, so a parameter whose Go type an override chose is converted too. It
-// panics on a NULL element of a list parameter, or a NULL value of a map parameter, and
-// on a pointer to one, so parameters bind plain elements and values. It builds a LIST,
-// ARRAY, MAP or STRUCT parameter from the type the statement gives it, which fails with
-// "unsupported data type" on an element of an enum, a DECIMAL, a BLOB, a UUID or an
-// INTERVAL (see duckDBBuildsElement), but binds a list a driver.Valuer returns by the
-// types of its Go elements, which DuckDB casts to the parameter's type, so such a list
-// goes through the list-inference wrapper; it infers no map or struct, so a MAP or STRUCT
-// parameter holding such an element is refused.
+// into those forms; and it binds a nil []byte as an empty BLOB, and before v2.20000 a nil
+// slice as an empty list, so nullable binary and list parameters are converted too,
+// binding nil as NULL. Since v2.20000 it binds a nil slice as NULL, which a column
+// refusing NULL rejects, so a slice written into one is made non-nil first. It binds a
+// value of a defined type as it is, refusing a defined []byte type such as
+// json.RawMessage and panicking on a slice of a defined string type, and binds a []byte
+// as a BLOB, which a VARCHAR will not compare with, so a parameter whose Go type an
+// override chose is converted too. It panics on a pointer element of a list parameter,
+// and before v2.20000 on a NULL element of a list or a NULL value of a map parameter too,
+// so parameters bind plain elements and values. It builds a LIST, ARRAY, MAP or STRUCT
+// parameter from the type the statement gives it, which fails with "unsupported data
+// type" on an element of an enum, a DECIMAL, a BLOB, a UUID or an INTERVAL (see
+// duckDBBuildsElement), but binds a list a driver.Valuer returns by the types of its Go
+// elements, which DuckDB casts to the parameter's type, so such a list goes through the
+// list-inference wrapper; it infers no map or struct, so a MAP or STRUCT parameter
+// holding such an element is refused.
+//
+// Parameterless statements run without a cache. DuckDB can return corrupted rows when
+// such a cached plan was prepared before an empty table received its first rows.
 //
 // Returns driverProfile which is the profile.
 func duckDBProfile() driverProfile {
@@ -420,8 +445,12 @@ func duckDBProfile() driverProfile {
 	profile.readsIntervalsAsText = true
 	profile.readsJSONAsText = true
 	profile.bindsJSONThroughValuer = true
+	profile.bindsUnsignedAsText = true
+	profile.widensNumbers = false
 	profile.bindsCompositesAsDriverValues = true
 	profile.bindsNilSlicesAsEmpty = true
+	profile.sendsNilSlicesAsNull = true
+	profile.cachesUnboundStatements = false
 	profile.bindsDefinedTypesAsIs = true
 	profile.bindsBytesAsBinary = true
 	profile.refusesNullElements = true
@@ -491,11 +520,15 @@ func clickHouseProfile() driverProfile {
 		types:                            types,
 		bindsNamedValues:                 true,
 		preparesOnlyInserts:              true,
+		cachesUnboundStatements:          false,
 		reportsRowsAffected:              false,
 		maxBatchParameters:               chvalues.BatchParameters,
 		bindsJSONThroughValuer:           false,
+		bindsUnsignedAsText:              false,
+		widensNumbers:                    false,
 		bindsCompositesAsDriverValues:    false,
 		bindsNilSlicesAsEmpty:            false,
+		sendsNilSlicesAsNull:             false,
 		bindsDefinedTypesAsIs:            false,
 		bindsBytesAsBinary:               false,
 		bindsDecomposedDecimals:          false,

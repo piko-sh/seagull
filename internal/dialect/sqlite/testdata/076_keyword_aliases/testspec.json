@@ -1,0 +1,4 @@
+{
+  "description": "SQLite refuses its reserved words, such as NOTHING and NULL, as an alias unless quoted, and join keywords such as LEFT written straight after a select item, though it takes them after AS.",
+  "expectedDiagnosticCount": 3
+}

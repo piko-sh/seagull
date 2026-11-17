@@ -48,6 +48,19 @@
               }
             }
           ],
+          "Constraints": [
+            {
+              "Columns": [
+                "device_id",
+                "taken_at"
+              ],
+              "Kind": "primary-key",
+              "Name": "readings_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            }
+          ],
           "Name": "readings",
           "Origin": {
             "Filename": "001_schema.up.sql"

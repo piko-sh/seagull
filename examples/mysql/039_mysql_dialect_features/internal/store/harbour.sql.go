@@ -54,11 +54,11 @@ func (queries *Queries) BoatsWithKit(ctx context.Context, item string) ([]BoatsW
 const harbourSQL = "SELECT\n    boats.registration,\n    boats.name,\n    boats.kit,\n    boats.crossings,\n    GROUP_CONCAT(CONCAT(crew.name, ' the ', crew.`rank`) ORDER BY crew.id SEPARATOR ', ') AS crew\nFROM boats\nLEFT JOIN crew ON crew.registration = boats.registration\nGROUP BY boats.registration\nORDER BY boats.registration;"
 
 type HarbourRow struct {
-	Registration string  `json:"registration"`
-	Name         string  `json:"name"`
-	Kit          string  `json:"kit"`
-	Crossings    uint32  `json:"crossings"`
-	Crew         *string `json:"crew"`
+	Registration string       `json:"registration"`
+	Name         string       `json:"name"`
+	Kit          string       `json:"kit"`
+	Crossings    uint32       `json:"crossings"`
+	Crew         Null[string] `json:"crew"`
 }
 
 func (queries *Queries) Harbour(ctx context.Context) ([]HarbourRow, error) {
@@ -68,12 +68,16 @@ func (queries *Queries) Harbour(ctx context.Context) ([]HarbourRow, error) {
 	}
 	defer rows.Close()
 	var results []HarbourRow
-	for rows.Next() {
+	if rows.Next() {
 		var row HarbourRow
-		if err := rows.Scan(&row.Registration, &row.Name, &row.Kit, &row.Crossings, &row.Crew); err != nil {
-			return nil, err
+		scanArgs := []any{&row.Registration, &row.Name, &row.Kit, sglScanNumber(&row.Crossings), &row.Crew}
+		for more := true; more; more = rows.Next() {
+			row = HarbourRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -100,7 +104,7 @@ func (queries *Queries) ListBerths(ctx context.Context) ([]ListBerthsRow, error)
 	var results []ListBerthsRow
 	if rows.Next() {
 		var row ListBerthsRow
-		scanArgs := []any{&row.Berth, &row.Name}
+		scanArgs := []any{sglScanNumber(&row.Berth), &row.Name}
 		for more := true; more; more = rows.Next() {
 			row = ListBerthsRow{}
 			if err := rows.Scan(scanArgs...); err != nil {

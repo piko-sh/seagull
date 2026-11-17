@@ -74,7 +74,7 @@ func TestDuckDBNamespacedLifecycleKeepsToItsOwnTables(t *testing.T) {
 	requireReadingRunsNoDDL(t, database, backend)
 	harness.MigratorLifecycle(t, database, backend, widgetMigrations, harness.SettleImmediately)
 
-	require.Equal(t, []string{"acme_history", "acme_seeds"}, tableNames(t, database))
+	require.Equal(t, []string{"acme_history", "acme_migration_lock_lease", "acme_seed_lock_lease", "acme_seeds"}, tableNames(t, database))
 }
 
 func TestDuckDBMigrationRollsBackAsAUnit(t *testing.T) {
@@ -252,7 +252,7 @@ func TestDuckDBLegacyDirtyMigrationIsUpgradedAndNotResumed(t *testing.T) {
 	var recordedVersion int
 	var statementsHash string
 	require.NoError(t, database.QueryRowContext(ctx, "SELECT splitter_version, statements_hash FROM sgl_migrations WHERE version = 1").Scan(&recordedVersion, &statementsHash))
-	require.Equal(t, 1, recordedVersion)
+	require.Equal(t, 2, recordedVersion, "this release splits statements by splitter version 2")
 	require.Len(t, statementsHash, 64)
 	require.Equal(t, []harness.HistoryEntry{{Version: 1, Dirty: false, LastStatement: 1}}, harness.ReadHistory(t, database))
 }

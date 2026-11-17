@@ -61,6 +61,9 @@
           ],
           "Indexes": [
             {
+              "Columns": [
+                "category"
+              ],
               "Name": "idx_documents_category",
               "Origin": {
                 "Filename": "001_schema.up.sql",
@@ -68,6 +71,10 @@
               }
             },
             {
+              "Columns": [
+                "title"
+              ],
+              "IsUnique": true,
               "Name": "idx_documents_title",
               "Origin": {
                 "Filename": "001_schema.up.sql",

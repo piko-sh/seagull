@@ -225,6 +225,6 @@ func TestMariaDBLegacyDirtyMigrationIsUpgradedAndNotResumed(t *testing.T) {
 	var recordedVersion int
 	var statementsHash string
 	require.NoError(t, database.QueryRowContext(ctx, "SELECT splitter_version, statements_hash FROM sgl_migrations WHERE version = 1").Scan(&recordedVersion, &statementsHash))
-	assert.Equal(t, 1, recordedVersion)
+	assert.Equal(t, 2, recordedVersion, "this release splits statements by splitter version 2")
 	assert.Len(t, statementsHash, 64)
 }

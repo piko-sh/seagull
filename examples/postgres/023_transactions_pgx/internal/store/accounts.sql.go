@@ -60,12 +60,17 @@ type OpenAccountRow struct {
 }
 
 func (queries *Queries) OpenAccount(ctx context.Context, params OpenAccountParams) (OpenAccountRow, error) {
-	var row OpenAccountRow
-	err := queries.db.QueryRow(ctx, openAccountSQL, params.Owner, params.Balance).Scan(&row.ID)
+	scanned := &struct {
+		row     OpenAccountRow
+		targets [1]any
+	}{}
+	row := &scanned.row
+	scanned.targets = [1]any{&row.ID}
+	err := queries.db.QueryRow(ctx, openAccountSQL, params.Owner, params.Balance).Scan(scanned.targets[:]...)
 	if err != nil {
 		return OpenAccountRow{}, err
 	}
-	return row, nil
+	return *row, nil
 }
 
 const withdrawSQL = `UPDATE accounts SET balance = balance - $1 WHERE id = $2;`

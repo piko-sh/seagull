@@ -171,7 +171,7 @@ func TestBuiltinFunctions_DistanceAndNormFunctions(t *testing.T) {
 		"l1normalize", "l2normalize", "linfnormalize", "lpnormalize",
 		"l2distancetransposed", "cosinedistancetransposed",
 		"tuplehammingdistance", "bytehammingdistance",
-		"arrayhammingdistance", "bithammingdistance",
+		"bithammingdistance",
 	}
 	for index := range cases {
 		key := cases[index]
@@ -614,8 +614,8 @@ func TestBuiltinFunctionCatalogueKeepsEverySignature(t *testing.T) {
 		signatures += len(overloads)
 	}
 
-	require.Len(t, functions, 1442)
-	require.Equal(t, 1599, signatures)
+	require.Len(t, functions, 1416)
+	require.Equal(t, 1573, signatures)
 }
 
 func TestBuiltinFunctionsKeepTheirSpellingUnderALowerCasedKey(t *testing.T) {

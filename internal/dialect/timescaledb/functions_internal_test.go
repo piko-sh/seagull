@@ -76,8 +76,8 @@ func TestFunctionCatalogueKeepsEverySignature(t *testing.T) {
 		signatures += len(overloads)
 	}
 
-	require.Len(t, functions, 512)
-	require.Equal(t, 867, signatures)
+	require.Len(t, functions, 515)
+	require.Equal(t, 870, signatures)
 }
 
 func TestAFunctionSpecThatDidNotDecodeFailsEveryStatement(t *testing.T) {

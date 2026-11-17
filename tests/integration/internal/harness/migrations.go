@@ -91,8 +91,9 @@ func MigrationFiles(createWidgets, addColour, dropColour, clearWidgets string) f
 
 // MigratorLifecycle drives a migrator and a seeder through their whole lifecycle on a
 // database: status before the history table exists, up, validate, an up with nothing
-// pending, seed, reseed, an edited applied migration refused, and down to nothing. Settle
-// waits for a change to become visible, which an engine that applies mutations
+// pending, seed, reseed, an edited applied migration refused, and down to nothing.
+//
+// Settle waits for a change to become visible, which an engine that applies mutations
 // asynchronously needs.
 //
 // Takes database (*sql.DB) which is an empty database.

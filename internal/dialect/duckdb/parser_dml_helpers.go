@@ -30,6 +30,12 @@ import (
 // functionStructExtract is the name of the function that reads a field of a struct.
 const functionStructExtract = "struct_extract"
 
+// functionExtract is the name of the function EXTRACT(field FROM source) calls.
+const functionExtract = "extract"
+
+// functionPosition is the name of the function POSITION(substring IN string) calls.
+const functionPosition = "position"
+
 // keywordsOpeningNoCall lists the keywords a parenthesised group follows that open no
 // function call, so a comparison with the group is not a comparison with a call's result.
 var keywordsOpeningNoCall = map[string]struct{}{

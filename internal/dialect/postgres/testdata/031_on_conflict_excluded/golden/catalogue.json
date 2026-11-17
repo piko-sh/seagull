@@ -45,6 +45,18 @@
               }
             }
           ],
+          "Constraints": [
+            {
+              "Columns": [
+                "key"
+              ],
+              "Kind": "primary-key",
+              "Name": "kv_store_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            }
+          ],
           "Name": "kv_store",
           "Origin": {
             "Filename": "001_schema.up.sql"

@@ -32,10 +32,15 @@ type GetPrimitiveRow struct {
 }
 
 func (queries *Queries) GetPrimitive(ctx context.Context, id uint64) (GetPrimitiveRow, error) {
-	var row GetPrimitiveRow
-	err := queries.db.QueryRow(ctx, getprimitive, clickhouse.Named("p_id", pikoClickHouseShapedValue(id, pikoClickHouseShapes[0]))).Scan(&row.U8, &row.U16, &row.U32, &row.U64, &row.I8, &row.I16, &row.I32, &row.I64, &row.F32, &row.F64, &row.S, &row.B, &row.D, &row.Dt, &row.U)
+	scanned := &struct {
+		row     GetPrimitiveRow
+		targets [15]any
+	}{}
+	row := &scanned.row
+	scanned.targets = [15]any{&row.U8, &row.U16, &row.U32, &row.U64, &row.I8, &row.I16, &row.I32, &row.I64, &row.F32, &row.F64, &row.S, &row.B, &row.D, &row.Dt, &row.U}
+	err := queries.db.QueryRow(ctx, getprimitive, clickhouse.Named("p_id", pikoClickHouseShapedValue(id, pikoClickHouseShapes[0]))).Scan(scanned.targets[:]...)
 	if err != nil {
 		return GetPrimitiveRow{}, err
 	}
-	return row, nil
+	return *row, nil
 }

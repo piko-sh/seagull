@@ -28,6 +28,9 @@ import (
 )
 
 const (
+	// parentPathComponent names a parent directory.
+	parentPathComponent = ".."
+
 	// jsonTagKey is the struct tag key go.json_tags shapes.
 	jsonTagKey = "json"
 
@@ -57,7 +60,7 @@ var (
 	driverPattern = regexp.MustCompile(`^[a-z][a-z0-9_./-]{0,63}$`)
 
 	// locks lists the accepted migrate.lock values.
-	locks = []string{"", "advisory", "table", "none"}
+	locks = []string{"", "advisory", "table", "lease", "none"}
 
 	// nullabilities lists the accepted custom function nullable values.
 	nullabilities = []string{"", "null_on_null", "never_null", "called_on_null"}
@@ -216,7 +219,11 @@ func validateDatabase(database *Database) []string {
 		problems = append(problems, fmt.Sprintf("go.driver %q is not a driver name such as database/sql, pgx or clickhouse", database.Go.Driver))
 	}
 	if !slices.Contains(locks, database.Migrate.Lock) {
-		problems = append(problems, fmt.Sprintf("migrate.lock %q must be advisory, table or none", database.Migrate.Lock))
+		problems = append(problems, fmt.Sprintf("migrate.lock %q must be advisory, table, lease or none", database.Migrate.Lock))
+	}
+	if database.Seeds != "" && filepath.Clean(database.Seeds) == filepath.Clean(database.Migrations) {
+		problems = append(problems, fmt.Sprintf("seeds %q is the migrations directory, but seeds and migrations need directories of their own "+
+			"because a seed is named as a migration without its direction", database.Seeds))
 	}
 	if !identifierPattern.MatchString(database.Migrate.Namespace) {
 		problems = append(problems, fmt.Sprintf("migrate.namespace %q is not a valid SQL identifier", database.Migrate.Namespace))
@@ -340,7 +347,7 @@ func isInside(inner, outer string) bool {
 	if err != nil || relative == "." || filepath.IsAbs(relative) {
 		return false
 	}
-	return relative != ".." && !strings.HasPrefix(relative, ".."+string(filepath.Separator))
+	return relative != parentPathComponent && !strings.HasPrefix(relative, parentPathComponent+string(filepath.Separator))
 }
 
 // validateGeneratedFields checks the settings that shape the generated fields and the
@@ -464,10 +471,10 @@ func pathComponents(path string) []string {
 	}
 	elements := strings.Split(rest, separator)
 	parents := 0
-	for parents < len(elements) && elements[parents] == ".." {
+	for parents < len(elements) && elements[parents] == parentPathComponent {
 		parents++
 	}
-	components := []string{root + strings.Repeat(".."+separator, parents)}
+	components := []string{root + strings.Repeat(parentPathComponent+separator, parents)}
 	for _, element := range elements[parents:] {
 		if element != "" && element != "." {
 			components = append(components, element)

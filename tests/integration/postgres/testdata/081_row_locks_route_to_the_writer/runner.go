@@ -97,7 +97,7 @@ func main() {
 	owner := "ops"
 	output := results{}
 	output.record("add_jobs", func() (any, error) {
-		for _, job := range []db.AddJobParams{{ID: 1, State: "ready", Owner: &owner}, {ID: 2, State: "ready", Owner: &owner}, {ID: 3, State: "done", Owner: nil}} {
+		for _, job := range []db.AddJobParams{{ID: 1, State: "ready", Owner: db.NullOf(owner)}, {ID: 2, State: "ready", Owner: db.NullOf(owner)}, {ID: 3, State: "done", Owner: db.Null[string]{}}} {
 			if err := queries.AddJob(ctx, job); err != nil {
 				return nil, err
 			}

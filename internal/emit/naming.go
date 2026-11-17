@@ -84,6 +84,14 @@ type QueryNaming struct {
 	// runtime builder query returns, for a query whose rows can be counted.
 	CountConstant string
 
+	// FilteredConstant is the package-level constant holding the SQL a runtime builder runs
+	// once Where added a condition, for a query whose conditions filter its result rows.
+	FilteredConstant string
+
+	// FilteredCountConstant is the package-level constant holding the SQL that counts the
+	// rows FilteredConstant reads, for such a query whose rows can be counted.
+	FilteredCountConstant string
+
 	// Label is the name the query-names lookup reports for the query's SQL, such as GetUser.
 	// It labels telemetry, so it is not made unique.
 	Label string
@@ -107,6 +115,10 @@ type QueryNaming struct {
 	// AllowedColumns is the package-level variable mapping each column a runtime builder
 	// accepts to the SQL it writes for it.
 	AllowedColumns string
+
+	// FilteredColumns is the package-level variable mapping each column a runtime builder
+	// accepts to its output name, which the SQL in FilteredConstant reads it by.
+	FilteredColumns string
 
 	// OrderBy is the string type naming the columns a sortable query orders by.
 	OrderBy string

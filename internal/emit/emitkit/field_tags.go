@@ -29,12 +29,24 @@ import (
 
 	"seagull.sh/seagull/internal/emit"
 	"seagull.sh/seagull/internal/gogen/goast"
+	"seagull.sh/seagull/internal/sqlmodel"
 	"seagull.sh/seagull/internal/structtag"
 )
 
 const (
-	// omitEmptyOption leaves out values encoding/json considers empty.
-	omitEmptyOption = ",omitempty"
+	// optionSeparator separates a json tag's name and options.
+	optionSeparator = ","
+
+	// omitEmptyName names the json option that leaves out values encoding/json considers
+	// empty.
+	omitEmptyName = "omitempty"
+
+	// omitZeroName names the json option that leaves out values whose IsZero method reports
+	// zero. A NULL Null[T] is one, and omitempty never leaves it out since it is a struct.
+	omitZeroName = "omitzero"
+
+	// omitEmptyOption is the omitempty option as a json tag's value appends it.
+	omitEmptyOption = optionSeparator + omitEmptyName
 
 	// tagSeparator separates one tag of a field from the next.
 	tagSeparator = " "
@@ -71,6 +83,73 @@ func FieldTags(style *emit.Style, names []string, columnTags []map[string]string
 		tags[index] = renderTags(values, baseNames[index])
 	}
 	return tags
+}
+
+// TagForType adjusts a field's tag to its Go type. A field holding the generated Null
+// type takes omitzero in place of omitempty, so a NULL value is left out as a nil pointer
+// would be.
+//
+// Takes tag (string) which is the field's tag, without its back quotes.
+// Takes goType (sqlmodel.GoType) which is the field's Go type.
+//
+// Returns string which is the adjusted tag.
+func TagForType(tag string, goType sqlmodel.GoType) string {
+	if !sqlmodel.IsNullValue(goType) {
+		return tag
+	}
+	valueStart, valueEnd, found := jsonTagValue(tag)
+	if !found {
+		return tag
+	}
+	return tag[:valueStart] + omitZeroForOmitEmpty(tag[valueStart:valueEnd]) + tag[valueEnd:]
+}
+
+// jsonTagValue finds the quoted value of a tag's json key.
+//
+// Takes tag (string) which is the field's tag, without its back quotes.
+//
+// Returns start (int) which is the index of the value's first byte.
+// Returns end (int) which is the index of the value's closing quote.
+// Returns found (bool) which is false when the tag has no json key.
+func jsonTagValue(tag string) (start, end int, found bool) {
+	opening := structtag.JSONKey + `:"`
+	for offset := 0; offset < len(tag); {
+		index := strings.Index(tag[offset:], opening)
+		if index < 0 {
+			return 0, 0, false
+		}
+		keyStart := offset + index
+		offset = keyStart + len(opening)
+		if keyStart > 0 && tag[keyStart-1] != tagSeparator[0] {
+			continue
+		}
+		length := strings.IndexByte(tag[offset:], '"')
+		if length < 0 {
+			return 0, 0, false
+		}
+		return offset, offset + length, true
+	}
+	return 0, 0, false
+}
+
+// omitZeroForOmitEmpty swaps a json tag value's omitempty option for omitzero.
+//
+// Takes value (string) which is the json tag's value, its name and then its options.
+//
+// Returns string which is the value with omitzero, or the value as it is when it has no
+// omitempty option or already has omitzero.
+func omitZeroForOmitEmpty(value string) string {
+	parts := strings.Split(value, optionSeparator)
+	options := parts[1:]
+	if slices.Contains(options, omitZeroName) {
+		return value
+	}
+	index := slices.Index(options, omitEmptyName)
+	if index < 0 {
+		return value
+	}
+	options[index] = omitZeroName
+	return strings.Join(parts, optionSeparator)
 }
 
 // renderTags writes a field's tags: json first, then the others by key, each value's

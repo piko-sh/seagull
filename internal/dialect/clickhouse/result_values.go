@@ -62,6 +62,10 @@ const (
 	undecodableKeyMapReason = "it holds a Map keyed by %s, which clickhouse-go cannot read: it fails to decode the block, " +
 		"whatever the column is read into"
 
+	// decimalKeyedMapReason says why a value holding a Map keyed by a Decimal is refused.
+	decimalKeyedMapReason = "it holds a Map keyed by a Decimal, which clickhouse-go reads as a decimal.Decimal: " +
+		"it holds a pointer, so a lookup by an equal key misses"
+
 	// undecodableKeyMapSuggestion says how to write the query so clickhouse-go reads the
 	// value.
 	undecodableKeyMapSuggestion = "select mapKeys(m) and mapValues(m), arrays clickhouse-go reads"
@@ -153,10 +157,10 @@ func (*Dialect) UnreadableResult(sqlType sqlmodel.SQLType) (dialect.ResultProble
 	return dialect.ResultProblem{Reason: "", Suggestion: ""}, false
 }
 
-// ArrayJoinElement types the element an ARRAY JOIN unfolds a Map into: one Tuple(keys K,
-// values V) per entry, whose elements are named keys and values, as ClickHouse gives it
-// (verified on ClickHouse 25.4); a LEFT ARRAY JOIN gives an empty Map's row the tuple's
-// default value rather than NULL.
+// ArrayJoinElement finds the element type produced by ARRAY JOIN on a Map.
+//
+// Each map entry becomes Tuple(keys K, values V). A LEFT ARRAY JOIN uses the tuple's
+// default value for an empty Map, rather than NULL.
 //
 // Takes source (sqlmodel.SQLType) which is the type of the value unfolded.
 //
@@ -182,12 +186,29 @@ func (*Dialect) SelectAliasesShadowColumns() bool {
 	return true
 }
 
+// QualifiersNameAliasedTables reports that ClickHouse resolves t.a against a table t the
+// FROM clause aliases (verified on ClickHouse 26.8).
+//
+// Returns bool which is always true.
+func (*Dialect) QualifiersNameAliasedTables() bool {
+	return true
+}
+
+// CorrelatedSubqueriesNullable reports that ClickHouse types a correlated scalar subquery
+// Nullable, returning NULL for a row it matches nothing for, even from count() (verified
+// on ClickHouse 26.8).
+//
+// Returns bool which is always true.
+func (*Dialect) CorrelatedSubqueriesNullable() bool {
+	return true
+}
+
 // unreadableValue finds nested values that clickhouse-go cannot read.
 //
 // This includes unsupported wide integers in Maps and unnamed Tuples, Map keys that
 // cannot be decoded, AggregateFunction states, which neither driver decodes, and
 // Variants, which neither driver scans into the generated Go type (verified on
-// clickhouse-go v2.48 against ClickHouse 25.4).
+// clickhouse-go v2.48 against ClickHouse 25.4, and v2.51 against 26.8).
 //
 // Takes sqlType (*sqlmodel.SQLType) which is the type.
 // Takes depth (int) which is the type's depth; a part at sqlmodel.MaxTypeDepth or deeper
@@ -205,11 +226,8 @@ func unreadableValue(sqlType *sqlmodel.SQLType, depth int) (dialect.ResultProble
 		if isWideInteger(sqlType.KeyType) || isWideInteger(sqlType.ElementType) {
 			return dialect.ResultProblem{Reason: wideIntegerMapReason, Suggestion: wideIntegerMapSuggestion}, true
 		}
-		if sqlType.KeyType != nil && sqlType.KeyType.Category == sqlmodel.TypeCategoryNetwork {
-			return dialect.ResultProblem{Reason: addressKeyedMapReason, Suggestion: addressKeyedMapSuggestion}, true
-		}
-		if key, undecodable := undecodableKey(sqlType.KeyType); undecodable {
-			return dialect.ResultProblem{Reason: fmt.Sprintf(undecodableKeyMapReason, key), Suggestion: undecodableKeyMapSuggestion}, true
+		if problem, unreadable := unreadableMapKey(sqlType.KeyType); unreadable {
+			return problem, true
 		}
 		return unreadableValue(sqlType.ElementType, depth+1)
 	case sqlmodel.TypeCategoryArray:
@@ -223,6 +241,29 @@ func unreadableValue(sqlType *sqlmodel.SQLType, depth int) (dialect.ResultProble
 	default:
 		return dialect.ResultProblem{Reason: "", Suggestion: ""}, false
 	}
+}
+
+// unreadableMapKey finds a Map key type clickhouse-go cannot read: an address, a type it
+// cannot decode as a key, or a Decimal, whose value a Go map cannot key by.
+//
+// Takes key (*sqlmodel.SQLType) which is the key type, or nil.
+//
+// Returns dialect.ResultProblem which says why and how to read the value instead.
+// Returns bool which is false for a key clickhouse-go reads.
+func unreadableMapKey(key *sqlmodel.SQLType) (dialect.ResultProblem, bool) {
+	if key == nil {
+		return dialect.ResultProblem{Reason: "", Suggestion: ""}, false
+	}
+	if key.Category == sqlmodel.TypeCategoryNetwork {
+		return dialect.ResultProblem{Reason: addressKeyedMapReason, Suggestion: addressKeyedMapSuggestion}, true
+	}
+	if described, undecodable := undecodableKey(key); undecodable {
+		return dialect.ResultProblem{Reason: fmt.Sprintf(undecodableKeyMapReason, described), Suggestion: undecodableKeyMapSuggestion}, true
+	}
+	if key.Category == sqlmodel.TypeCategoryDecimal {
+		return dialect.ResultProblem{Reason: decimalKeyedMapReason, Suggestion: undecodableKeyMapSuggestion}, true
+	}
+	return dialect.ResultProblem{Reason: "", Suggestion: ""}, false
 }
 
 // unreadableTupleValue finds a value a Tuple holds that clickhouse-go fails on: a 128- or
@@ -250,8 +291,7 @@ func unreadableTupleValue(tuple *sqlmodel.SQLType, depth int) (dialect.ResultPro
 
 // undecodableKey describes a Map key type that clickhouse-go cannot decode.
 //
-// Collection keys cannot form Go map keys; Decimal keys confuse the driver's comma-based
-// type parser.
+// Collection keys cannot form Go map keys.
 //
 // Takes key (*sqlmodel.SQLType) which is the key type, or nil.
 //
@@ -268,8 +308,6 @@ func undecodableKey(key *sqlmodel.SQLType) (string, bool) {
 		return "a Tuple", true
 	case sqlmodel.TypeCategoryMap:
 		return "a Map", true
-	case sqlmodel.TypeCategoryDecimal:
-		return "a Decimal", true
 	default:
 		return "", false
 	}

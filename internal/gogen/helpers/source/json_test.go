@@ -21,9 +21,14 @@ package source
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"reflect"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -448,4 +453,141 @@ func TestScanIntoReadsNullElementsBehindPointersIntoTypesThatHoldThem(t *testing
 	var wide []textDecimal
 	require.NoError(t, sglScanInto(&wide).Scan([]byte(`[1e400]`)))
 	require.Equal(t, []textDecimal{"1e400"}, wide)
+}
+
+func BenchmarkJSONColumn(b *testing.B) {
+	for _, size := range []int{10, 100, 1000} {
+		raw := []byte("[" + strings.Repeat("123,", size-1) + "123]")
+		b.Run(fmt.Sprintf("Integers%d", size), func(b *testing.B) {
+			b.ReportAllocs()
+			for b.Loop() {
+				var values []int64
+				if err := sglScanInto(&values).Scan(raw); err != nil {
+					b.Fatal(err)
+				}
+			}
+		})
+	}
+}
+
+func TestJSONColumnAllocationBudget(t *testing.T) {
+	raw := []byte("[" + strings.Repeat("123,", 999) + "123]")
+	allocations := testing.AllocsPerRun(20, func() {
+		var values []int64
+		if err := sglScanInto(&values).Scan(raw); err != nil {
+			panic(err)
+		}
+	})
+	require.LessOrEqual(t, allocations, 20.0, "allocations decoding 1000 integers")
+}
+
+var errUnsupportedDocument = errors.New("unsupported document")
+
+var jsonDecodeCalls int
+
+type countedJSON int
+
+func (*countedJSON) UnmarshalJSON(raw []byte) error {
+	jsonDecodeCalls++
+	if string(raw) == "1" {
+		return nil
+	}
+	return fmt.Errorf("%w %s", errUnsupportedDocument, raw)
+}
+
+func TestJSONFastPathPreservesCustomDecoderCalls(t *testing.T) {
+	for _, testCase := range []struct {
+		raw   string
+		calls int
+		fails bool
+	}{
+		{raw: "1", calls: 1, fails: false},
+		{raw: "2", calls: 2, fails: true},
+		{raw: "null", calls: 2, fails: true},
+		{raw: "1 2", calls: 0, fails: true},
+		{raw: "nul", calls: 0, fails: true},
+	} {
+		jsonDecodeCalls = 0
+		var value countedJSON
+		err := sglScanInto(&value).Scan([]byte(testCase.raw))
+		require.Equal(t, testCase.fails, err != nil, "%s: err=%v", testCase.raw, err)
+		require.Equal(t, testCase.calls, jsonDecodeCalls, testCase.raw)
+	}
+}
+
+type nullDocument struct {
+	Name  *string  `json:"name"`
+	Score int64    `json:"score"`
+	Tags  []string `json:"tags"`
+}
+
+type recursiveList []recursiveList
+
+type recursiveRefusing []*recursiveRefusing
+
+func TestJSONRefusesNullsFollowsElementsAndValues(t *testing.T) {
+	for _, testCase := range []struct {
+		target  reflect.Type
+		refuses bool
+	}{
+		{target: reflect.TypeFor[int64](), refuses: false},
+		{target: reflect.TypeFor[nullDocument](), refuses: false},
+		{target: reflect.TypeFor[*nullDocument](), refuses: false},
+		{target: reflect.TypeFor[[]*int64](), refuses: false},
+		{target: reflect.TypeFor[[]any](), refuses: false},
+		{target: reflect.TypeFor[map[string]*string](), refuses: false},
+		{target: reflect.TypeFor[[][]*int64](), refuses: false},
+		{target: reflect.TypeFor[[]JSON](), refuses: true},
+		{target: reflect.TypeFor[[]countedJSON](), refuses: false},
+		{target: reflect.TypeFor[recursiveList](), refuses: false},
+		{target: reflect.TypeFor[recursiveRefusing](), refuses: false},
+		{target: reflect.TypeFor[[]int64](), refuses: true},
+		{target: reflect.TypeFor[*[]int64](), refuses: true},
+		{target: reflect.TypeFor[[3]string](), refuses: true},
+		{target: reflect.TypeFor[map[string]float64](), refuses: true},
+		{target: reflect.TypeFor[[]nullDocument](), refuses: true},
+		{target: reflect.TypeFor[[][]int64](), refuses: true},
+		{target: reflect.TypeFor[[]*[]int64](), refuses: true},
+		{target: reflect.TypeFor[map[string][]bool](), refuses: true},
+	} {
+		assert.Equal(t, testCase.refuses, sglJSONRefusesNulls(testCase.target), testCase.target.String())
+	}
+}
+
+func TestJSONColumnWithNullsDecodesOnceWhenNoNullCanBeRefused(t *testing.T) {
+	raw := []byte(`{"name":null,"score":3,"tags":null}`)
+	var warm nullDocument
+	require.NoError(t, sglScanInto(&warm).Scan(raw))
+	allocations := testing.AllocsPerRun(50, func() {
+		var document nullDocument
+		if err := sglScanInto(&document).Scan(raw); err != nil {
+			panic(err)
+		}
+	})
+	require.LessOrEqual(t, allocations, 6.0, "allocations decoding a struct with null fields")
+}
+
+func TestJSONColumnStillRefusesANullElementAfterTheFastPath(t *testing.T) {
+	var values []int64
+	require.Error(t, sglScanInto(&values).Scan([]byte(`[1,null]`)), "a null element read into []int64 was accepted")
+
+	var pointers []*int64
+	require.NoError(t, sglScanInto(&pointers).Scan([]byte(`[1,null]`)))
+	require.Len(t, pointers, 2)
+	require.Nil(t, pointers[1])
+
+	var documents []*nullDocument
+	require.NoError(t, sglScanInto(&documents).Scan([]byte(`[null,{"name":null}]`)))
+	require.Len(t, documents, 2)
+}
+
+func BenchmarkJSONColumnWithNullFields(b *testing.B) {
+	raw := []byte(`{"name":null,"score":3,"tags":["a","b"]}`)
+	b.ReportAllocs()
+	for b.Loop() {
+		var document nullDocument
+		if err := sglScanInto(&document).Scan(raw); err != nil {
+			b.Fatal(err)
+		}
+	}
 }

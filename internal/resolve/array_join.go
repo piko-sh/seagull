@@ -292,3 +292,25 @@ func unfoldColumns(columns []ast.ScopedColumn, unfolds func(string) bool,
 	}
 	return unfolded
 }
+
+// isArrayJoinElement reports whether a column names an ARRAY JOIN element.
+//
+// The element is read by its alias alone. The alias does not name a relation, so
+// alias.alias resolves to nothing.
+//
+// Takes alias (string) which is the relation the column resolved in.
+// Takes column (string) which is the column's name.
+//
+// Returns bool which is true for the element of an ARRAY JOIN alias in the scope or a
+// scope it is nested in.
+func (s *ScopeChain) isArrayJoinElement(alias, column string) bool {
+	for scope := s; scope != nil; scope = scope.parent {
+		hidden := scope.hidden[scope.Key(alias)]
+		for index := range hidden {
+			if scope.rules.Identifiers.Equal(hidden[index].Name, column) && scope.rules.Identifiers.Equal(alias, column) {
+				return true
+			}
+		}
+	}
+	return false
+}

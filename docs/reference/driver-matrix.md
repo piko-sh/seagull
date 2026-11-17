@@ -19,7 +19,7 @@ connections it can open for migrations and introspection.
 | `execresult` | `sql.Result`; refused on ClickHouse | `pgconn.CommandTag` | Refused |
 | `batch` | Multi-row INSERT, or one statement per item for a trailing clause | One statement per item in `pgx.Batch` | Native batch or multi-row INSERT |
 | `copyfrom` | Multi-row INSERT; returns `error` | COPY; returns `(int64, error)` | Native batch; returns `error` |
-| `kind: slice` | Expands an IN list; ClickHouse uses an Array parameter | Binds an array to `= ANY($1)` | Uses an Array parameter |
+| `kind: slice` | Expands an IN list; PostgreSQL-family lists of text, integers or booleans bind one array to `= ANY($1)`; ClickHouse uses an Array parameter | Binds an array to `= ANY($1)` | Uses an Array parameter |
 | `prepared.go` | With `go.prepared: true`, except ClickHouse | Unavailable | Unavailable |
 | Runtime builder | Supported | Supported | Supported |
 | `NewWithReplica` | Supported | Unavailable | Unavailable |

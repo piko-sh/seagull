@@ -64,7 +64,7 @@ func main() {
 		CustomerID: int32(1),
 		Total:      int32(5000),
 		Status:     "confirmed",
-		Notes:      &noteText,
+		Notes:      db.NullOf(noteText),
 	})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -75,7 +75,7 @@ func main() {
 		CustomerID: int32(1),
 		Total:      int32(3000),
 		Status:     "pending",
-		Notes:      nil,
+		Notes:      db.Null[string]{},
 	})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -86,7 +86,7 @@ func main() {
 		CustomerID: int32(2),
 		Total:      int32(7500),
 		Status:     "shipped",
-		Notes:      nil,
+		Notes:      db.Null[string]{},
 	})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)

@@ -1,0 +1,4 @@
+{
+  "description": "A column PRIMARY KEY or KEY gives the column no default, so an insert must name it (error 1364 otherwise). AUTO_INCREMENT, SERIAL and an explicit DEFAULT do give it one.",
+  "expectedDiagnosticCount": 0
+}

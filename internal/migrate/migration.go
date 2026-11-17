@@ -22,6 +22,11 @@ import (
 	"time"
 )
 
+// InterruptedRollback is the statements digest an executor records on a migration's
+// history row while its down migration runs outside a transaction. A row left dirty with
+// it records a rollback that stopped part-way, which no up migration may resume over.
+const InterruptedRollback = "interrupted-rollback"
+
 // AppliedMigration represents a migration that has been applied to the database, as
 // recorded in the migration history table. It is part of the ExecutorPort contract, which
 // is allowed to gain fields in a minor release.

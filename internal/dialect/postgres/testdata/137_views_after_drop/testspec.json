@@ -1,0 +1,4 @@
+{
+  "description": "PostgreSQL refuses to drop a table a view reads, and DROP ... CASCADE drops the views that read it, and the views that read those, with it.",
+  "expectedDiagnosticCount": 1
+}

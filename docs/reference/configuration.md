@@ -73,7 +73,7 @@ databases:
               validate: "required,email"
     migrate:
       dsn: ${env:DATABASE_URL}
-      lock: advisory              # advisory | table | none
+      lock: advisory              # advisory | table | lease | none
 ```
 
 ## Top level
@@ -149,10 +149,11 @@ Each entry declares one function, typed as the analyser types a built-in:
 | `interface.enabled` | boolean | `true` | Generate `querier_interface.go`, an interface listing the method of every query, which `Queries` implements. Default `false`. See [generated Go](generated-go.md#querier_interfacego). |
 | `interface.name` | string | `Store` | The interface's name, default `Querier`: a Go identifier the package declares no other way. A name it already declares, such as `Queries` or `New`, is a configuration error; a model whose table has the name gives way to it (`Querier2`). |
 | `json_tags.case` | string | `camel` | Write the name in the `json` tag of every generated field that holds a column, in the models and in the rows, in `snake`, `camel` or `pascal` case. Unset, the default, writes the column's name as it is written. |
-| `json_tags.omitempty` | boolean | `true` | Add the `omitempty` option to those `json` tags. Default `false`. |
+| `json_tags.omitempty` | boolean | `true` | Add the `omitempty` option to those `json` tags, or `omitzero` to the tag of a `Null` field, which leaves out a NULL value. Default `false`. |
 | `json_tags.omit` | boolean | `true` | Leave the `json` tags out. Default `false`. |
 | `struct_tags` | map | `{db: "{name}"}` | Struct tags every generated field that holds a column carries after its `json` tag, by key: `db: "{name}"` gives `db:"author_id"`. In each value, `{name}` stands for the name the `json` tag is made from, the column's name made safe for a tag and unique in its struct, whatever `json_tags.case` says. A column's own struct tags, from a column override or a [`sgl.column` directive](directives.md#type-override-sglcolumn), take precedence key by key. `json` is not allowed here; `json_tags` shapes it. |
 | `empty_slices` | boolean | `true` | Make a `many` method, and a runtime builder's `All`, return an empty slice rather than `nil` when no row matches, so `encoding/json` writes `[]` rather than `null`. Default `false`. |
+| `nullable_pointers` | boolean | `true` | Write a nullable value as a pointer, `*T`, rather than as the generated `Null[T]` value type (see [NULL values](type-mapping.md#null-values)). A pointer costs an allocation for every non-NULL value a row reads. Default `false`. |
 | `doc_comments` | boolean | `true` | Write doc comments from the SQL: a query's description, the prose comment lines of its header, on its method (and on the interface's method), and a table's or a column's comment on its model or field, as `COMMENT ON TABLE` and `COMMENT ON COLUMN` give them (PostgreSQL, CockroachDB, TimescaleDB and DuckDB) or a `COMMENT` clause does (MySQL, MariaDB and ClickHouse). Default `false`. |
 | `wrap_errors` | boolean | `true` | Wrap every error a generated method returns with a label naming the method, as `fmt.Errorf("%s: %w", label, err)` does, so a timeout or syntax error says which query met it while `errors.Is` and `errors.As` still find the error beneath; see [labelled errors](generated-go.md#labelled-errors-wraperrors). Default `false`. |
 | `reuse_models` | boolean | `true` | Read the rows of every query whose rows are a table's model into the model rather than a Row struct of the query's own: a query that reads only that table's columns, whose Row struct would have the model's fields, by name, of the same Go types and with the same struct tags, in any order, such as `SELECT * FROM users`. A query's own `model:` or `row:` keyword takes precedence; see [directives](directives.md#rows-read-into-a-model-or-a-shared-row-type). Default `false`. |
@@ -171,7 +172,7 @@ Each entry declares one function, typed as the analyser types a built-in:
 
 A Go type is written `import/path.Name`, such as `github.com/shopspring/decimal.Decimal`
 or `encoding/json.RawMessage`, or as a built-in such as `string` or `[]byte`. Name the
-value type: a nullable column becomes a pointer to it automatically, and a leading `*` is
+value type: a nullable column becomes a `Null` of it automatically, and a leading `*` is
 refused. A qualified name must be exported, and the generated code imports the package
 under the name its path implies (see [changing a type](type-mapping.md#changing-a-type)),
 or the one `types.package_names` gives. Composite types such as `map[string]int` are
@@ -226,7 +227,7 @@ against it before the setting existed generate the same code; see
 | `dsn` | string | `${env:DATABASE_URL}` | Connection string. `sgl migrate`, `sgl seed` and `sgl schema diff` take `--dsn`, then `$SGL_DATABASE_URL`, then this value. Supports `${env:NAME}`. A relative SQLite path here resolves against the directory of `sgl.yaml`; one given in `--dsn` or `$SGL_DATABASE_URL` resolves against the working directory. |
 | `namespace` | string | `app` | Prefix for persisted names: `<ns>_migrations`, `<ns>_seeds` and the lock tables and keys. A SQL identifier of letters, digits and underscores. Default `sgl`. |
 | `history_table` | string | `schema_history` | Rename the migration history table, `<ns>_migrations` by default. The migration lock is keyed on this name. |
-| `lock` | string | `table` | `advisory` (default where supported), `table` (for PgBouncer in transaction mode, and the default for CockroachDB) or `none`. SQLite, ClickHouse and DuckDB take no lock, so only `none` applies to them. See [migration runtime](migration-runtime.md). |
+| `lock` | string | `table` | `advisory` (default where supported), `table` (for PgBouncer in transaction mode, and the default for CockroachDB), `lease` (a lease row in a lock table, the default for SQLite and DuckDB) or `none`. ClickHouse takes no lock, so only `none` applies to it. See [migration runtime](migration-runtime.md). |
 
 ## Environment expansion
 

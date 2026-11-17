@@ -682,3 +682,25 @@ func TestListMigrationFilesLeavesOutFilesNoReaderCanLoad(t *testing.T) {
 		})
 	}
 }
+
+func TestReadMigrationFilesVersionedRefusesAMigrationLookAlike(t *testing.T) {
+	t.Parallel()
+
+	for _, name := range []string{"0002_upper.UP.SQL", "0004-dash.up.sql", "0006_no_direction.sql", "v9_prefix.up.sql", "0012_ok.Up.sql"} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			files := fstest.MapFS{"migrations/0001_ok.up.sql": {Data: []byte("SELECT 1;\n")}, "migrations/" + name: {Data: []byte("SELECT 2;\n")}}
+
+			_, err := ReadMigrationFilesVersioned(t.Context(), NewFSReader(files, 1<<20, 100), "migrations")
+
+			require.ErrorIs(t, err, errMisnamedMigration)
+		})
+	}
+
+	files := fstest.MapFS{"migrations/0001_ok.up.sql": {Data: []byte("SELECT 1;\n")}, "migrations/schema.sql": {Data: []byte("SELECT 2;\n")},
+		"migrations/0002_ok.up.sql.bak": {Data: []byte("SELECT 3;\n")}}
+	read, err := ReadMigrationFilesVersioned(t.Context(), NewFSReader(files, 1<<20, 100), "migrations")
+	require.NoError(t, err)
+	require.Len(t, read, 1)
+}

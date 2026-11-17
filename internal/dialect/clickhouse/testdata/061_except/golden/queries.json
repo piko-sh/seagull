@@ -19,6 +19,9 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Compound": true
+    },
     "SQL": "-- sgl.query(InAOnly, many)\nSELECT id FROM a EXCEPT SELECT id FROM b;",
     "Template": "SELECT id FROM a EXCEPT SELECT id FROM b;"
   }

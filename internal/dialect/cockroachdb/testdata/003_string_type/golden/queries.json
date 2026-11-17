@@ -95,6 +95,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        1
+      ]
+    },
     "SQL": "-- sgl.query(name: ListDocuments, command: many)\nSELECT id, title FROM documents ORDER BY title;",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1:title⟩ FROM documents ORDER BY title;"
   }

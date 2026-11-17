@@ -1,0 +1,93 @@
+[
+  {
+    "Command": "many",
+    "Filename": "unions.sql",
+    "Line": 1,
+    "Name": "NullSecond",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "scores",
+        "SourceTable": "scores"
+      },
+      {
+        "Name": "score",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "score",
+        "SourceQualifier": "scores",
+        "SourceTable": "scores"
+      }
+    ],
+    "ReadOnly": true,
+    "ResultShape": {
+      "Compound": true
+    },
+    "SQL": "-- sgl.query(NullSecond, many)\nSELECT id, score FROM scores UNION ALL SELECT id, NULL FROM peers;",
+    "Template": "SELECT id, score FROM scores UNION ALL SELECT id, NULL FROM peers;"
+  },
+  {
+    "Command": "many",
+    "Filename": "unions.sql",
+    "Line": 4,
+    "Name": "NullFirst",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "peers",
+        "SourceTable": "peers"
+      },
+      {
+        "Name": "score",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "ResultShape": {
+      "Compound": true
+    },
+    "SQL": "-- sgl.query(NullFirst, many)\nSELECT id, NULL AS score FROM peers UNION ALL SELECT id, score FROM scores;",
+    "Template": "SELECT id, NULL AS score FROM peers UNION ALL SELECT id, score FROM scores;"
+  },
+  {
+    "Command": "many",
+    "Filename": "unions.sql",
+    "Line": 7,
+    "Name": "CaseElseNull",
+    "OutputColumns": [
+      {
+        "Name": "positive",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(CaseElseNull, many)\nSELECT CASE WHEN score \u003e 0 THEN score ELSE NULL END AS positive FROM scores;",
+    "Template": "SELECT ⟨c0 aliased:CASE WHEN score \u003e 0 THEN score ELSE NULL END⟩ AS positive FROM scores;"
+  }
+]

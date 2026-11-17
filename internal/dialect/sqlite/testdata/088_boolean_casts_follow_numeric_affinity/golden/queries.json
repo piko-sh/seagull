@@ -1,0 +1,46 @@
+[
+  {
+    "Command": "many",
+    "Filename": "readings.sql",
+    "Line": 1,
+    "Name": "ReadingFlags",
+    "OutputColumns": [
+      {
+        "Name": "flag",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "boolean"
+        },
+        "SourceColumn": "flag",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "wrapped",
+        "SQLType": {
+          "Category": "boolean",
+          "EngineName": "boolean"
+        },
+        "SourceColumn": "flag",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      },
+      {
+        "Name": "cast_amount",
+        "SQLType": {
+          "Category": "decimal",
+          "EngineName": "numeric"
+        }
+      },
+      {
+        "Name": "mixed",
+        "SQLType": {
+          "Category": "unknown"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ReadingFlags, many)\nSELECT flag, (flag) AS wrapped, CAST(amount AS BOOLEAN) AS cast_amount, COALESCE(CAST(amount AS BOOLEAN), flag) AS mixed\nFROM readings;",
+    "Template": "SELECT ⟨c0:flag⟩, ⟨c1 aliased:(flag)⟩ AS wrapped, ⟨c2 aliased:CAST(amount AS BOOLEAN)⟩ AS cast_amount, ⟨c3 aliased:COALESCE(CAST(amount AS BOOLEAN), flag)⟩ AS mixed\\nFROM readings;"
+  }
+]

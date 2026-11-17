@@ -34,12 +34,15 @@ import (
 // panicked, so the stack is reported once here and never needs to travel on an error.
 //
 // A context that cannot be read, such as one whose Value panics, does not stop the
-// record: it is written through the process default logger instead.
+// record. It is written through the process default logger instead.
 //
 // Takes operation (string) which names the work that panicked.
 // Takes recovered (any) which is the value recover returned.
 func LogRecoveredPanic(ctx context.Context, operation string, recovered any) {
-	logger, readable := loggerOf(ctx)
+	logger, readable := boundLogger(ctx)
+	if logger == nil {
+		logger = slog.Default()
+	}
 	recordContext := ctx
 	if !readable {
 		recordContext = context.Background()

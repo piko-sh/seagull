@@ -127,10 +127,15 @@ type SeatsFreeRow struct {
 }
 
 func (queries *Queries) SeatsFree(ctx context.Context, sailingID uint64) (SeatsFreeRow, error) {
-	var row SeatsFreeRow
-	err := queries.db.QueryRow(ctx, seatsFreeSQL, clickhouse.Named("p_sailing_id", sglClickHouseShapedValue(sailingID, sglClickHouseShapes[0]))).Scan(&row.SeatsFree)
+	scanned := &struct {
+		row     SeatsFreeRow
+		targets [1]any
+	}{}
+	row := &scanned.row
+	scanned.targets = [1]any{&row.SeatsFree}
+	err := queries.db.QueryRow(ctx, seatsFreeSQL, clickhouse.Named("p_sailing_id", sglClickHouseShapedValue(sailingID, sglClickHouseShapes[0]))).Scan(scanned.targets[:]...)
 	if err != nil {
 		return SeatsFreeRow{}, err
 	}
-	return row, nil
+	return *row, nil
 }

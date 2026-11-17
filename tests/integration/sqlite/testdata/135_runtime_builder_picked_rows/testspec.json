@@ -1,0 +1,3 @@
+{
+  "description": "A runtime builder over a query with its own LIMIT applies Where, OrderBy, Limit, Offset and Count to the rows the query returns."
+}

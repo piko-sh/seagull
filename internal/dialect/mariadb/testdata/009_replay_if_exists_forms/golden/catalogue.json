@@ -24,7 +24,6 @@
             },
             {
               "GeneratedKind": "none",
-              "HasDefault": true,
               "Name": "id",
               "Origin": {
                 "Filename": "001_schema.up.sql"

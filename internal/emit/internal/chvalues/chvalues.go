@@ -53,14 +53,14 @@ var (
 	// Helpers lists the helper-prefix suffixes of the identifiers the value helper's file
 	// declares, so an emitter can reserve them.
 	Helpers = []string{
-		"ClickHouseComposite", "ClickHouseEpoch", "ClickHouseFollow", "ClickHouseHasText",
+		"ClickHouseComposite", "ClickHouseEpoch", "ClickHouseFollow", "ClickHouseHasText", "ClickHouseHoldsNull",
 		"ClickHouseIsNumber", "ClickHouseIsNumberText", "ClickHouseMaxDepth", "ClickHouseMethods",
 		"ClickHouseMoment", "ClickHouseNanosecondDigits", "ClickHouseDigitGroup", "ClickHouseReadElement",
 		"ClickHouseNumber", "ClickHouseParseShape", "ClickHouseQuotedEscaper", "ClickHouseReadElements",
 		"ClickHouseReadName", "ClickHouseReadShape", "ClickHouseRefusalCleaner", "ClickHouseResolve",
 		"ClickHouseScalar", "ClickHouseShape", "ClickHouseText", "ClickHouseTextEscaper", "ClickHouseTime",
 		"ClickHouseTupleElements", "ClickHouseUnsigned", "ClickHouseValue", "ClickHouseWhole",
-		"ClickHouseAddress", "ClickHouseShapes", "ClickHouseShapedValue",
+		"ClickHouseAddress", "ClickHouseShapes", "ClickHouseShapedValue", "ClickHouseFloatValue", "ClickHouseNumberText", "ClickHouseFloatBits",
 		"ClickHouseAppendElement", "ClickHouseAppendNumber", "ClickHouseAppendComposite",
 		"ClickHouseAppendArray", "ClickHouseAppendMap", "ClickHouseAppendTuple",
 	}

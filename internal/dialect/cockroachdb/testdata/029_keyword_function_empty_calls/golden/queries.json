@@ -1,0 +1,89 @@
+[
+  {
+    "Command": "one",
+    "Filename": "clock.sql",
+    "Line": 1,
+    "Name": "EmptyCalls",
+    "OutputColumns": [
+      {
+        "Name": "today",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        }
+      },
+      {
+        "Name": "time_with_zone",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timetz",
+          "Temporal": "time",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "stamp_with_zone",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "local_time",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "time",
+          "Temporal": "time"
+        }
+      },
+      {
+        "Name": "local_stamp",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp",
+          "Temporal": "timestamp"
+        }
+      },
+      {
+        "Name": "who",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "session_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Name": "schema_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: EmptyCalls, command: one)\nSELECT current_date() AS today, current_time() AS time_with_zone, current_timestamp() AS stamp_with_zone,\n       localtime() AS local_time, localtimestamp() AS local_stamp, current_user() AS who, session_user() AS session_name,\n       current_schema() AS schema_name\nFROM events WHERE id = $1;",
+    "Template": "SELECT ⟨c0 aliased:current_date()⟩ AS today, ⟨c1 aliased:current_time()⟩ AS time_with_zone, ⟨c2 aliased:current_timestamp()⟩ AS stamp_with_zone,\\n       ⟨c3 aliased:localtime()⟩ AS local_time, ⟨c4 aliased:localtimestamp()⟩ AS local_stamp, ⟨c5 aliased:current_user()⟩ AS who, ⟨c6 aliased:session_user()⟩ AS session_name,\\n       ⟨c7 aliased:current_schema()⟩ AS schema_name\\nFROM events WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

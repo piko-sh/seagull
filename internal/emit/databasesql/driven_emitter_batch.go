@@ -20,17 +20,23 @@ package databasesql
 
 import (
 	"go/ast"
+	"slices"
 
 	"seagull.sh/seagull/internal/dialect"
 	"seagull.sh/seagull/internal/emit/emitkit"
 	"seagull.sh/seagull/internal/emit/internal/multirow"
 	"seagull.sh/seagull/internal/gogen"
+	"seagull.sh/seagull/internal/gogen/methods"
 	"seagull.sh/seagull/internal/sqlmodel"
 )
 
 // batchMethod builds a batch or copyfrom INSERT method that repeats VALUES rows within
-// the dialect and driver bind limits. Queries with clauses after VALUES run once per row
-// to preserve upsert behaviour when keys repeat.
+// the dialect and driver bind limits.
+//
+// Queries with clauses after VALUES run once per row to preserve upsert behaviour when
+// keys repeat. When the method owns its connection, a plain INSERT on DuckDB appends its
+// rows through the appender instead, as appendsThroughDuckDB says, and one on ClickHouse
+// through clickhouse-go's batch insert, as batchesThroughClickHouse says.
 //
 // Takes query (*gogen.Query) which is the query being generated.
 //
@@ -39,6 +45,7 @@ import (
 func (s *sqlDriver) batchMethod(query *gogen.Query) (ast.Decl, error) {
 	spec := &multirow.Spec{
 		Bind: func(access ast.Expr, parameter *sqlmodel.QueryParameter, name ast.Expr) ast.Expr {
+			access = methods.NonNilAccess(&s.driver().Connection, s.vocabulary, query, parameter, access)
 			access = s.profile.enums.Bound(access, query.Analysed, parameter, query.Types, s.vocabulary)
 			if name == nil {
 				return s.Bind(access, parameter, query.Imports)
@@ -53,6 +60,18 @@ func (s *sqlDriver) batchMethod(query *gogen.Query) (ast.Decl, error) {
 	method, err := multirow.Method(query, spec)
 	if err != nil {
 		return nil, err
+	}
+	row, err := emitkit.RowTemplate(query.Analysed, query.Renderer)
+	if err != nil {
+		return nil, err
+	}
+	chunk := chunkRows(spec.Limit, len(row.Arguments))
+	if target := s.appendsThroughDuckDB(query, &row, spec.PerRow); target != nil {
+		s.appendsDuckDB = true
+		method.Body.List = slices.Insert(method.Body.List, 1, s.appendingStatement(query, &row, target, chunk))
+	} else if columns := s.batchesThroughClickHouse(query, &row, spec.PerRow); columns != nil {
+		s.batchesClickHouse = true
+		method.Body.List = slices.Insert(method.Body.List, 1, s.batchingStatement(query, columns, chunk))
 	}
 	return method, nil
 }

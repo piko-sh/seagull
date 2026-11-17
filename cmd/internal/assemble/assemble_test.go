@@ -390,6 +390,7 @@ func TestPreset(t *testing.T) {
 	require.Equal(t, seagull.JSONTags{}, keeping.JSONTags)
 	require.Nil(t, keeping.StructTags)
 	require.False(t, keeping.EmptySlices)
+	require.False(t, keeping.NullablePointers, "nullable values are Null[T] unless go.nullable_pointers keeps pointers")
 	require.False(t, keeping.DocComments)
 	require.False(t, keeping.ReuseModels)
 	require.False(t, keeping.WrapErrors, "generated errors are returned unwrapped unless go.wrap_errors says otherwise")
@@ -398,6 +399,7 @@ func TestPreset(t *testing.T) {
 	configured.Go.JSONTags = config.JSONTags{Case: "camel", Omit: false, OmitEmpty: true}
 	configured.Go.StructTags = map[string]string{"db": "{name}"}
 	configured.Go.EmptySlices = true
+	configured.Go.NullablePointers = true
 	configured.Go.DocComments = true
 	configured.Go.ReuseModels = true
 	configured.Go.WrapErrors = true
@@ -407,6 +409,7 @@ func TestPreset(t *testing.T) {
 	require.Equal(t, seagull.JSONTags{Case: seagull.JSONCaseCamel, Omit: false, OmitEmpty: true}, shaped.JSONTags)
 	require.Equal(t, map[string]string{"db": "{name}"}, shaped.StructTags)
 	require.True(t, shaped.EmptySlices)
+	require.True(t, shaped.NullablePointers)
 	require.True(t, shaped.DocComments)
 	require.True(t, shaped.ReuseModels)
 	require.True(t, shaped.WrapErrors)

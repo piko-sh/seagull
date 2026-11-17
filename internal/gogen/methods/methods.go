@@ -43,6 +43,12 @@ const (
 
 	// identInt64 is the type an execrows method returns its count as.
 	identInt64 = "int64"
+
+	// identScanned is the local holding a one-row method's row and scan destinations.
+	identScanned = "scanned"
+
+	// fieldTargets is the field of the scanned block holding the scan's destinations.
+	fieldTargets = "targets"
 )
 
 var (
@@ -320,7 +326,7 @@ func buildOneMethod(emission *gogen.Emission, query *gogen.Query, prelude *Prelu
 	failure := goastutil.ReturnStmt(zeroRow(row), goastutil.CachedIdent(goast.IdentErr))
 	statements = append(statements, scanOneStatements(emission, query, queryRowCall, failure, BuildErrCheck(zeroRow(row)))...)
 	statements = append(statements, BuildEmbedNilCheckStatements(query)...)
-	statements = append(statements, goastutil.ReturnStmt(goastutil.CachedIdent(goast.IdentRow), goastutil.CachedIdent(goast.IdentNil)))
+	statements = append(statements, goastutil.ReturnStmt(scannedRow(emission), goastutil.CachedIdent(goast.IdentNil)))
 
 	return methodDecl(query, goastutil.FieldList(
 		goastutil.Field("", goastutil.CachedIdent(row)),
@@ -330,6 +336,9 @@ func buildOneMethod(emission *gogen.Emission, query *gogen.Query, prelude *Prelu
 
 // scanOneStatements returns the statements that declare the row, allocate its outer
 // embeds, scan the one row into it, and check the error.
+//
+// For a driver whose QueryRow returns an interface, the row and the scan's destinations
+// are allocated together as one block, so a call allocates once rather than twice.
 //
 // Takes emission (*gogen.Emission) which names the scan adapter.
 // Takes query (*gogen.Query) which is the query.
@@ -342,17 +351,67 @@ func scanOneStatements(emission *gogen.Emission, query *gogen.Query, queryRowCal
 	embedStatements := BuildEmbedPreAllocStatements(query)
 	scan := BuildScan(emission, query)
 	statements := make([]ast.Stmt, 0, 2+len(embedStatements)+len(scan.Declarations)+len(errorChecks)+len(scan.Conversions)+len(scan.Checked))
-	statements = append(statements, goastutil.VarDecl(goast.IdentRow, goastutil.CachedIdent(query.Naming.Row)))
-	statements = append(statements, embedStatements...)
-	statements = append(statements, scan.Declarations...)
-	statements = append(statements,
-		goastutil.DefineStmt(goast.IdentErr,
-			goastutil.CallExpr(goastutil.SelectorExprFrom(queryRowCall, "Scan"), scan.Arguments...),
-		),
-	)
+	if emission.Driver.Connection.RowIsInterface {
+		statements = appendBlockScan(statements, query, queryRowCall, &scan, embedStatements)
+	} else {
+		statements = append(statements, goastutil.VarDecl(goast.IdentRow, goastutil.CachedIdent(query.Naming.Row)))
+		statements = append(statements, embedStatements...)
+		statements = append(statements, scan.Declarations...)
+		statements = append(statements,
+			goastutil.DefineStmt(goast.IdentErr,
+				goastutil.CallExpr(goastutil.SelectorExprFrom(queryRowCall, "Scan"), scan.Arguments...),
+			),
+		)
+	}
 	statements = append(statements, errorChecks...)
 	statements = append(statements, scan.Conversions...)
 	return append(statements, scan.CheckedConversions(failure)...)
+}
+
+// appendBlockScan appends the statements that allocate a one-row method's row and scan
+// destinations as one block, point row into it and scan the row through the block's
+// destinations.
+//
+// Takes statements ([]ast.Stmt) which holds the statements so far.
+// Takes query (*gogen.Query) which is the query.
+// Takes queryRowCall (ast.Expr) which is the QueryRow call.
+// Takes scan (*Scan) which holds the scan's destinations and declarations.
+// Takes embedStatements ([]ast.Stmt) which allocate the row's outer embeds.
+//
+// Returns []ast.Stmt which holds the statements with the scan appended.
+func appendBlockScan(statements []ast.Stmt, query *gogen.Query, queryRowCall ast.Expr, scan *Scan, embedStatements []ast.Stmt) []ast.Stmt {
+	targetsType := &ast.ArrayType{Len: goastutil.IntLit(len(scan.Arguments)), Elt: goastutil.CachedIdent(goast.IdentAny)}
+	block := &ast.StructType{Fields: goastutil.FieldList(
+		goastutil.Field(goast.IdentRow, goastutil.CachedIdent(query.Naming.Row)),
+		goastutil.Field(fieldTargets, targetsType),
+	)}
+	statements = append(statements,
+		goastutil.DefineStmt(identScanned, &ast.UnaryExpr{Op: token.AND, X: &ast.CompositeLit{Type: block}}),
+		goastutil.DefineStmt(goast.IdentRow, &ast.UnaryExpr{Op: token.AND, X: goastutil.SelectorExpr(identScanned, goast.IdentRow)}),
+	)
+	statements = append(statements, embedStatements...)
+	statements = append(statements, scan.Declarations...)
+	return append(statements,
+		goastutil.AssignStmt(goastutil.SelectorExpr(identScanned, fieldTargets), &ast.CompositeLit{Type: targetsType, Elts: scan.Arguments}),
+		goastutil.DefineStmt(goast.IdentErr, &ast.CallExpr{
+			Fun:      goastutil.SelectorExprFrom(queryRowCall, "Scan"),
+			Args:     []ast.Expr{&ast.SliceExpr{X: goastutil.SelectorExpr(identScanned, fieldTargets)}},
+			Ellipsis: 1,
+		}),
+	)
+}
+
+// scannedRow returns the row a one-row method returns. That is row itself, or the row it
+// points to when scanOneStatements allocated it in a block.
+//
+// Takes emission (*gogen.Emission) which says how the driver returns a row.
+//
+// Returns ast.Expr which reads the row.
+func scannedRow(emission *gogen.Emission) ast.Expr {
+	if emission.Driver.Connection.RowIsInterface {
+		return &ast.StarExpr{X: goastutil.CachedIdent(goast.IdentRow)}
+	}
+	return goastutil.CachedIdent(goast.IdentRow)
 }
 
 // buildOptionalOneMethod constructs an optional one query method using QueryRow + Scan
@@ -384,7 +443,7 @@ func buildOptionalOneMethod(emission *gogen.Emission, query *gogen.Query, prelud
 		BuildErrCheck(zeroRow(row), goastutil.CachedIdent(identFalse)))...)
 	statements = append(statements, BuildEmbedNilCheckStatements(query)...)
 	statements = append(statements,
-		goastutil.ReturnStmt(goastutil.CachedIdent(goast.IdentRow), goastutil.CachedIdent(identTrue), goastutil.CachedIdent(goast.IdentNil)),
+		goastutil.ReturnStmt(scannedRow(emission), goastutil.CachedIdent(identTrue), goastutil.CachedIdent(goast.IdentNil)),
 	)
 
 	return methodDecl(query, goastutil.FieldList(

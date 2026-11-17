@@ -203,12 +203,19 @@ func TestDDL_AlterModifyDefiner(t *testing.T) {
 func TestDDL_AlterModifyColumnRemove(t *testing.T) {
 	t.Parallel()
 
-	mutation, err := applyDDL(t, "ALTER TABLE events MODIFY COLUMN ts REMOVE DEFAULT")
+	mutation, err := applyDDL(t, "ALTER TABLE events MODIFY COLUMN ts REMOVE TTL")
 	require.NoError(t, err)
 	require.NotNil(t, mutation)
 	assert.Equal(t, ast.MutationAlterTableModifyColumn, mutation.Kind)
 	assert.Equal(t, "ts", mutation.ColumnName)
-	assert.Equal(t, "DEFAULT", mutation.EngineSpecific["COLUMN_REMOVE"])
+	assert.Equal(t, "TTL", mutation.EngineSpecific["COLUMN_REMOVE"])
+
+	mutation, err = applyDDL(t, "ALTER TABLE events MODIFY COLUMN ts REMOVE DEFAULT")
+	require.NoError(t, err)
+	require.NotNil(t, mutation)
+	assert.Equal(t, ast.MutationAlterTableAlterColumn, mutation.Kind)
+	assert.Equal(t, "ts", mutation.ColumnName)
+	assert.True(t, mutation.DropsDefault)
 }
 
 func TestDDL_AlterModifyColumnModifyComment(t *testing.T) {

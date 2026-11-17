@@ -24,6 +24,7 @@ import (
 	"strings"
 
 	"seagull.sh/seagull/internal/dialect/ast"
+	"seagull.sh/seagull/internal/dialect/dialectkit"
 	"seagull.sh/seagull/internal/dialect/postgres/pgext"
 	"seagull.sh/seagull/internal/sqlmodel"
 )
@@ -58,6 +59,9 @@ type createTableBody struct {
 
 	// sharding records whether USING HASH shards the primary key.
 	sharding keySharding
+
+	// indexes are the non-unique indexes the element list declares, created after the table.
+	indexes []*ast.CatalogueMutation
 }
 
 // parseCreateTable parses a CREATE TABLE statement into a catalogue mutation.
@@ -84,6 +88,9 @@ func (p *parser) parseCreateTable(engine *Dialect) (*ast.CatalogueMutation, erro
 	schema, tableName, err := p.requireSchemaQualifiedName()
 	if err != nil {
 		return nil, err
+	}
+	if word := p.Tokens[p.Position-1].Keyword(tokenIdentifier); p.reservedNames.RefusesTable(word) {
+		return nil, dialectkit.NewParseError(p.Tokens[p.Position-1], dialectkit.ReservedNameMessage(word, "table"))
 	}
 
 	if isQuery, columnNames, queryErr := p.parseCreateTableAsHead(); queryErr != nil || isQuery {
@@ -292,12 +299,7 @@ func (p *parser) parseCreateTableElement(engine *Dialect, body *createTableBody)
 		return nil, p.parseLikeElement(body)
 	}
 	if engine.settings.InlineIndexElements && p.isInlineIndexElement() {
-		constraint, err := p.parseInlineIndexElement()
-		if err != nil {
-			return nil, err
-		}
-		body.constraints = appendConstraint(body.constraints, constraint)
-		return nil, nil
+		return nil, p.parseInlineIndexElement(body)
 	}
 	if p.isPostgresTableConstraint() {
 		constraintPrimaryKey, constraint, err := p.parsePostgresTableConstraint()
@@ -307,14 +309,15 @@ func (p *parser) parseCreateTableElement(engine *Dialect, body *createTableBody)
 		body.constraints = appendConstraint(body.constraints, constraint)
 		return constraintPrimaryKey, nil
 	}
-	column, columnPrimaryKey, err := p.parsePostgresColumnDefinition(engine)
+	column, keys, err := p.parsePostgresColumnDefinition(engine)
 	if err != nil {
 		return nil, err
 	}
 	body.columns = append(body.columns, column)
-	if columnPrimaryKey {
+	if keys.primaryKey {
 		body.primaryKey = append(body.primaryKey, column.Name)
 	}
+	body.constraints = append(body.constraints, keys.constraints...)
 	return nil, nil
 }
 
@@ -379,73 +382,87 @@ func (p *parser) isInlineIndexElement() bool {
 // carries up to the next element, such as USING HASH, STORING (...), a WHERE predicate or
 // NOT VISIBLE.
 //
-// Returns *sqlmodel.Constraint which is the unique constraint a UNIQUE INDEX declares, or
-// nil for any other element.
+// A UNIQUE INDEX becomes a unique constraint, and any other index an index the table gets
+// once created.
+//
+// Takes body (*createTableBody) which receives the constraint or index.
+//
 // Returns error when the list is missing, or a parenthesis is unbalanced.
-func (p *parser) parseInlineIndexElement() (*sqlmodel.Constraint, error) {
+func (p *parser) parseInlineIndexElement(body *createTableBody) error {
 	unique := p.MatchKeyword(keywordUNIQUE)
 	if !unique && !p.MatchKeyword("INVERTED") {
 		p.MatchKeyword("VECTOR")
 	}
-	p.Advance()
+	family := p.Advance().IsKeyword(tokenIdentifier, "FAMILY")
 	name := ""
 	if p.Current().Kind == tokenIdentifier {
 		name = p.Advance().Value
 	}
-	var columns []string
-	if unique {
-		parsed, err := p.parseIndexColumnNames()
-		if err != nil {
-			return nil, err
+	if family {
+		if err := p.requireSkipParenthesised(); err != nil {
+			return err
 		}
-		columns = parsed
-	} else if err := p.requireSkipParenthesised(); err != nil {
-		return nil, err
+		return p.skipToListElementEnd()
+	}
+	columns, elements, err := p.parseIndexElements()
+	if err != nil {
+		return err
 	}
 	if err := p.skipToListElementEnd(); err != nil {
-		return nil, err
+		return err
 	}
-	if !unique {
-		return nil, nil
+	if unique {
+		body.constraints = append(body.constraints, sqlmodel.Constraint{Name: name, Kind: sqlmodel.ConstraintUnique, Columns: columns,
+			ForeignTable: "", ForeignColumns: nil, Origin: sqlmodel.MigrationOrigin{}})
+		return nil
 	}
-	return &sqlmodel.Constraint{
-		Name:           name,
-		Kind:           sqlmodel.ConstraintUnique,
-		Columns:        columns,
-		ForeignTable:   "",
-		ForeignColumns: nil,
-		Origin:         sqlmodel.MigrationOrigin{},
-	}, nil
+	if name != "" {
+		elements = nil
+	}
+	body.indexes = append(body.indexes, ast.NewCatalogueMutation(ast.MutationCreateIndex, "", "",
+		ast.WithIndexDefinition(name, columns, false), ast.WithIndexElements(elements), ast.WithIndexScope(ast.IndexNamesInTable)))
+	return nil
 }
 
-// parseIndexColumnNames parses the parenthesised list of an index, keeping the name of
-// each element that is a plain column and skipping its direction, operator class and any
-// element that is an expression.
+// parseIndexElements parses the parenthesised list of an index, keeping the name of each
+// element that is a plain column and skipping its direction, operator class and any
+// element that is an expression, and names each element as the engine names an unnamed
+// index after it.
 //
-// Returns []string which lists the plain columns in order.
-// Returns error when the list is missing or a parenthesis is unbalanced.
-func (p *parser) parseIndexColumnNames() ([]string, error) {
+// Returns columns ([]string) which lists the plain columns in order.
+// Returns elements ([]string) which names every element in order.
+// Returns err (error) when the list is missing or a parenthesis is unbalanced.
+func (p *parser) parseIndexElements() (columns, elements []string, err error) {
 	if p.Current().Kind != tokenLeftParen {
-		return nil, p.syntaxError("expected '(' to open the index's column list")
+		return nil, nil, p.syntaxError("expected '(' to open the index's column list")
 	}
 	p.Advance()
-	var columns []string
 	for !p.AtEnd() && p.Current().Kind != tokenRightParen {
-		if p.Current().Kind == tokenIdentifier && (p.Peek().Kind == tokenComma || p.Peek().Kind == tokenRightParen || p.Peek().Kind == tokenIdentifier) {
+		start := p.Position
+		plain := p.Current().Kind == tokenIdentifier && (p.Peek().Kind == tokenComma || p.Peek().Kind == tokenRightParen || p.Peek().Kind == tokenIdentifier)
+		if plain {
 			columns = append(columns, p.Current().Value)
 		}
 		if err := p.skipToListElementEnd(); err != nil {
-			return nil, err
+			return nil, nil, err
+		}
+		switch {
+		case plain:
+			elements = append(elements, p.Tokens[start].Value)
+		case p.expressionIndexElements:
+			elements = append(elements, expressionElementName)
+		default:
+			elements = append(elements, indexExpressionName(p.Tokens[start:p.Position]))
 		}
 		if p.Current().Kind == tokenComma {
 			p.Advance()
 		}
 	}
 	if p.Current().Kind != tokenRightParen {
-		return nil, p.syntaxError("expected ')' to close the index's column list")
+		return nil, nil, p.syntaxError("expected ')' to close the index's column list")
 	}
 	p.Advance()
-	return columns, nil
+	return columns, elements, nil
 }
 
 // skipToListElementEnd consumes the rest of an element of a parenthesised list, such as a
@@ -520,12 +537,16 @@ func (p *parser) parseInheritsClause() ([]ast.TableReference, error) {
 // Takes engine (*Dialect) which resolves the column type name.
 //
 // Returns sqlmodel.Column which describes the parsed column.
-// Returns bool which is true when the column carries an inline PRIMARY KEY constraint.
+// Returns columnKeys which holds the keys and constraints the column declares.
 // Returns error when the column name cannot be parsed.
-func (p *parser) parsePostgresColumnDefinition(engine *Dialect) (sqlmodel.Column, bool, error) {
+func (p *parser) parsePostgresColumnDefinition(engine *Dialect) (sqlmodel.Column, columnKeys, error) {
+	var keys columnKeys
+	if word := p.Current().Keyword(tokenIdentifier); p.reservedNames.RefusesColumnDefinition(word, p.Peek().Kind == tokenLeftParen) {
+		return sqlmodel.Column{}, keys, p.syntaxError(dialectkit.ReservedNameMessage(word, "column"))
+	}
 	name, err := p.parseIdentifierOrKeyword()
 	if err != nil {
-		return sqlmodel.Column{}, false, fmt.Errorf("parsing column name: %w", err)
+		return sqlmodel.Column{}, keys, fmt.Errorf("parsing column name: %w", err)
 	}
 
 	isSerial := isSerialTypeName(p.Current())
@@ -537,74 +558,105 @@ func (p *parser) parsePostgresColumnDefinition(engine *Dialect) (sqlmodel.Column
 		column.HasDefault = true
 	}
 
-	isPrimaryKey, constraintError := p.parseColumnConstraints(&column)
-	if constraintError != nil {
-		return sqlmodel.Column{}, false, constraintError
+	if err := p.parseColumnConstraints(&column, &keys); err != nil {
+		return sqlmodel.Column{}, keys, err
 	}
 
-	return column, isPrimaryKey, nil
+	return column, keys, nil
+}
+
+// columnKeys holds the keys and constraints a column definition declares.
+type columnKeys struct {
+	// name is the name a CONSTRAINT clause gives the constraint that follows it.
+	name string
+
+	// constraints holds the unique, check and foreign key constraints, and a named primary
+	// key, in the order the column declares them.
+	constraints []sqlmodel.Constraint
+
+	// primaryKey is true when the column declares PRIMARY KEY.
+	primaryKey bool
+}
+
+// add records a constraint the column declares, under the name a CONSTRAINT clause gave
+// it.
+//
+// Takes constraint (sqlmodel.Constraint) which is the constraint.
+func (keys *columnKeys) add(constraint sqlmodel.Constraint) {
+	constraint.Name = keys.name
+	keys.constraints = append(keys.constraints, constraint)
 }
 
 // parseColumnConstraints parses zero or more column-level constraints.
 //
 // Takes column (*sqlmodel.Column) which is updated with each constraint.
+// Takes keys (*columnKeys) which receives the keys and constraints.
 //
-// Returns bool which is true when any constraint declared PRIMARY KEY.
 // Returns error when a constraint is malformed.
-func (p *parser) parseColumnConstraints(column *sqlmodel.Column) (bool, error) {
-	isPrimaryKey := false
-
+func (p *parser) parseColumnConstraints(column *sqlmodel.Column, keys *columnKeys) error {
 	for !p.AtEnd() && p.Current().Kind != tokenComma && p.Current().Kind != tokenRightParen {
-		primary, handled, err := p.parseOnePostgresColumnConstraint(column)
-		if err != nil {
-			return false, err
+		if p.MatchKeyword(keywordCONSTRAINT) {
+			name, err := p.requireIdentifierOrKeyword()
+			if err != nil {
+				return err
+			}
+			keys.name = name
+			continue
 		}
-		if primary {
-			isPrimaryKey = true
+		handled, err := p.parseOnePostgresColumnConstraint(column, keys)
+		if err != nil {
+			return err
 		}
 		if !handled {
 			break
 		}
+		keys.name = ""
 	}
-
-	return isPrimaryKey, nil
+	return nil
 }
 
 // parseOnePostgresColumnConstraint parses a single column-level constraint.
 //
 // Takes column (*sqlmodel.Column) which is updated according to the recognised
 // constraint.
+// Takes keys (*columnKeys) which receives a key or constraint the clause declares.
 //
-// Returns isPrimary (bool) which is true when the constraint is PRIMARY KEY.
-// Returns handled (bool) which is true when a constraint was consumed.
-// Returns err (error) when the constraint is malformed.
-func (p *parser) parseOnePostgresColumnConstraint(column *sqlmodel.Column) (isPrimary bool, handled bool, err error) {
-	if handled, err = p.parseFlavourColumnForm(column); handled || err != nil {
-		return false, handled, err
+// Returns bool which is true when a constraint was consumed.
+// Returns error when the constraint is malformed.
+func (p *parser) parseOnePostgresColumnConstraint(column *sqlmodel.Column, keys *columnKeys) (bool, error) {
+	if handled, err := p.parseFlavourColumnForm(column); handled || err != nil {
+		return handled, err
 	}
 	switch {
 	case p.IsKeyword(keywordPRIMARY) && p.Peek().IsKeyword(tokenIdentifier, keywordKEY):
 		p.Advance()
 		p.Advance()
 		column.Nullable = false
-		return true, true, p.parsePrimaryKeyIndexParameters()
+		keys.primaryKey = true
+		if named := namedPrimaryKey(keys.name, []string{column.Name}); named != nil {
+			keys.constraints = append(keys.constraints, *named)
+		}
+		return true, p.parsePrimaryKeyIndexParameters()
 	case p.IsKeyword(keywordNOT) && p.Peek().IsKeyword(tokenIdentifier, keywordNULL):
 		p.Advance()
 		p.Advance()
 		column.Nullable = false
-		return false, true, nil
+		if p.namedNotNull && keys.name != "" {
+			keys.add(sqlmodel.Constraint{Name: "", Kind: sqlmodel.ConstraintNotNull, Columns: []string{column.Name}, ForeignTable: "",
+				ForeignColumns: nil, Origin: sqlmodel.MigrationOrigin{}})
+		}
+		return true, nil
 	case p.MatchKeyword(keywordNULL):
 		column.Nullable = true
-		return false, true, nil
+		return true, nil
 	case p.MatchKeyword(keywordDEFAULT):
 		column.HasDefault = true
-		return false, true, p.skipPostgresDefaultValue()
+		return true, p.skipPostgresDefaultValue()
 	case p.MatchKeyword("GENERATED"):
-		return false, true, p.parseGeneratedClause(column)
+		return true, p.parseGeneratedClause(column)
 	}
 
-	handled, err = p.parsePostgresSecondaryConstraint()
-	return false, handled, err
+	return p.parsePostgresSecondaryConstraint(column.Name, keys)
 }
 
 // parseFlavourColumnForm parses a column clause a flavour enables: AS (expression) STORED
@@ -641,24 +693,30 @@ func (p *parser) parseFlavourColumnForm(column *sqlmodel.Column) (bool, error) {
 }
 
 // parsePostgresSecondaryConstraint parses the column constraints that leave the column's
-// type, nullability and default alone: UNIQUE, CHECK, REFERENCES, a constraint name, a
-// collation, the compression, storage and foreign-table options, and the deferral
-// attributes.
+// type, nullability and default alone: UNIQUE, CHECK, REFERENCES, a collation, the
+// compression, storage and foreign-table options, and the deferral attributes.
+//
+// Takes columnName (string) which is the column's name.
+// Takes keys (*columnKeys) which receives a unique, check or foreign key constraint.
 //
 // Returns bool which is true when a clause was consumed.
 // Returns error when the clause is malformed.
-func (p *parser) parsePostgresSecondaryConstraint() (bool, error) {
+func (p *parser) parsePostgresSecondaryConstraint(columnName string, keys *columnKeys) (bool, error) {
 	switch {
 	case p.MatchKeyword(keywordUNIQUE):
 		p.skipNullsDistinct()
+		keys.add(sqlmodel.Constraint{Name: "", Kind: sqlmodel.ConstraintUnique, Columns: []string{columnName}, ForeignTable: "",
+			ForeignColumns: nil, Origin: sqlmodel.MigrationOrigin{}})
 		return true, p.skipIndexParameters()
 	case p.MatchKeyword(keywordCHECK):
-		return true, p.skipCheckBody()
-	case p.MatchKeyword("REFERENCES"):
-		_, _, err := p.parseReferencedTable()
+		references, err := p.parseCheckBody()
+		keys.add(sqlmodel.Constraint{Name: "", Kind: sqlmodel.ConstraintCheck, Columns: references, ForeignTable: "",
+			ForeignColumns: nil, Origin: sqlmodel.MigrationOrigin{}})
 		return true, err
-	case p.MatchKeyword(keywordCONSTRAINT):
-		_, err := p.requireIdentifierOrKeyword()
+	case p.MatchKeyword("REFERENCES"):
+		foreignTable, foreignColumns, err := p.parseReferencedTable()
+		keys.add(sqlmodel.Constraint{Name: "", Kind: sqlmodel.ConstraintForeignKey, Columns: []string{columnName},
+			ForeignTable: foreignTable, ForeignColumns: foreignColumns, Origin: sqlmodel.MigrationOrigin{}})
 		return true, err
 	case p.MatchKeyword("COLLATE"):
 		_, _, err := p.requireSchemaQualifiedName()
@@ -715,21 +773,6 @@ func (p *parser) skipNullsDistinct() {
 		p.MatchKeyword(keywordNOT)
 		p.Advance()
 	}
-}
-
-// skipCheckBody consumes the parenthesised expression of a CHECK constraint and an
-// optional NO INHERIT.
-//
-// Returns error when the expression is missing or unbalanced.
-func (p *parser) skipCheckBody() error {
-	if err := p.requireSkipParenthesised(); err != nil {
-		return err
-	}
-	if p.IsKeyword("NO") && p.Peek().IsKeyword(tokenIdentifier, "INHERIT") {
-		p.Advance()
-		p.Advance()
-	}
-	return nil
 }
 
 // parseGeneratedClause parses a GENERATED column clause.
@@ -971,30 +1014,10 @@ func (p *parser) isPostgresColumnConstraintKeyword() bool {
 		"COLLATE", "REFERENCES", "GENERATED", keywordCONSTRAINT)
 }
 
-// isPostgresTableConstraint reports whether the current token starts a table-level
-// constraint clause. A delimited identifier never does, so a column named "check" stays a
-// column.
-//
-// Returns bool which is true for any recognised table-level keyword.
-func (p *parser) isPostgresTableConstraint() bool {
-	switch {
-	case p.IsKeyword(keywordCONSTRAINT, keywordCHECK, "EXCLUDE"):
-		return true
-	case p.IsKeyword(keywordPRIMARY):
-		return p.Peek().IsKeyword(tokenIdentifier, keywordKEY)
-	case p.IsKeyword(keywordFOREIGN):
-		return p.Peek().IsKeyword(tokenIdentifier, keywordKEY)
-	case p.IsKeyword(keywordUNIQUE):
-		return p.Peek().Kind == tokenLeftParen || p.Peek().IsKeyword(tokenIdentifier, keywordNULLS)
-	default:
-		return false
-	}
-}
-
 // parsePostgresTableConstraint parses a single table-level constraint and its attributes.
 //
 // Returns []string which lists primary-key columns when applicable, else nil.
-// Returns *sqlmodel.Constraint which describes the constraint when not a primary key,
+// Returns *sqlmodel.Constraint which describes the constraint, or a named primary key,
 // else nil.
 // Returns error when the constraint body cannot be parsed.
 func (p *parser) parsePostgresTableConstraint() ([]string, *sqlmodel.Constraint, error) {
@@ -1008,6 +1031,7 @@ func (p *parser) parsePostgresTableConstraint() ([]string, *sqlmodel.Constraint,
 	switch {
 	case p.MatchKeyword(keywordPRIMARY):
 		primaryKey, err = p.parseTablePrimaryKey()
+		constraint = namedPrimaryKey(constraintName, primaryKey)
 	case p.MatchKeyword(keywordUNIQUE):
 		constraint, err = p.parseTableUnique(constraintName)
 	case p.MatchKeyword(keywordCHECK):
@@ -1016,6 +1040,8 @@ func (p *parser) parsePostgresTableConstraint() ([]string, *sqlmodel.Constraint,
 		constraint, err = p.parseTableForeignKey(constraintName)
 	case p.MatchKeyword("EXCLUDE"):
 		err = p.parseTableExclude()
+	case p.namedNotNull && p.IsKeyword(keywordNOT) && p.Peek().IsKeyword(tokenIdentifier, keywordNULL):
+		constraint, err = p.parseTableNotNull(constraintName)
 	default:
 		err = p.syntaxError("expected a table constraint")
 	}
@@ -1078,17 +1104,19 @@ func (p *parser) parseTableUnique(constraintName string) (*sqlmodel.Constraint, 
 //
 // Takes constraintName (string) which optionally names the constraint.
 //
-// Returns *sqlmodel.Constraint which describes the CHECK clause.
+// Returns *sqlmodel.Constraint which describes the CHECK clause, its columns the names
+// the expression may read as columns.
 // Returns error when the CHECK expression is missing or unbalanced.
 func (p *parser) parseTableCheck(constraintName string) (*sqlmodel.Constraint, error) {
-	if err := p.skipCheckBody(); err != nil {
+	references, err := p.parseCheckBody()
+	if err != nil {
 		return nil, err
 	}
 	return &sqlmodel.Constraint{
 		Name:           constraintName,
 		Kind:           sqlmodel.ConstraintCheck,
 		ForeignTable:   "",
-		Columns:        nil,
+		Columns:        references,
 		ForeignColumns: nil,
 		Origin:         sqlmodel.MigrationOrigin{},
 	}, nil
@@ -1149,13 +1177,17 @@ func (p *parser) parseTableExclude() error {
 // parseReferencedTable parses the part of a foreign key after REFERENCES: the table, an
 // optional column list, and the MATCH and ON DELETE / ON UPDATE clauses.
 //
-// Returns string which is the referenced table name.
+// Returns string which is the referenced table name, qualified by its schema when the
+// reference names one.
 // Returns []string which lists the referenced columns, or nil when absent.
 // Returns error when the table name, column list or an action is malformed.
 func (p *parser) parseReferencedTable() (string, []string, error) {
-	_, tableName, nameError := p.requireSchemaQualifiedName()
+	schemaName, tableName, nameError := p.requireSchemaQualifiedName()
 	if nameError != nil {
 		return "", nil, nameError
+	}
+	if schemaName != "" {
+		tableName = schemaName + "." + tableName
 	}
 	var columns []string
 	if p.Current().Kind == tokenLeftParen {
@@ -1165,46 +1197,10 @@ func (p *parser) parseReferencedTable() (string, []string, error) {
 		}
 		columns = parsed
 	}
-	for {
-		switch {
-		case p.MatchKeyword("MATCH"):
-			if _, err := p.requireIdentifierOrKeyword(); err != nil {
-				return "", nil, err
-			}
-		case p.IsKeyword(keywordON) && p.Peek().IsKeyword(tokenIdentifier, "DELETE"),
-			p.IsKeyword(keywordON) && p.Peek().IsKeyword(tokenIdentifier, "UPDATE"):
-			p.Advance()
-			p.Advance()
-			if err := p.parseReferentialAction(); err != nil {
-				return "", nil, err
-			}
-		default:
-			return tableName, columns, nil
-		}
+	if err := p.parseReferenceClauses(); err != nil {
+		return "", nil, err
 	}
-}
-
-// parseReferentialAction parses the action of an ON DELETE or ON UPDATE clause: CASCADE,
-// RESTRICT, NO ACTION, or SET NULL or SET DEFAULT with an optional column list.
-//
-// Returns error when the action is missing or malformed.
-func (p *parser) parseReferentialAction() error {
-	switch {
-	case p.MatchKeyword(keywordCASCADE), p.MatchKeyword(keywordRESTRICT):
-		return nil
-	case p.MatchKeyword("NO"):
-		return p.requireKeyword("ACTION")
-	case p.MatchKeyword(keywordSET):
-		if err := p.requireKeyword(keywordNULL, keywordDEFAULT); err != nil {
-			return err
-		}
-		if p.Current().Kind == tokenLeftParen {
-			return p.requireSkipParenthesised()
-		}
-		return nil
-	default:
-		return p.syntaxError("expected a referential action")
-	}
+	return tableName, columns, nil
 }
 
 // parsePostgresColumnList parses a parenthesised column list, allowing trailing
@@ -1295,6 +1291,10 @@ func newCreateTableMutation(schema, tableName string, body *createTableBody) *as
 		ast.WithCopiedTables(body.copiedTables),
 	)
 	mutation.AdditionalMutations = keyColumnsNotNull(schema, tableName, body.keyColumnsElsewhere)
+	for _, index := range body.indexes {
+		index.SchemaName, index.TableName = schema, tableName
+		mutation.AdditionalMutations = append(mutation.AdditionalMutations, index)
+	}
 	if body.sharding.hashed {
 		mutation.EngineSpecific = map[string]string{pgext.EngineSpecificHashShardBuckets: body.sharding.buckets}
 	}

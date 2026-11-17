@@ -1,0 +1,4 @@
+{
+  "description": "CockroachDB 26.4 lists every unique index, from CREATE UNIQUE INDEX or a UNIQUE INDEX element, as a unique constraint, and ALTER TABLE DROP CONSTRAINT of its name drops it, so only the primary key and the index kept remain, as CockroachDB 26.4 shows.",
+  "expectedDiagnosticCount": 0
+}

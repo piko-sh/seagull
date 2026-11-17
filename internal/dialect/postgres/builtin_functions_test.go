@@ -82,8 +82,8 @@ func TestBuiltinFunctionCatalogueKeepsEverySignature(t *testing.T) {
 		signatures += len(overloads)
 	}
 
-	require.Len(t, functions, 331)
-	require.Equal(t, 448, signatures)
+	require.Len(t, functions, 334)
+	require.Equal(t, 451, signatures)
 }
 
 func TestArrayToJSONRendersAnArrayAsJSON(t *testing.T) {

@@ -1,0 +1,1 @@
+CREATE TABLE items (id BIGINT NOT NULL, score BIGINT);

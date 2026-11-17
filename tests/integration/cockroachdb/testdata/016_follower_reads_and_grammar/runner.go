@@ -69,9 +69,9 @@ func main() {
 			}
 		}
 		for _, account := range []db.AddAccountParams{
-			{ID: 10, Name: "current", Balance: &balance, OwnerID: 1},
-			{ID: 11, Name: "savings", Balance: nil, OwnerID: 2},
-			{ID: 12, Name: "loan", Balance: &balance, OwnerID: 1},
+			{ID: 10, Name: "current", Balance: db.NullOf(balance), OwnerID: 1},
+			{ID: 11, Name: "savings", Balance: db.Null[int64]{}, OwnerID: 2},
+			{ID: 12, Name: "loan", Balance: db.NullOf(balance), OwnerID: 1},
 		} {
 			if err := queries.AddAccount(ctx, account); err != nil {
 				return nil, err

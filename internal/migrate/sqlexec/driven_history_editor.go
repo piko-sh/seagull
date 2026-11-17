@@ -98,13 +98,38 @@ func (executor *Executor) SplitStatements(content []byte) ([]string, error) {
 //
 // Returns error when the history cannot be read or written.
 func (executor *Executor) RecordApplied(ctx context.Context, migration migrate.MigrationRecord) error {
-	return executor.rewriteHistory(ctx, migration, historyProgress{lastStatement: nil, statementsHash: nil, splitterVersion: nil, dirty: false})
+	if err := executor.rewriteHistory(ctx, migration, historyProgress{lastStatement: nil, statementsHash: nil, splitterVersion: nil, dirty: false}); err != nil {
+		return err
+	}
+	return executor.recordAppendOnlyProgress(ctx, migration, -1)
+}
+
+// recordAppendOnlyProgress appends a progress row for a migration on an append-only
+// history with a progress table, and does nothing elsewhere: the index of the last
+// statement completed, or -1 so the next run starts from the beginning.
+//
+// Takes migration (migrate.MigrationRecord) which holds the version and checksum.
+// Takes last (int) which is the last completed statement's index, or -1.
+//
+// Returns error when the row cannot be written.
+func (executor *Executor) recordAppendOnlyProgress(ctx context.Context, migration migrate.MigrationRecord, last int) error {
+	engine := executor.backend.engine
+	if !engine.appendOnlyHistory || engine.createProgressTable == nil {
+		return nil
+	}
+	insert := engine.progressInsertSQL(executor.progressTable())
+	if _, err := executor.queryExecutor().ExecContext(ctx, insert, migration.Version, migration.Checksum, last); err != nil {
+		return fmt.Errorf("recording migration %d progress: %w", migration.Version, err)
+	}
+	return nil
 }
 
 // RecordProgress sets a migration's completed statement count for repair.
 //
 // Zero removes its history row. Otherwise it records dirty progress and the completed
-// prefix's digest so the next Up can resume safely.
+// prefix's digest so the next Up can resume safely; on an append-only history with a
+// progress table, such as ClickHouse's, it removes the history row and records the
+// progress there instead.
 //
 // Takes migration (migrate.MigrationRecord) which holds the version, name, checksums and
 // content.
@@ -123,11 +148,20 @@ func (executor *Executor) RecordProgress(ctx context.Context, migration migrate.
 			migration.Version, len(statements), max(len(statements)-1, 0), completed, migrate.ErrInvalidConfig)
 	}
 	if completed == 0 {
-		return executor.deleteHistoryRow(ctx, migration.Version)
+		if err := executor.deleteHistoryRow(ctx, migration.Version); err != nil {
+			return err
+		}
+		return executor.recordAppendOnlyProgress(ctx, migration, -1)
 	}
 	if executor.backend.engine.appendOnlyHistory {
-		return fmt.Errorf("%s records no statement progress, so a migration runs again from its first statement; remove its row instead: %w",
-			executor.backend.engine.name, migrate.ErrInvalidConfig)
+		if executor.backend.engine.createProgressTable == nil {
+			return fmt.Errorf("%s records no statement progress, so a migration runs again from its first statement; remove its row instead: %w",
+				executor.backend.engine.name, migrate.ErrInvalidConfig)
+		}
+		if err := executor.deleteHistoryRow(ctx, migration.Version); err != nil {
+			return err
+		}
+		return executor.recordAppendOnlyProgress(ctx, migration, completed-1)
 	}
 	digest := newStatementDigest()
 	for _, statement := range statements[:completed] {

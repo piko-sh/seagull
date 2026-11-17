@@ -692,6 +692,50 @@ func TestGenerateLeavesTheDiagnosticsThatStopItToTheCaller(t *testing.T) {
 	}
 }
 
+func TestGenerateLogsThroughTheContextLoggerBeforeTheConfiguredOne(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name          string
+		bindContext   bool
+		configure     bool
+		wantInContext bool
+		wantInConfig  bool
+	}{
+		{name: "the context logger wins over the configured one", bindContext: true, configure: true, wantInContext: true, wantInConfig: false},
+		{name: "the configured logger is used when the context has none", bindContext: false, configure: true, wantInContext: false, wantInConfig: true},
+		{name: "the context logger is used without a configured one", bindContext: true, configure: false, wantInContext: true, wantInConfig: false},
+	}
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			var contextLogs, configLogs bytes.Buffer
+			internalLevel := &slog.HandlerOptions{Level: logging.LevelInternal}
+			source := &mockCatalogueProvider{buildCatalogue: func(context.Context) (*sqlmodel.Catalogue, []diag.SourceError, error) {
+				return fakedialect.NewCatalogue("public"), []diag.SourceError{{Message: "broken", Severity: diag.SeverityError}}, nil
+			}}
+			config := Config{Dialect: queryingEngine(), Emitter: &fakedialect.Emitter{}, BuildCatalogue: source.BuildCatalogue}
+			if testCase.configure {
+				config.Logger = slog.New(slog.NewTextHandler(&configLogs, internalLevel))
+			}
+			generator, err := New(config)
+			require.NoError(t, err)
+
+			ctx := t.Context()
+			if testCase.bindContext {
+				ctx = logging.WithLogger(ctx, slog.New(slog.NewTextHandler(&contextLogs, internalLevel)))
+			}
+			_, err = generator.Generate(ctx, oneQueryRequest())
+			require.NoError(t, err)
+
+			const stopped = "generation stopped by error diagnostics"
+			assert.Equal(t, testCase.wantInContext, strings.Contains(contextLogs.String(), stopped), contextLogs.String())
+			assert.Equal(t, testCase.wantInConfig, strings.Contains(configLogs.String(), stopped), configLogs.String())
+		})
+	}
+}
+
 func TestGenerateAndVetRefuseTheBlankIdentifierAsThePackageName(t *testing.T) {
 	t.Parallel()
 

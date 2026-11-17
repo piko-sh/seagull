@@ -21,6 +21,7 @@ package source
 import (
 	"database/sql/driver"
 	"errors"
+	"math"
 	"testing"
 	"time"
 
@@ -284,4 +285,96 @@ func TestDriverDecimalBindsADecimalHeldByAPointerAsItsValue(t *testing.T) {
 			require.Equal(t, testCase.want, converted)
 		})
 	}
+}
+
+type namedUnsigned uint64
+
+func TestUnsignedBindingsPreserveAllBitsAndNulls(t *testing.T) {
+	high := uint64(math.MaxUint64)
+	named := namedUnsigned(high)
+	pointer := &high
+	var missing *uint64
+	for _, value := range []any{high, named, &high, &named, &pointer} {
+		got, err := (sglDriverUnsigned{value: value}).Value()
+		require.NoError(t, err)
+		require.Equal(t, "18446744073709551615", got)
+	}
+	for _, value := range []any{nil, missing, &missing} {
+		got, err := (sglDriverUnsigned{value: value}).Value()
+		require.NoError(t, err)
+		require.Nil(t, got)
+	}
+	got, err := (sglDriverUnsigned{value: driverValueValuer{text: "override"}}).Value()
+	require.NoError(t, err)
+	require.Equal(t, "valued override", got)
+	_, err = (sglDriverUnsigned{value: driverValueFailingValuer{}}).Value()
+	require.ErrorIs(t, err, errDriverValueRefused)
+}
+
+func TestUnsignedRuntimeConversionLeavesNativeValuesUntouched(t *testing.T) {
+	high := uint64(math.MaxUint64)
+	composite := map[string]any{"wide": high}
+	array := []uint64{high}
+	original := []any{nil, int64(-1), "18446744073709551615", []byte{0, 255}, composite, array, driverValueValuer{text: "native"}}
+	got := sglUnsignedArguments(append([]any(nil), original...))
+	require.Equal(t, original, got)
+	for _, value := range sglUnsignedArguments([]any{high, &high, namedUnsigned(high)}) {
+		wrapper, ok := value.(driver.Valuer)
+		require.True(t, ok)
+		converted, err := wrapper.Value()
+		require.NoError(t, err)
+		require.Equal(t, "18446744073709551615", converted)
+	}
+}
+
+type cyclicPointer *cyclicPointer
+
+func TestUnsignedBindingsRefuseCyclicPointers(t *testing.T) {
+	cycle := new(cyclicPointer)
+	*cycle = cycle
+	_, err := (sglDriverUnsigned{value: cycle}).Value()
+	require.Error(t, err)
+	got := sglUnsignedArguments([]any{cycle})
+	require.Equal(t, []any{cycle}, got)
+}
+
+func TestBinaryBindingsDistinguishNullAndEmpty(t *testing.T) {
+	var missing []byte
+	empty := []byte{}
+	type namedBytes []byte
+	for _, value := range []any{missing, &missing, namedBytes(nil)} {
+		got, err := (sglDriverBinary{value: value}).Value()
+		require.NoError(t, err)
+		require.Nil(t, got)
+		require.Nil(t, sglBinaryArguments([]any{value})[0])
+	}
+	for _, value := range []any{empty, &empty, namedBytes{}} {
+		got, err := (sglDriverBinary{value: value}).Value()
+		require.NoError(t, err)
+		require.NotNil(t, got)
+		require.Empty(t, got)
+		require.Equal(t, value, sglBinaryArguments([]any{value})[0])
+	}
+	valuer := driverValueValuer{text: "kept"}
+	require.Equal(t, valuer, sglBinaryArguments([]any{valuer})[0])
+	var cycle any
+	cycle = &cycle
+	require.False(t, sglNilBinary(cycle))
+}
+
+type Null[T any] struct {
+	V     T
+	Valid bool
+}
+
+func TestUnsignedBindingsReadTheGeneratedNullType(t *testing.T) {
+	t.Parallel()
+
+	value, err := sglDriverUnsigned{value: Null[uint64]{V: 1 << 63, Valid: true}}.Value()
+	require.NoError(t, err)
+	require.Equal(t, "9223372036854775808", value, "a set Null writes its unsigned value with every bit")
+
+	value, err = sglDriverUnsigned{value: Null[uint64]{}}.Value()
+	require.NoError(t, err)
+	require.Nil(t, value, "an unset Null writes NULL")
 }

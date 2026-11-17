@@ -38,6 +38,15 @@ would make a table a partition of itself are refused ([Q010](../diagnostics.md#q
 A change to a table reaches every table that inherits from or partitions it once, however
 the inheritance branches and joins again.
 
+`NOT NULL` is a constraint, as PostgreSQL 18 makes it: a column's `CONSTRAINT name NOT NULL`
+keeps its name, `[CONSTRAINT name] NOT NULL column` is a table constraint in `CREATE TABLE`
+and `ALTER TABLE ... ADD`, and an unnamed one is `t_column_not_null`, numbered past a name
+another constraint holds. `DROP CONSTRAINT` of either name lets the column hold `NULL`.
+Dropping the `NOT NULL` of a primary key's column, by name or with `DROP NOT NULL`, and
+adding one under a new name to a column that has one already, are refused
+([Q010](../diagnostics.md#q010)), as PostgreSQL refuses them. Seagull does not follow
+`RENAME CONSTRAINT`.
+
 Replay refuses what PostgreSQL refuses. Creating a table or adding a column or an enum
 value under a name already taken, or renaming or moving a table, view, sequence, type,
 column or enum value onto one, is [Q067](../diagnostics.md#q067). Altering, renaming
@@ -241,6 +250,15 @@ form to write instead: `SELECT set_config('app.user_id', $1, true)` for `SET LOC
 `false` for the session) and `SELECT pg_notify('channel', $1)` for `NOTIFY`, where the
 server has `pg_notify`.
 
+A placeholder passed to a function with several overloads that fit it takes the type
+PostgreSQL chooses among them: a string type when one overload takes one, and otherwise
+`double precision` when the overloads all take numbers and one takes it, so `abs($1)` takes
+a `float64`. When neither rule settles the choice, as with the built-in `scale(numeric)`
+beside a created `scale(integer)`, PostgreSQL refuses the call as not unique, and Seagull
+warns of it ([Q005](../diagnostics.md#q005)); a cast such as `scale($1::integer)` chooses
+the overload. A quoted name with an upper-case letter, such as `"Scale"`, names only a
+created function, never a built-in.
+
 ## Migrations
 
 Advisory locks (`migrate_backend_postgres.New()`), or a lock table behind PgBouncer (`migrate_backend_postgres.NewPgBouncer()`). DDL is transactional.
@@ -304,7 +322,8 @@ its text, such as `09:15:00+02`; and a bit string as its 0s and 1s. pgx decodes 
 `driver: pgx` package reads a bit string, a `tsvector`, and an interval whose Go type is a
 string, through a cast to `text`. A `bytea` parameter whose Go type an override chose, such
 as a UUID, is bound as the bytes the value marshals itself to (`encoding.BinaryMarshaler`)
-on both emitters, rather than the text its `driver.Valuer` writes. Behind `database/sql` an array is read through `to_json`, whose timestamps without
+on both emitters, rather than the text its `driver.Valuer` writes. Behind `database/sql` an array of text, integers, floats or booleans is read
+from its text form, and any other array through `to_json`, whose timestamps without
 a zone, dates, numbers and `bytea` elements the generated code reads into `time.Time`,
 decimal and `[]byte` elements. See [Type mapping](../type-mapping.md#defaults).
 

@@ -58,6 +58,12 @@ const (
 
 	// subcommandRepair re-baselines checksums and resolves dirty migrations.
 	subcommandRepair = "repair"
+
+	// subcommandUp applies pending migrations, and names the up direction.
+	subcommandUp = "up"
+
+	// subcommandDown rolls migrations back, and names the down direction.
+	subcommandDown = "down"
 )
 
 // migrateFlags holds the flags shared by migrate and seed.
@@ -222,9 +228,9 @@ func (inv *invocation) newMigrator(opened *connection, flags *migrateFlags) (*mi
 	}
 	options := append(opened.migrateOptions(inv), lockOptions...)
 	options = append(options, migrate.WithAfterMigration(func(_ context.Context, hook migrate.MigrationHookContext) error {
-		direction := "up"
+		direction := subcommandUp
 		if hook.Direction == migrate.MigrationDirectionDown {
-			direction = "down"
+			direction = subcommandDown
 		}
 		fmt.Fprintf(inv.streams.Stdout, "%s %d %s\n", direction, hook.Version, hook.Name)
 		return nil
@@ -253,9 +259,9 @@ func (inv *invocation) runMigration(ctx context.Context, migrator *migrate.Migra
 		return inv.migrateForce(ctx, migrator, arguments.version, options)
 	case subcommandRepair:
 		return inv.migrateRepair(ctx, migrator, arguments, options)
-	case "up":
+	case subcommandUp:
 		return inv.reportApplied(migrator.Up(ctx))
-	case "down":
+	case subcommandDown:
 		return inv.reportRolledBack(migrator.Down(ctx, arguments.steps))
 	case "to":
 		return inv.migrateTo(ctx, migrator, arguments.version)
@@ -312,7 +318,12 @@ func (inv *invocation) reportOutcome(count int, outcome string, err error) int {
 	return exitOK
 }
 
-// migrateTo migrates up or down to a version.
+// migrateTo brings the database to a target migration version.
+//
+// It rolls back applied migrations above the target and applies pending or dirty
+// migrations at or below it, including migrations added out of order. Status is read
+// without the lock only to choose what to run. The Migrator reads the history again under
+// its lock.
 //
 // Takes migrator (*migrate.Migrator) which runs the migrations.
 // Takes target (int64) which is the version to end at.
@@ -323,21 +334,42 @@ func (inv *invocation) migrateTo(ctx context.Context, migrator *migrate.Migrator
 	if err != nil {
 		return inv.fail(migrationFailure(err))
 	}
-	var current int64
-	for _, status := range statuses {
-		if status.Applied {
-			current = max(current, status.Version)
+	needsDown, needsUp := movesToTarget(statuses, target)
+	if !needsDown && !needsUp {
+
+		if applied, upError := migrator.UpTo(ctx, target); upError != nil || applied != 0 {
+			return inv.reportApplied(applied, upError)
 		}
-	}
-	switch {
-	case target > current:
-		return inv.reportApplied(migrator.UpTo(ctx, target))
-	case target < current:
-		return inv.reportRolledBack(migrator.DownTo(ctx, target))
-	default:
 		fmt.Fprintf(inv.streams.Stdout, "already at version %d\n", target)
 		return exitOK
 	}
+	if needsDown {
+		if code := inv.reportRolledBack(migrator.DownTo(ctx, target)); code != exitOK || !needsUp {
+			return code
+		}
+	}
+	return inv.reportApplied(migrator.UpTo(ctx, target))
+}
+
+// movesToTarget reports what reaching a target version takes. That is rolling back a
+// migration applied above it, applying one pending or dirty at or below it, or both.
+//
+// Takes statuses ([]migrate.MigrationStatus) which are the migrations' states.
+// Takes target (int64) which is the version to reach.
+//
+// Returns needsDown (bool) which is true when a migration must be rolled back.
+// Returns needsUp (bool) which is true when a migration must be applied.
+func movesToTarget(statuses []migrate.MigrationStatus, target int64) (needsDown, needsUp bool) {
+	for _, status := range statuses {
+		cleanlyApplied := status.Applied && !status.Dirty
+		switch {
+		case cleanlyApplied && status.Version > target:
+			needsDown = true
+		case !cleanlyApplied && status.Version <= target:
+			needsUp = true
+		}
+	}
+	return needsDown, needsUp
 }
 
 // validateMigrations checks the applied migrations against the files.
@@ -392,7 +424,7 @@ func (inv *invocation) migrateNew(options *migrateFlags, rest []string) int {
 		return inv.fail(err)
 	}
 	stem := fmt.Sprintf("%0*d_%s", width, version, name)
-	for _, direction := range []string{"up", "down"} {
+	for _, direction := range []string{subcommandUp, subcommandDown} {
 		path := filepath.Join(directory, stem+"."+direction+".sql")
 		content := fmt.Sprintf("-- %s: write the %s migration here.\n", stem, direction)
 		if err := inv.writeNewFile(path, content); err != nil {
@@ -436,11 +468,11 @@ func (inv *invocation) writeNewFile(path, content string) error {
 func checkMigrateArguments(subcommand string, rest []string) (migrateArguments, error) {
 	arguments := migrateArguments{version: 0, steps: 1, hasVersion: false}
 	switch subcommand {
-	case "up", "status", "validate":
+	case subcommandUp, "status", "validate":
 		if len(rest) > 0 {
 			return arguments, usageError("migrate %s takes no arguments", subcommand)
 		}
-	case "down":
+	case subcommandDown:
 		if len(rest) > 1 {
 			return arguments, usageError("migrate down takes at most one step count")
 		}

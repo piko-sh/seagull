@@ -15,26 +15,26 @@ FROM landings
 WHERE id = $1;`
 
 type GetLandingRow struct {
-	ID        int64       `json:"id"`
-	CatchID   uuid.UUID   `json:"catch_id"`
-	Species   string      `json:"species"`
-	Boxes     int16       `json:"boxes"`
-	Fish      int32       `json:"fish"`
-	WeightG   int64       `json:"weight_g"`
-	LengthCm  float32     `json:"length_cm"`
-	SeaTemp   float64     `json:"sea_temp"`
-	Price     apd.Decimal `json:"price"`
-	OnIce     bool        `json:"on_ice"`
-	LandedOn  time.Time   `json:"landed_on"`
-	LandedAt  time.Time   `json:"landed_at"`
-	HarbourIP any         `json:"harbour_ip"`
-	Tag       []byte      `json:"tag"`
-	Notes     *string     `json:"notes"`
+	ID        int64        `json:"id"`
+	CatchID   uuid.UUID    `json:"catch_id"`
+	Species   string       `json:"species"`
+	Boxes     int16        `json:"boxes"`
+	Fish      int32        `json:"fish"`
+	WeightG   int64        `json:"weight_g"`
+	LengthCm  float32      `json:"length_cm"`
+	SeaTemp   float64      `json:"sea_temp"`
+	Price     apd.Decimal  `json:"price"`
+	OnIce     bool         `json:"on_ice"`
+	LandedOn  time.Time    `json:"landed_on"`
+	LandedAt  time.Time    `json:"landed_at"`
+	HarbourIP any          `json:"harbour_ip"`
+	Tag       []byte       `json:"tag"`
+	Notes     Null[string] `json:"notes"`
 }
 
 func (queries *Queries) GetLanding(ctx context.Context, id int64) (GetLandingRow, error) {
 	var row GetLandingRow
-	err := queries.reader.QueryRowContext(ctx, getLandingSQL, id).Scan(&row.ID, &row.CatchID, &row.Species, &row.Boxes, &row.Fish, &row.WeightG, &row.LengthCm, &row.SeaTemp, &row.Price, &row.OnIce, &row.LandedOn, &row.LandedAt, &row.HarbourIP, &row.Tag, &row.Notes)
+	err := queries.reader.QueryRowContext(ctx, getLandingSQL, id).Scan(&row.ID, &row.CatchID, &row.Species, sglScanNumber(&row.Boxes), sglScanNumber(&row.Fish), &row.WeightG, sglScanNumber(&row.LengthCm), &row.SeaTemp, &row.Price, &row.OnIce, &row.LandedOn, &row.LandedAt, &row.HarbourIP, &row.Tag, &row.Notes)
 	if err != nil {
 		return GetLandingRow{}, err
 	}
@@ -59,7 +59,7 @@ type RecordLandingParams struct {
 	LandedAt  time.Time
 	HarbourIP any
 	Tag       []byte
-	Notes     *string
+	Notes     Null[string]
 }
 
 type RecordLandingRow struct {
@@ -68,7 +68,7 @@ type RecordLandingRow struct {
 
 func (queries *Queries) RecordLanding(ctx context.Context, params RecordLandingParams) (RecordLandingRow, error) {
 	var row RecordLandingRow
-	err := queries.writer.QueryRowContext(ctx, recordLandingSQL, params.CatchID, params.Species, params.Boxes, params.Fish, params.WeightG, params.LengthCm, params.SeaTemp, params.Price, params.OnIce, params.LandedOn, params.LandedAt, params.HarbourIP, params.Tag, params.Notes).Scan(&row.ID)
+	err := queries.writer.QueryRowContext(ctx, recordLandingSQL, params.CatchID, params.Species, params.Boxes, params.Fish, params.WeightG, params.LengthCm, params.SeaTemp, params.Price, params.OnIce, params.LandedOn, params.LandedAt, params.HarbourIP, sglNonNil(params.Tag), params.Notes).Scan(&row.ID)
 	if err != nil {
 		return RecordLandingRow{}, err
 	}

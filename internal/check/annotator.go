@@ -100,6 +100,7 @@ func NewDiagnosticAnalyser(engine dialect.DialectPort, catalogue *sqlmodel.Catal
 			&commandOutputPass{dialect: facts},
 			&dynamicSafetyPass{},
 			&generatedColumnPass{catalogue: catalogue},
+			&fullTextIndexPass{catalogue: catalogue},
 			&insertShapePass{catalogue: catalogue, dialect: facts},
 			newClauseReferencePass(engine, facts, catalogue),
 			&groupByValidationPass{},

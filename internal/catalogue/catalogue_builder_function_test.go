@@ -291,7 +291,7 @@ func TestAFunctionBodyThatDoesNotParseIsLoggedAtTheInternalLevel(t *testing.T) {
 	t.Parallel()
 
 	captured := &capturedRecords{records: nil, mu: sync.Mutex{}}
-	ctx := logging.ContextWithLogger(t.Context(), slog.New(captured))
+	ctx := logging.WithLogger(t.Context(), slog.New(captured))
 	engine := sqlFunctionEngine(nil, "")
 	engine.ParseStatementsFunc = func(context.Context, string) ([]ast.ParsedStatement, error) {
 		return nil, errors.New("unexpected token")

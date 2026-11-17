@@ -109,11 +109,17 @@ func TestNativeDriverScansAnEnumColumnThroughGoStrings(t *testing.T) {
 			require.Contains(t, files["models.go"], "type ItemsMood string")
 			method := methodSource(t, files["events.sql.go"], "GetItems")
 
-			require.Contains(t, method, ".Scan(&row.ID, (*string)(&row.Mood), &raw.Maybe, &row.Moods)")
-			require.Contains(t, method, "row.Maybe = (*ItemsMood)(raw.Maybe)")
-			require.Less(t, strings.Index(method, "var raw struct"), strings.Index(method, ".Scan("))
-			require.Less(t, strings.Index(method, ".Scan("), strings.Index(method, "row.Maybe = (*ItemsMood)(raw.Maybe)"))
-			require.NotContains(t, method, "raw.Moods", "clickhouse-go fills a slice of a named string type itself")
+			require.Contains(t, method, "&row.ID, (*string)(&row.Mood), &row.Maybe, &row.Moods",
+				"a Null enum reads its string through its own Scan")
+			require.NotContains(t, method, "var raw struct")
+
+			pointers := methodSource(t, generateNativeWithPointers(t, enumSchema, "-- sgl.query(GetItems, "+testCase.command+")\n"+
+				"SELECT id, mood, maybe, moods FROM items WHERE id = {id:UInt64};\n")["events.sql.go"], "GetItems")
+			require.Contains(t, pointers, "&row.ID, (*string)(&row.Mood), &raw.Maybe, &row.Moods")
+			require.Contains(t, pointers, "row.Maybe = (*ItemsMood)(raw.Maybe)")
+			require.Less(t, strings.Index(pointers, "var raw struct"), strings.Index(pointers, ".Scan("))
+			require.Less(t, strings.Index(pointers, ".Scan("), strings.Index(pointers, "row.Maybe = (*ItemsMood)(raw.Maybe)"))
+			require.NotContains(t, pointers, "raw.Moods", "clickhouse-go fills a slice of a named string type itself")
 		})
 	}
 }
@@ -125,15 +131,19 @@ func TestNativeDriverReadsEveryEnumColumnOfARowTheSameWay(t *testing.T) {
 		"SELECT id, maybe, maybe AS again FROM items WHERE id = {id:UInt64};\n")
 	method := methodSource(t, files["events.sql.go"], "GetItem")
 
-	require.Contains(t, method, ".Scan(&row.ID, &raw.Maybe, &raw.Again)")
-	require.Contains(t, method, "row.Maybe = (*ItemsMood)(raw.Maybe)")
-	require.Contains(t, method, "row.Again = (*ItemsMood)(raw.Again)")
+	require.Contains(t, method, "scanned.targets = [3]any{&row.ID, &row.Maybe, &row.Again}")
+
+	pointers := methodSource(t, generateNativeWithPointers(t, enumSchema, "-- sgl.query(GetItem, one)\n"+
+		"SELECT id, maybe, maybe AS again FROM items WHERE id = {id:UInt64};\n")["events.sql.go"], "GetItem")
+	require.Contains(t, pointers, "scanned.targets = [3]any{&row.ID, &raw.Maybe, &raw.Again}")
+	require.Contains(t, pointers, "row.Maybe = (*ItemsMood)(raw.Maybe)")
+	require.Contains(t, pointers, "row.Again = (*ItemsMood)(raw.Again)")
 }
 
 func TestNativeDriverKeepsAParameterClearOfTheScanLocal(t *testing.T) {
 	t.Parallel()
 
-	files := generateNativeFrom(t, enumSchema, "-- sgl.query(GetItem, one)\n"+
+	files := generateNativeWithPointers(t, enumSchema, "-- sgl.query(GetItem, one)\n"+
 		"SELECT maybe FROM items WHERE id = {raw:UInt64};\n")
 	method := methodSource(t, files["events.sql.go"], "GetItem")
 
@@ -180,7 +190,7 @@ func TestNativeDriverScansAMapOfEnumValuesThroughGoStrings(t *testing.T) {
 		"SELECT id, maybes, labels, grid, pair FROM shapes WHERE id = {id:UInt64};\n")
 	method := methodSource(t, files["events.sql.go"], "GetShape")
 
-	require.Contains(t, method, ".Scan(&row.ID, &row.Maybes, &raw.Labels, &row.Grid, &row.Pair)",
+	require.Contains(t, method, "scanned.targets = [5]any{&row.ID, &row.Maybes, &raw.Labels, &row.Grid, &row.Pair}",
 		"clickhouse-go fills a slice of nullable enums, a slice of slices and a struct itself")
 	require.Contains(t, method, "Labels map[string]string")
 	require.Contains(t, method, "row.Labels = sglConvertStringMap[ShapesMaybesItem](raw.Labels)")
@@ -255,22 +265,22 @@ func TestNativeRuntimeBuilderBindsANilPointerAsNull(t *testing.T) {
 		wrapped bool
 	}{
 		{
-			name:    "a nullable decimal goes through the helper",
+			name:    "a nullable decimal binds as it is",
 			query:   "SELECT id, amount FROM prices WHERE discount >= {discount:Nullable(Decimal(10, 2))}",
-			bound:   "sglClickHouseNullable(builder.params)",
-			wrapped: true,
+			bound:   "args = append(args, builder.params)",
+			wrapped: false,
 		},
 		{
-			name:    "a nullable UUID goes through the helper",
+			name:    "a nullable UUID binds as it is",
 			query:   "SELECT id, amount FROM prices WHERE owner = {owner:Nullable(UUID)}",
-			bound:   "sglClickHouseNullable(builder.params)",
-			wrapped: true,
+			bound:   "args = append(args, builder.params)",
+			wrapped: false,
 		},
 		{
-			name:    "a nullable string goes through the helper",
+			name:    "a nullable string binds as it is",
 			query:   "SELECT id, amount FROM prices WHERE note = {note:Nullable(String)}",
-			bound:   "sglClickHouseNullable(builder.params)",
-			wrapped: true,
+			bound:   "args = append(args, builder.params)",
+			wrapped: false,
 		},
 		{
 			name:    "a decimal that cannot be NULL binds as it is",
@@ -285,6 +295,12 @@ func TestNativeRuntimeBuilderBindsANilPointerAsNull(t *testing.T) {
 
 			files := generateNativeFrom(t, pricesSchema, "-- sgl.query(name: BrowsePrices, command: many, dynamic: runtime)\n"+testCase.query+"\n")
 			require.Contains(t, files["events.sql.go"], testCase.bound)
+			if strings.Contains(testCase.query, "Nullable") {
+				pointers := generateNativeWithPointers(t, pricesSchema, "-- sgl.query(name: BrowsePrices, command: many, dynamic: runtime)\n"+testCase.query+"\n")
+				require.Contains(t, pointers["events.sql.go"], "sglClickHouseNullable(builder.params)",
+					"a pointer goes through the helper, where a Null writes NULL through its own Value")
+				require.Contains(t, pointers["clickhouse_values.go"], "func sglClickHouseNullable(value any) any")
+			}
 			if testCase.wrapped {
 				require.Contains(t, files["clickhouse_values.go"], "func sglClickHouseNullable(value any) any")
 				return
@@ -302,7 +318,19 @@ func generateNative(t *testing.T, queries string) map[string]string {
 
 func generateNativeFrom(t *testing.T, schema, queries string) map[string]string {
 	t.Helper()
-	generator, err := app.New(dialect_clickhouse.New(), app.WithEmitter(emit_clickhouse.New()))
+	return generateNativeFromStyled(t, func(*app.Preset) {}, schema, queries)
+}
+
+func generateNativeWithPointers(t *testing.T, schema, queries string) map[string]string {
+	t.Helper()
+	return generateNativeFromStyled(t, func(chosen *app.Preset) { chosen.NullablePointers = true }, schema, queries)
+}
+
+func generateNativeFromStyled(t *testing.T, style func(*app.Preset), schema, queries string) map[string]string {
+	t.Helper()
+	chosen := app.DefaultPreset()
+	style(&chosen)
+	generator, err := app.New(dialect_clickhouse.New(), app.WithEmitter(emit_clickhouse.New()), app.WithPreset(chosen))
 	require.NoError(t, err)
 
 	files := fstest.MapFS{

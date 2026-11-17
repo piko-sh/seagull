@@ -53,8 +53,18 @@ const (
 	// jsonTagKey is the key of the json struct tag.
 	jsonTagKey = "json"
 
+	// jsonOptionSeparator separates a json tag's name from its options.
+	jsonOptionSeparator = ","
+
 	// omitEmptyOption is the json tag option the corpus preset asks for.
-	omitEmptyOption = ",omitempty"
+	omitEmptyOption = jsonOptionSeparator + "omitempty"
+
+	// omitZeroOption is the json tag option a field of the generated Null type carries in
+	// place of omitempty.
+	omitZeroOption = jsonOptionSeparator + "omitzero"
+
+	// nullTypeName names the generated Null type.
+	nullTypeName = "Null"
 )
 
 // queryFileMethods lists the exported methods the package's query files declare on
@@ -234,7 +244,7 @@ func checkQuerierInterface(ctx context.Context, current *subject) knownfailure.O
 		if !ok {
 			return problemsUnlessGeneral(definition, problems)
 		}
-		return prefixed("case "+name+": ", interfaceProblems(result.generated, current.checkedOutput(ctx, name)))
+		return prefixed(casePrefix+name+checkDetailSeparator, interfaceProblems(result.generated, current.checkedOutput(ctx, name)))
 	})
 }
 
@@ -304,7 +314,7 @@ func checkFieldTags(ctx context.Context, current *subject) knownfailure.Outcome 
 		if _, ok := generatedCleanly(name, result, true); !ok {
 			return nil
 		}
-		return prefixed("case "+name+": ", tagProblems(current.checkedOutput(ctx, name)))
+		return prefixed(casePrefix+name+checkDetailSeparator, tagProblems(current.checkedOutput(ctx, name)))
 	})
 }
 
@@ -332,7 +342,7 @@ func tagProblems(checked *checkedPackage) []string {
 			if checked.holdsStruct(field.Type()) {
 				continue
 			}
-			if problem := tagProblem(structure.Tag(index)); problem != "" {
+			if problem := tagProblem(structure.Tag(index), omitOption(field.Type())); problem != "" {
 				problems = append(problems, fmt.Sprintf("%s: %s.%s %s", checked.fileSet.Position(field.Pos()), named.Obj().Name(), field.Name(), problem))
 			}
 		}
@@ -344,22 +354,37 @@ func tagProblems(checked *checkedPackage) []string {
 // tagProblem says how a field's struct tag differs from what the corpus preset asks for.
 //
 // Takes tag (string) which is the field's tag.
+// Takes option (string) which is the json option the field must carry.
 //
 // Returns string which describes the difference, or empty when there is none.
-func tagProblem(tag string) string {
+func tagProblem(tag, option string) string {
 	tags := reflect.StructTag(tag)
 	name, hasJSON := tags.Lookup(jsonTagKey)
 	column, hasColumn := tags.Lookup(corpusTagKey)
 	switch {
 	case !hasJSON || !strings.HasPrefix(tag, jsonTagKey+":"):
 		return fmt.Sprintf("has the tag %q, which does not start with json", tag)
-	case !strings.HasSuffix(name, omitEmptyOption):
-		return fmt.Sprintf("has the json tag %q, without the omitempty option", name)
-	case !hasColumn || strings.TrimSuffix(name, omitEmptyOption) != column:
+	case !strings.HasSuffix(name, option):
+		return fmt.Sprintf("has the json tag %q, without the %s option", name, strings.TrimPrefix(option, jsonOptionSeparator))
+	case !hasColumn || strings.TrimSuffix(name, option) != column:
 		return fmt.Sprintf("has the tag %q, whose %s tag does not name the column the json tag does", tag, corpusTagKey)
 	default:
 		return ""
 	}
+}
+
+// omitOption returns the json option a field of a type must carry to leave out an empty
+// value. The generated Null type is a struct, so it needs omitzero.
+//
+// Takes candidate (types.Type) which is the field's type.
+//
+// Returns string which is omitzero for Null[T], and omitempty otherwise.
+func omitOption(candidate types.Type) string {
+	named, ok := types.Unalias(candidate).(*types.Named)
+	if ok && named.TypeArgs().Len() == 1 && named.Obj().Name() == nullTypeName {
+		return omitZeroOption
+	}
+	return omitEmptyOption
 }
 
 // checkDescriptionsDocumentMethods checks that each query's description is the doc
@@ -376,7 +401,7 @@ func checkDescriptionsDocumentMethods(ctx context.Context, current *subject) kno
 			return problems
 		}
 		definition, _ := findCase(name)
-		return prefixed("case "+name+": ", documentationProblems(definition, current.checkedOutput(ctx, name)))
+		return prefixed(casePrefix+name+checkDetailSeparator, documentationProblems(definition, current.checkedOutput(ctx, name)))
 	})
 }
 
@@ -473,7 +498,7 @@ func checkRowTypes(ctx context.Context, current *subject) knownfailure.Outcome {
 		if !ok {
 			return problems
 		}
-		return prefixed("case "+name+": ", rowTypeProblems(current.checkedOutput(ctx, name)))
+		return prefixed(casePrefix+name+checkDetailSeparator, rowTypeProblems(current.checkedOutput(ctx, name)))
 	})
 }
 

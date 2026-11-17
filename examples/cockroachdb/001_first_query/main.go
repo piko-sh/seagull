@@ -16,12 +16,7 @@
 // oppression. We built this to empower people, not to enable those who would
 // strip others of their rights and dignity.
 
-// Command 001_first_query applies its migrations to a CockroachDB database, then runs the
-// example in example.go: two tasks are added, one is completed, and both are listed.
-//
-// Run it with `go run .` against a local insecure node, which `docker run -d -p
-// 26257:26257 cockroachdb/cockroach:latest-v25.1 start-single-node --insecure` starts, or
-// point it elsewhere with `go run . -dsn <connection string>` or DATABASE_URL.
+// Command 001_first_query runs the first query example.
 package main
 
 import (
@@ -48,6 +43,7 @@ const localDSN = "postgresql://root@localhost:26257/defaultdb?sslmode=disable"
 //go:embed db/migrations
 var migrations embed.FS
 
+// main selects the database and reports example failures.
 func main() {
 	dsn := flag.String("dsn", cmp.Or(os.Getenv("DATABASE_URL"), localDSN), "CockroachDB connection string")
 	flag.Parse()

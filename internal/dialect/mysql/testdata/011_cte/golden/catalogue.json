@@ -57,6 +57,18 @@
               ],
               "ForeignTable": "categories",
               "Kind": "foreign-key",
+              "Name": "categories_ibfk_1",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            }
+          ],
+          "Indexes": [
+            {
+              "Columns": [
+                "parent_id"
+              ],
+              "Name": "parent_id",
               "Origin": {
                 "Filename": "001_schema.up.sql"
               }

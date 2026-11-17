@@ -1,0 +1,86 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 1,
+    "Filename": "001_schema.up.sql",
+    "Line": 2,
+    "Message": "check constraint gauges_chk_2 of table gauges uses column low, so it cannot be dropped or renamed",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 1,
+    "Filename": "001_schema.up.sql",
+    "Line": 3,
+    "Message": "check constraint gauges_chk_2 of table gauges uses column high, so it cannot be dropped or renamed",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 1,
+    "Filename": "001_schema.up.sql",
+    "Line": 4,
+    "Message": "check constraint gauges_chk_1 of table gauges uses column level, so it cannot be dropped or renamed",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 1,
+    "Filename": "001_schema.up.sql",
+    "Line": 5,
+    "Message": "check constraint gauges_chk_2 of table gauges uses column low, so it cannot be dropped or renamed",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 55,
+    "EndColumn": 55,
+    "EndLine": 6,
+    "Filename": "001_schema.up.sql",
+    "Line": 6,
+    "Message": "failed to interpret DDL: syntax error at end of input: MySQL keeps every primary key column NOT NULL, so id cannot be declared NULL",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 60,
+    "EndColumn": 60,
+    "EndLine": 7,
+    "Filename": "001_schema.up.sql",
+    "Line": 7,
+    "Message": "failed to interpret DDL: syntax error at end of input: MySQL keeps every primary key column NOT NULL, so id cannot be declared NULL",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 1,
+    "Filename": "001_schema.up.sql",
+    "Line": 9,
+    "Message": "column id of table keys_kept is in a primary key, so it cannot be declared NULL",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q067",
+    "Column": 1,
+    "Filename": "001_schema.up.sql",
+    "Line": 10,
+    "Message": "key name i is already used in table twice_indexed",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q067",
+    "Column": 1,
+    "Filename": "001_schema.up.sql",
+    "Line": 11,
+    "Message": "key name b_index is already used in table keys_kept",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q067",
+    "Column": 1,
+    "Filename": "001_schema.up.sql",
+    "Line": 12,
+    "Message": "key name a is already used in table keys_kept",
+    "Severity": "error"
+  }
+]

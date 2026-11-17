@@ -1,0 +1,4 @@
+{
+  "description": "DuckDB takes a shorter CTE or derived table column list, renaming the leading columns, ignores with a warning the surplus names of a CTE's list, and refuses a derived table's list naming more.",
+  "expectedDiagnosticCount": 2
+}

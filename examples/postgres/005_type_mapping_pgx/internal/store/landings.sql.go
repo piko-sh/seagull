@@ -30,16 +30,21 @@ type GetLandingRow struct {
 	AtSea     time.Duration `json:"at_sea"`
 	HarbourIP any           `json:"harbour_ip"`
 	Tag       []byte        `json:"tag"`
-	Notes     *string       `json:"notes"`
+	Notes     Null[string]  `json:"notes"`
 }
 
 func (queries *Queries) GetLanding(ctx context.Context, id int64) (GetLandingRow, error) {
-	var row GetLandingRow
-	err := queries.db.QueryRow(ctx, getLandingSQL, id).Scan(&row.ID, &row.CatchID, &row.Species, &row.Boxes, &row.Fish, &row.WeightG, &row.LengthCm, &row.SeaTemp, &row.Price, &row.OnIce, &row.LandedOn, &row.LandedAt, &row.AtSea, &row.HarbourIP, &row.Tag, &row.Notes)
+	scanned := &struct {
+		row     GetLandingRow
+		targets [16]any
+	}{}
+	row := &scanned.row
+	scanned.targets = [16]any{&row.ID, &row.CatchID, &row.Species, &row.Boxes, &row.Fish, &row.WeightG, &row.LengthCm, &row.SeaTemp, &row.Price, &row.OnIce, &row.LandedOn, &row.LandedAt, &row.AtSea, &row.HarbourIP, &row.Tag, &row.Notes}
+	err := queries.db.QueryRow(ctx, getLandingSQL, id).Scan(scanned.targets[:]...)
 	if err != nil {
 		return GetLandingRow{}, err
 	}
-	return row, nil
+	return *row, nil
 }
 
 const recordLandingSQL = `INSERT INTO landings (catch_id, species, boxes, fish, weight_g, length_cm, sea_temp, price, on_ice, landed_on, landed_at, at_sea, harbour_ip, tag, notes)
@@ -61,7 +66,7 @@ type RecordLandingParams struct {
 	AtSea     time.Duration
 	HarbourIP any
 	Tag       []byte
-	Notes     *string
+	Notes     Null[string]
 }
 
 type RecordLandingRow struct {
@@ -69,10 +74,15 @@ type RecordLandingRow struct {
 }
 
 func (queries *Queries) RecordLanding(ctx context.Context, params RecordLandingParams) (RecordLandingRow, error) {
-	var row RecordLandingRow
-	err := queries.db.QueryRow(ctx, recordLandingSQL, params.CatchID, params.Species, params.Boxes, params.Fish, params.WeightG, params.LengthCm, params.SeaTemp, params.Price, params.OnIce, params.LandedOn, params.LandedAt, params.AtSea, params.HarbourIP, params.Tag, params.Notes).Scan(&row.ID)
+	scanned := &struct {
+		row     RecordLandingRow
+		targets [1]any
+	}{}
+	row := &scanned.row
+	scanned.targets = [1]any{&row.ID}
+	err := queries.db.QueryRow(ctx, recordLandingSQL, params.CatchID, params.Species, params.Boxes, params.Fish, params.WeightG, params.LengthCm, params.SeaTemp, params.Price, params.OnIce, params.LandedOn, params.LandedAt, params.AtSea, params.HarbourIP, sglNonNil(params.Tag), params.Notes).Scan(scanned.targets[:]...)
 	if err != nil {
 		return RecordLandingRow{}, err
 	}
-	return row, nil
+	return *row, nil
 }

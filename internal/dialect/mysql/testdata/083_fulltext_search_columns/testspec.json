@@ -1,0 +1,9 @@
+{
+  "description": "CREATE TABLE ... LIKE copies FULLTEXT indexes, so a search of the copy runs. A search naming columns of two tables is refused with error 1210 and warned as Q074, one in boolean mode without its index with error 1191, and a qualified column its table lacks with error 1054, reported as Q001.",
+  "expectedDiagnosticCount": 3,
+  "diagnostics": [
+    {"severity": "warning", "code": "Q074", "messageContains": "searches columns of more than one table"},
+    {"severity": "warning", "code": "Q074", "messageContains": "MATCH (title) needs a FULLTEXT index"},
+    {"severity": "warning", "code": "Q001", "messageContains": "unknown column \"summary\" in table \"p\""}
+  ]
+}

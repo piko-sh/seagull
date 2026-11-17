@@ -1,8 +1,0 @@
-{
-  "description": "SQL generation preserves expressions, clauses, comments and string literals. Counts wrap queries with set-returning calls in the select list or ORDER BY and preserve those calls.",
-  "expectedDiagnosticCount": 2,
-  "diagnostics": [
-    {"code": "Q023", "severity": "hint", "filename": "dynamic.sql", "onLine": 11},
-    {"code": "Q023", "severity": "hint", "filename": "dynamic.sql", "onLine": 14}
-  ]
-}

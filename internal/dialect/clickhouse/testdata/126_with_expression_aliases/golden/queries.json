@@ -1,0 +1,88 @@
+[
+  {
+    "Command": "one",
+    "Filename": "aliases.sql",
+    "Line": 1,
+    "Name": "Highest",
+    "OutputColumns": [
+      {
+        "Name": "highest",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Unsigned": true,
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Highest, command: one)\nWITH max(id) AS highest SELECT highest FROM readings;",
+    "Template": "WITH max(id) AS highest SELECT ⟨c0:highest⟩ FROM readings;"
+  },
+  {
+    "Command": "many",
+    "Filename": "aliases.sql",
+    "Line": 4,
+    "Name": "Scaled",
+    "OutputColumns": [
+      {
+        "Name": "scaled",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "following",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Scaled, command: many)\nWITH 2 AS factor SELECT factor * id AS scaled, id + 1 AS following FROM readings WHERE id \u003e factor;",
+    "Template": "WITH 2 AS factor SELECT ⟨c0 aliased:factor * id⟩ AS scaled, ⟨c1 aliased:id + 1⟩ AS following FROM readings WHERE id \u003e factor;"
+  },
+  {
+    "Command": "many",
+    "Filename": "aliases.sql",
+    "Line": 7,
+    "Name": "Bounded",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Unsigned": true,
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "readings",
+        "SourceTable": "readings"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "limit",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Unsigned": true,
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Bounded, command: many)\nWITH {limit:UInt32} AS bound SELECT id FROM readings WHERE id \u003c bound;",
+    "Template": "WITH ⟨p0 UInt32⟩ AS bound SELECT ⟨c0:id⟩ FROM readings WHERE id \u003c bound;⟨arguments p0⟩"
+  }
+]

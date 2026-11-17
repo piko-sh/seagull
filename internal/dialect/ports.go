@@ -189,7 +189,8 @@ type BuiltinsPort interface {
 // assertion: FunctionResolverPort, CatalogueFunctionResolverPort,
 // TableValuedFunctionTyperPort, ElementNullabilityPort, ExtensionLoaderPort,
 // PredicateTyperPort, RowValueTyperPort, ArrayTyperPort, AliasPrecedencePort,
-// ArrayJoinTyperPort, ResultCheckerPort and ArgumentCoercerPort.
+// TableNameQualifierPort, CorrelatedSubqueryPort, KeywordValuePort, ArrayJoinTyperPort,
+// ResultCheckerPort and ArgumentCoercerPort.
 //
 // The methods of a DialectPort, and of its optional capabilities, should not panic. A
 // method that takes a context recovers a panic of its own at entry, through
@@ -364,6 +365,41 @@ type AliasPrecedencePort interface {
 	//
 	// Returns bool which is true when the alias wins.
 	SelectAliasesShadowColumns() bool
+}
+
+// TableNameQualifierPort describes a dialect where a qualifier may name a table by its
+// own name though the FROM clause gives it an alias, as ClickHouse resolves SELECT t.a
+// FROM t AS x. An alias in any enclosing scope still takes precedence.
+type TableNameQualifierPort interface {
+	// QualifiersNameAliasedTables reports whether a table's own name qualifies its columns
+	// when an alias renames it.
+	//
+	// Returns bool which is true when it does.
+	QualifiersNameAliasedTables() bool
+}
+
+// KeywordValuePort describes a dialect where a bare keyword such as CURRENT_DATE reads a
+// column of that name when the FROM clause of its own query has one, and otherwise the
+// value the keyword gives, never a column of an enclosing query, as DuckDB reads them.
+type KeywordValuePort interface {
+	// KeywordValue types the value a bare keyword gives where no column takes its name.
+	//
+	// Takes name (string) which is the name, in any case.
+	//
+	// Returns sqlmodel.SQLType which is the value's type.
+	// Returns bool which is false for a name that is no such keyword.
+	KeywordValue(name string) (sqlmodel.SQLType, bool)
+}
+
+// CorrelatedSubqueryPort describes a dialect whose scalar subquery is nullable whenever
+// it reads a column of an enclosing query, as ClickHouse 26.8 types one Nullable and
+// returns NULL for a row it matches nothing for, even from count().
+type CorrelatedSubqueryPort interface {
+	// CorrelatedSubqueriesNullable reports whether a correlated scalar subquery may be NULL
+	// whatever it selects.
+	//
+	// Returns bool which is true when it may.
+	CorrelatedSubqueriesNullable() bool
 }
 
 // ArrayJoinTyperPort types the element an ARRAY JOIN unfolds a value into where the value

@@ -3,8 +3,16 @@
     "Code": "Q023",
     "Column": 1,
     "Filename": "dynamic.sql",
+    "Line": 5,
+    "Message": "a dynamic: runtime query returns rows other than those it reads, through GROUP BY, HAVING, DISTINCT, an aggregate, window or set-returning function, its own LIMIT, or a compound; .Count(ctx) wraps the original in a subquery so the count reflects outer-result rows rather than the underlying table",
+    "Severity": "hint"
+  },
+  {
+    "Code": "Q023",
+    "Column": 1,
+    "Filename": "dynamic.sql",
     "Line": 11,
-    "Message": "a dynamic: runtime query returns rows other than those it reads, through GROUP BY, HAVING, DISTINCT, an aggregate, window or set-returning function, or a compound; .Count(ctx) wraps the original in a subquery so the count reflects outer-result rows rather than the underlying table",
+    "Message": "a dynamic: runtime query returns rows other than those it reads, through GROUP BY, HAVING, DISTINCT, an aggregate, window or set-returning function, its own LIMIT, or a compound; .Count(ctx) wraps the original in a subquery so the count reflects outer-result rows rather than the underlying table",
     "Severity": "hint"
   },
   {
@@ -12,7 +20,7 @@
     "Column": 1,
     "Filename": "dynamic.sql",
     "Line": 14,
-    "Message": "a dynamic: runtime query returns rows other than those it reads, through GROUP BY, HAVING, DISTINCT, an aggregate, window or set-returning function, or a compound; .Count(ctx) wraps the original in a subquery so the count reflects outer-result rows rather than the underlying table",
+    "Message": "a dynamic: runtime query returns rows other than those it reads, through GROUP BY, HAVING, DISTINCT, an aggregate, window or set-returning function, its own LIMIT, or a compound; .Count(ctx) wraps the original in a subquery so the count reflects outer-result rows rather than the underlying table",
     "Severity": "hint"
   }
 ]

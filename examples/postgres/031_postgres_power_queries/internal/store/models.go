@@ -19,11 +19,11 @@ type LandingArchive struct {
 }
 
 type Landings struct {
-	ID       int64     `json:"id"`
-	BoatID   int64     `json:"boat_id"`
-	Species  string    `json:"species"`
-	Kilos    int32     `json:"kilos"`
-	LandedOn time.Time `json:"landed_on"`
-	Notes    string    `json:"notes"`
-	Search   *string   `json:"search"`
+	ID       int64        `json:"id"`
+	BoatID   int64        `json:"boat_id"`
+	Species  string       `json:"species"`
+	Kilos    int32        `json:"kilos"`
+	LandedOn time.Time    `json:"landed_on"`
+	Notes    string       `json:"notes"`
+	Search   Null[string] `json:"search"`
 }

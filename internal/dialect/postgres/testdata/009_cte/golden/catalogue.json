@@ -34,6 +34,18 @@
               }
             }
           ],
+          "Constraints": [
+            {
+              "Columns": [
+                "id"
+              ],
+              "Kind": "primary-key",
+              "Name": "authors_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            }
+          ],
           "Name": "authors",
           "Origin": {
             "Filename": "001_schema.up.sql"
@@ -82,6 +94,34 @@
                 "Category": "integer",
                 "EngineName": "int4",
                 "Width": 32
+              }
+            }
+          ],
+          "Constraints": [
+            {
+              "Columns": [
+                "id"
+              ],
+              "Kind": "primary-key",
+              "Name": "books_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              }
+            },
+            {
+              "Columns": [
+                "author_id"
+              ],
+              "ForeignColumns": [
+                "id"
+              ],
+              "ForeignTable": "authors",
+              "Kind": "foreign-key",
+              "Name": "books_author_id_fkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
               }
             }
           ],

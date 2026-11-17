@@ -42,7 +42,16 @@ import (
 var (
 	// defaultRuntimeTables holds the tables the migration runtime keeps under its default
 	// namespace, which WithRuntimeTables replaces.
-	defaultRuntimeTables = []string{"sgl_migrations", "sgl_seeds", "sgl_migration_lock", "sgl_seed_lock"}
+	defaultRuntimeTables = []string{
+		"sgl_migrations",
+		"sgl_seeds",
+		"sgl_migration_lock",
+		"sgl_seed_lock",
+		"sgl_migration_lock_lease",
+		"sgl_seed_lock_lease",
+		"sgl_migrations_progress",
+		"sgl_seeds_progress",
+	}
 )
 
 // Option configures a Generator.
@@ -59,7 +68,7 @@ type settings struct {
 	// clock times each run.
 	clock observe.Clock
 
-	// logger receives the generator's log records.
+	// logger receives the generator's log records when a run's context carries none.
 	logger *slog.Logger
 
 	// observer receives the generator's stage spans.
@@ -355,8 +364,9 @@ func WithRuntimeTables(names ...string) Option {
 	}
 }
 
-// WithLogger sets the logger every run logs through. Without it a run logs through the
-// logger carried by its context (see ContextWithLogger), or slog.Default().
+// WithLogger sets the logger a run logs through when its context carries none. A logger
+// bound with ContextWithLogger wins, and without either a run logs through
+// slog.Default().
 //
 // Takes logger (*slog.Logger) which receives the log records; nil keeps the default.
 //

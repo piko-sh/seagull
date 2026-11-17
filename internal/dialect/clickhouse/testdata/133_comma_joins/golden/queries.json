@@ -1,0 +1,98 @@
+[
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 1,
+    "Name": "CrewOfBoats",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      },
+      {
+        "Name": "crew_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "crew",
+        "SourceTable": "crew"
+      },
+      {
+        "Name": "boat",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "boat",
+        "SourceQualifier": "crew",
+        "SourceTable": "crew"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CrewOfBoats, command: many)\nSELECT boats.id, crew.id AS crew_id, crew.boat FROM boats, crew WHERE crew.boat = boats.name;",
+    "Template": "SELECT ⟨c0:boats.id⟩, ⟨c1 aliased:crew.id⟩ AS crew_id, ⟨c2:crew.boat⟩ FROM boats, crew WHERE crew.boat = boats.name;"
+  },
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 4,
+    "Name": "ThreeSources",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "b",
+        "SourceTable": "boats"
+      },
+      {
+        "Name": "crew_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "c",
+        "SourceTable": "crew"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ThreeSources, command: many)\nSELECT b.id, c.id AS crew_id FROM boats AS b, crew AS c, boats AS b2 WHERE b.id = b2.id;",
+    "Template": "SELECT ⟨c0:b.id⟩, ⟨c1 aliased:c.id⟩ AS crew_id FROM boats AS b, crew AS c, boats AS b2 WHERE b.id = b2.id;"
+  },
+  {
+    "Command": "one",
+    "Filename": "boats.sql",
+    "Line": 7,
+    "Name": "CommaThenJoin",
+    "OutputColumns": [
+      {
+        "Name": "pairings",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CommaThenJoin, command: one)\nSELECT count() AS pairings FROM boats, crew LEFT JOIN boats AS other ON other.id = crew.id;",
+    "Template": "SELECT ⟨c0 aliased:count()⟩ AS pairings FROM boats, crew LEFT JOIN boats AS other ON other.id = crew.id;"
+  }
+]

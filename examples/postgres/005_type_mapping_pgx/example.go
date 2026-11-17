@@ -31,19 +31,7 @@ import (
 	"seagull.sh/seagull/examples/postgres/005_type_mapping_pgx/internal/store"
 )
 
-// run records a landing of fish and reads it back through pgx, printing the Go type sgl
-// chose for each column of db/migrations. Most field types match the database/sql
-// emitter's, but the native pgx emitter maps INTERVAL to time.Duration rather than
-// string. pgx reads PostgreSQL's binary formats itself:
-//
-//   - SMALLINT, INTEGER and BIGINT give int16, int32 and int64; REAL gives float32 and
-//     DOUBLE PRECISION gives float64;
-//   - NUMERIC gives apd.Decimal and UUID gives uuid.UUID, which pgx fills through their
-//     Scan methods;
-//   - DATE and TIMESTAMPTZ give time.Time, and INTERVAL gives time.Duration, which pgx
-//     decodes itself, counting a month as 30 days;
-//   - INET has no mapping in Seagull and gives any, which pgx fills with a netip.Prefix,
-//     where database/sql would give a string.
+// run records a fish landing through pgx and prints its Go field types.
 //
 // Takes pool (*pgxpool.Pool) which is a pool on a migrated database.
 // Takes output (io.Writer) which receives one line per column.
@@ -67,7 +55,7 @@ func run(ctx context.Context, pool *pgxpool.Pool, output io.Writer) error {
 		AtSea:     14*time.Hour + 45*time.Minute,
 		HarbourIP: "192.0.2.17",
 		Tag:       []byte{0x04, 0xa2, 0x19, 0xf3},
-		Notes:     new("landed at Newlyn"),
+		Notes:     store.NullOf("landed at Newlyn"),
 	})
 	if err != nil {
 		return fmt.Errorf("recording a landing: %w", err)
@@ -94,6 +82,6 @@ func run(ctx context.Context, pool *pgxpool.Pool, output io.Writer) error {
 	fmt.Fprintf(output, "harbour_ip  %-14T %v\n", landing.HarbourIP, landing.HarbourIP)
 	// %T prints []byte as []uint8, since byte is an alias for uint8.
 	fmt.Fprintf(output, "tag         %-14T % x\n", landing.Tag, landing.Tag)
-	fmt.Fprintf(output, "notes       %-14T %s\n", landing.Notes, *landing.Notes)
+	fmt.Fprintf(output, "notes       %-14T %s\n", landing.Notes, landing.Notes.V)
 	return nil
 }

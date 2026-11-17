@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"go/ast"
+	"slices"
 	"strings"
 
 	"seagull.sh/seagull/internal/dialect"
@@ -43,6 +44,16 @@ const (
 
 	// jsonCallClose closes the call of the dialect's to-JSON function.
 	jsonCallClose = ")"
+
+	// sliceTypePrefix starts the name of a Go slice type.
+	sliceTypePrefix = "[]"
+
+	// pointerTypePrefix starts the name of a Go pointer type.
+	pointerTypePrefix = "*"
+
+	// placeholderQualifier stands for a column's table in a suggestion when the column has
+	// no single source table.
+	placeholderQualifier = "its_table"
 )
 
 var (
@@ -51,6 +62,26 @@ var (
 
 	// errNoTemplate reports a query without an SQL template to generate from.
 	errNoTemplate = errors.New("the query has no SQL template")
+
+	// arrayTextElements lists the Go types of the slices the array scanner reads an array's
+	// text form into.
+	arrayTextElements = map[sqlmodel.SQLTypeCategory][]string{
+		sqlmodel.TypeCategoryText:    {"string"},
+		sqlmodel.TypeCategoryUUID:    {"string"},
+		sqlmodel.TypeCategoryInteger: {"int64", "int32", "int16", "int"},
+		sqlmodel.TypeCategoryFloat:   {"float64", "float32"},
+		sqlmodel.TypeCategoryBoolean: {"bool"},
+	}
+
+	// arrayLiteralElements lists the Go types of the elements of a slice the generated
+	// sglArrayLiteral writes as an array's text form, by the SQL type category of the
+	// elements.
+	arrayLiteralElements = map[sqlmodel.SQLTypeCategory][]string{
+		sqlmodel.TypeCategoryText:    {"string"},
+		sqlmodel.TypeCategoryUUID:    {"string"},
+		sqlmodel.TypeCategoryInteger: {"int64", "int32", "int16", "int"},
+		sqlmodel.TypeCategoryBoolean: {"bool"},
+	}
 )
 
 // renderKey identifies immutable SQL within one emission. The dialect, driver and style
@@ -68,8 +99,24 @@ type renderData struct {
 	// count retains the rendered count-query form when requested.
 	count *emitkit.Rendered
 
+	// filtered retains the rendered filtered form when the query has one.
+	filtered *emitkit.Rendered
+
+	// filteredCount retains the rendered filtered count form when the query has one.
+	filteredCount *emitkit.Rendered
+
 	// sql retains the rendered executable query form.
 	sql emitkit.Rendered
+}
+
+// RewriteConflict describes a result column whose use by the query would change if the
+// select list converted it to text or JSON.
+type RewriteConflict struct {
+	// Reason says how the query uses the column.
+	Reason string
+
+	// Suggestion says how to write the query so the column keeps its meaning.
+	Suggestion string
 }
 
 // Query prepares a query's names, renderer and SQL for the driver's builders, including
@@ -101,8 +148,10 @@ func (e *Emission) Query(analysed *sqlmodel.AnalysedQuery, imports *goast.Import
 // replaces, and the columns the driver's ColumnReader reads through a wrap are wrapped:
 // in the dialect's to-JSON function for a column read as JSON whose Go type is the
 // default slice, map or struct, and in a cast to the dialect's text type for one read as
-// text, unless the column has a Go type of its own. A column of an embed is wrapped like
-// any other. A star is expanded into its columns unless the request's style keeps stars.
+// text, unless the column has a Go type of its own or the query's own clauses use it in a
+// way the wrap would change, which RewriteConflict reports. A column of an embed is
+// wrapped like any other. A star is expanded into its columns unless the request's style
+// keeps stars.
 //
 // Takes query (*sqlmodel.AnalysedQuery) which is the query.
 //
@@ -118,7 +167,7 @@ func (e *Emission) Renderer(query *sqlmodel.AnalysedQuery) *emitkit.Renderer {
 		Form:         form,
 		Placeholders: info.Placeholders,
 		Omit:         0,
-		ListMode:     listMode(e.Driver.Lists, info, form),
+		ListMode:     e.listMode(query, form),
 		Prefix:       "",
 		KeepStars:    e.Request.Style.KeepStars,
 	}
@@ -127,6 +176,9 @@ func (e *Emission) Renderer(query *sqlmodel.AnalysedQuery) *emitkit.Renderer {
 	}
 	if e.Driver.Reader != nil {
 		renderer.WrapColumn = func(column int) (emitkit.ColumnWrap, bool) {
+			if _, conflicts := e.RewriteConflict(query, column); conflicts {
+				return emitkit.ColumnWrap{}, false
+			}
 			return e.columnWrap(&query.OutputColumns[column])
 		}
 	}
@@ -173,6 +225,55 @@ func (e *Emission) BindForm() dialect.PlaceholderSigil {
 func (e *Emission) NeedsJSONWrap(column *sqlmodel.OutputColumn) bool {
 	wrap, wraps := e.columnWrap(column)
 	return wraps && wrap.Kind == emitkit.ColumnWrapJSON
+}
+
+// RewriteConflict reports whether a query's own clauses use one of its result columns in
+// a way a rewrite in the select list would change. ORDER BY its output name or a position
+// sorts the rewritten value, DISTINCT compares it, and a compound statement's other
+// branches are not rewritten at all.
+//
+// DISTINCT keeps its rows over a decimal cast to text, which is written at the decimal's
+// fixed scale, so that rewrite does not conflict with it.
+//
+// Takes query (*sqlmodel.AnalysedQuery) which holds the columns and the shape of the
+// statement.
+// Takes index (int) which is the result column.
+//
+// Returns RewriteConflict which describes the conflict.
+// Returns bool which is true when the driver would rewrite the column and the query uses
+// it so.
+func (e *Emission) RewriteConflict(query *sqlmodel.AnalysedQuery, index int) (RewriteConflict, bool) {
+	column := &query.OutputColumns[index]
+	wrap, wraps := e.columnWrap(column)
+	if !wraps {
+		return RewriteConflict{}, false
+	}
+	shape := &query.ResultShape
+	decimalText := wrap.Kind == emitkit.ColumnWrapText && column.SQLType.Category == sqlmodel.TypeCategoryDecimal
+	switch {
+	case shape.Compound:
+		return RewriteConflict{
+			Reason:     "a UNION, INTERSECT or EXCEPT, whose other branches the rewrite does not reach",
+			Suggestion: "select the compound statement's rows from a derived table, such as SELECT ... FROM (... UNION ...) AS rows",
+		}, true
+	case shape.Distinct && !decimalText:
+		return RewriteConflict{
+			Reason:     "DISTINCT, which would compare the rewritten value rather than the column's own",
+			Suggestion: "apply DISTINCT in a derived table and select its columns, such as SELECT ... FROM (SELECT DISTINCT ...) AS rows",
+		}, true
+	case shape.Ordinal:
+		return RewriteConflict{
+			Reason:     "an ORDER BY or GROUP BY position, which would use the rewritten value rather than the column's own",
+			Suggestion: "name the column by its table instead of its position, such as ORDER BY " + qualifiedSource(column),
+		}, true
+	case slices.Contains(shape.Named, index):
+		return RewriteConflict{
+			Reason:     "an ORDER BY of its output name, which would sort the rewritten value rather than the column's own",
+			Suggestion: "qualify the column with its table, such as ORDER BY " + qualifiedSource(column),
+		}, true
+	default:
+		return RewriteConflict{}, false
+	}
 }
 
 // ReadsConverted reports whether an output column uses the driver's converting scan
@@ -323,34 +424,31 @@ func (e *Emission) renderQuery(analysed *sqlmodel.AnalysedQuery, imports *goast.
 	renderer.Prefix = prefix
 	key := renderKey{query: analysed, prefix: prefix}
 	if cached, found := e.rendered[key]; found {
-		return &Query{Analysed: analysed, Naming: naming, Types: e.Request.Types, Imports: imports, Renderer: renderer, Rendered: cached.sql, Count: cached.count}, nil
+		return &Query{Analysed: analysed, Naming: naming, Types: e.Request.Types, Imports: imports, Renderer: renderer, Rendered: cached.sql,
+			Count: cached.count, Filtered: cached.filtered, FilteredCount: cached.filteredCount}, nil
 	}
 	rendered, err := emitkit.Render(analysed.Template, renderer)
 	if err != nil {
 		return nil, fmt.Errorf("query %q: %w", analysed.Name, err)
 	}
 	query := &Query{
-		Analysed: analysed,
-		Naming:   naming,
-		Types:    e.Request.Types,
-		Imports:  imports,
-		Renderer: renderer,
-		Rendered: rendered,
-		Count:    nil,
+		Analysed:      analysed,
+		Naming:        naming,
+		Types:         e.Request.Types,
+		Imports:       imports,
+		Renderer:      renderer,
+		Rendered:      rendered,
+		Count:         nil,
+		Filtered:      nil,
+		FilteredCount: nil,
 	}
-	if analysed.DynamicRuntime && analysed.CountTemplate != nil {
-		counting := *renderer
-		counting.WrapColumn = nil
-		count, countErr := emitkit.Render(*analysed.CountTemplate, &counting)
-		if countErr != nil {
-			return nil, fmt.Errorf("query %q, count: %w", analysed.Name, countErr)
-		}
-		query.Count = &count
+	if err := renderRuntimeForms(query); err != nil {
+		return nil, err
 	}
 	if e.rendered == nil {
 		e.rendered = make(map[renderKey]renderData)
 	}
-	e.rendered[key] = renderData{sql: query.Rendered, count: query.Count}
+	e.rendered[key] = renderData{sql: query.Rendered, count: query.Count, filtered: query.Filtered, filteredCount: query.FilteredCount}
 	return query, nil
 }
 
@@ -365,7 +463,7 @@ func (e *Emission) columnWrap(column *sqlmodel.OutputColumn) (emitkit.ColumnWrap
 	info := e.Dialect()
 	switch e.Reading(column.SQLType) {
 	case ColumnReadAsJSON:
-		if info.ToJSON == "" || !e.decodesDocument(column) {
+		if info.ToJSON == "" || !e.decodesDocument(column) || e.ReadsArrayText(column) {
 			return emitkit.ColumnWrap{}, false
 		}
 		return emitkit.ColumnWrap{
@@ -383,6 +481,93 @@ func (e *Emission) columnWrap(column *sqlmodel.OutputColumn) (emitkit.ColumnWrap
 	default:
 		return emitkit.ColumnWrap{}, false
 	}
+}
+
+// ReadsArrayText reports whether generated code scans an array from text.
+//
+// The driver must support ArrayTextReader for the column, which must have no override.
+// Its Go type must be a slice of mapped string, integer, float, or bool values or
+// pointers to them.
+//
+// Takes column (*sqlmodel.OutputColumn) which is the output column.
+//
+// Returns bool which is true when the column is read through the array scanner.
+func (e *Emission) ReadsArrayText(column *sqlmodel.OutputColumn) bool {
+	reader, reads := e.Driver.Reader.(ArrayTextReader)
+	if !reads || column.GoTypeOverride != nil || column.SQLType.ElementType == nil || !reader.ReadsArrayText(column.SQLType) {
+		return false
+	}
+	resolved := goast.ResolveGoType(column.SQLType, column.Nullable, e.Request.Types)
+	if resolved.Composite != nil || resolved.Package != "" {
+		return false
+	}
+	element, sliced := strings.CutPrefix(resolved.Name, sliceTypePrefix)
+	return sliced && slices.Contains(arrayTextElements[column.SQLType.ElementType.Category], strings.TrimPrefix(element, pointerTypePrefix))
+}
+
+// ListsAsArrayText reports whether a query binds slices as text arrays.
+//
+// The driver and dialect must support array membership. The query must be plain, prepare
+// nothing at call time, and have at least one slice parameter. Every slice parameter must
+// pass sliceBindsAsArrayText.
+//
+// Takes query (*sqlmodel.AnalysedQuery) which is the query.
+//
+// Returns bool which is true when the query's slices are bound as arrays' text form.
+func (e *Emission) ListsAsArrayText(query *sqlmodel.AnalysedQuery) bool {
+	binder, binds := e.Driver.Binder.(ArrayListBinder)
+	membership := e.Dialect().Lists.ArrayMembership
+	if !binds || membership.Before == "" || query.IsDynamic || query.DynamicRuntime {
+		return false
+	}
+	if !preparesNothing(query.Command) {
+		return false
+	}
+	listed := false
+	for index := range query.Parameters {
+		parameter := &query.Parameters[index]
+		if !parameter.IsSlice {
+			continue
+		}
+		if !e.sliceBindsAsArrayText(binder, parameter) {
+			return false
+		}
+		listed = true
+	}
+	return listed
+}
+
+// sliceBindsAsArrayText reports whether a slice parameter can be bound as an array's text
+// form. It must have no override, the binder must bind its elements' SQL type so, and its
+// elements must be of a string, integer or bool Go type, or pointers to one.
+//
+// Takes binder (ArrayListBinder) which binds the list.
+// Takes parameter (*sqlmodel.QueryParameter) which is the slice parameter.
+//
+// Returns bool which is true when the parameter can be bound as an array's text form.
+func (e *Emission) sliceBindsAsArrayText(binder ArrayListBinder, parameter *sqlmodel.QueryParameter) bool {
+	if parameter.GoTypeOverride != nil || !binder.BindsListAsArrayText(parameter.SQLType) {
+		return false
+	}
+	element := goast.ResolveGoType(parameter.SQLType, parameter.Nullable, e.Request.Types)
+	if element.Composite != nil || element.Package != "" {
+		return false
+	}
+	return slices.Contains(arrayLiteralElements[parameter.SQLType.Category], strings.TrimPrefix(element.Name, pointerTypePrefix))
+}
+
+// listMode returns how a query's slice lists are written. They are written as arrays'
+// text form when ListsAsArrayText says so, and as the driver's list mode says otherwise.
+//
+// Takes query (*sqlmodel.AnalysedQuery) which is the query.
+// Takes form (dialect.PlaceholderSigil) which is the form the query executes in.
+//
+// Returns emitkit.ListMode which is the list mode.
+func (e *Emission) listMode(query *sqlmodel.AnalysedQuery, form dialect.PlaceholderSigil) emitkit.ListMode {
+	if e.Driver.Lists == emitkit.ListExpand && form.Kind != dialect.PlaceholderNamed && e.ListsAsArrayText(query) {
+		return emitkit.ListArray
+	}
+	return listMode(e.Driver.Lists, e.Dialect(), form)
 }
 
 // decodesDocument reports whether the generated code reads a column the driver reads as
@@ -413,6 +598,72 @@ func (e *Emission) converts(column *sqlmodel.OutputColumn) bool {
 	}
 	_, converts := e.Driver.Reader.(ColumnConverter)
 	return converts
+}
+
+// qualifiedSource writes the table-qualified column a result column reads, for a
+// suggestion, or a stand-in when the column has no single source.
+//
+// Takes column (*sqlmodel.OutputColumn) which is the result column.
+//
+// Returns string which is the qualified reference.
+func qualifiedSource(column *sqlmodel.OutputColumn) string {
+	qualifier := column.SourceQualifier
+	if qualifier == "" {
+		qualifier = column.SourceTable
+	}
+	if qualifier == "" || column.SourceColumn == "" {
+		return placeholderQualifier + "." + column.Name
+	}
+	return qualifier + "." + column.SourceColumn
+}
+
+// renderRuntimeForms renders the remaining forms of a runtime builder query.
+//
+// These include count and, when conditions filter result rows, filtered and filtered
+// count forms. A count wraps no column.
+//
+// Takes query (*Query) which is the query, its Rendered set, and receives the forms.
+//
+// Returns error when a form does not render.
+func renderRuntimeForms(query *Query) error {
+	analysed := query.Analysed
+	if !analysed.DynamicRuntime {
+		return nil
+	}
+	counting := *query.Renderer
+	counting.WrapColumn = nil
+	var err error
+	if query.Count, err = renderOptional(analysed.CountTemplate, &counting); err != nil {
+		return fmt.Errorf("query %q, count: %w", analysed.Name, err)
+	}
+	if query.Filtered, err = renderOptional(analysed.FilteredTemplate, query.Renderer); err != nil {
+		return fmt.Errorf("query %q, filtered: %w", analysed.Name, err)
+	}
+	if query.Count == nil || query.Filtered == nil {
+		return nil
+	}
+	if query.FilteredCount, err = renderOptional(analysed.FilteredCountTemplate, &counting); err != nil {
+		return fmt.Errorf("query %q, filtered count: %w", analysed.Name, err)
+	}
+	return nil
+}
+
+// renderOptional renders a template a query may leave out.
+//
+// Takes template (*sqlmodel.SQLTemplate) which is the template, or nil.
+// Takes renderer (*emitkit.Renderer) which writes it.
+//
+// Returns *emitkit.Rendered which is the rendering, or nil for no template.
+// Returns error when the template does not render.
+func renderOptional(template *sqlmodel.SQLTemplate, renderer *emitkit.Renderer) (*emitkit.Rendered, error) {
+	if template == nil {
+		return nil, nil
+	}
+	rendered, err := emitkit.Render(*template, renderer)
+	if err != nil {
+		return nil, err
+	}
+	return &rendered, nil
 }
 
 // SlicesExpand reports whether a query binds slice elements separately.
@@ -487,4 +738,20 @@ func sortableParameter(query *sqlmodel.AnalysedQuery) *sqlmodel.QueryParameter {
 		}
 	}
 	return nil
+}
+
+// preparesNothing reports whether a query command runs as a plain query, statement or
+// stream that prepares nothing at call time.
+//
+// Takes command (sqlmodel.QueryCommand) which is the query's command.
+//
+// Returns bool which is true for such a command.
+func preparesNothing(command sqlmodel.QueryCommand) bool {
+	switch command {
+	case sqlmodel.QueryCommandOne, sqlmodel.QueryCommandMany, sqlmodel.QueryCommandExec, sqlmodel.QueryCommandExecResult,
+		sqlmodel.QueryCommandExecRows, sqlmodel.QueryCommandStream:
+		return true
+	default:
+		return false
+	}
 }

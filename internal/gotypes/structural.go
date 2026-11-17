@@ -20,6 +20,7 @@ package gotypes
 
 import (
 	"strconv"
+	"strings"
 
 	"piko.sh/goastutil"
 
@@ -27,6 +28,9 @@ import (
 	"seagull.sh/seagull/internal/gogen/goast"
 	"seagull.sh/seagull/internal/sqlmodel"
 )
+
+// structuralSlicePrefix marks a Go slice type.
+const structuralSlicePrefix = "[]"
 
 const (
 	// goPackageTime is the import path of the time package.
@@ -258,10 +262,10 @@ func (m *structuralMapper) network(sqlType sqlmodel.SQLType, nullable bool) sqlm
 // Returns sqlmodel.GoType which is the slice type, nullable or not.
 func (m *structuralMapper) array(sqlType sqlmodel.SQLType) sqlmodel.GoType {
 	if sqlType.ElementType == nil || m.depth >= sqlmodel.MaxTypeDepth {
-		return named("[]"+goTypeAny, false)
+		return named(structuralSlicePrefix+goTypeAny, false)
 	}
 	element := m.part(*sqlType.ElementType, sqlType.ElementType.Nullable)
-	element.Name = "[]" + element.Name
+	element.Name = structuralSlicePrefix + element.Name
 	return element
 }
 
@@ -301,7 +305,7 @@ func (m *structuralMapper) structType(sqlType sqlmodel.SQLType, nullable bool) s
 		return named(goTypeAny, false)
 	}
 	if !hasNamedFields(&sqlType) {
-		return named("[]"+goTypeAny, false)
+		return named(structuralSlicePrefix+goTypeAny, false)
 	}
 	if resolved := m.slots.Struct.Resolved(); !resolved.IsZero() {
 		return fromSlot(resolved, sqlmodel.TypeSlot{}, nullable)
@@ -381,7 +385,7 @@ func comparableGoType(goType sqlmodel.GoType) bool {
 	if goType.Composite != nil || goType.Name == goTypeAny {
 		return false
 	}
-	return len(goType.Name) < 2 || goType.Name[:2] != "[]"
+	return !strings.HasPrefix(goType.Name, structuralSlicePrefix)
 }
 
 // named returns a built-in Go type, or a pointer to it when nullable.

@@ -1,0 +1,32 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 42,
+    "EndColumn": 48,
+    "EndLine": 5,
+    "Filename": "grouping.sql",
+    "Line": 5,
+    "Message": "failed to analyse query \"Rollup\": syntax error near \"ROLLUP\": this engine has no ROLLUP, CUBE or GROUPING SETS grouping",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 42,
+    "EndColumn": 46,
+    "EndLine": 8,
+    "Filename": "grouping.sql",
+    "Line": 8,
+    "Message": "failed to analyse query \"Cube\": syntax error near \"CUBE\": this engine has no ROLLUP, CUBE or GROUPING SETS grouping",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 42,
+    "EndColumn": 50,
+    "EndLine": 11,
+    "Filename": "grouping.sql",
+    "Line": 11,
+    "Message": "failed to analyse query \"Sets\": syntax error near \"GROUPING\": this engine has no ROLLUP, CUBE or GROUPING SETS grouping",
+    "Severity": "error"
+  }
+]

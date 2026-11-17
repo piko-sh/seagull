@@ -1,0 +1,48 @@
+{
+  "Identifiers": {
+    "Insensitive": true,
+    "Unquoted": "none"
+  },
+  "Schemas": {
+    "": {
+      "Tables": {
+        "rt": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "k",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "v",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            }
+          ],
+          "Name": "rt",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          }
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    ""
+  ]
+}

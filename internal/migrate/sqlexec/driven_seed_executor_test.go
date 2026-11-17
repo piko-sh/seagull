@@ -318,10 +318,10 @@ func TestSeedExecutor_ConcurrentApplyIsIdempotent(t *testing.T) {
 	require.Len(t, store.applied, 1, "exactly one sgl_seeds row must exist for the version")
 }
 
-func TestSeedExecutor_SQLiteSeedLockNeedsNoDatabase(t *testing.T) {
+func TestSeedExecutor_SQLiteWithoutALockNeedsNoDatabase(t *testing.T) {
 	t.Parallel()
 
-	dialect := SQLite()
+	dialect := SQLite(WithLock(LockNone))
 	executor := newSeedExecutor(nil, dialect)
 
 	err := executor.AcquireSeedLock(t.Context())
@@ -542,7 +542,7 @@ func TestAppliedSeedsWarnsOnceForEveryAppliedAtItCannotRead(t *testing.T) {
 	executor, err := NewSeedExecutor(database, SQLite())
 	require.NoError(t, err)
 	var logs bytes.Buffer
-	ctx := logging.ContextWithLogger(t.Context(), slog.New(slog.NewJSONHandler(&logs, nil)))
+	ctx := logging.WithLogger(t.Context(), slog.New(slog.NewJSONHandler(&logs, nil)))
 
 	seeds, err := executor.AppliedSeeds(ctx)
 

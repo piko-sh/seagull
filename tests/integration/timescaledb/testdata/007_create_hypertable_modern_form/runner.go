@@ -57,7 +57,7 @@ func main() {
 		err = queries.InsertTelemetry(ctx, db.InsertTelemetryParams{
 			Ts:       baseline.AddDate(0, 0, day),
 			DeviceID: 1,
-			Value:    new(float64(day*10 + 5)),
+			Value:    db.NullOf(float64(day*10 + 5)),
 		})
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)

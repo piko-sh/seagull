@@ -41,16 +41,15 @@ const (
 // from the query's own segments, so the filter a caller adds lands in it too.
 //
 // When the query's rows are the rows it reads, its select list becomes COUNT(*) and
-// everything from its ORDER BY, pagination, locking or terminator on is left out.
-// Otherwise it is wrapped in SELECT COUNT(*) FROM (...) sub, with the same clauses
-// removed. Wrapping applies to compound queries, GROUP BY, HAVING, quantifiers such as
-// DISTINCT, clauses that shape rows after HAVING, select-list aggregates or window
-// functions, and set-returning calls in the select list or ORDER BY.
+// everything from its ORDER BY, locking or terminator on is left out. Otherwise it is
+// wrapped in SELECT COUNT(*) FROM (...) sub, with the same clauses removed. Wrapping
+// applies to compound queries, GROUP BY, HAVING, quantifiers such as DISTINCT,
+// select-list aggregates or window functions, and set-returning calls in the select list
+// or ORDER BY. A statement that picks its own rows is counted by pickedRows instead.
 //
 // A compound statement keeps its ORDER BY and pagination, which belong to its branches on
-// some engines. Any statement keeps an ORDER BY that returns a set or that precedes a
-// row-shaping clause. Clauses that must stay last, such as SETTINGS, follow the count in
-// both forms.
+// some engines. Any statement keeps an ORDER BY that returns a set. Clauses that must
+// stay last, such as SETTINGS, follow the count in both forms.
 //
 // Takes root (*node) which is the query's tree.
 //
@@ -100,59 +99,28 @@ func (b *builder) countWraps() bool {
 
 // clausesShapeRows reports whether a clause changes which rows the query returns.
 //
-// It checks GROUP BY, HAVING, quantifiers such as DISTINCT, and clauses that shape rows
-// after HAVING.
+// It checks GROUP BY, HAVING and quantifiers such as DISTINCT.
 //
 // Returns bool which is true when such a clause is written.
 func (b *builder) clausesShapeRows() bool {
-	return b.spans.GroupBy.Known() || b.spans.Having.Known() || b.spans.Quantifier.Known() || len(b.spans.RowShaping) > 0
+	return b.spans.GroupBy.Known() || b.spans.Having.Known() || b.spans.Quantifier.Known()
 }
 
 // countCut returns the end offset of the query text retained by its count.
 //
-// It stops at the first ORDER BY, pagination, locking clause, clause that must stay last,
-// or statement terminator. A compound statement keeps its ORDER BY and pagination, and
-// any statement keeps an ORDER BY when countKeepsOrderBy requires it.
+// It stops at the first ORDER BY, locking clause, clause that must stay last, or
+// statement terminator. A compound statement keeps its ORDER BY and pagination, and any
+// statement keeps an ORDER BY that returns a set.
 //
 // Takes compound (bool) which is true for a compound statement.
 //
 // Returns int which is the offset into Input.SQL.
 func (b *builder) countCut(compound bool) int {
 	clauses := []ast.Span{b.spans.Locking, b.spans.Trailing, b.spans.Terminator}
-	if !compound {
-		clauses = append(clauses, b.spans.Pagination)
-		if !b.countKeepsOrderBy() {
-			clauses = append(clauses, b.spans.OrderBy)
-		}
+	if !compound && !b.input.OrderByAddsRows {
+		clauses = append(clauses, b.spans.OrderBy)
 	}
 	return b.firstStart(b.statementEnd(), clauses...)
-}
-
-// countKeepsOrderBy reports whether counting a non-compound query requires its ORDER BY.
-//
-// The ORDER BY must stay when it returns a set or when a later row-shaping clause picks
-// rows by their order.
-//
-// Returns bool which is true when the count keeps the ORDER BY.
-func (b *builder) countKeepsOrderBy() bool {
-	return b.input.OrderByAddsRows || b.rowShapingFollows(b.spans.OrderBy)
-}
-
-// rowShapingFollows reports whether a row-shaping clause comes after a clause.
-//
-// Takes clause (ast.Span) which is the clause, relative to the statement.
-//
-// Returns bool which is true when a row-shaping clause starts after it.
-func (b *builder) rowShapingFollows(clause ast.Span) bool {
-	if !clause.Known() {
-		return false
-	}
-	for _, shaping := range b.spans.RowShaping {
-		if shaping.Known() && shaping.Start >= clause.End {
-			return true
-		}
-	}
-	return false
 }
 
 // wrappedCount writes the count that wraps the query: what precedes the statement, then

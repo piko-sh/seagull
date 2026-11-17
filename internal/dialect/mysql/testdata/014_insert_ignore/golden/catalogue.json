@@ -47,6 +47,18 @@
               }
             }
           ],
+          "Constraints": [
+            {
+              "Columns": [
+                "email"
+              ],
+              "Kind": "unique",
+              "Name": "email",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            }
+          ],
           "Name": "unique_emails",
           "Origin": {
             "Filename": "001_schema.up.sql"

@@ -30,6 +30,9 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Compound": true
+    },
     "SQL": "-- sgl.query(name: GetAllUsersUnion, command: many)\nSELECT id, name FROM active_users UNION ALL SELECT id, name FROM archived_users;",
     "Template": "SELECT id, name FROM active_users UNION ALL SELECT id, name FROM archived_users;"
   },
@@ -64,6 +67,9 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Compound": true
+    },
     "SQL": "-- sgl.query(name: GetCommonUsers, command: many)\nSELECT id, name FROM active_users INTERSECT SELECT id, name FROM archived_users;",
     "Template": "SELECT id, name FROM active_users INTERSECT SELECT id, name FROM archived_users;"
   },
@@ -98,6 +104,9 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Compound": true
+    },
     "SQL": "-- sgl.query(name: GetActiveOnlyUsers, command: many)\nSELECT id, name FROM active_users EXCEPT SELECT id, name FROM archived_users;",
     "Template": "SELECT id, name FROM active_users EXCEPT SELECT id, name FROM archived_users;"
   }

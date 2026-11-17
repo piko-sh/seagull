@@ -49,8 +49,9 @@ Struct, list and map literals, list comprehensions and lambdas are understood.
 
 ROW and parenthesised values create unnamed structs. They can be compared, but the
 driver cannot read one in a result, even inside another composite (Q059). Name its fields
-with `struct_pack`. Map keys cannot be LIST, STRUCT, MAP or UNION (Q059); select
-`map_entries`, `map_keys` or `map_values` instead.
+with `struct_pack`. Map keys cannot be LIST, STRUCT, MAP, UNION, BLOB or UUID (Q059),
+since the driver cannot read them; select `map_entries`, `map_keys` or `map_values`
+instead.
 
 A whole-row reference such as `to_json(boats)` is a STRUCT of the relation's columns.
 The row itself is non-null even on an outer join's nullable side, where its fields are
@@ -92,8 +93,11 @@ Lambdas receive list elements as parameters. Transform returns the lambda's resu
 filter retains the list type, and reduce returns the accumulator's type. Transform and
 filter can receive an element position as a second parameter; reduce can receive it as
 a third. Lambda variables hide same-name columns, and a field of a struct the lambda
-receives, as in `x -> x.a`, is read from the struct. A comparison with a lambda parameter
-types the query placeholder from that parameter.
+receives, as in `lambda x: x.a`, is read from the struct. A comparison with a lambda
+parameter types the query placeholder from that parameter. DuckDB 2.0 refuses a lambda
+written with an arrow, as `x -> x + 1`, unless the session sets
+`lambda_syntax = 'ENABLE_SINGLE_ARROW'`, so Seagull warns of one
+([Q063](../diagnostics.md#q063)); write it with the `LAMBDA` keyword.
 
 The built-in catalogue includes analytics aggregates, date, string, JSON and list
 functions. For example, `histogram` returns a map of values to UBIGINT counts, quantile

@@ -28,22 +28,7 @@ import (
 	"seagull.sh/seagull/examples/clickhouse/019_ctes_and_windows/internal/store"
 )
 
-// run hatches a colony of gulls, records their snack thefts and reads them back three
-// ways. Seagull follows each column's type and nullability through the SQL, by
-// ClickHouse's own rules:
-//
-//   - FamilyTree's recursive CTE starts from one gull and joins its chicks generation by
-//     generation. The literal 0 is a UInt8 and adding 1 to a UInt8 gives a UInt16, so
-//     Seagull makes Generation a uint16. The server keeps the first SELECT's UInt8 for a
-//     recursive CTE's column, and database/sql converts each value to the wider field.
-//     parent is *string because the LEFT JOIN, with join_use_nulls = 1, finds no parent
-//     for the first gull;
-//   - TheftLeague counts thefts in a CTE, so stolen is uint64, then ranks gulls on each
-//     beach with rank() OVER, a UInt64, and totals the beach with sum() OVER, a UInt64
-//     too, since ClickHouse sums unsigned integers to UInt64 and sums no rows to 0, not
-//     NULL. Neither can be NULL, so BeachRank and BeachThefts are plain uint64;
-//   - BeachRecords reads the beach_records view from the migration as if it were a table,
-//     and its columns keep the types the view's own SELECT gives them.
+// run reads gull thefts with CTE and window queries.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes output (io.Writer) which receives the three listings.
@@ -53,12 +38,12 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 	queries := store.New(database)
 
 	gulls := []store.HatchGullParams{
-		{ID: 1, Name: "Steven", ParentID: nil, Beach: "Porthmeor"},
-		{ID: 2, Name: "Gwen", ParentID: new(uint64(1)), Beach: "Porthmeor"},
-		{ID: 3, Name: "Jago", ParentID: new(uint64(1)), Beach: "Porthminster"},
-		{ID: 4, Name: "Kerensa", ParentID: new(uint64(2)), Beach: "Porthmeor"},
-		{ID: 5, Name: "Tristan", ParentID: nil, Beach: "Porthminster"},
-		{ID: 6, Name: "Morwenna", ParentID: nil, Beach: "Gwithian"},
+		{ID: 1, Name: "Steven", ParentID: store.Null[uint64]{}, Beach: "Porthmeor"},
+		{ID: 2, Name: "Gwen", ParentID: store.NullOf(uint64(1)), Beach: "Porthmeor"},
+		{ID: 3, Name: "Jago", ParentID: store.NullOf(uint64(1)), Beach: "Porthminster"},
+		{ID: 4, Name: "Kerensa", ParentID: store.NullOf(uint64(2)), Beach: "Porthmeor"},
+		{ID: 5, Name: "Tristan", ParentID: store.Null[uint64]{}, Beach: "Porthminster"},
+		{ID: 6, Name: "Morwenna", ParentID: store.Null[uint64]{}, Beach: "Gwithian"},
 	}
 	for _, gull := range gulls {
 		if err := queries.HatchGull(ctx, gull); err != nil {
@@ -105,8 +90,8 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 	fmt.Fprintln(output, "beach records:")
 	for _, record := range records {
 		lastTheft := "NULL"
-		if record.LastTheft != nil {
-			lastTheft = record.LastTheft.Format(time.DateOnly)
+		if record.LastTheft.Valid {
+			lastTheft = record.LastTheft.V.Format(time.DateOnly)
 		}
 		fmt.Fprintf(output, "  %-13s gulls %d, thefts %d, last theft %s\n", record.Beach, record.Gulls, record.Thefts, lastTheft)
 	}
@@ -123,14 +108,14 @@ func day(date int) time.Time {
 	return time.Date(2026, time.July, date, 0, 0, 0, 0, time.UTC)
 }
 
-// orNull returns the text a nullable field holds, or NULL when the field is nil.
+// orNull returns the text a nullable field holds, or NULL when it holds none.
 //
-// Takes value (*string) which is a nullable field.
+// Takes value (store.Null[string]) which is a nullable field.
 //
 // Returns string which is the text to print.
-func orNull(value *string) string {
-	if value == nil {
+func orNull(value store.Null[string]) string {
+	if !value.Valid {
 		return "NULL"
 	}
-	return *value
+	return value.V
 }

@@ -104,7 +104,7 @@ SELECT o.id, o.customer, o.total, i.id, i.product, i.quantity FROM orders o LEFT
 				require.NoError(t, os.WriteFile(name, file.Content, 0o600))
 				arguments = append(arguments, name)
 			}
-			fixture, err := os.ReadFile(filepath.Join("testdata", "performance", target.name+"_test.go.txt"))
+			fixture, err := os.ReadFile(filepath.Join("testdata", "performance", target.name+"_test.go"))
 			require.NoError(t, err)
 			name := filepath.Join(directory, "runtime_test.go")
 			require.NoError(t, os.WriteFile(name, fixture, 0o600))

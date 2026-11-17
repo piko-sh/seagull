@@ -1,0 +1,4 @@
+{
+  "description": "PostgreSQL takes a precision after CURRENT_TIME, CURRENT_TIMESTAMP, LOCALTIME and LOCALTIMESTAMP, and empty parentheses after CURRENT_SCHEMA.",
+  "expectedDiagnosticCount": 0
+}

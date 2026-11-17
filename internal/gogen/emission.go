@@ -156,6 +156,33 @@ func (e *Emission) BindPositional(access ast.Expr, parameter *sqlmodel.QueryPara
 	return positional.BindPositional(access, parameter)
 }
 
+// BindElement adapts a scalar from an expanded slice when its driver requires it.
+//
+// Takes access (ast.Expr) which reads one slice element.
+// Takes parameter (*sqlmodel.QueryParameter) which records the element's SQL type.
+//
+// Returns ast.Expr which preserves the element's native representation.
+func (e *Emission) BindElement(access ast.Expr, parameter *sqlmodel.QueryParameter) ast.Expr {
+	binder, ok := e.Driver.Binder.(ElementBinder)
+	if !ok {
+		return access
+	}
+	return binder.BindElement(access, parameter)
+}
+
+// BindRuntimeArguments adapts caller-supplied builder values for the selected driver.
+//
+// Takes access (ast.Expr) which reads the argument slice.
+//
+// Returns ast.Expr which retains the input expression when no conversion is required.
+func (e *Emission) BindRuntimeArguments(access ast.Expr) ast.Expr {
+	binder, ok := e.Driver.Binder.(RuntimeArgumentBinder)
+	if !ok {
+		return access
+	}
+	return binder.BindRuntimeArguments(access)
+}
+
 // Reading returns how the generated code reads an output column of a SQL type.
 //
 // Takes sqlType (sqlmodel.SQLType) which is the column's SQL type.

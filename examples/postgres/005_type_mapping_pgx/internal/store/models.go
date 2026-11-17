@@ -25,5 +25,5 @@ type Landings struct {
 	AtSea     time.Duration `json:"at_sea"`
 	HarbourIP any           `json:"harbour_ip"`
 	Tag       []byte        `json:"tag"`
-	Notes     *string       `json:"notes"`
+	Notes     Null[string]  `json:"notes"`
 }

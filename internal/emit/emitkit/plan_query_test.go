@@ -297,6 +297,8 @@ func TestQueryPlanShapesTheMethodByCommand(t *testing.T) {
 		{name: "one parameter", command: sqlmodel.QueryCommandOne, parameters: []sqlmodel.QueryParameter{parameterNamed("id")}, columns: []sqlmodel.OutputColumn{columnNamed("id")}, params: "", parameterFields: []string{"id"}, row: "DoRow"},
 		{name: "two parameters", command: sqlmodel.QueryCommandExecRows, parameters: []sqlmodel.QueryParameter{parameterNamed("a"), parameterNamed("b")}, params: "DoParams", parameterFields: []string{"A", "B"}, row: ""},
 		{name: "one slice parameter", command: sqlmodel.QueryCommandMany, parameters: []sqlmodel.QueryParameter{slice}, params: "DoParams", parameterFields: []string{"IDs"}, row: "DoRow"},
+		{name: "a batch with no parameters", command: sqlmodel.QueryCommandBatch, params: "DoParams", parameterFields: []string{}, row: ""},
+		{name: "a copyfrom with no parameters", command: sqlmodel.QueryCommandCopyFrom, params: "DoParams", parameterFields: []string{}, row: ""},
 		{name: "a batch of one parameter", command: sqlmodel.QueryCommandBatch, parameters: []sqlmodel.QueryParameter{parameterNamed("id")}, params: "DoParams", parameterFields: []string{"ID"}, row: ""},
 		{name: "a batch returning columns", command: sqlmodel.QueryCommandBatch, parameters: []sqlmodel.QueryParameter{parameterNamed("id")}, columns: []sqlmodel.OutputColumn{columnNamed("id")}, params: "DoParams", parameterFields: []string{"ID"}, row: "DoRow"},
 		{name: "a copyfrom", command: sqlmodel.QueryCommandCopyFrom, parameters: []sqlmodel.QueryParameter{parameterNamed("id")}, params: "DoParams", parameterFields: []string{"ID"}, row: ""},

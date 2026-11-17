@@ -19,7 +19,9 @@
 package source
 
 import (
+	"database/sql/driver"
 	"fmt"
+	"math"
 	"regexp"
 	"strings"
 	"testing"
@@ -188,13 +190,13 @@ func TestNewPredicateBuildsTheConditionACallerAsksFor(t *testing.T) {
 		operator string
 		want     sglPredicate
 	}{
-		{name: "a binary operator binds its value", operator: "=", value: 7, want: sglPredicate{text: `"t"."id" = `, values: []any{7}, list: false}},
-		{name: "a unary operator binds nothing", operator: "IS NULL", value: "ignored", want: sglPredicate{text: `"t"."id" IS NULL`, values: nil, list: false}},
-		{name: "IN binds each element as a list", operator: "IN", value: []int{1, 2}, want: sglPredicate{text: `"t"."id" IN `, values: []any{1, 2}, list: true}},
-		{name: "NOT IN binds an array's elements", operator: "NOT IN", value: [2]string{"a", "b"}, want: sglPredicate{text: `"t"."id" NOT IN `, values: []any{"a", "b"}, list: true}},
-		{name: "IN binds a byte slice as one value", operator: "IN", value: []byte("blob"), want: sglPredicate{text: `"t"."id" IN `, values: []any{[]byte("blob")}, list: true}},
-		{name: "an empty IN list writes the empty membership test", operator: "IN", value: []int{}, want: sglPredicate{text: `"t"."id" ` + sglEmptyMembership, values: nil, list: false}},
-		{name: "a nil NOT IN value writes the empty exclusion test", operator: "NOT IN", value: nil, want: sglPredicate{text: `"t"."id" ` + sglEmptyExclusion, values: nil, list: false}},
+		{name: "a binary operator binds its value", operator: "=", value: 7, want: sglPredicate{value: 7, column: `"t"."id"`, operator: "=", values: nil, shape: sglPredicateScalar}},
+		{name: "a unary operator binds nothing", operator: "IS NULL", value: "ignored", want: sglPredicate{value: nil, column: `"t"."id"`, operator: "IS NULL", values: nil, shape: sglPredicateBare}},
+		{name: "IN binds each element as a list", operator: "IN", value: []int{1, 2}, want: sglPredicate{value: nil, column: `"t"."id"`, operator: "IN", values: []any{1, 2}, shape: sglPredicateList}},
+		{name: "NOT IN binds an array's elements", operator: "NOT IN", value: [2]string{"a", "b"}, want: sglPredicate{value: nil, column: `"t"."id"`, operator: "NOT IN", values: []any{"a", "b"}, shape: sglPredicateList}},
+		{name: "IN binds a byte slice as one value", operator: "IN", value: []byte("blob"), want: sglPredicate{value: nil, column: `"t"."id"`, operator: "IN", values: []any{[]byte("blob")}, shape: sglPredicateList}},
+		{name: "an empty IN list writes the empty membership test", operator: "IN", value: []int{}, want: sglPredicate{value: nil, column: `"t"."id"`, operator: sglEmptyMembership, values: nil, shape: sglPredicateBare}},
+		{name: "a nil NOT IN value writes the empty exclusion test", operator: "NOT IN", value: nil, want: sglPredicate{value: nil, column: `"t"."id"`, operator: sglEmptyExclusion, values: nil, shape: sglPredicateBare}},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
@@ -226,9 +228,9 @@ func TestFilterNumbersItsPlaceholdersFromTheNextNumber(t *testing.T) {
 	t.Parallel()
 
 	predicates := []sglPredicate{
-		{text: "a = ", values: []any{1}, list: false},
-		{text: "b IS NULL", values: nil, list: false},
-		{text: "c IN ", values: []any{2, 3}, list: true},
+		{value: 1, column: "a", operator: "=", values: nil, shape: sglPredicateScalar},
+		{value: nil, column: "b", operator: "IS NULL", values: nil, shape: sglPredicateBare},
+		{value: nil, column: "c", operator: "IN", values: []any{2, 3}, shape: sglPredicateList},
 	}
 
 	filter, values := sglFilter(predicates, 4)
@@ -269,14 +271,18 @@ func TestOrderAddsKeysAfterAWrittenOrderOrWritesOne(t *testing.T) {
 func TestNewOrderChecksTheColumnAndTheDirection(t *testing.T) {
 	t.Parallel()
 
-	order, err := sglNewOrder("id", " desc nulls last ", allowedColumns())
+	order, err := sglNewOrder("id", " desc nulls last ", allowedColumns(), false)
 	require.NoError(t, err)
 	require.Equal(t, `"t"."id" DESC NULLS LAST`, order)
 
-	_, err = sglNewOrder("name", "ASC", allowedColumns())
+	order, err = sglNewOrder("id", "asc nulls last", allowedColumns(), true)
+	require.NoError(t, err)
+	require.Equal(t, `"t"."id" ASC`, order, "the placement the engine gives anyway is left out, so it runs in a SELECT DISTINCT")
+
+	_, err = sglNewOrder("name", "ASC", allowedColumns(), false)
 	require.ErrorIs(t, err, ErrSglUnknownColumn)
 
-	_, err = sglNewOrder("id", "ASC; DROP TABLE users", allowedColumns())
+	_, err = sglNewOrder("id", "ASC; DROP TABLE users", allowedColumns(), false)
 	require.ErrorIs(t, err, ErrSglUnknownDirection)
 }
 
@@ -481,5 +487,54 @@ func TestRuntimeBuilderErrorValuesAreDistinctAndMatchThroughWrapping(t *testing.
 				}
 			}
 		})
+	}
+}
+
+func TestNewPredicateAllocatesNothingForAScalar(t *testing.T) {
+	allowed := map[string]string{"id": `"t"."id"`}
+	value := any(int64(5000))
+	allocations := testing.AllocsPerRun(100, func() {
+		if _, err := sglNewPredicate("id", "=", value, allowed); err != nil {
+			panic(err)
+		}
+	})
+	require.Zero(t, allocations)
+}
+
+func TestRuntimeFilterWritesExactFloatCasts(t *testing.T) {
+	t.Parallel()
+	type number float64
+	minimum := number(math.SmallestNonzeroFloat64)
+	narrow := float32(math.SmallestNonzeroFloat32)
+	for _, test := range []struct {
+		value    any
+		sql      string
+		argument any
+	}{
+		{value: minimum, sql: "reinterpretAsFloat64(CAST(#3 AS UInt64))", argument: "1"},
+		{value: &minimum, sql: "reinterpretAsFloat64(CAST(#3 AS UInt64))", argument: "1"},
+		{value: &narrow, sql: "reinterpretAsFloat32(CAST(#3 AS UInt32))", argument: "1"},
+		{value: (*float64)(nil), sql: "#3", argument: nil},
+		{value: "5e-324", sql: "#3", argument: "5e-324"},
+		{value: uint64(math.MaxUint64), sql: "#3", argument: uint64(math.MaxUint64)},
+	} {
+		var builder strings.Builder
+		got := sglWriteFilterValue(&builder, 3, test.value)
+		require.Equal(t, test.sql, builder.String())
+		require.Equal(t, test.argument, got)
+	}
+}
+
+type customFilterFloat float64
+
+func (customFilterFloat) Value() (driver.Value, error) { return "custom", nil }
+
+func TestRuntimeFilterPreservesCustomValuers(t *testing.T) {
+	t.Parallel()
+	value := customFilterFloat(math.SmallestNonzeroFloat64)
+	for _, original := range []any{value, &value} {
+		var builder strings.Builder
+		require.Equal(t, original, sglWriteFilterValue(&builder, 1, original))
+		require.Equal(t, "#1", builder.String())
 	}
 }

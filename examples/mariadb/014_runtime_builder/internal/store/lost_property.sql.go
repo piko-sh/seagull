@@ -7,7 +7,7 @@ import "context"
 const claimSQL = `UPDATE lost_property SET claimed = TRUE, owner_phone = ? WHERE id = ?;`
 
 type ClaimParams struct {
-	OwnerPhone *string
+	OwnerPhone Null[string]
 	ID         int64
 }
 
@@ -76,7 +76,7 @@ func (builder *SearchUnclaimedBuilder) Where(column string, operator string, val
 }
 
 func (builder *SearchUnclaimedBuilder) OrderBy(column string, direction string) *SearchUnclaimedBuilder {
-	order, err := sglNewOrder(column, direction, searchUnclaimedAllowedColumns)
+	order, err := sglNewOrder(column, direction, searchUnclaimedAllowedColumns, false)
 	if err != nil {
 		if builder.pendingError == nil {
 			builder.pendingError = err
@@ -123,7 +123,7 @@ func (builder *SearchUnclaimedBuilder) All(ctx context.Context) ([]SearchUnclaim
 	var items []SearchUnclaimedRow
 	if rows.Next() {
 		var row SearchUnclaimedRow
-		scanArgs := []any{&row.ID, &row.Item, &row.Colour, &row.FoundAt, &row.DaysHeld}
+		scanArgs := []any{&row.ID, &row.Item, &row.Colour, &row.FoundAt, sglScanNumber(&row.DaysHeld)}
 		for more := true; more; more = rows.Next() {
 			row = SearchUnclaimedRow{}
 			if err := rows.Scan(scanArgs...); err != nil {
@@ -144,7 +144,7 @@ func (builder *SearchUnclaimedBuilder) One(ctx context.Context) (SearchUnclaimed
 		return SearchUnclaimedRow{}, err
 	}
 	var row SearchUnclaimedRow
-	err = builder.queries.reader.QueryRowContext(ctx, query, args...).Scan(&row.ID, &row.Item, &row.Colour, &row.FoundAt, &row.DaysHeld)
+	err = builder.queries.reader.QueryRowContext(ctx, query, args...).Scan(&row.ID, &row.Item, &row.Colour, &row.FoundAt, sglScanNumber(&row.DaysHeld))
 	if err != nil {
 		return SearchUnclaimedRow{}, err
 	}

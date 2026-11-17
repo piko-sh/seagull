@@ -1,0 +1,32 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 13,
+    "EndColumn": 20,
+    "EndLine": 2,
+    "Filename": "aliases.sql",
+    "Line": 2,
+    "Message": "failed to analyse query \"AsNothing\": syntax error near \"nothing\": SQLite reserves NOTHING; quote it to use it as an alias",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 13,
+    "EndColumn": 17,
+    "EndLine": 5,
+    "Filename": "aliases.sql",
+    "Line": 5,
+    "Message": "failed to analyse query \"AsNull\": syntax error near \"null\": SQLite reserves NULL; quote it to use it as an alias",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 10,
+    "EndColumn": 14,
+    "EndLine": 8,
+    "Filename": "aliases.sql",
+    "Line": 8,
+    "Message": "failed to analyse query \"BareLeft\": syntax error near \"left\": SQLite reserves LEFT after a select item; quote it to use it as an alias",
+    "Severity": "error"
+  }
+]

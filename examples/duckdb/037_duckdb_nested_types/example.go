@@ -39,36 +39,7 @@ type contact struct {
 	Value any `json:"value"`
 }
 
-// run moors two boats in a marina whose boats table has a column of each nested DuckDB
-// type, then reads them back whole and through typed expressions. Seagull types each one
-// from its declaration:
-//
-//   - a LIST of a scalar, crew VARCHAR[], is a typed slice, []string;
-//   - a STRUCT, berth, is a struct type that models.go declares, named after the table
-//     and column that hold it, store.BoatsBerth, with a field for each of its fields.
-//     DuckDB lets any field of a STRUCT be NULL, so each field is a pointer, which the
-//     program fills with new;
-//   - a LIST of STRUCT, route, is a slice of such a type, []store.BoatsRouteItem;
-//   - a MAP, fees MAP(VARCHAR, INTEGER), is map[string]int32. The generated code copies a
-//     map into the driver's own map type when it binds one, and a nil map binds NULL;
-//   - a UNION, contact, is the generated JSON type: duckdb-go reads a duckdb.Union, which
-//     JSON holds encoded as {"value": ..., "tag": ...}, and a nil JSON is NULL. The JSON
-//     type cannot bind a union, so ContactByPhone and ContactByRadio write one by casting
-//     the value to a member's type, VARCHAR or INTEGER, which DuckDB converts to that
-//     member.
-//
-// DuckDB can hold NULL in any list element or map value, so these would be pointers, as
-// 008_arrays shows; this marina never stores one there, so sgl.yaml declares them
-// non-null with go.types.non_null_elements: true, and they read as plain values.
-//
-// The generated SQL selects the LIST, STRUCT and MAP columns as they are, and the
-// generated code reads the values duckdb-go returns for them into the typed fields.
-//
-// BoatSummaries reaches inside the columns, and those results are typed: crew[1] is
-// *string, as a list may be shorter, array_length is an int64, map_keys gives []string,
-// and fees['August'] is *int32, NULL when the map has no such key. A Go map keeps no
-// order, so the order DuckDB stores its keys in differs from one write to the next, and
-// the program sorts the months before printing them.
+// run reads and writes DuckDB nested column types.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes output (io.Writer) which receives each boat and the summaries.
@@ -132,10 +103,10 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 	for _, summary := range summaries {
 		slices.Sort(summary.Months)
 		augustFee := "none"
-		if summary.AugustFee != nil {
-			augustFee = fmt.Sprint(*summary.AugustFee)
+		if summary.AugustFee.Valid {
+			augustFee = fmt.Sprint(summary.AugustFee.V)
 		}
-		fmt.Fprintf(output, "  %-10s skipper %s, crew of %d, fees for %v, August %s\n", summary.Name, *summary.Skipper, summary.CrewSize, summary.Months, augustFee)
+		fmt.Fprintf(output, "  %-10s skipper %s, crew of %d, fees for %v, August %s\n", summary.Name, summary.Skipper.V, summary.CrewSize, summary.Months, augustFee)
 	}
 	return nil
 }

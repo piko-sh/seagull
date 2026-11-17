@@ -31,15 +31,24 @@ import (
 	"seagull.sh/seagull/tests/tutorials/internal/support"
 )
 
+// migrations embeds the tutorial migration files.
+//
 //go:embed db/migrations
 var migrations embed.FS
 
+// main runs the tutorial against a migrated database.
 func main() {
 	if err := support.Main(migrations, run); err != nil {
 		log.Fatal(err)
 	}
 }
 
+// run exercises generated queries and prints the tutorial results.
+//
+// Takes db (*sql.DB) which is the migrated tutorial database.
+// Takes out (io.Writer) which receives the results.
+//
+// Returns error when a query fails or an expected row is missing.
 func run(ctx context.Context, db *sql.DB, out io.Writer) error {
 	queries := store.New(db)
 	task, err := queries.CreateTask(ctx, "Feed the seagulls")
@@ -47,17 +56,17 @@ func run(ctx context.Context, db *sql.DB, out io.Writer) error {
 		return err
 	}
 	fmt.Fprintln(out, task.ID, task.Title)
-	if err := queries.SetNotes(ctx, store.SetNotesParams{Notes: new("Bring chips"), ID: task.ID}); err != nil {
+	if err := queries.SetNotes(ctx, store.SetNotesParams{Notes: store.NullOf("Bring chips"), ID: task.ID}); err != nil {
 		return err
 	}
 	found, ok, err := queries.FindTask(ctx, task.ID)
 	if err != nil {
 		return err
 	}
-	if !ok || found.Notes == nil {
+	if !ok || !found.Notes.Valid {
 		return fmt.Errorf("task or notes missing")
 	}
-	fmt.Fprintln(out, *found.Notes)
+	fmt.Fprintln(out, found.Notes.V)
 	_, ok, err = queries.FindTask(ctx, 999)
 	if err != nil {
 		return err
@@ -66,7 +75,7 @@ func run(ctx context.Context, db *sql.DB, out io.Writer) error {
 	if err := queries.AddProject(ctx, "Harbour"); err != nil {
 		return err
 	}
-	if err := queries.AssignProject(ctx, store.AssignProjectParams{ProjectID: new(int64(1)), ID: task.ID}); err != nil {
+	if err := queries.AssignProject(ctx, store.AssignProjectParams{ProjectID: store.NullOf(int64(1)), ID: task.ID}); err != nil {
 		return err
 	}
 	rows, err := queries.SearchTasks(ctx, store.SearchTasksParams{})
@@ -74,10 +83,10 @@ func run(ctx context.Context, db *sql.DB, out io.Writer) error {
 		return err
 	}
 	for _, row := range rows {
-		if row.Projects == nil || row.Projects.Name == nil {
+		if row.Projects == nil || !row.Projects.Name.Valid {
 			return fmt.Errorf("project missing")
 		}
-		fmt.Fprintln(out, row.Title, "in", *row.Projects.Name)
+		fmt.Fprintln(out, row.Title, "in", row.Projects.Name.V)
 	}
 	priority, err := queries.TaskPriority(ctx, task.ID)
 	if err != nil {

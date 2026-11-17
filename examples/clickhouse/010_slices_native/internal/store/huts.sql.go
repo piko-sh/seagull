@@ -33,12 +33,17 @@ type CountBookedRow struct {
 }
 
 func (queries *Queries) CountBooked(ctx context.Context) (CountBookedRow, error) {
-	var row CountBookedRow
-	err := queries.db.QueryRow(ctx, countBookedSQL).Scan(&row.Huts)
+	scanned := &struct {
+		row     CountBookedRow
+		targets [1]any
+	}{}
+	row := &scanned.row
+	scanned.targets = [1]any{&row.Huts}
+	err := queries.db.QueryRow(ctx, countBookedSQL).Scan(scanned.targets[:]...)
 	if err != nil {
 		return CountBookedRow{}, err
 	}
-	return row, nil
+	return *row, nil
 }
 
 const freeHutsInColoursSQL = `SELECT number, colour

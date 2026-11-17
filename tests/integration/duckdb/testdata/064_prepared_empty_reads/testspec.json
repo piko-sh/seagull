@@ -1,0 +1,3 @@
+{
+  "description": "Prepared reads remain exact after an empty table receives rows."
+}

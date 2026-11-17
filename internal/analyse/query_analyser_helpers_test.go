@@ -260,6 +260,20 @@ func TestExtractAllowedColumns(t *testing.T) {
 		assert.Empty(t, got)
 	})
 
+	t.Run("a compound statement's columns are its output names, unqualified", func(t *testing.T) {
+		t.Parallel()
+
+		got := extractCompoundAllowedColumns([]sqlmodel.OutputColumn{
+			{Name: "id", SourceColumn: "id", SourceQualifier: "fuzz_builder", SQLType: intType},
+			{Name: "total", SourceColumn: "score", SourceQualifier: "fuzz_builder", SQLType: intType},
+		})
+
+		require.Len(t, got, 2)
+		assert.Equal(t, "id", got[0].SourceExpression, "the first branch's table is not in scope of a compound's ORDER BY")
+		assert.Empty(t, got[0].SourceQualifier)
+		assert.Equal(t, "total", got[1].SourceExpression, "the output name, not the first branch's column, orders a compound")
+	})
+
 	t.Run("keys on output name and emits the qualified source expression", func(t *testing.T) {
 		t.Parallel()
 

@@ -213,19 +213,27 @@ func (engine *Dialect) Info() dialect.Info {
 			ast.SQLFeatureJSONOp |
 			ast.SQLFeatureScalarSubquery |
 			ast.SQLFeatureBitwiseOp,
-		Returning:              ast.DataChangeInsert | ast.DataChangeUpdate | ast.DataChangeDelete,
-		AsyncMutations:         false,
-		ScalarFunctionsInFrom:  false,
-		UngroupedColumns:       dialect.UngroupedColumnsNullable,
-		ViewsFollowTheirTables: true,
-		IdentifierQuote:        dialect.IdentifierQuote{Open: `"`, Close: `"`},
-		Drivers:                drivers,
-		ToJSON:                 "",
-		TextType:               "text",
-		Filters:                dialect.FilterSyntax{Operators: nil, JSONPathFunctions: jsonPathFunctions, Casts: castForms, CastTypes: castTypes},
-		Lists:                  listSyntax,
-		Pagination:             paginationSyntax,
-		MaxParameters:          maxParameters,
+		Returning:               ast.DataChangeInsert | ast.DataChangeUpdate | ast.DataChangeDelete,
+		AsyncMutations:          false,
+		ScalarFunctionsInFrom:   false,
+		UngroupedColumns:        dialect.UngroupedColumnsNullable,
+		ViewsFollowTheirTables:  true,
+		ComputedTemporalAsText:  true,
+		ConstantMembershipLists: false,
+		ColumnLists:             dialect.ColumnListSyntax{ShortCTE: false, SurplusCTE: false, ShortDerived: false, NoDerivedLists: false},
+		ViewsOnRename:           dialect.ViewsFollow,
+		ViewsOnDrop:             dialect.ViewsBreak,
+		IdentifierQuote:         dialect.IdentifierQuote{Open: `"`, Close: `"`},
+		Drivers:                 drivers,
+		ToJSON:                  "",
+		FloatBits:               dialect.FloatBitsSyntax{Single: "", Double: "", Arrow: ""},
+		TextType:                "text",
+		Filters:                 dialect.FilterSyntax{Operators: nil, JSONPathFunctions: jsonPathFunctions, Casts: castForms, CastTypes: castTypes},
+		Lists:                   listSyntax,
+		Pagination:              paginationSyntax,
+		Ordering:                dialect.OrderingSyntax{NullsFirstAscending: true, NullsFirstDescending: false, NullsByIsNull: false, DistinctNullsDefaultOnly: false},
+		MaxParameters:           maxParameters,
+		ConstraintNames:         dialect.ConstraintNamesNone,
 	}
 	return info.Clone()
 }
@@ -494,14 +502,18 @@ func (*Dialect) TableValuedFunctionColumnsFromCatalogue(
 }
 
 // PromoteType consults the promote hooks, most recent first, and returns their first
-// result. Without one, it prefers a REAL, then a NUMERIC, across numeric categories, and
-// otherwise keeps the left operand's type unchanged.
+// result.
+//
+// Without one, it prefers a REAL, then a NUMERIC, across numeric categories, takes a text
+// type beside any type but a BLOB, since SQLite hands each row over in its own storage
+// class and Go reads a number into a string but not text into a number, and otherwise
+// keeps the left operand's type unchanged.
 //
 // Takes left (sqlmodel.SQLType) which is the left operand's type.
 // Takes right (sqlmodel.SQLType) which is the right operand's type.
 //
-// Returns sqlmodel.SQLType which is a hook's result, the winning number or the left
-// operand's type.
+// Returns sqlmodel.SQLType which is a hook's result, the winning number, the text type or
+// the left operand's type.
 func (engine *Dialect) PromoteType(left sqlmodel.SQLType, right sqlmodel.SQLType) sqlmodel.SQLType {
 	promoted, answered := dialectkit.FirstHookAnswer(engine.settings.PromoteTypeHooks,
 		func(hook func(left, right sqlmodel.SQLType) *sqlmodel.SQLType) *sqlmodel.SQLType {
@@ -512,6 +524,9 @@ func (engine *Dialect) PromoteType(left sqlmodel.SQLType, right sqlmodel.SQLType
 	}
 	if across, numeric := dialectkit.PromoteAcrossNumericCategories(left, right); numeric {
 		return across
+	}
+	if right.Category == sqlmodel.TypeCategoryText && left.Category != sqlmodel.TypeCategoryBinary {
+		return right
 	}
 	return left
 }

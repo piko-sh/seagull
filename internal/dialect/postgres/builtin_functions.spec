@@ -33,6 +33,9 @@ round(x numeric) numeric
 round(x numeric, s int4) numeric
 trunc(x float8) float8
 trunc(x numeric) numeric
+scale(x numeric) int4
+min_scale(x numeric) int4
+trim_scale(x numeric) numeric
 trunc(x numeric, s int4) numeric
 sign(x float8) float8
 sign(x numeric) numeric
@@ -139,7 +142,7 @@ regexp_substr(string text, pattern text, start int4?, n int4?, flags text?, sube
 regexp_instr(string text, pattern text, start int4?, n int4?, endoption int4?, flags text?, subexpr int4?) int4
 
 concat(value any) text never-null variadic=1
-concat_ws(separator text, value any) text never-null variadic=2
+concat_ws(separator text, value any) text nulling-argument=0 variadic=2
 format(formatstr text, value any) text variadic=1
 
 initcap(x text) text
@@ -219,9 +222,9 @@ make_interval(years int4?, months int4?, weeks int4?, days int4?, hours int4?, m
 to_timestamp(epoch float8) timestamptz
 to_timestamp(text text, format text) timestamptz
 to_date(text text, format text) date
-to_char(timestamp timestamptz, format text) text
-to_char(interval interval, format text) text
-to_char(value numeric, format text) text
+to_char(timestamp timestamptz, format text) text empty-text-nulls=1
+to_char(interval interval, format text) text empty-text-nulls=1
+to_char(value numeric, format text) text empty-text-nulls=1
 isfinite(value date) bool
 isfinite(value timestamptz) bool
 isfinite(value interval) bool
@@ -385,7 +388,7 @@ var_samp(x any) numeric called-on-null aggregate
 row_number() int8 never-null
 rank() int8 never-null
 dense_rank() int8 never-null
-ntile(n int4) int4 never-null
+ntile(n int4) int4 null-on-null
 cume_dist() float8 never-null
 percent_rank() float8 never-null
 lag(expression any, offset int4, default any) any called-on-null min-arguments=1
@@ -400,8 +403,8 @@ least(value any) any called-on-null variadic=1
 num_nulls(value any) int4 never-null variadic=1
 num_nonnulls(value any) int4 never-null variadic=1
 
-to_char(value int4, format text) text
-to_number(text text, format text) numeric
+to_char(value int4, format text) text empty-text-nulls=1
+to_number(text text, format text) numeric empty-text-nulls=1
 
 current_database() text never-null
 current_schema() text never-null
@@ -436,7 +439,7 @@ pg_current_xact_id_if_assigned() xid8 called-on-null
 
 current_setting(setting_name text) text
 current_setting(setting_name text, missing_ok bool) text called-on-null
-set_config(setting_name text, new_value text, is_local bool) text never-null
+set_config(setting_name text, new_value text, is_local bool) text null-on-null
 
 pg_advisory_lock(key int8) void modifies-data
 pg_advisory_lock(key1 int4, key2 int4) void modifies-data
@@ -465,7 +468,7 @@ pg_sleep(seconds float8) void
 nextval(sequence text) int8 never-null modifies-data
 setval(sequence text, value int8) int8 never-null modifies-data
 setval(sequence text, value int8, is_called bool) int8 never-null modifies-data
-currval(sequence text) int8 never-null
+currval(sequence text) int8 null-on-null
 lastval() int8 never-null
 
 to_tsvector(x text) tsvector

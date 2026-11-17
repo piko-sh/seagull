@@ -53,7 +53,7 @@ func main() {
 	queries := db.New(conn)
 
 	targetID := int64(1)
-	rows, err := queries.FindByIDOrManager(ctx, &targetID)
+	rows, err := queries.FindByIDOrManager(ctx, db.NullOf(targetID))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

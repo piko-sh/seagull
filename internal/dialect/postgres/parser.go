@@ -260,6 +260,18 @@ type syntaxState struct {
 // parser holds the mutable state used while walking a token stream and extracting
 // parameter and table references.
 type parser struct {
+	// distinctOnKeys holds the canonical text of each DISTINCT ON key of the query, or nil
+	// when it has no DISTINCT ON.
+	distinctOnKeys []string
+
+	// reservedNames lists the keywords the engine refuses, unquoted, as a table's or a
+	// column's name in a definition.
+	reservedNames dialectkit.ReservedNames
+
+	// aliasKeywords lists the keywords the engine refuses, unquoted, as an output column's
+	// alias.
+	aliasKeywords dialectkit.AliasKeywords
+
 	// syntax is the statement-wide syntax error record shared with child parsers.
 	syntax *syntaxState
 
@@ -431,6 +443,28 @@ type parser struct {
 	// and STORING (...).
 	indexOptions bool
 
+	// tableScopedIndexNames permits table qualifiers and names local to each owner.
+	tableScopedIndexNames bool
+
+	// expressionIndexElements names every expression element of an unnamed index expr, as
+	// CockroachDB does, where PostgreSQL names it after its function, column or cast.
+	expressionIndexElements bool
+
+	// namedNotNull reads NOT NULL as a constraint, as PostgreSQL 18 does: a column's
+	// CONSTRAINT name NOT NULL keeps its name, and [CONSTRAINT name] NOT NULL column is a
+	// table constraint.
+	namedNotNull bool
+
+	// strictColumnLists refuses a view column list naming fewer columns than its query.
+	strictColumnLists bool
+
+	// noGroupingModifiers refuses ROLLUP, CUBE and GROUPING SETS in GROUP BY.
+	noGroupingModifiers bool
+
+	// emptyKeywordCalls takes CURRENT_DATE() and the other keyword functions CockroachDB
+	// also reads as calls with empty parentheses.
+	emptyKeywordCalls bool
+
 	// computedColumnShorthand reports whether AS (expression) STORED or VIRTUAL after a
 	// column's type declares a computed column.
 	computedColumnShorthand bool
@@ -445,6 +479,14 @@ type parser struct {
 	// parametersTypedFromContext reports that the engine types a parameter from what its
 	// place wants, so only a test for NULL leaves one untyped.
 	parametersTypedFromContext bool
+
+	// rowLimited records that the query this parser analyses has a LIMIT, OFFSET or FETCH
+	// clause.
+	rowLimited bool
+
+	// distinctOnColumnsOnly matches a DISTINCT ON key to an ORDER BY key only when both are
+	// column references.
+	distinctOnColumnsOnly bool
 }
 
 // newParser creates a parser over tokens with the default recursion cap.
@@ -454,6 +496,9 @@ type parser struct {
 // Returns *parser which is ready to analyse the supplied tokens.
 func newParser(tokens []token) *parser {
 	return &parser{
+		reservedNames:           postgresReservedNames,
+		aliasKeywords:           postgresAliasKeywords,
+		rowLimited:              false,
 		syntax:                  new(syntaxState),
 		types:                   nil,
 		functions:               nil,
@@ -493,6 +538,14 @@ func newParser(tokens []token) *parser {
 
 		aliasNamesSingleColumnFunctions: false,
 		indexOptions:                    false,
+		tableScopedIndexNames:           false,
+		expressionIndexElements:         false,
+		namedNotNull:                    false,
+		strictColumnLists:               false,
+		distinctOnKeys:                  nil,
+		distinctOnColumnsOnly:           false,
+		noGroupingModifiers:             false,
+		emptyKeywordCalls:               false,
 		computedColumnShorthand:         false,
 		notVisibleColumns:               false,
 		asOfSystemTime:                  false,
@@ -519,6 +572,8 @@ func newParser(tokens []token) *parser {
 func (p *parser) newChildParser(tokens []token) *parser {
 	child := newParser(tokens)
 	child.Interrupt = p.Interrupt
+	child.reservedNames = p.reservedNames
+	child.aliasKeywords = p.aliasKeywords
 	child.syntax = p.syntax
 	child.types = p.types
 	child.functions = p.functions
@@ -532,6 +587,12 @@ func (p *parser) newChildParser(tokens []token) *parser {
 	child.insertKeywords = p.insertKeywords
 	child.aliasNamesSingleColumnFunctions = p.aliasNamesSingleColumnFunctions
 	child.indexOptions = p.indexOptions
+	child.tableScopedIndexNames = p.tableScopedIndexNames
+	child.expressionIndexElements = p.expressionIndexElements
+	child.strictColumnLists = p.strictColumnLists
+	child.distinctOnColumnsOnly = p.distinctOnColumnsOnly
+	child.noGroupingModifiers = p.noGroupingModifiers
+	child.emptyKeywordCalls = p.emptyKeywordCalls
 	child.computedColumnShorthand = p.computedColumnShorthand
 	child.notVisibleColumns = p.notVisibleColumns
 	child.asOfSystemTime = p.asOfSystemTime

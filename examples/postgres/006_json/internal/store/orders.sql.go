@@ -66,10 +66,10 @@ WHERE basket ->> 'fish' = $1
 ORDER BY id;`
 
 type OrdersWithFishRow struct {
-	ID              int64   `json:"id,omitempty" db:"id"`
-	Customer        string  `json:"customer,omitempty" db:"customer"`
-	Extras          JSON    `json:"extras,omitempty" db:"extras"`
-	DeliveryAddress *string `json:"deliveryAddress,omitempty" db:"delivery_address"`
+	ID              int64        `json:"id,omitempty" db:"id"`
+	Customer        string       `json:"customer,omitempty" db:"customer"`
+	Extras          JSON         `json:"extras,omitempty" db:"extras"`
+	DeliveryAddress Null[string] `json:"deliveryAddress,omitzero" db:"delivery_address"`
 }
 
 func (queries *Queries) OrdersWithFish(ctx context.Context, fish string) ([]OrdersWithFishRow, error) {

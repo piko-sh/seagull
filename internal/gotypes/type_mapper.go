@@ -109,6 +109,8 @@ func (m *TypeMapper) BuildMappingTable(
 		Namer:    nil,
 		Mappings: mappings,
 		Slots:    mergeSlotLayers(slotLayers),
+
+		NullValues: false,
 	}
 }
 

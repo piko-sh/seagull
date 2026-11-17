@@ -1,0 +1,4 @@
+{
+  "description": "TimescaleDB, as PostgreSQL, takes a view column list naming fewer columns than its query, keeping the rest, and refuses one naming more.",
+  "expectedDiagnosticCount": 1
+}

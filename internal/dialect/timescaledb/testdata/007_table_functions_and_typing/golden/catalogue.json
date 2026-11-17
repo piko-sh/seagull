@@ -462,6 +462,19 @@
               }
             }
           ],
+          "Constraints": [
+            {
+              "Columns": [
+                "id"
+              ],
+              "Kind": "primary-key",
+              "Name": "users_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              }
+            }
+          ],
           "Name": "users",
           "Origin": {
             "Filename": "001_schema.up.sql",

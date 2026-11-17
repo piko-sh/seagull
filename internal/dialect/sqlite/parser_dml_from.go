@@ -224,9 +224,9 @@ func (p *parser) parseParenthesisedFromItem() ([]ast.TableReference, []ast.JoinC
 
 // parseJoinTarget parses the target of an explicit JOIN.
 //
-// A parenthesised group joined in becomes one join per table it holds. A table the group
-// joins with an inner join takes the outer join's kind, so the rows a LEFT JOIN of the
-// group adds stay nullable.
+// A parenthesised group joined in becomes one join per table it holds. Under a LEFT or
+// FULL join every table of the group, including its derived tables and table functions,
+// takes the outer join's kind, so the rows the join adds stay nullable.
 //
 // Takes joinKind (ast.JoinKind) which is the kind parseJoinKeyword read.
 //
@@ -241,10 +241,13 @@ func (p *parser) parseJoinTarget(joinKind ast.JoinKind) ([]ast.JoinClause, error
 	case p.isSubqueryStart():
 		return nil, p.parseDerivedTable(joinKind)
 	case p.Current().Kind == tokenLeftParen:
+		derivedAt := len(p.rawDerivedTables)
+		functionsAt := len(p.rawTableValuedFunctions)
 		tables, joins, err := p.parseParenthesisedFromItem()
 		if err != nil {
 			return nil, err
 		}
+		ast.EncloseGroup(joinKind, nil, p.rawDerivedTables[derivedAt:], p.rawTableValuedFunctions[functionsAt:])
 		return groupJoins(joinKind, tables, joins), nil
 	case p.isBuiltinRelationStart():
 		p.parseBuiltinRelation(joinKind)
@@ -579,11 +582,8 @@ func groupJoins(joinKind ast.JoinKind, tables []ast.TableReference, joins []ast.
 	for _, table := range tables {
 		result = append(result, ast.JoinClause{Kind: joinKind, Table: table, Using: nil})
 	}
-	for _, join := range joins {
-		if join.Kind == ast.JoinInner {
-			join.Kind = joinKind
-		}
-		result = append(result, join)
-	}
+	start := len(result)
+	result = append(result, joins...)
+	ast.EncloseGroup(joinKind, result[start:], nil, nil)
 	return result
 }

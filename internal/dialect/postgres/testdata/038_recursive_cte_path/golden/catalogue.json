@@ -47,6 +47,32 @@
               }
             }
           ],
+          "Constraints": [
+            {
+              "Columns": [
+                "id"
+              ],
+              "Kind": "primary-key",
+              "Name": "categories_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            },
+            {
+              "Columns": [
+                "parent_id"
+              ],
+              "ForeignColumns": [
+                "id"
+              ],
+              "ForeignTable": "categories",
+              "Kind": "foreign-key",
+              "Name": "categories_parent_id_fkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            }
+          ],
           "Name": "categories",
           "Origin": {
             "Filename": "001_schema.up.sql"

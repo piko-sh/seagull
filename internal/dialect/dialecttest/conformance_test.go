@@ -123,8 +123,9 @@ var mysqlUserOptions = []mysql.Option{
 
 var mysqlSpanStatements = []string{
 	"SELECT DISTINCT SQL_NO_CACHE i.id, i.name AS label, count(*) total, i.* FROM items i JOIN items j ON j.id = i.id " +
-		"WHERE i.id > ? AND i.name NOT IN (?) AND i.id IN (?, ?) GROUP BY i.id, i.name WITH ROLLUP " +
+		"WHERE i.id > ? AND i.name NOT IN (?) AND i.id IN (?, ?) GROUP BY i.id, i.name " +
 		"HAVING count(*) > ? ORDER BY i.id DESC LIMIT ?, ? FOR UPDATE SKIP LOCKED;",
+	"SELECT i.id, count(*) total FROM items i WHERE i.id > ? GROUP BY i.id WITH ROLLUP HAVING count(*) > ? LIMIT ?;",
 	"SELECT SQL_CALC_FOUND_ROWS id ident FROM items WHERE id = :id ORDER BY id LIMIT 1 OFFSET ? LOCK IN SHARE MODE",
 	"SELECT ALL id FROM items WHERE id = ? FOR SHARE NOWAIT",
 	"SELECT id FROM items WHERE id = ? UNION ALL SELECT id FROM items WHERE name = ? ORDER BY id LIMIT ?;",

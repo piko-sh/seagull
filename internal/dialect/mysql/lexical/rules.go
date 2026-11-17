@@ -24,6 +24,9 @@ import (
 	"seagull.sh/seagull/internal/sqllex"
 )
 
+// notAtomicOpening is the words that open MariaDB's BEGIN NOT ATOMIC block.
+var notAtomicOpening = []string{"BEGIN", "NOT", "ATOMIC"}
+
 // Rules returns MySQL's lexical rules in the server's default SQL mode, which MariaDB
 // shares.
 //
@@ -34,7 +37,7 @@ import (
 // operand is expected: a colon written directly after a name ends a statement label, as
 // in l1:LOOP. An identifier may contain '$'. The client-side DELIMITER command changes
 // the terminator, and BEGIN opens a procedural block in a CREATE statement that names a
-// FUNCTION, PROCEDURE or TRIGGER.
+// FUNCTION, PROCEDURE, TRIGGER or EVENT, or in MariaDB's BEGIN NOT ATOMIC.
 //
 // Returns sqllex.Rules which describes MySQL.
 func Rules() sqllex.Rules {
@@ -94,20 +97,34 @@ func rules(doubleQuote sqllex.DoubleQuoteMeaning) sqllex.Rules {
 	}
 }
 
-// proceduralBlock reports whether a statement can hold a BEGIN ... END body: one that
-// starts with CREATE and names FUNCTION, PROCEDURE or TRIGGER before the BEGIN, allowing
-// the DEFINER and SQL SECURITY clauses MySQL accepts in between.
+// proceduralBlock reports whether a statement can hold a BEGIN-END body.
+//
+// That is one that starts with CREATE and names FUNCTION, PROCEDURE, TRIGGER or EVENT
+// before the BEGIN, allowing the DEFINER and SQL SECURITY clauses MySQL accepts in
+// between, or MariaDB's BEGIN NOT ATOMIC block, which is a statement of its own.
 //
 // Takes leadingWords ([]string) which holds the statement's upper-cased leading words.
 //
 // Returns bool which is true for a procedural statement.
 func proceduralBlock(leadingWords []string) bool {
+	if opensNotAtomicBlock(leadingWords) {
+		return true
+	}
 	if len(leadingWords) == 0 || leadingWords[0] != "CREATE" {
 		return false
 	}
 	return slices.ContainsFunc(leadingWords[1:], func(word string) bool {
-		return word == "FUNCTION" || word == "PROCEDURE" || word == "TRIGGER"
+		return word == "FUNCTION" || word == "PROCEDURE" || word == "TRIGGER" || word == "EVENT"
 	})
+}
+
+// opensNotAtomicBlock reports whether a statement opens with MariaDB's BEGIN NOT ATOMIC.
+//
+// Takes leadingWords ([]string) which holds the statement's upper-cased leading words.
+//
+// Returns bool which is true for such a block.
+func opensNotAtomicBlock(leadingWords []string) bool {
+	return len(leadingWords) >= len(notAtomicOpening) && slices.Equal(leadingWords[:len(notAtomicOpening)], notAtomicOpening)
 }
 
 // doubleQuoteEscape returns how a quote is written inside "...": doubled or after a

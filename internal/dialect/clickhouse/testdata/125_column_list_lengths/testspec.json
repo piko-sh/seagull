@@ -1,0 +1,4 @@
+{
+  "description": "ClickHouse takes a CTE or derived table column list that names every column of its query, and refuses one that names fewer.",
+  "expectedDiagnosticCount": 2
+}

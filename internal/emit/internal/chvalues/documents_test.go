@@ -59,6 +59,8 @@ func (stub chcolImporter) Import(importPath string) (*types.Package, error) {
 	return config.Check(importPath, stub.fileSet, []*ast.File{parsed}, nil)
 }
 
+const jsonCodecStub = "package store\n\nfunc acmeJSONMarshal(any) ([]byte, error) { return nil, nil }\n\nfunc acmeJSONUnmarshal([]byte, any) error { return nil }\n"
+
 var jsonDocument = sqlmodel.SQLType{Category: sqlmodel.TypeCategoryJSON}
 
 func nullableJSON() sqlmodel.SQLType {
@@ -99,15 +101,17 @@ func TestDocumentsRendersTheReadingOfJSONDocumentsForThePackage(t *testing.T) {
 	require.NoError(t, err)
 	jsonType, err := parser.ParseFile(fileSet, "json.go", "package store\n\ntype JSON []byte\n", 0)
 	require.NoError(t, err)
+	codec, err := parser.ParseFile(fileSet, "codec.go", jsonCodecStub, 0)
+	require.NoError(t, err)
 	config := types.Config{Importer: chcolImporter{standard: importer.Default(), fileSet: fileSet}}
-	checked, err := config.Check("store", fileSet, []*ast.File{documents, jsonType}, nil)
+	checked, err := config.Check("store", fileSet, []*ast.File{documents, jsonType, codec}, nil)
 	require.NoError(t, err)
 
-	listed := make([]string, 0, len(chvalues.DocumentHelpers)+1)
+	listed := make([]string, 0, len(chvalues.DocumentHelpers)+3)
 	for _, suffix := range chvalues.DocumentHelpers {
 		listed = append(listed, "acme"+suffix)
 	}
-	listed = append(listed, "JSON")
+	listed = append(listed, "JSON", "acmeJSONMarshal", "acmeJSONUnmarshal")
 	slices.Sort(listed)
 	require.Equal(t, checked.Scope().Names(), listed, "DocumentHelpers lists every declaration of the file")
 }

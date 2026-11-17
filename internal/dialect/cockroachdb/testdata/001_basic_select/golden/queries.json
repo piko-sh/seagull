@@ -93,6 +93,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(name: ListUsers, command: many)\nSELECT id, name, email FROM users ORDER BY id;",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:email⟩ FROM users ORDER BY id;"
   }

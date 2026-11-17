@@ -16,14 +16,7 @@
 // oppression. We built this to empower people, not to enable those who would
 // strip others of their rights and dignity.
 
-// Command 032_timescale_hypertables applies its migrations to a TimescaleDB database,
-// making readings a hypertable, then runs the example in example.go: two buoys' sea
-// temperatures are recorded and summarised by the hour, with the gaps filled.
-//
-// Run it with `go run .` against a local server, which `docker run -d -p 5432:5432 -e
-// POSTGRES_PASSWORD=postgres timescale/timescaledb-ha:pg17` starts, or point it elsewhere
-// with `go run . -dsn <connection string>` or DATABASE_URL. Use an empty database: the
-// example's summaries assume only its own readings.
+// Command 032_timescale_hypertables summarizes buoy readings in a hypertable.
 package main
 
 import (
@@ -42,8 +35,7 @@ import (
 	"seagull.sh/seagull/sdk/migrate/migrate_backend_postgres"
 )
 
-// localDSN reaches the server the docker command above starts, with the password that
-// command gives it.
+// localDSN connects to a local TimescaleDB server using the example password.
 const localDSN = "postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable"
 
 // migrations holds the migration files, compiled into the binary.
@@ -51,6 +43,7 @@ const localDSN = "postgresql://postgres:postgres@localhost:5432/postgres?sslmode
 //go:embed db/migrations
 var migrations embed.FS
 
+// main selects the database and reports example failures.
 func main() {
 	dsn := flag.String("dsn", cmp.Or(os.Getenv("DATABASE_URL"), localDSN), "TimescaleDB connection string")
 	flag.Parse()

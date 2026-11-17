@@ -149,8 +149,9 @@ func WithRuntimeTables(names ...string) Option {
 	return app.WithRuntimeTables(names...)
 }
 
-// WithLogger sets the logger every run logs through. Without it a run logs through the
-// logger carried by its context (see ContextWithLogger), or slog.Default().
+// WithLogger sets the logger a run logs through when its context carries none. A logger
+// bound with ContextWithLogger wins, and without either a run logs through
+// slog.Default().
 //
 // Takes logger (*slog.Logger) which receives the log records; nil keeps the default.
 //

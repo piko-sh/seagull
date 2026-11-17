@@ -28,5 +28,5 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	harness.Main(m, startEmbeddedPostgres, leakcheck.IgnoreNetworkPollers())
+	harness.Main(m, harness.SharedServer("postgres", &testConnectionString, startEmbeddedPostgres), leakcheck.IgnoreNetworkPollers())
 }

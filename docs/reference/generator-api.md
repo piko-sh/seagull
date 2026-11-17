@@ -106,7 +106,7 @@ of its own.
 
 A panic in code the run calls (the dialect, or an emitter, schema source or hook the host
 supplies) does not crash the process. Seagull recovers it and logs its stack once at
-warning level through the run's logger (`WithLogger`, the context's logger or
+warning level through the run's logger (the context's logger, then `WithLogger`'s, then
 `slog.Default()`); the stack is never part of an error or a diagnostic. A panic while a
 migration statement or a query is handled, or in an emitter's `Check` or `DefaultTypes`,
 is a [Q070](diagnostics.md#q070) error diagnostic, and the run goes on to report the
@@ -202,7 +202,7 @@ blank or names a built-in dialect of another family, is an error wrapping
 | `WithCustomFunctions(...CustomFunction)` | none | Declare functions the dialect does not know, such as those of a loadable extension. |
 | `WithSchemaSource(SchemaSourcePort)` | replay migrations | Build the catalogue another way, such as from a live database. |
 | `WithRuntimeTables(...string)` | the `sgl_` history, seed and lock tables | The tables a schema source's catalogue leaves out, matched in every schema regardless of case; pass the table names a backend's `Names` method reports when its namespace or history table differ. No effect without `WithSchemaSource`. |
-| `WithLogger(*slog.Logger)` | context, then `slog.Default()` | Where log records go. |
+| `WithLogger(*slog.Logger)` | `slog.Default()` | Where log records go when the run's context carries no logger. A logger from `ContextWithLogger` wins. |
 | `WithObserver(observe.ObserverPort)` | context, then none | Spans for each stage, for tracing and metrics. |
 | `WithClock(observe.Clock)` | `observe.SystemClock()` | Times each run for the trace log. |
 | `WithMaxFileBytes(int64)` | 4 MiB | Cap on each migration and query file, at most 1 TiB; a larger file stops the run with `ErrFileTooLarge`. |
@@ -244,7 +244,7 @@ generator, err := seagull.New(dialect_engine_postgres.New(),
 | `execresult` returns | `sql.Result`; refused on ClickHouse | `pgconn.CommandTag` | refused |
 | `batch` | chunked multi-row `INSERT`s, returning `error` | a `pgx.Batch`, returning `error` | a `PrepareBatch`, returning `error` |
 | `copyfrom` | the same as `batch` | `COPY FROM`, returning `(int64, error)` | the same as `batch` |
-| Slices | `kind: slice` expands `IN ($1)` at call time; on ClickHouse, an `Array` parameter | `kind: slice` binds one array to `= ANY($1)` | an `Array` parameter |
+| Slices | `kind: slice` expands `IN ($1)` at call time, except that a PostgreSQL-family list of text, integers or booleans binds one array to `= ANY($1)`; on ClickHouse, an `Array` parameter | `kind: slice` binds one array to `= ANY($1)` | an `Array` parameter |
 | `prepared.go` | yes by default, except on ClickHouse | no | no |
 | Runtime builder (`dynamic: runtime`) | yes | yes | yes |
 | `NewWithReplica`, `WithTx`, `RunInTx` | all three | `WithTx` and `RunInTx` | none |
@@ -331,8 +331,10 @@ for connection setup and error handling. `Input.Migrations` may be nil with a so
 
 ## Logging and observability
 
-`WithLogger` and `WithObserver` provide a logger and stage observer. Without explicit
-options, the generator uses context values, then the default logger and a discard observer.
+`WithLogger` and `WithObserver` provide a logger and stage observer. A logger the context
+carries wins over `WithLogger`, and without either the generator uses the default logger.
+`WithObserver` wins over an observer the context carries, and without either the generator
+uses a discard observer.
 An observer receives a stage's context and attributes and returns a context and end callback.
 
 See [errors and observability](errors-observability.md) for precedence, stages and callback

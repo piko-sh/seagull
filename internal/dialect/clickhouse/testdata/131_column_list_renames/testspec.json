@@ -1,0 +1,4 @@
+{
+  "description": "A CTE or derived table column list naming every column of its query renames the columns, which keep their types, with or without AS before the derived table's alias.",
+  "expectedDiagnosticCount": 0
+}

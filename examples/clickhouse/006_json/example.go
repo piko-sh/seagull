@@ -46,17 +46,7 @@ type delivery struct {
 	Address string `json:"address"`
 }
 
-// run places three chip shop orders and reads them back. The documents live in String
-// columns, the usual home for JSON text in ClickHouse, so Basket is a string and
-// Delivery, a Nullable(String), is *string: encode a value into it with json.Marshal and
-// decode it with json.Unmarshal. A nil Delivery is SQL NULL.
-//
-// OrdersWithFish reads inside the documents with ClickHouse's JSON functions instead of
-// operators: JSONExtractString(basket, 'fish') extracts a value as text, and
-// JSONExtractRaw(basket, 'extras') extracts the fragment's JSON text. Both return a
-// String, which is empty for a missing key rather than NULL, so Extras is a string.
-// Address is *string because the delivery column is Nullable(String), and a JSON function
-// given NULL returns NULL.
+// run places chip shop orders and reads their JSON data.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes output (io.Writer) which receives the decoded orders and the search.
@@ -79,13 +69,13 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 		if err != nil {
 			return fmt.Errorf("encoding %s's basket: %w", order.customer, err)
 		}
-		parameters := store.PlaceOrderParams{ID: uint64(index + 1), Customer: order.customer, Basket: string(encodedBasket), Delivery: nil}
+		parameters := store.PlaceOrderParams{ID: uint64(index + 1), Customer: order.customer, Basket: string(encodedBasket), Delivery: store.Null[string]{}}
 		if order.delivery != nil {
 			encodedDelivery, err := json.Marshal(order.delivery)
 			if err != nil {
 				return fmt.Errorf("encoding %s's delivery: %w", order.customer, err)
 			}
-			parameters.Delivery = new(string(encodedDelivery))
+			parameters.Delivery = store.NullOf(string(encodedDelivery))
 		}
 		if err := queries.PlaceOrder(ctx, parameters); err != nil {
 			return fmt.Errorf("placing %s's order: %w", order.customer, err)
@@ -101,7 +91,7 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 		return fmt.Errorf("decoding order 1's basket: %w", err)
 	}
 	fmt.Fprintf(output, "order 1 stored %s\n", first.Basket)
-	fmt.Fprintf(output, "decoded: %d x %s with %v, delivery is NULL: %t\n", decoded.Portions, decoded.Fish, decoded.Extras, first.Delivery == nil)
+	fmt.Fprintf(output, "decoded: %d x %s with %v, delivery is NULL: %t\n", decoded.Portions, decoded.Fish, decoded.Extras, !first.Delivery.Valid)
 
 	cod, err := queries.OrdersWithFish(ctx, "cod")
 	if err != nil {
@@ -110,8 +100,8 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 	fmt.Fprintln(output, "\ncod orders:")
 	for _, order := range cod {
 		address := "collecting"
-		if order.Address != nil {
-			address = "to " + *order.Address
+		if order.Address.Valid {
+			address = "to " + order.Address.V
 		}
 		fmt.Fprintf(output, "  order %d  %-9s extras %-30s %s\n", order.ID, order.Customer, order.Extras, address)
 	}

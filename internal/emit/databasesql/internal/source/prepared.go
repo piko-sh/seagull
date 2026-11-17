@@ -26,6 +26,10 @@ import (
 	"sync"
 )
 
+// sglStatementClosed is the error database/sql reports for a statement it has closed, as
+// it closes those bound to a transaction when the transaction ends.
+const sglStatementClosed = "sql: statement is closed"
+
 // sglStaticQueries lists the SQL constants of the package's static queries.
 //
 //sgl:inline staticQueries
@@ -135,7 +139,7 @@ func (prepared *PreparedDBTX) WrapDBTX(inner any) any {
 	if !ok {
 		return inner
 	}
-	return &preparedTx{source: prepared, transaction: transaction}
+	return &preparedTx{source: prepared, transaction: transaction, statements: nil, mu: sync.Mutex{}}
 }
 
 // cachedStatement looks up a prepared statement under the cache read lock.
@@ -151,13 +155,21 @@ func (prepared *PreparedDBTX) cachedStatement(query string) *sql.Stmt {
 	return prepared.stmts[query]
 }
 
-// preparedTx binds cached statements to an application-owned transaction.
+// preparedTx binds cached statements to an application-owned transaction, each once, so a
+// statement run many times in the transaction is bound to it, and held until it ends,
+// only once.
 type preparedTx struct {
 	// source owns the cached statements used by this transaction.
 	source *PreparedDBTX
 
 	// transaction is the application-owned transaction to execute through.
 	transaction *sql.Tx
+
+	// statements maps each cached statement to the one bound to the transaction.
+	statements map[*sql.Stmt]*sql.Stmt
+
+	// mu guards statements.
+	mu sync.Mutex
 }
 
 // ExecContext executes SQL using a cached statement when available.
@@ -168,11 +180,15 @@ type preparedTx struct {
 // Returns sql.Result which describes the completed statement.
 // Returns error when preparation, binding or execution fails.
 func (bound *preparedTx) ExecContext(ctx context.Context, query string, arguments ...any) (sql.Result, error) {
-	statement := bound.source.cachedStatement(query)
+	statement, cached := bound.bind(ctx, query)
 	if statement == nil {
 		return bound.transaction.ExecContext(ctx, query, arguments...)
 	}
-	return bound.transaction.StmtContext(ctx, statement).ExecContext(ctx, arguments...)
+	result, err := statement.ExecContext(ctx, arguments...)
+	if sglEndedWith(err) {
+		return bound.transaction.StmtContext(ctx, cached).ExecContext(ctx, arguments...)
+	}
+	return result, err
 }
 
 // QueryContext queries rows using a cached statement when available.
@@ -183,11 +199,15 @@ func (bound *preparedTx) ExecContext(ctx context.Context, query string, argument
 // Returns *sql.Rows which holds the result rows and must be closed by the caller.
 // Returns error when preparation, binding or querying fails.
 func (bound *preparedTx) QueryContext(ctx context.Context, query string, arguments ...any) (*sql.Rows, error) {
-	statement := bound.source.cachedStatement(query)
+	statement, cached := bound.bind(ctx, query)
 	if statement == nil {
 		return bound.transaction.QueryContext(ctx, query, arguments...)
 	}
-	return bound.transaction.StmtContext(ctx, statement).QueryContext(ctx, arguments...)
+	rows, err := statement.QueryContext(ctx, arguments...)
+	if sglEndedWith(err) {
+		return bound.transaction.StmtContext(ctx, cached).QueryContext(ctx, arguments...)
+	}
+	return rows, err
 }
 
 // QueryRowContext queries one row using a cached statement when available.
@@ -197,14 +217,54 @@ func (bound *preparedTx) QueryContext(ctx context.Context, query string, argumen
 //
 // Returns *sql.Row which reports the result or any query error when scanned.
 func (bound *preparedTx) QueryRowContext(ctx context.Context, query string, arguments ...any) *sql.Row {
-	statement := bound.source.cachedStatement(query)
+	statement, cached := bound.bind(ctx, query)
 	if statement == nil {
 		return bound.transaction.QueryRowContext(ctx, query, arguments...)
 	}
-	return bound.transaction.StmtContext(ctx, statement).QueryRowContext(ctx, arguments...)
+	row := statement.QueryRowContext(ctx, arguments...)
+	if sglEndedWith(row.Err()) {
+		return bound.transaction.StmtContext(ctx, cached).QueryRowContext(ctx, arguments...)
+	}
+	return row
 }
 
-// Prepare prepares the package's static queries on an existing connection pool.
+// bind returns the cached statement for a query bound to the transaction, binding it on
+// first use, or nil when the query has no cached statement.
+//
+// Takes query (string) which is the SQL statement.
+//
+// Returns transactional (*sql.Stmt) which is the bound statement, or nil.
+// Returns cached (*sql.Stmt) which is the cached statement it was bound from, or nil.
+//
+// Concurrency: The transaction's mutex guards the bound statements.
+func (bound *preparedTx) bind(ctx context.Context, query string) (transactional, cached *sql.Stmt) {
+	cached = bound.source.cachedStatement(query)
+	if cached == nil {
+		return nil, nil
+	}
+	bound.mu.Lock()
+	transactional, found := bound.statements[cached]
+	bound.mu.Unlock()
+	if found {
+		return transactional, cached
+	}
+
+	fresh := bound.transaction.StmtContext(ctx, cached)
+	bound.mu.Lock()
+	defer bound.mu.Unlock()
+	if transactional, found := bound.statements[cached]; found {
+		return transactional, cached
+	}
+	if bound.statements == nil {
+		bound.statements = make(map[*sql.Stmt]*sql.Stmt)
+	}
+	bound.statements[cached] = fresh
+	return fresh, cached
+}
+
+// Prepare caches supported static statements on an existing connection pool.
+//
+// Queries excluded by the driver profile execute through the supplied pool.
 //
 // Takes db (*sql.DB) which is the application-owned connection pool.
 //
@@ -237,4 +297,15 @@ func sglCloseStatements(stmts map[string]*sql.Stmt) error {
 		}
 	}
 	return errors.Join(closeErrors...)
+}
+
+// sglEndedWith reports whether an error is the closing of a statement bound to a
+// transaction that has since ended, which a statement bound afresh reports as the
+// transaction's own error.
+//
+// Takes err (error) which is the error, or nil.
+//
+// Returns bool which is true for the closed statement's error.
+func sglEndedWith(err error) bool {
+	return err != nil && err.Error() == sglStatementClosed
 }

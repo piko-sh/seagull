@@ -19,6 +19,8 @@
 package mysql
 
 import (
+	"slices"
+
 	"seagull.sh/seagull/internal/dialect/ast"
 	"seagull.sh/seagull/internal/dialect/dialectkit"
 )
@@ -74,6 +76,9 @@ func (p *parser) analyseQueryExpression() (*ast.RawQueryAnalysis, []dialectkit.A
 	}
 	extents = append(extents, branchExtents...)
 
+	if p.refusesRollupOrderBy(analysis) {
+		return nil, nil, p.syntaxErrorAt("this engine refuses ORDER BY on a query grouped WITH ROLLUP; order the rolled-up rows in a derived table")
+	}
 	mark := len(p.clauseExpressions)
 	dialectkit.RecordOrderByPlaceAt(p.spans, p.Tokens, p.Position)
 	p.parseOrderByIfPresent()
@@ -403,9 +408,12 @@ func (p *parser) parseOrderByIfPresent() {
 	}
 	start := p.Position
 	p.Advance()
-	p.MatchKeyword(keywordBY)
+	if !p.MatchKeyword(keywordBY) {
+		p.recordSyntaxError(p.syntaxErrorAt("expected BY after ORDER"))
+	}
 	listStart := p.Position
 	p.parseOrderByList()
+	p.checkSortList(listStart, p.Position)
 	p.recordClauseExpressions(ast.ClauseOrderBy, p.reparse(listStart, p.Position, true, false))
 	dialectkit.RecordTokenRange(p.spans, dialectkit.SpanOrderBy, p.Tokens, start, p.Position)
 }
@@ -456,15 +464,35 @@ func (p *parser) analyseCall() (*ast.RawQueryAnalysis, error) {
 	return analysis, nil
 }
 
+// refusesRollupOrderBy reports whether an ORDER BY follows a single query grouped WITH
+// ROLLUP in a dialect that refuses that pairing.
+//
+// Takes analysis (*ast.RawQueryAnalysis) which is the query read so far.
+//
+// Returns bool which is true when the ORDER BY must be refused.
+func (p *parser) refusesRollupOrderBy(analysis *ast.RawQueryAnalysis) bool {
+	rolledUp := analysis.GroupingSets != nil && len(analysis.CompoundBranches) == 0
+	return p.rollupForbidsOrderBy && rolledUp && p.IsKeyword(keywordORDER)
+}
+
 // finaliseAnalysis copies parser-collected state onto the analysis.
 //
 // Takes analysis (*ast.RawQueryAnalysis) which receives the parameter references, derived
 // tables, and table-valued functions.
 func (p *parser) finaliseAnalysis(analysis *ast.RawQueryAnalysis) {
+	analysis.RowLimited = analysis.RowLimited || p.rowLimited
 	analysis.ParameterReferences = p.parameterReferences
 	analysis.RawDerivedTables = p.rawDerivedTables
 	analysis.PredicateSubqueries = p.predicateSubqueries
 	analysis.RawTableValuedFunctions = p.rawTableValuedFunctions
+	for index := p.fullTextFrom; index < len(*p.fullTextSearches); index++ {
+		if (*p.fullTextSearches)[index].Query == nil {
+			(*p.fullTextSearches)[index].Query = analysis
+		}
+	}
+	if len(*p.fullTextSearches) > 0 && analysis.Detail == nil {
+		analysis.Detail = &queryDetail{fullTextSearches: slices.Clone(*p.fullTextSearches)}
+	}
 }
 
 // analyseInsert parses an INSERT or REPLACE statement, recording what it does with a row

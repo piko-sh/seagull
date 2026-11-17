@@ -51,7 +51,7 @@ var (
 	duckDBStandIns       = map[string]*duckDBStandInStore{}
 	duckDBStandInsMutex  sync.Mutex
 	standInCreatePattern = regexp.MustCompile(`^CREATE TABLE IF NOT EXISTS ([A-Za-z_]+)`)
-	standInReadPattern   = regexp.MustCompile(`FROM ([A-Za-z_]+) ORDER BY version`)
+	standInReadPattern   = regexp.MustCompile(`FROM ([A-Za-z_]+) (?:ORDER BY version|WHERE 1 = 0)`)
 )
 
 type leakyDriver struct{}
@@ -567,4 +567,38 @@ func TestDuckDBStandInReportsAMissingHistoryTable(t *testing.T) {
 	rows, err := store.query("SELECT version FROM sgl_migrations ORDER BY version", nil)
 	require.NoError(t, err)
 	require.ErrorIs(t, rows.Next(make([]driver.Value, 1)), io.EOF)
+}
+
+func TestMigrateToAppliesAMigrationAddedBelowTheCurrentVersion(t *testing.T) {
+	t.Parallel()
+
+	project, dsn := databaseProject(t)
+	project.Write("db/migrations/0003_add_ports.up.sql", "CREATE TABLE ports (id INTEGER PRIMARY KEY);\n")
+	project.Write("db/migrations/0003_add_ports.down.sql", "DROP TABLE ports;\n")
+	requireCode(t, project.Run("migrate", "up", "--dsn", dsn), 0)
+	project.Write("db/migrations/0002_add_books.up.sql", "CREATE TABLE books (id INTEGER PRIMARY KEY);\n")
+	project.Write("db/migrations/0002_add_books.down.sql", "DROP TABLE books;\n")
+
+	result := project.Run("migrate", "to", "3", "--dsn", dsn)
+
+	requireCode(t, result, 0)
+	assert.Equal(t, "up 2 add_books\n1 applied\n", result.Stdout, "a migration added out of order below the target is applied, not reported as already there")
+	result = project.Run("migrate", "to", "3", "--dsn", dsn)
+	requireCode(t, result, 0)
+	assert.Equal(t, "already at version 3\n", result.Stdout)
+}
+
+func TestMigrateToTheCurrentVersionRefusesAnEditedMigration(t *testing.T) {
+	t.Parallel()
+
+	project, dsn := databaseProject(t)
+	project.Write("db/migrations/0002_add_books.up.sql", "CREATE TABLE books (id INTEGER PRIMARY KEY);\n")
+	requireCode(t, project.Run("migrate", "up", "--dsn", dsn), 0)
+	project.Write("db/migrations/0001_init.up.sql", project.Read("db/migrations/0001_init.up.sql")+"-- edited\n")
+
+	result := project.Run("migrate", "to", "2", "--dsn", dsn)
+
+	requireCode(t, result, 4)
+	assert.NotContains(t, result.Stdout, "already at version")
+	assert.Contains(t, result.Stderr, "checksum")
 }

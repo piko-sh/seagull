@@ -68,6 +68,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(name: SortableQuotes, command: many)\n-- sgl.sortable(order_by, [id, price, quote_date])\nSELECT id, price, quote_date FROM quotes WHERE deleted_at IS NULL ORDER BY date(quote_date) DESC, id LIMIT ?;",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1:price⟩, ⟨c2:quote_date⟩ FROM quotes WHERE ⟨where:deleted_at IS NULL⟩ ⟨order:ORDER BY date(quote_date) DESC, id⟩ ⟨pagination:LIMIT ⟨p0⟩⟩;⟨arguments p0⟩"
   },
@@ -80,7 +85,8 @@
           "EngineName": "bigint",
           "Width": 64
         },
-        "SourceExpression": "quotes.id"
+        "SourceColumn": "id",
+        "SourceExpression": "id"
       },
       {
         "Name": "price",
@@ -89,7 +95,8 @@
           "EngineName": "integer",
           "Width": 64
         },
-        "SourceExpression": "quotes.price"
+        "SourceColumn": "price",
+        "SourceExpression": "price"
       },
       {
         "Name": "quote_date",
@@ -98,11 +105,12 @@
           "EngineName": "timestamp",
           "Temporal": "timestamp"
         },
-        "SourceExpression": "quotes.quote_date"
+        "SourceColumn": "quote_date",
+        "SourceExpression": "quote_date"
       }
     ],
     "Command": "many",
-    "CountTemplate": "SELECT COUNT(*) FROM quotes\\nWHERE ⟨where:deleted_at IS NULL⟩",
+    "CountTemplate": "SELECT COUNT(*) FROM (SELECT ⟨c0:id⟩, ⟨c1:price⟩, ⟨c2:quote_date⟩\\nFROM quotes\\nWHERE deleted_at IS NULL\\nORDER BY date(quote_date) DESC, id\\nLIMIT 10) AS result_rows⟨where⟩",
     "DynamicRuntime": true,
     "Filename": "dynamic.sql",
     "Line": 5,
@@ -143,8 +151,14 @@
       }
     ],
     "ReadOnly": true,
+    "ReadsResultRows": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(name: SearchQuotes, command: many, dynamic: runtime)\nSELECT id, price, quote_date\nFROM quotes\nWHERE deleted_at IS NULL\nORDER BY date(quote_date) DESC, id\nLIMIT 10;",
-    "Template": "SELECT ⟨c0:id⟩, ⟨c1:price⟩, ⟨c2:quote_date⟩\\nFROM quotes\\nWHERE ⟨where:deleted_at IS NULL⟩\\n⟨order:ORDER BY date(quote_date) DESC, id⟩\\n⟨pagination:LIMIT 10⟩;"
+    "Template": "SELECT * FROM (SELECT ⟨c0:id⟩, ⟨c1:price⟩, ⟨c2:quote_date⟩\\nFROM quotes\\nWHERE deleted_at IS NULL\\nORDER BY date(quote_date) DESC, id\\nLIMIT 10) AS result_rows⟨where⟩⟨order⟩⟨pagination⟩;"
   },
   {
     "Command": "many",
@@ -255,6 +269,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(name: OrderBySubstring, command: many)\nSELECT id FROM quotes ORDER BY substr(description, 1, 10) DESC, id LIMIT ?;",
     "Template": "SELECT ⟨c0:id⟩ FROM quotes ORDER BY substr(description, 1, 10) DESC, id LIMIT ⟨p0⟩;⟨arguments p0⟩"
   },
@@ -277,6 +296,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(name: OrderByCase, command: many)\nSELECT id FROM quotes ORDER BY CASE WHEN category = 'a' THEN 0 WHEN category = 'b' THEN 1 ELSE 2 END, id DESC;",
     "Template": "SELECT ⟨c0:id⟩ FROM quotes ORDER BY CASE WHEN category = 'a' THEN 0 WHEN category = 'b' THEN 1 ELSE 2 END, id DESC;"
   },
@@ -309,6 +333,12 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        1,
+        0
+      ]
+    },
     "SQL": "-- sgl.query(name: OrderByCollation, command: many)\nSELECT id, description FROM quotes ORDER BY description COLLATE NOCASE ASC, id;",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1:description⟩ FROM quotes ORDER BY description COLLATE NOCASE ASC, id;"
   },
@@ -363,6 +393,9 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Ordinal": true
+    },
     "SQL": "-- sgl.query(name: OrderByPosition, command: many)\nSELECT id, description FROM quotes ORDER BY 2 DESC, 1;",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1:description⟩ FROM quotes ORDER BY 2 DESC, 1;"
   },
@@ -426,6 +459,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        1
+      ]
+    },
     "SQL": "-- sgl.query(name: OrderByAlias, command: many)\nSELECT id, date(quote_date) AS day FROM quotes ORDER BY day DESC, lower(description);",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:date(quote_date)⟩ AS day FROM quotes ORDER BY day DESC, lower(description);"
   },
@@ -465,6 +503,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        1
+      ]
+    },
     "SQL": "-- sgl.query(name: WindowOrdering, command: many)\nSELECT id, row_number() OVER (PARTITION BY lower(category) ORDER BY date(quote_date) DESC, id) AS position,\n  sum(price) OVER (ORDER BY id ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS running\nFROM quotes ORDER BY position, date(quote_date);",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:row_number() OVER (PARTITION BY lower(category) ORDER BY date(quote_date) DESC, id)⟩ AS position,\\n  ⟨c2 aliased:sum(price) OVER (ORDER BY id ROWS BETWEEN 1 PRECEDING AND CURRENT ROW)⟩ AS running\\nFROM quotes ORDER BY position, date(quote_date);"
   },
@@ -495,6 +538,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        1
+      ]
+    },
     "SQL": "-- sgl.query(name: NamedWindow, command: many)\nSELECT id, rank() OVER ranked AS place FROM quotes WINDOW ranked AS (PARTITION BY category ORDER BY price DESC) ORDER BY place;",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:rank() OVER ranked⟩ AS place FROM quotes WINDOW ranked AS (PARTITION BY category ORDER BY price DESC) ORDER BY place;"
   },
@@ -572,6 +620,9 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Distinct": true
+    },
     "SQL": "-- sgl.query(name: DistinctKinds, command: many)\nSELECT DISTINCT lower(category) AS kind FROM quotes ORDER BY lower(category) COLLATE NOCASE;",
     "Template": "SELECT DISTINCT ⟨c0 aliased:lower(category)⟩ AS kind FROM quotes ORDER BY lower(category) COLLATE NOCASE;"
   },
@@ -615,6 +666,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(name: Subqueries, command: many)\nSELECT id, (SELECT max(price) FROM quotes inner_quotes WHERE inner_quotes.category = recent.category ORDER BY date(inner_quotes.quote_date) LIMIT 1) AS top\nFROM (SELECT id, category, quote_date FROM quotes ORDER BY date(quote_date) DESC LIMIT 100) recent\nWHERE id IN (SELECT id FROM quotes ORDER BY lower(description) LIMIT ?)\nORDER BY date(recent.quote_date), id;",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:(SELECT max(price) FROM quotes inner_quotes WHERE inner_quotes.category = recent.category ORDER BY date(inner_quotes.quote_date) LIMIT 1)⟩ AS top\\nFROM (SELECT id, category, quote_date FROM quotes ORDER BY date(quote_date) DESC LIMIT 100) recent\\nWHERE id IN (SELECT id FROM quotes ORDER BY lower(description) LIMIT ⟨p0⟩)\\nORDER BY date(recent.quote_date), id;⟨arguments p0⟩"
   },
@@ -650,6 +706,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(name: CommonTableExpression, command: many)\nWITH recent AS (SELECT id, quote_date FROM quotes ORDER BY date(quote_date) DESC LIMIT ?)\nSELECT id FROM recent ORDER BY date(quote_date) ASC, id;",
     "Template": "WITH recent AS (SELECT id, quote_date FROM quotes ORDER BY date(quote_date) DESC LIMIT ⟨p0⟩)\\nSELECT ⟨c0:id⟩ FROM recent ORDER BY date(quote_date) ASC, id;⟨arguments p0⟩"
   },
@@ -695,6 +756,10 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Compound": true,
+      "Ordinal": true
+    },
     "SQL": "-- sgl.query(name: CompoundOrdered, command: many)\nSELECT id, description FROM quotes WHERE category = 'a'\nUNION ALL\nSELECT id, description FROM quotes WHERE category = 'b'\nORDER BY 2 COLLATE NOCASE DESC, 1\nLIMIT ?;",
     "Template": "SELECT id, description FROM quotes WHERE category = 'a'\\nUNION ALL\\nSELECT id, description FROM quotes WHERE category = 'b'\\nORDER BY 2 COLLATE NOCASE DESC, 1\\nLIMIT ⟨p0⟩;⟨arguments p0⟩"
   },
@@ -715,6 +780,10 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Compound": true,
+      "Ordinal": true
+    },
     "SQL": "-- sgl.query(name: CompoundBranchesOrdered, command: many)\nSELECT id FROM (SELECT id FROM quotes ORDER BY date(quote_date) LIMIT 5)\nUNION\nSELECT id FROM (SELECT id FROM quotes ORDER BY lower(description) DESC LIMIT 5)\nORDER BY 1;",
     "Template": "SELECT id FROM (SELECT id FROM quotes ORDER BY date(quote_date) LIMIT 5)\\nUNION\\nSELECT id FROM (SELECT id FROM quotes ORDER BY lower(description) DESC LIMIT 5)\\nORDER BY 1;"
   },
@@ -939,6 +1008,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(name: PageByExpression, command: many)\nSELECT id FROM quotes ORDER BY date(quote_date) DESC, id LIMIT ? + 1 OFFSET (? - 1) * 10;",
     "Template": "SELECT ⟨c0:id⟩ FROM quotes ORDER BY date(quote_date) DESC, id LIMIT ⟨p0⟩ + 1 OFFSET (⟨p1⟩ - 1) * 10;⟨arguments p0 p1⟩"
   },
@@ -985,6 +1059,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(name: PageByCommaForm, command: many)\nSELECT id FROM quotes ORDER BY date(quote_date) DESC, id LIMIT ?, ?;",
     "Template": "SELECT ⟨c0:id⟩ FROM quotes ORDER BY date(quote_date) DESC, id LIMIT ⟨p0⟩, ⟨p1⟩;⟨arguments p0 p1⟩"
   },
@@ -1031,6 +1110,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(name: PageByCommaFormExpressions, command: many)\nSELECT id FROM quotes ORDER BY date(quote_date) DESC, id LIMIT ? * 2, ? + 3;",
     "Template": "SELECT ⟨c0:id⟩ FROM quotes ORDER BY date(quote_date) DESC, id LIMIT ⟨p0⟩ * 2, ⟨p1⟩ + 3;⟨arguments p0 p1⟩"
   },

@@ -107,6 +107,8 @@ Facts: |- # Kind: Struct
       // Field
       ToJSON string
       // Field
+      FloatBits dialect.FloatBitsSyntax
+      // Field
       Filters dialect.FilterSyntax
       // Field
       Lists dialect.ListSyntax
@@ -124,6 +126,8 @@ Facts: |- # Kind: Struct
       Identifiers sqlmodel.IdentifierCase
       // Field
       Returning ast.DataChange
+      // Field
+      Ordering dialect.OrderingSyntax
   }
 MaxTypeDepth: int # Kind: Type
 MigrationOrigin: |- # Kind: Struct
@@ -273,6 +277,11 @@ TableName: |- # Kind: Struct
       // Field
       Name string
   }
+TemporalKind: sqlmodel.TemporalKind # Kind: Type
+TemporalKindDate: sqlmodel.TemporalKind # Kind: Type
+TemporalKindInterval: sqlmodel.TemporalKind # Kind: Type
+TemporalKindTime: sqlmodel.TemporalKind # Kind: Type
+TemporalKindTimestamp: sqlmodel.TemporalKind # Kind: Type
 TypeCategoryAggregateState: sqlmodel.SQLTypeCategory # Kind: Type
 TypeCategoryArray: sqlmodel.SQLTypeCategory # Kind: Type
 TypeCategoryBinary: sqlmodel.SQLTypeCategory # Kind: Type

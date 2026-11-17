@@ -16,13 +16,7 @@
 // oppression. We built this to empower people, not to enable those who would
 // strip others of their rights and dignity.
 
-// Command 004_nullability applies its migrations to a PostgreSQL database, then runs the
-// example in example.go: three gulls are ringed, their sightings recorded, and both
-// listings print NULL where a pointer is nil.
-//
-// Run it with `go run . -dsn postgres://user:password@localhost:5432/example`, or set
-// DATABASE_URL instead of passing -dsn. Give it an empty database of its own, as the
-// migrations create its tables and the example adds rows each time it runs.
+// Command 004_nullability demonstrates nullable query results.
 package main
 
 import (
@@ -46,6 +40,7 @@ import (
 //go:embed db/migrations
 var migrations embed.FS
 
+// main selects the database and reports example failures.
 func main() {
 	dsn := flag.String("dsn", os.Getenv("DATABASE_URL"), "PostgreSQL connection string; defaults to $DATABASE_URL")
 	flag.Parse()

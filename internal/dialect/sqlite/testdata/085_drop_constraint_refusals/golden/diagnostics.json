@@ -1,0 +1,50 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 1,
+    "Filename": "001_schema.up.sql",
+    "Line": 9,
+    "Message": "constraint boat_key of table boats is a primary key or unique constraint, which cannot be dropped",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 1,
+    "Filename": "001_schema.up.sql",
+    "Line": 10,
+    "Message": "constraint boat_name of table boats is a primary key or unique constraint, which cannot be dropped",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 1,
+    "Filename": "001_schema.up.sql",
+    "Line": 11,
+    "Message": "constraint boat_berth of table boats is a primary key or unique constraint, which cannot be dropped",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 1,
+    "Filename": "001_schema.up.sql",
+    "Line": 12,
+    "Message": "constraint crew_key of table crews is a primary key or unique constraint, which cannot be dropped",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q068",
+    "Column": 1,
+    "Filename": "001_schema.up.sql",
+    "Line": 13,
+    "Message": "constraint no_such_name not found in table boats",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q068",
+    "Column": 1,
+    "Filename": "001_schema.up.sql",
+    "Line": 15,
+    "Message": "constraint crew_present not found in table boats",
+    "Severity": "error"
+  }
+]

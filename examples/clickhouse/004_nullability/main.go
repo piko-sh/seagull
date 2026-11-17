@@ -16,12 +16,7 @@
 // oppression. We built this to empower people, not to enable those who would
 // strip others of their rights and dignity.
 
-// Command 004_nullability applies its migrations to a ClickHouse database, then runs the
-// example in example.go: ringed gulls and their sightings are listed through a LEFT JOIN,
-// coalesce and aggregates, printing NULL where a pointer field is nil.
-//
-// Run it with `go run .` against a local server, or `go run . -dsn <dsn>` to choose the
-// database; give it an empty one.
+// Command 004_nullability demonstrates nullable query results.
 package main
 
 import (
@@ -44,6 +39,7 @@ import (
 //go:embed db/migrations
 var migrations embed.FS
 
+// main selects the database and reports example failures.
 func main() {
 	dsn := flag.String("dsn", "clickhouse://localhost:9000/default", "ClickHouse DSN of an empty database")
 	flag.Parse()

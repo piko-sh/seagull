@@ -1,7 +1,8 @@
 {
-  "description": "SQL generation preserves expressions, clauses, comments and string literals. Counts wrap queries with set-returning select items such as unnest.",
-  "expectedDiagnosticCount": 1,
+  "description": "SQL generation preserves expressions, clauses, comments and string literals. Counts wrap queries with set-returning select items such as unnest. A runtime builder over a query with its own LIMIT reads and counts the rows that LIMIT returns.",
+  "expectedDiagnosticCount": 2,
   "diagnostics": [
+    {"code": "Q023", "severity": "hint", "filename": "dynamic.sql", "onLine": 5},
     {"code": "Q023", "severity": "hint", "filename": "dynamic.sql", "onLine": 11}
   ]
 }

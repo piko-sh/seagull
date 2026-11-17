@@ -28,5 +28,5 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	harness.Main(m, startServer, leakcheck.IgnoreNetworkPollers())
+	harness.Main(m, harness.SharedServer("mysql", &testConnectionString, startServer), leakcheck.IgnoreNetworkPollers())
 }

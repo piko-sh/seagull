@@ -335,7 +335,7 @@ func TestCustomSplitThatPanicsFailsTheCallInsteadOfCrashing(t *testing.T) {
 	require.NoError(t, backend.err)
 
 	var logs bytes.Buffer
-	ctx := logging.ContextWithLogger(t.Context(), slog.New(slog.NewJSONHandler(&logs, nil)))
+	ctx := logging.WithLogger(t.Context(), slog.New(slog.NewJSONHandler(&logs, nil)))
 	executor, err := NewExecutor(fakeDatabase(t), backend)
 	require.NoError(t, err)
 	seeds, err := NewSeedExecutor(fakeDatabase(t), backend)

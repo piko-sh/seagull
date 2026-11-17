@@ -71,8 +71,8 @@ func TestBatchAppendsANamedEnumAsItsUnderlyingString(t *testing.T) {
 		" moods Array(Enum8('calm' = 1, 'stormy' = 2)), maybes Array(Nullable(Enum8('calm' = 1, 'stormy' = 2)))," +
 		" labels Map(String, Enum8('calm' = 1, 'stormy' = 2)), host String) ENGINE = MergeTree ORDER BY id;\n"
 	enum := "Enum8('calm' = 1, 'stormy' = 2)"
-	appended := "batch.Append(item.ID, string(item.Mood), (*string)(item.Maybe), sglConvertStrings[string](item.Moods), " +
-		"sglConvertStringPointers[string](item.Maybes), sglConvertStringMap[string](item.Labels), item.Host)"
+	appended := "batch.Append(item.ID, string(item.Mood), Null[string]{V: string(item.Maybe.V), Valid: item.Maybe.Valid}, " +
+		"sglConvertStrings[string](item.Moods), sglConvertStringPointers[string](item.Maybes), sglConvertStringMap[string](item.Labels), item.Host)"
 	testCases := []struct {
 		name    string
 		command string

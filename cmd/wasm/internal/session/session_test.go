@@ -140,7 +140,7 @@ func TestRunGeneratesTheSQLiteStarter(t *testing.T) {
 	require.False(t, response.Internal)
 	require.Empty(t, response.Error)
 	require.Equal(t, session.ProtocolVersion, response.V)
-	require.Equal(t, []string{"example.sql.go", "models.go", "querier.go"}, fileNames(response))
+	require.Equal(t, []string{"example.sql.go", "models.go", "querier.go", "sgl_json_codec.go", "sgl_null.go"}, fileNames(response))
 	require.Equal(t, session.Counts{Errors: 0, Warnings: 0, Hints: 0}, response.Counts)
 	require.Equal(t, &session.ConfigView{
 		File:               "sgl.yaml",
@@ -193,11 +193,11 @@ func TestRunGeneratesTheSQLiteStarter(t *testing.T) {
 	require.Equal(t, []session.ResultColumnView{
 		{Name: "id", SQLType: "bigint", Category: "integer", GoType: "int64", Source: "authors.id", Embedded: "", EmbedTable: "", Nullable: false, Outer: false},
 		{Name: "name", SQLType: "text", Category: "text", GoType: "string", Source: "authors.name", Embedded: "", EmbedTable: "", Nullable: false, Outer: false},
-		{Name: "bio", SQLType: "text", Category: "text", GoType: "*string", Source: "authors.bio", Embedded: "", EmbedTable: "", Nullable: true, Outer: false},
+		{Name: "bio", SQLType: "text", Category: "text", GoType: "Null[string]", Source: "authors.bio", Embedded: "", EmbedTable: "", Nullable: true, Outer: false},
 	}, lookup.Columns)
 
 	create := findQuery(t, response, "CreateAuthor")
-	require.Equal(t, []string{"string", "*string"}, []string{create.Params[0].GoType, create.Params[1].GoType})
+	require.Equal(t, []string{"string", "Null[string]"}, []string{create.Params[0].GoType, create.Params[1].GoType})
 
 	require.NotNil(t, response.Catalogue)
 	require.Equal(t, "main", response.Catalogue.DefaultSchema)
@@ -299,7 +299,7 @@ func TestRunGeneratesPostgresWithPgx(t *testing.T) {
 	require.True(t, response.OK, response.Error)
 	require.Equal(t, "pgx", response.Config.Driver)
 	require.Equal(t, "postgres", response.Config.Dialect)
-	require.Equal(t, []string{"example.sql.go", "models.go", "querier.go"}, fileNames(response))
+	require.Equal(t, []string{"example.sql.go", "models.go", "querier.go", "sgl_json_codec.go", "sgl_null.go", "sgl_null_pgx.go"}, fileNames(response))
 	require.Contains(t, response.Files[2].Content, "github.com/jackc/pgx/v5")
 	lookup := findQuery(t, response, "GetAuthor")
 	require.Equal(t, "SELECT id, name, bio FROM authors WHERE id = $1;", lookup.SQLSent)
@@ -389,8 +389,8 @@ func TestRunKeepsSelfJoinEmbedsApart(t *testing.T) {
 	require.Equal(t, []session.ResultColumnView{
 		{Name: "id", SQLType: "int8", Category: "integer", GoType: "int64", Source: "staff.id", Embedded: "member", EmbedTable: "staff", Nullable: false, Outer: false},
 		{Name: "name", SQLType: "text", Category: "text", GoType: "string", Source: "staff.name", Embedded: "member", EmbedTable: "staff", Nullable: false, Outer: false},
-		{Name: "id", SQLType: "int8", Category: "integer", GoType: "*int64", Source: "staff.id", Embedded: "manager", EmbedTable: "staff", Nullable: true, Outer: true},
-		{Name: "name", SQLType: "text", Category: "text", GoType: "*string", Source: "staff.name", Embedded: "manager", EmbedTable: "staff", Nullable: true, Outer: true},
+		{Name: "id", SQLType: "int8", Category: "integer", GoType: "Null[int64]", Source: "staff.id", Embedded: "manager", EmbedTable: "staff", Nullable: true, Outer: true},
+		{Name: "name", SQLType: "text", Category: "text", GoType: "Null[string]", Source: "staff.name", Embedded: "manager", EmbedTable: "staff", Nullable: true, Outer: true},
 	}, query.Columns)
 	require.Contains(t, query.Types, "type GetStaffWithManagerManager struct")
 }

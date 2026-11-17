@@ -142,6 +142,8 @@ When the style requests a query-method interface, `Naming.Interface` names it: d
 
 Read the header, helper/error prefixes, struct-tag settings and optional shapes from `request.Style`: write each field's tags as `JSONTags` and `StructTags` say, and a description or schema comment with a NUL, a byte order mark or invalid UTF-8 written as U+FFFD, which Go source can hold, as the built-in emitters do. Honour `EmptySlices`, `DocComments`, `Interface`, `QueryNames` and the naming plan's row-reuse decision where your emitter supports them.
 
+`request.Types` resolves a nullable value to a pointer, `*T`, for your emitter. The built-in emitters implement `NullTypePort`, so for them it resolves to the generated `Null[T]` instead, which they declare in `sgl_null.go`. Implement `NullTypePort` only if your emitter declares that type and reads and binds it.
+
 `ModernIdioms`, which the default preset sets, asks for a stream method returning `iter.Seq2[Row, error]` and a blank line between every two top-level declarations; `emit_kit.DefaultReservation` reserves the `iter` import when it is set. `WrapErrors` asks for every error a method returns to be labelled with the error prefix and the method's name, wrapping the error with `%w` so `errors.Is` still finds it; see [labelled errors](../reference/generated-go.md#labelled-errors-wraperrors) for the built-in emitters' form.
 
 Generated headers identify stale files for pruning. They do not protect handwritten files at output filenames from replacement, so reserve an output namespace the caller can keep for generated code. See [output writing](../reference/output-writing.md) for the writer's contract.

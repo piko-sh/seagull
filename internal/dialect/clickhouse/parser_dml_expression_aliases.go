@@ -19,6 +19,7 @@
 package clickhouse
 
 import (
+	"maps"
 	"slices"
 
 	"seagull.sh/seagull/internal/dialect/ast"
@@ -32,26 +33,156 @@ import (
 // Takes analysis (*ast.RawQueryAnalysis) which is the query, rewritten in place.
 // Takes enclosing ([]string) which lists the names the enclosing queries give.
 func resolveExpressionAliases(analysis *ast.RawQueryAnalysis, enclosing []string) {
+	resolveExpressionAliasValues(analysis, enclosing, nil)
+}
+
+// resolveExpressionAliasValues resolves WITH expression names throughout a query tree, a
+// name whose expression the parser kept standing for that expression and any other for a
+// value of unknown type, in the clauses and in the select list.
+//
+// Takes analysis (*ast.RawQueryAnalysis) which is the query, rewritten in place.
+// Takes enclosing ([]string) which lists the names the enclosing queries give.
+// Takes enclosingValues (map[string]ast.Expression) which maps the enclosing names to
+// their expressions, where kept.
+func resolveExpressionAliasValues(analysis *ast.RawQueryAnalysis, enclosing []string, enclosingValues map[string]ast.Expression) {
 	if analysis == nil {
 		return
 	}
-	aliases := enclosing
-	if detail, found := analysis.Detail.(*queryDetail); found && len(detail.expressionAliases) > 0 {
-		aliases = append(slices.Clone(enclosing), detail.expressionAliases...)
-	}
+	aliases, values := aliasScope(analysis, enclosing, enclosingValues)
 	for index := range analysis.ClauseExpressions {
-		analysis.ClauseExpressions[index].Expression = replaceAliasReferences(analysis.ClauseExpressions[index].Expression, aliases)
+		analysis.ClauseExpressions[index].Expression = replaceAliasValues(analysis.ClauseExpressions[index].Expression, aliases, values)
 	}
+	replaceOutputAliases(analysis, aliases, values)
 	for index := range analysis.RawDerivedTables {
-		resolveExpressionAliases(analysis.RawDerivedTables[index].InnerQuery, aliases)
+		resolveExpressionAliasValues(analysis.RawDerivedTables[index].InnerQuery, aliases, values)
 	}
 	for index := range analysis.CompoundBranches {
-		resolveExpressionAliases(analysis.CompoundBranches[index].Query, aliases)
+		resolveExpressionAliasValues(analysis.CompoundBranches[index].Query, aliases, values)
 	}
 	for index := range analysis.CTEDefinitions {
-		resolveExpressionAliases(analysis.CTEDefinitions[index].Query, aliases)
+		resolveExpressionAliasValues(analysis.CTEDefinitions[index].Query, aliases, values)
 	}
-	resolveExpressionAliases(analysis.InsertSelect, aliases)
+	resolveExpressionAliasValues(analysis.InsertSelect, aliases, values)
+}
+
+// aliasScope collects the WITH names and expressions visible to a query.
+//
+// The query's own expression replaces an enclosing one with the same name. Expressions
+// that refer to another WITH name or contain a subquery are omitted, leaving the name
+// with an unknown type. Expanding them could grow the tree without bound or resolve an
+// inner name as a column.
+//
+// Takes analysis (*ast.RawQueryAnalysis) which is the query.
+// Takes enclosing ([]string) which lists the names the enclosing queries give.
+// Takes enclosingValues (map[string]ast.Expression) which maps them to kept expressions.
+//
+// Returns []string which lists the names.
+// Returns map[string]ast.Expression which maps names to kept expressions.
+func aliasScope(analysis *ast.RawQueryAnalysis, enclosing []string, enclosingValues map[string]ast.Expression) ([]string, map[string]ast.Expression) {
+	detail, found := analysis.Detail.(*queryDetail)
+	if !found || len(detail.expressionAliases) == 0 {
+		return enclosing, enclosingValues
+	}
+	names := append(slices.Clone(enclosing), detail.expressionAliases...)
+	values := make(map[string]ast.Expression, len(enclosingValues)+len(detail.expressionAliasValues))
+	maps.Copy(values, enclosingValues)
+	for _, name := range detail.expressionAliases {
+		delete(values, name)
+	}
+	for name, value := range detail.expressionAliasValues {
+		if standsAlone(value, names) {
+			values[name] = value
+		}
+	}
+	return names, values
+}
+
+// standsAlone reports whether a WITH expression can stand in for its name as it is,
+// because it names no WITH name and holds no subquery.
+//
+// Takes value (ast.Expression) which is the expression.
+// Takes names ([]string) which are the WITH names in scope.
+//
+// Returns bool which is true when the expression can stand in for its name.
+func standsAlone(value ast.Expression, names []string) bool {
+	alone := true
+	ast.Walk(value, func(node ast.Expression) bool {
+		if _, isSubquery := ast.InnerQuery(node); isSubquery {
+			alone = false
+		}
+		if column, isColumn := node.(*ast.ColumnRefExpression); isColumn && column.TableAlias == "" && slices.Contains(names, column.ColumnName) {
+			alone = false
+		}
+		return alone
+	})
+	return alone
+}
+
+// replaceOutputAliases replaces the select list's references to WITH names, a whole item
+// naming one standing for what the name stands for rather than for a column.
+//
+// Takes analysis (*ast.RawQueryAnalysis) which is the query, rewritten in place.
+// Takes aliases ([]string) which are the names.
+// Takes values (map[string]ast.Expression) which maps names to kept expressions.
+func replaceOutputAliases(analysis *ast.RawQueryAnalysis, aliases []string, values map[string]ast.Expression) {
+	for index := range analysis.OutputColumns {
+		column := &analysis.OutputColumns[index]
+		switch {
+		case column.IsStar:
+		case column.TableAlias == "" && column.ColumnName != "" && slices.Contains(aliases, column.ColumnName):
+			column.Expression = aliasStandIn(column.ColumnName, values)
+			column.ColumnName = ""
+		case !ast.IsNil(column.Expression):
+			column.Expression = replaceAliasValues(column.Expression, aliases, values)
+		}
+	}
+}
+
+// aliasStandIn returns what a reference to a WITH name stands for: the expression it
+// names, where the parser kept it, or a value of unknown type.
+//
+// Takes name (string) which is the name.
+// Takes values (map[string]ast.Expression) which maps names to kept expressions.
+//
+// Returns ast.Expression which stands in for the reference.
+func aliasStandIn(name string, values map[string]ast.Expression) ast.Expression {
+	if value, kept := values[name]; kept {
+		return value
+	}
+	return &ast.UnknownExpression{}
+}
+
+// replaceAliasValues returns an expression with every unqualified reference to one of the
+// names replaced by what the name stands for, as replaceAliasReferences does with values
+// of unknown type.
+//
+// Takes expression (ast.Expression) which is the expression.
+// Takes aliases ([]string) which are the names.
+// Takes values (map[string]ast.Expression) which maps names to kept expressions.
+//
+// Returns ast.Expression which is the expression with the references replaced.
+func replaceAliasValues(expression ast.Expression, aliases []string, values map[string]ast.Expression) ast.Expression {
+	if len(values) == 0 {
+		return replaceAliasReferences(expression, aliases)
+	}
+	if ast.IsNil(expression) {
+		return expression
+	}
+	if column, isColumn := expression.(*ast.ColumnRefExpression); isColumn {
+		if column.TableAlias == "" && slices.Contains(aliases, column.ColumnName) {
+			return aliasStandIn(column.ColumnName, values)
+		}
+		return column
+	}
+	if _, isSubquery := ast.InnerQuery(expression); isSubquery {
+		return replaceAliasReferences(expression, aliases)
+	}
+	if _, isLambda := expression.(*ast.LambdaExpression); isLambda {
+		return replaceAliasReferences(expression, aliases)
+	}
+	return ast.RewriteChildren(expression, func(child ast.Expression) ast.Expression {
+		return replaceAliasValues(child, aliases, values)
+	})
 }
 
 // replaceAliasReferences returns an expression with every unqualified reference to one of

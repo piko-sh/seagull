@@ -115,7 +115,7 @@ func TestTimescaleDBLegacyDirtyMigrationIsUpgradedAndNotResumed(t *testing.T) {
 	var recordedVersion int
 	var statementsHash string
 	require.NoError(t, database.QueryRowContext(ctx, "SELECT splitter_version, statements_hash FROM sgl_migrations WHERE version = 1").Scan(&recordedVersion, &statementsHash))
-	require.Equal(t, 1, recordedVersion)
+	require.Equal(t, 2, recordedVersion, "this release splits statements by splitter version 2")
 	require.Len(t, statementsHash, 64)
 	require.Equal(t, []harness.HistoryEntry{{Version: 1, Dirty: false, LastStatement: 1}}, harness.ReadHistory(t, database))
 }

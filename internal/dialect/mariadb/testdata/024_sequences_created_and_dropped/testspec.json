@@ -1,0 +1,3 @@
+{
+  "description": "CREATE SEQUENCE records a sequence and DROP SEQUENCE removes each one it names."
+}

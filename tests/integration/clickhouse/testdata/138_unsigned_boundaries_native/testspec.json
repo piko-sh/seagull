@@ -1,0 +1,7 @@
+{
+  "description": "Unsigned bindings retain all 64 bits.",
+  "expectedDiagnostics": [
+    "Q022"
+  ],
+  "emitter": "native"
+}

@@ -54,7 +54,7 @@ func main() {
 	bodyText := "This is the body"
 	post, err := queries.CreatePost(ctx, db.CreatePostParams{
 		Title:     "Hello World",
-		Body:      &bodyText,
+		Body:      db.NullOf(bodyText),
 		AuthorID:  int32(42),
 		Published: false,
 	})

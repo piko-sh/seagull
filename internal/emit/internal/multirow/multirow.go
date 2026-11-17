@@ -210,13 +210,17 @@ func chunkLoop(statement *batchStatement) ast.Stmt {
 		goastutil.VarDecl(identValues, query.Imports.AddType(sqlmodel.GoType{Composite: nil, Package: importStrings, Name: "Builder"})),
 	}
 	body = append(body, prepareValues(statement)...)
-	body = append(body, &ast.RangeStmt{
+	rows := &ast.RangeStmt{
 		Key:   goastutil.CachedIdent(identIndex),
-		Value: goastutil.CachedIdent(identItem),
+		Value: nil,
 		Tok:   token.DEFINE,
 		X:     goastutil.CachedIdent(identChunk),
 		Body:  goastutil.BlockStmt(rowStatements(statement)...),
-	})
+	}
+	if len(statement.row.Arguments) > 0 {
+		rows.Value = goastutil.CachedIdent(identItem)
+	}
+	body = append(body, rows)
 	if statement.row.Values.End < len(query.Rendered.SQL) {
 		body = append(body, writeValues(&ast.SliceExpr{X: goastutil.CachedIdent(query.Naming.SQLConstant), Low: goastutil.IntLit(statement.row.Values.End)}))
 	}
@@ -315,11 +319,14 @@ func rowStatements(statement *batchStatement) []ast.Stmt {
 	statements := []ast.Stmt{goastutil.IfStmt(nil,
 		&ast.BinaryExpr{X: goastutil.CachedIdent(identIndex), Op: token.GTR, Y: goastutil.IntLit(0)},
 		goastutil.BlockStmt(writeValues(goastutil.StrLit(rowSeparatorText))))}
-	if statement.row.Kind == dialect.PlaceholderNamed {
+	if statement.row.Kind == dialect.PlaceholderNamed && len(statement.row.Arguments) > 0 {
 		statements = append(statements, goastutil.DefineStmt(identRowNumber,
 			goastutil.CallExpr(query.Imports.AddType(sqlmodel.GoType{Composite: nil, Package: importStrconv, Name: "Itoa"}), goastutil.CachedIdent(identIndex))))
 	}
 	statements = append(statements, rowText(statement)...)
+	if len(statement.row.Arguments) == 0 {
+		return statements
+	}
 	arguments := make([]ast.Expr, 0, len(statement.row.Arguments)+1)
 	arguments = append(arguments, goastutil.CachedIdent(goast.IdentArgs))
 	for index, parameter := range statement.row.Arguments {
@@ -336,10 +343,11 @@ func rowStatements(statement *batchStatement) []ast.Stmt {
 //
 // Returns []ast.Stmt which appends one row's SQL and parameter placeholders.
 func rowText(statement *batchStatement) []ast.Stmt {
+	const maximumDecimalDigits = 20
 	row := statement.row
 	var statements []ast.Stmt
 	if row.Kind != dialect.PlaceholderNamed && len(row.Slots) > 0 {
-		statements = append(statements, goastutil.VarDecl("digits", &ast.ArrayType{Len: goastutil.IntLit(20), Elt: goastutil.CachedIdent("byte")}))
+		statements = append(statements, goastutil.VarDecl("digits", &ast.ArrayType{Len: goastutil.IntLit(maximumDecimalDigits), Elt: goastutil.CachedIdent("byte")}))
 	}
 	for index, part := range row.Parts {
 		if part != "" {

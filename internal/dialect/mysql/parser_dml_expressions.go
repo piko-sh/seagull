@@ -256,6 +256,7 @@ func (p *parser) parseComparisonExpression() ast.Expression {
 	}
 
 	if notNegated {
+		p.recordSyntaxError(p.syntaxErrorAt("expected IN, LIKE, BETWEEN or REGEXP after NOT"))
 		return &ast.UnaryOpExpression{Operator: keywordNOT, Operand: left}
 	}
 
@@ -491,12 +492,7 @@ func (p *parser) mulOperator() (string, bool) {
 func (p *parser) parseUnaryExpression() ast.Expression {
 	if p.Current().Kind == tokenOperator &&
 		(p.Current().Value == "-" || p.Current().Value == "+" || p.Current().Value == "~") {
-		operator := p.Advance().Value
-		inner := p.parseCollateExpression()
-		if _, ok := inner.(*ast.LiteralExpression); ok {
-			return inner
-		}
-		return &ast.UnaryOpExpression{Operator: operator, Operand: inner}
+		return p.parseNumericPrefix()
 	}
 	if p.MatchKeyword(keywordNOT) {
 		inner := p.parseCollateExpression()
@@ -516,9 +512,11 @@ func (p *parser) parseCollateExpression() ast.Expression {
 	left := p.parsePrimaryExpression()
 
 	if p.MatchKeyword(keywordCOLLATE) {
-		if p.Current().Kind == tokenIdentifier || p.Current().Kind == tokenString {
-			p.Advance()
+		if p.Current().Kind != tokenIdentifier && p.Current().Kind != tokenString {
+			p.reportSyntaxError("expected a collation after COLLATE")
+			return left
 		}
+		p.Advance()
 	}
 
 	return left
@@ -529,6 +527,10 @@ func (p *parser) parseCollateExpression() ast.Expression {
 //
 // Returns ast.Expression which is the parsed expression tree.
 func (p *parser) parsePrimaryExpression() ast.Expression {
+	if p.AtEnd() {
+		p.recordSyntaxError(p.syntaxErrorAt("expected an expression"))
+		return &ast.UnknownExpression{}
+	}
 	current := p.Current()
 
 	switch current.Kind {
@@ -568,7 +570,9 @@ func (p *parser) parsePrimaryExpression() ast.Expression {
 // Returns ast.Expression which is the typed literal expression.
 func (p *parser) parseNumberLiteral(current token) ast.Expression {
 	p.Advance()
-	return &ast.LiteralExpression{TypeName: numberLiteralType(current.Value)}
+	literal := &ast.LiteralExpression{TypeName: numberLiteralType(current.Value)}
+	p.rememberIntegerLiteral(literal, current.Value)
+	return literal
 }
 
 // parseParameterExpression registers a bare parameter token.
@@ -807,7 +811,9 @@ func (p *parser) parseSequenceValueExpression() ast.Expression {
 // Returns ast.Expression which is the relevance, typed as DOUBLE.
 func (p *parser) parseMatchAgainstExpression() ast.Expression {
 	p.Advance()
-	p.parseParenthesisedExpressionList()
+	if search, searchesColumns := fullTextSearchOf(p.parseParenthesisedExpressionList()); searchesColumns {
+		*p.fullTextSearches = append(*p.fullTextSearches, search)
+	}
 	if !p.MatchKeyword("AGAINST") {
 		p.reportSyntaxError("expected AGAINST after MATCH (...)")
 		return &ast.UnknownExpression{}
@@ -847,8 +853,12 @@ func (p *parser) parseNullLiteral() ast.Expression {
 //
 // Returns ast.Expression which is the typed literal expression.
 func (p *parser) parseBooleanLiteral() ast.Expression {
-	p.Advance()
-	return &ast.LiteralExpression{TypeName: "tinyint"}
+	value := p.Advance().Keyword(tokenIdentifier) == "TRUE"
+	literal := &ast.LiteralExpression{TypeName: "tinyint"}
+	if p.constantNumbers != nil {
+		p.constantNumbers[literal] = constantBoolean(value)
+	}
+	return literal
 }
 
 // parseIntervalLiteral parses an INTERVAL value unit expression as its amount converted
@@ -991,7 +1001,7 @@ func (p *parser) parseIsSuffix(left ast.Expression) ast.Expression {
 		return &ast.IsNullExpression{Inner: left, Negated: negated}
 	}
 
-	p.requireStrictExpression("expected NULL, TRUE, FALSE or UNKNOWN after IS")
+	p.reportSyntaxError("expected NULL, TRUE, FALSE or UNKNOWN after IS")
 	return &ast.IsNullExpression{Inner: left, Negated: negated}
 }
 
@@ -1005,6 +1015,10 @@ func (p *parser) parseIsSuffix(left ast.Expression) ast.Expression {
 // Returns ast.Expression which is the parsed IN expression.
 func (p *parser) parseInListSuffix(left ast.Expression) ast.Expression {
 	p.Advance()
+	if p.AtEnd() || p.Current().Kind == tokenRightParen || p.Current().Kind == tokenComma {
+		p.reportSyntaxError("expected a list or a subquery after IN")
+		return &ast.InListExpression{Inner: left, Values: nil}
+	}
 
 	if p.isSubqueryStart() {
 		innerAnalysis, err := p.analyseSubqueryBody()

@@ -48,7 +48,7 @@ func (queries *Queries) SearchTrips(ctx context.Context, params SearchTripsParam
 	var results []SearchTripsRow
 	if rows.Next() {
 		var row SearchTripsRow
-		scanArgs := []any{&row.ID, &row.Name, &row.Destination, &row.PricePence, &row.DogsWelcome}
+		scanArgs := []any{&row.ID, &row.Name, &row.Destination, sglScanNumber(&row.PricePence), &row.DogsWelcome}
 		for more := true; more; more = rows.Next() {
 			row = SearchTripsRow{}
 			if err := rows.Scan(scanArgs...); err != nil {

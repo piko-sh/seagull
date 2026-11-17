@@ -1,4 +1,4 @@
 CREATE TABLE orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    lines JSON NOT NULL
+    line_items JSON NOT NULL
 );

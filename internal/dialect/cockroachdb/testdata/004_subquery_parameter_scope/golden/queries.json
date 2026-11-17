@@ -51,6 +51,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        1
+      ]
+    },
     "SQL": "-- sgl.query(name: ListProfilesForUser, command: many)\nSELECT id, name, role\nFROM profiles\nWHERE id IN (SELECT profile_id FROM user_profiles WHERE user_id = $1)\nORDER BY name;",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:role⟩\\nFROM profiles\\nWHERE id IN (SELECT profile_id FROM user_profiles WHERE user_id = ⟨p0⟩)\\nORDER BY name;⟨arguments p0⟩"
   }

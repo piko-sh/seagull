@@ -209,10 +209,12 @@ func TestValuesHoldsTheOptionalHelpersOnlyWhenAParameterNeedsThem(t *testing.T) 
 			fileSet := token.NewFileSet()
 			syntax, err := parser.ParseFile(fileSet, file.Name, file.Content, parser.AllErrors)
 			require.NoError(t, err)
-			checked, err := (&types.Config{Importer: importer.Default()}).Check("store", fileSet, []*ast.File{syntax}, nil)
+			codec, err := parser.ParseFile(fileSet, "codec.go", jsonCodecStub, 0)
+			require.NoError(t, err)
+			checked, err := (&types.Config{Importer: importer.Default()}).Check("store", fileSet, []*ast.File{syntax, codec}, nil)
 			require.NoError(t, err)
 
-			listed := make([]string, 0, len(testCase.helpers)+len(chvalues.Sentinels))
+			listed := []string{"acmeJSONMarshal", "acmeJSONUnmarshal"}
 			for _, suffix := range testCase.helpers {
 				listed = append(listed, "acme"+suffix)
 			}

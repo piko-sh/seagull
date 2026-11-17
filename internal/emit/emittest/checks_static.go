@@ -68,7 +68,7 @@ func (current *subject) overCases(ctx context.Context, names []string, visit cas
 	for _, name := range names {
 		result := current.generation(ctx, name)
 		if result.unusable != "" {
-			unusable = append(unusable, "case "+name+": "+result.unusable)
+			unusable = append(unusable, casePrefix+name+checkDetailSeparator+result.unusable)
 			continue
 		}
 		problems = append(problems, visit(name, result)...)
@@ -223,7 +223,7 @@ func checkParametersAreBound(ctx context.Context, current *subject) knownfailure
 		if typeProblems := checked.typeProblems(name); len(typeProblems) > 0 && !definition.general {
 			return typeProblems
 		}
-		return prefixed("case "+name+": ", bindingProblems(checked))
+		return prefixed(casePrefix+name+checkDetailSeparator, bindingProblems(checked))
 	})
 }
 
@@ -238,7 +238,7 @@ func checkRowFieldsAreScanned(ctx context.Context, current *subject) knownfailur
 		if _, ok := generatedCleanly(name, result, true); !ok {
 			return nil
 		}
-		return prefixed("case "+name+": ", rowProblems(current.checkedOutput(ctx, name)))
+		return prefixed(casePrefix+name+checkDetailSeparator, rowProblems(current.checkedOutput(ctx, name)))
 	})
 }
 
@@ -260,7 +260,7 @@ func reservedNamesCheck(caseName string) func(context.Context, *subject) knownfa
 			if typeProblems := checked.typeProblems(name); len(typeProblems) > 0 {
 				return typeProblems
 			}
-			return prefixed("case "+name+": ", append(bindingProblems(checked), rowProblems(checked)...))
+			return prefixed(casePrefix+name+checkDetailSeparator, append(bindingProblems(checked), rowProblems(checked)...))
 		})
 	}
 }
@@ -277,7 +277,7 @@ func checkPlaceholdersUseExecutionForm(ctx context.Context, current *subject) kn
 		if _, ok := generatedCleanly(name, result, true); !ok {
 			return nil
 		}
-		return prefixed("case "+name+": ", placeholderProblems(current.checkedOutput(ctx, name), &current.info))
+		return prefixed(casePrefix+name+checkDetailSeparator, placeholderProblems(current.checkedOutput(ctx, name), &current.info))
 	})
 }
 

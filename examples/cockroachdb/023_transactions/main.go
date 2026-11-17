@@ -16,14 +16,7 @@
 // oppression. We built this to empower people, not to enable those who would
 // strip others of their rights and dignity.
 
-// Command 023_transactions applies its migrations to a CockroachDB database, then runs
-// the example in example.go: two accounts are opened in one transaction, two transfers
-// run with RunInTx, one committing and one rolled back by a CHECK constraint, and an
-// interest payment is retried after CockroachDB aborts it with a serialisation failure.
-//
-// Run it with `go run .` against a local insecure node, which `docker run -d -p
-// 26257:26257 cockroachdb/cockroach:latest-v25.1 start-single-node --insecure` starts, or
-// point it elsewhere with `go run . -dsn <connection string>` or DATABASE_URL.
+// Command 023_transactions demonstrates transactions and retries.
 package main
 
 import (
@@ -50,6 +43,7 @@ const localDSN = "postgresql://root@localhost:26257/defaultdb?sslmode=disable"
 //go:embed db/migrations
 var migrations embed.FS
 
+// main selects the database and reports example failures.
 func main() {
 	dsn := flag.String("dsn", cmp.Or(os.Getenv("DATABASE_URL"), localDSN), "CockroachDB connection string")
 	flag.Parse()

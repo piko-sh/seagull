@@ -1,0 +1,81 @@
+[
+  {
+    "Command": "exec",
+    "Filename": "pets.sql",
+    "InsertColumns": [
+      "id",
+      "owner",
+      "weight",
+      "tag",
+      "vet"
+    ],
+    "InsertTarget": {
+      "Name": "pets"
+    },
+    "Line": 1,
+    "Name": "AddPet",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "owner",
+        "Nullable": true,
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "weight",
+        "Nullable": true,
+        "Number": 3,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "tag",
+        "Nullable": true,
+        "Number": 4,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 64
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "vet",
+        "Nullable": true,
+        "Number": 5,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: AddPet, command: exec)\nINSERT INTO pets (id, owner, weight, tag, vet) VALUES (?, ?, ?, ?, ?);",
+    "Template": "INSERT INTO pets (id, owner, weight, tag, vet) VALUES ⟨values:(⟨p0⟩, ⟨p1⟩, ⟨p2⟩, ⟨p3⟩, ⟨p4⟩)⟩;⟨arguments p0 p1 p2 p3 p4⟩"
+  }
+]

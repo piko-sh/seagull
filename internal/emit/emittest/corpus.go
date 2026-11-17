@@ -42,6 +42,10 @@ const (
 	// looks like placeholders.
 	caseBatch = "batch"
 
+	// caseBatchLiterals holds a batch whose row holds only literals and binds nothing, which
+	// an emitter may refuse.
+	caseBatchLiterals = "batchliterals"
+
 	// caseBatchSuffix holds a batched insert with a parameter after its VALUES row.
 	caseBatchSuffix = "batchsuffix"
 

@@ -1,0 +1,38 @@
+{
+  "by_id": [
+    {
+      "id": 1,
+      "score": 30
+    },
+    {
+      "id": 2,
+      "score": 10
+    },
+    {
+      "id": 3,
+      "score": null
+    },
+    {
+      "id": 4,
+      "score": null
+    }
+  ],
+  "count": 4,
+  "first_by_id": [
+    {
+      "id": 1,
+      "score": 30
+    }
+  ],
+  "page_by_id_desc": [
+    {
+      "id": 3,
+      "score": null
+    },
+    {
+      "id": 2,
+      "score": 10
+    }
+  ],
+  "rows_under_limit_one": 1
+}

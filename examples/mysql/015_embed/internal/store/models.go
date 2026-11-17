@@ -3,10 +3,10 @@
 package store
 
 type Boats struct {
-	ID        int64  `json:"id"`
-	Name      string `json:"name"`
-	HarbourID int64  `json:"harbour_id"`
-	SkipperID *int64 `json:"skipper_id"`
+	ID        int64       `json:"id"`
+	Name      string      `json:"name"`
+	HarbourID int64       `json:"harbour_id"`
+	SkipperID Null[int64] `json:"skipper_id"`
 }
 
 type Harbours struct {

@@ -220,6 +220,10 @@ type Go struct {
 	// matches, so it encodes to JSON as [] rather than null.
 	EmptySlices bool `json:"empty_slices,omitempty" yaml:"empty_slices,omitempty"`
 
+	// NullablePointers writes a nullable value as a pointer, *T, rather than as the
+	// generated Null[T] value type.
+	NullablePointers bool `json:"nullable_pointers,omitempty" yaml:"nullable_pointers,omitempty"`
+
 	// DocComments writes doc comments from the SQL: a query's description on its method, and
 	// a table's or column's comment on its model or field.
 	DocComments bool `json:"doc_comments,omitempty" yaml:"doc_comments,omitempty"`
@@ -345,7 +349,7 @@ type Migrate struct {
 	// HistoryTable renames the migration history table.
 	HistoryTable string `json:"history_table,omitempty" yaml:"history_table,omitempty"`
 
-	// Lock is "advisory", "table" or "none".
+	// Lock is "advisory", "table", "lease" or "none".
 	Lock string `json:"lock,omitempty" yaml:"lock,omitempty"`
 }
 

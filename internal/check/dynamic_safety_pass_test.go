@@ -244,3 +244,33 @@ func TestBaseQueryShapeDiagnostics(t *testing.T) {
 		})
 	}
 }
+
+func TestRuntimeBuilderOverAStatementThatChangesDataIsRefused(t *testing.T) {
+	t.Parallel()
+	for _, testCase := range []struct {
+		name     string
+		readOnly bool
+		raw      ast.RawQueryAnalysis
+		want     bool
+	}{
+		{name: "a data-modifying common table expression", raw: ast.RawQueryAnalysis{ChangesData: true}, want: true},
+		{name: "a call to a function that changes data", readOnly: false, want: true},
+		{name: "a locking clause only", raw: ast.RawQueryAnalysis{Spans: ast.StatementSpans{Locking: ast.Span{Start: 10, End: 20}}}, want: false},
+		{name: "a read", readOnly: true, want: false},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+			raw := testCase.raw
+			subject := &DiagnosticContext{
+				Query:       &sqlmodel.AnalysedQuery{Name: "Rows", Line: 1, DynamicRuntime: true, ReadOnly: testCase.readOnly},
+				RawAnalysis: &raw,
+				Filename:    "test.sql",
+			}
+			found := false
+			for _, diagnostic := range baseQueryShapeDiagnostics(subject) {
+				found = found || diagnostic.Code == diag.CodeRuntimeBuilderChangesData
+			}
+			assert.Equal(t, testCase.want, found)
+		})
+	}
+}

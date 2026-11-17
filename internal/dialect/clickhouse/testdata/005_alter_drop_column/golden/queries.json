@@ -29,6 +29,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(ListNotes, many)\nSELECT id, title FROM notes ORDER BY id;",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1:title⟩ FROM notes ORDER BY id;"
   }

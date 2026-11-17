@@ -22,6 +22,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -285,6 +286,25 @@ func TestGenerateTimings(t *testing.T) {
 	assert.Contains(t, result.Stderr, `timings for database "app"`)
 	assert.Contains(t, result.Stderr, "generate.catalogue")
 	assert.Contains(t, result.Stderr, "generate.analyse.query")
+}
+
+type closedPipeWriter struct{}
+
+func (closedPipeWriter) Write([]byte) (int, error) { return 0, io.ErrClosedPipe }
+
+func TestGenerateFailsWhenItsOutputCannotBeWritten(t *testing.T) {
+	t.Parallel()
+
+	project := sqliteProject(t)
+	for _, mode := range []string{"--diff", "--dry-run"} {
+		var stderr bytes.Buffer
+		result := project.RunWith(t.Context(), []cli.Option{cli.WithIO(nil, closedPipeWriter{}, &stderr)}, "generate", mode)
+		require.Equal(t, 3, result.Code, "generate %s: %s", mode, stderr.String())
+		require.Contains(t, stderr.String(), "closed pipe")
+	}
+	result := project.RunWith(t.Context(), []cli.Option{cli.WithIO(nil, io.Discard, closedPipeWriter{})}, "generate", "--dry-run", "--timings")
+	require.Equal(t, 3, result.Code)
+	require.False(t, project.Exists("internal/store"), "a run that only reports writes no code")
 }
 
 func TestGenerateHonoursLegacyHeadersAndOverrides(t *testing.T) {

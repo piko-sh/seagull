@@ -123,7 +123,7 @@ func TestCreateTableReadsMysqldumpColumnSpellings(t *testing.T) {
 				"UNIQUE KEY email_unique USING BTREE (email) COMMENT 'unique', FULLTEXT KEY body_text (body) WITH PARSER ngram, " +
 				"INDEX lowered ((lower(email))), CONSTRAINT qty_check CHECK (qty < 100) ENFORCED)",
 			columns: []expectedColumn{
-				{name: "id", engineName: "int", nullable: false, hasDefault: true},
+				{name: "id", engineName: "int", nullable: false, hasDefault: false},
 				{name: "qty", engineName: "int", nullable: true, hasDefault: false},
 				{name: "email", engineName: "varchar", nullable: true, hasDefault: false},
 				{name: "body", engineName: "text", nullable: true, hasDefault: false},

@@ -26,6 +26,15 @@ import (
 )
 
 const (
+	// functionExpressionArgument names a function's expression argument.
+	functionExpressionArgument = "expression"
+
+	// functionOtherArgument names a function's second argument.
+	functionOtherArgument = "other"
+
+	// functionValueArgument names a function's value argument.
+	functionValueArgument = "value"
+
 	// decodeOracleMinimumArguments is the fewest arguments DECODE_ORACLE takes: the value,
 	// one search and its result.
 	decodeOracleMinimumArguments = 3
@@ -78,7 +87,14 @@ func New(options ...mysql.Option) *mysql.Dialect {
 		mysql.WithUngroupedColumns(dialect.UngroupedColumnsNullable),
 		mysql.WithSequences(true),
 		mysql.WithOffsetFetch(true),
+		mysql.WithRollupOrderBy(false),
+		mysql.WithDerivedColumnLists(false),
+		mysql.WithRollupFunction(false),
+		mysql.WithAliasRefusals(mariaDBAliasRefusals, mariaDBBareAliasRefusals),
 		mysql.WithCreateOrReplace(true),
+		mysql.WithFoldNegatedLiterals(true),
+		mysql.WithDroppedColumnIndexes(ast.ColumnIndexesPreserveUnique),
+		mysql.WithConstraintNames(dialect.ConstraintNamesMariaDB),
 		mysql.WithoutBuiltinFunctions(mySQLOnlyFunctions...),
 		mysql.WithExtraFunctions(registerMariaDBFunctions),
 		mysql.WithFunctionCallHook(shiftParameterIntoString),
@@ -152,7 +168,7 @@ func registerMariaDBFunctions(builder *mysql.FunctionCatalogueBuilder) {
 	path := mysql.Arg{Name: "path", Type: builder.Text()}
 	builder.CalledOnNull("json_query", builder.Args(document, path), builder.JSON())
 	builder.NullOnNull("json_exists", builder.Args(document, path), builder.Boolean())
-	builder.NullOnNull("json_equals", builder.Args(document, mysql.Arg{Name: "other", Type: builder.JSON()}), builder.Boolean())
+	builder.NullOnNull("json_equals", builder.Args(document, mysql.Arg{Name: functionOtherArgument, Type: builder.JSON()}), builder.Boolean())
 	for _, name := range []string{"json_detailed", "json_loose", "json_compact", "json_normalize"} {
 		builder.NullOnNull(name, builder.Args(document), builder.JSON())
 	}
@@ -177,7 +193,7 @@ func registerMariaDBFunctions(builder *mysql.FunctionCatalogueBuilder) {
 // Takes builder (*mysql.FunctionCatalogueBuilder) which receives the signatures.
 func registerSequenceFunctions(builder *mysql.FunctionCatalogueBuilder) {
 	sequence := mysql.Arg{Name: "sequence", Type: builder.Text()}
-	value := mysql.Arg{Name: "value", Type: builder.Bigint()}
+	value := mysql.Arg{Name: functionValueArgument, Type: builder.Bigint()}
 	builder.ModifiesData("nextval", builder.Args(sequence), builder.Bigint())
 	builder.CalledOnNull("lastval", builder.Args(sequence), builder.Bigint())
 	setval := builder.ModifiesData("setval", builder.Args(sequence, value, mysql.Arg{Name: "is_used", Type: builder.Any()},
@@ -192,8 +208,8 @@ func registerSequenceFunctions(builder *mysql.FunctionCatalogueBuilder) {
 //
 // Takes builder (*mysql.FunctionCatalogueBuilder) which receives the signatures.
 func registerAddressTests(builder *mysql.FunctionCatalogueBuilder) {
-	text := builder.Args(mysql.Arg{Name: "expression", Type: builder.Text()})
-	binary := builder.Args(mysql.Arg{Name: "expression", Type: builder.Varbinary()})
+	text := builder.Args(mysql.Arg{Name: functionExpressionArgument, Type: builder.Text()})
+	binary := builder.Args(mysql.Arg{Name: functionExpressionArgument, Type: builder.Varbinary()})
 	builder.NeverNull("is_ipv4", text, builder.Integer())
 	builder.NeverNull("is_ipv6", text, builder.Integer())
 	builder.NeverNull("is_ipv4_mapped", binary, builder.Integer())
@@ -207,12 +223,12 @@ func registerAddressTests(builder *mysql.FunctionCatalogueBuilder) {
 //
 // Takes builder (*mysql.FunctionCatalogueBuilder) which receives the signatures.
 func registerNarrowerFunctions(builder *mysql.FunctionCatalogueBuilder) {
-	subject := mysql.Arg{Name: "expression", Type: builder.Text()}
+	subject := mysql.Arg{Name: functionExpressionArgument, Type: builder.Text()}
 	pattern := mysql.Arg{Name: "pattern", Type: builder.Text()}
 	builder.NullOnNull("regexp_instr", builder.Args(subject, pattern), builder.Integer())
 	builder.CalledOnNull("regexp_substr", builder.Args(subject, pattern), builder.Text())
 	builder.NullOnNull("regexp_replace", builder.Args(subject, pattern, mysql.Arg{Name: "replacement", Type: builder.Text()}), builder.Text())
-	value := mysql.Arg{Name: "expression", Type: builder.Any()}
+	value := mysql.Arg{Name: functionExpressionArgument, Type: builder.Any()}
 	offset := mysql.Arg{Name: "offset", Type: builder.Integer()}
 	for _, name := range []string{"lag", "lead"} {
 		shifted := builder.CalledOnNull(name, builder.Args(value, offset), builder.Any())
@@ -228,7 +244,7 @@ func registerNarrowerFunctions(builder *mysql.FunctionCatalogueBuilder) {
 // Takes document (mysql.Arg) which is the JSON document argument.
 // Takes path (mysql.Arg) which is the JSON path argument.
 func registerMariaDBJSONFunctions(builder *mysql.FunctionCatalogueBuilder, document mysql.Arg, path mysql.Arg) {
-	other := mysql.Arg{Name: "other", Type: builder.JSON()}
+	other := mysql.Arg{Name: functionOtherArgument, Type: builder.JSON()}
 	builder.CalledOnNull("json_array_intersect", builder.Args(document, other), builder.JSON())
 	builder.CalledOnNull("json_object_filter_keys", builder.Args(document, other), builder.JSON())
 	builder.CalledOnNull("json_object_to_array", builder.Args(document), builder.JSON())
@@ -245,8 +261,8 @@ func registerMariaDBJSONFunctions(builder *mysql.FunctionCatalogueBuilder, docum
 //
 // Takes builder (*mysql.FunctionCatalogueBuilder) which receives the signatures.
 func registerOracleCompatibleFunctions(builder *mysql.FunctionCatalogueBuilder) {
-	value := mysql.Arg{Name: "value", Type: builder.Any()}
-	other := mysql.Arg{Name: "other", Type: builder.Any()}
+	value := mysql.Arg{Name: functionValueArgument, Type: builder.Any()}
+	other := mysql.Arg{Name: functionOtherArgument, Type: builder.Any()}
 	fallback := mysql.Arg{Name: "fallback", Type: builder.Any()}
 	text := mysql.Arg{Name: "string", Type: builder.Text()}
 	length := mysql.Arg{Name: "length", Type: builder.Integer()}
@@ -290,21 +306,21 @@ func registerMariaDBStringFunctions(builder *mysql.FunctionCatalogueBuilder) {
 	builder.NullOnNull("crc32c", builder.Args(text), unsigned)
 	builder.NullOnNull("crc32c", builder.Args(mysql.Arg{Name: "seed", Type: builder.Bigint()}, text), unsigned)
 	builder.NullOnNull("natural_sort_key", builder.Args(text), builder.Text())
-	builder.Variadic("sformat", builder.Args(mysql.Arg{Name: "format", Type: builder.Text()}, mysql.Arg{Name: "value", Type: builder.Any()}),
+	builder.Variadic("sformat", builder.Args(mysql.Arg{Name: "format", Type: builder.Text()}, mysql.Arg{Name: functionValueArgument, Type: builder.Any()}),
 		1, builder.Text())
 	derivation := builder.NullOnNull("kdf", builder.Args(mysql.Arg{Name: "key", Type: builder.Text()},
 		mysql.Arg{Name: "salt", Type: builder.Text()}, mysql.Arg{Name: "info", Type: builder.Text()},
 		mysql.Arg{Name: "kdf_name", Type: builder.Text()}, mysql.Arg{Name: "width", Type: builder.Integer()}), builder.Varbinary())
 	derivation.MinArguments = 2
 	vector := mysql.Arg{Name: "vector", Type: builder.Varbinary()}
-	other := mysql.Arg{Name: "other", Type: builder.Varbinary()}
+	other := mysql.Arg{Name: functionOtherArgument, Type: builder.Varbinary()}
 	builder.NullOnNull("vec_fromtext", builder.Args(text), builder.Varbinary())
 	builder.NullOnNull("vec_totext", builder.Args(vector), builder.Text())
 	builder.NullOnNull("vec_distance_euclidean", builder.Args(vector, other), builder.Double())
 	builder.NullOnNull("vec_distance_cosine", builder.Args(vector, other), builder.Double())
-	builder.CalledOnNull("median", builder.Args(mysql.Arg{Name: "value", Type: builder.Any()}), builder.Double())
+	builder.CalledOnNull("median", builder.Args(mysql.Arg{Name: functionValueArgument, Type: builder.Any()}), builder.Double())
 	fraction := mysql.Arg{Name: "fraction", Type: builder.Double()}
-	sorted := mysql.Arg{Name: "value", Type: builder.Any()}
+	sorted := mysql.Arg{Name: functionValueArgument, Type: builder.Any()}
 	builder.CalledOnNull("percentile_cont", builder.Args(fraction, sorted), builder.Double())
 	builder.CalledOnNull("percentile_disc", builder.Args(fraction, sorted), builder.Any())
 }

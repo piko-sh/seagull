@@ -333,6 +333,14 @@ func (state *statementState) sortedWarnings() []ast.Warning {
 // its Interrupt stops, or a parser bug that panics, unwinds to the engine's entry point,
 // which fails the statement with it.
 type parser struct {
+	// reservedNames lists the keywords the engine refuses, unquoted, as a table's or a
+	// column's name in a definition.
+	reservedNames dialectkit.ReservedNames
+
+	// aliasKeywords lists the keywords the engine refuses, unquoted, as an output column's
+	// alias.
+	aliasKeywords dialectkit.AliasKeywords
+
 	// types resolves type names in casts through the dialect's hooks, extra types and
 	// built-in types; nil resolves through the built-in DuckDB types alone.
 	types *typeResolver
@@ -487,6 +495,10 @@ type parser struct {
 	// pivotArm records that the query being parsed has a PIVOT or UNPIVOT statement as an
 	// arm, whose ORDER BY names the pivot's columns rather than its source's.
 	pivotArm bool
+
+	// rowLimited records that the query this parser analyses has a LIMIT, OFFSET or FETCH
+	// clause.
+	rowLimited bool
 }
 
 // newParser builds a parser over the given token stream with the default parse depth cap.
@@ -496,6 +508,9 @@ type parser struct {
 // Returns *parser which is the initialised parser.
 func newParser(tokens []token) *parser {
 	return &parser{
+		reservedNames:           dialectkit.NewReservedNames(duckDBReservedColumns, duckDBReservedTables),
+		aliasKeywords:           duckDBAliasKeywords,
+		rowLimited:              false,
 		types:                   nil,
 		functions:               nil,
 		catalogue:               nil,
@@ -654,6 +669,8 @@ func (p *parser) collectParenthesised() ([]token, error) {
 func (p *parser) newChildParser(tokens []token) *parser {
 	child := newParser(tokens)
 	child.Interrupt = p.Interrupt
+	child.reservedNames = p.reservedNames
+	child.aliasKeywords = p.aliasKeywords
 	child.analysisDepth = p.analysisDepth
 	child.expressionDepth = p.expressionDepth
 	child.typeDepth = p.typeDepth

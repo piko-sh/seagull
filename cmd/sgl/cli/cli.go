@@ -36,6 +36,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime/debug"
+	"sync"
 	"syscall"
 )
 
@@ -209,11 +210,16 @@ func (inv *invocation) dispatchDatabaseCommand(ctx context.Context, command stri
 // cause. A second signal ends the process immediately. A run ended by a signal exits with
 // 128 plus the signal number: 130 for SIGINT and 143 for SIGTERM.
 //
+// SIGPIPE is ignored, so a reader that goes away, as head does once it has its lines,
+// fails the next write instead of killing the process part-way through a migration or
+// seed run. The run then finishes what it was doing and exits with a failure status.
+//
 // Takes arguments ([]string) which holds the arguments after the program name.
 // Takes options (...Option) which add dialects, emitters and drivers.
 //
 // Returns int which is the exit status the process should end with.
 func Main(arguments []string, options ...Option) int {
+	signal.Ignore(syscall.SIGPIPE)
 	signals := make(chan os.Signal, 2)
 	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
 	defer signal.Stop(signals)
@@ -281,7 +287,11 @@ func run(ctx context.Context, configured *settings, arguments []string) (status 
 		fmt.Fprintf(configured.stderr, errorFormat, configured.program, err)
 		return exitUsage
 	}
-	inv, rest, err := newInvocation(configured, arguments)
+	failure := &outputFailure{err: nil, mutex: sync.Mutex{}}
+	checked := *configured
+	checked.stdout = &checkedOutput{writer: configured.stdout, failure: failure, name: "stdout"}
+	checked.stderr = &checkedOutput{writer: configured.stderr, failure: failure, name: "stderr"}
+	inv, rest, err := newInvocation(&checked, arguments)
 	if err != nil {
 		fmt.Fprintf(configured.stderr, errorFormat, configured.program, err)
 		return exitUsage
@@ -289,6 +299,11 @@ func run(ctx context.Context, configured *settings, arguments []string) (status 
 	defer func() {
 		if recovered := recover(); recovered != nil {
 			status = inv.internalError(ctx, recovered)
+		}
+		if status == exitOK {
+			if err := failure.Err(); err != nil {
+				status = inv.fail(err)
+			}
 		}
 	}()
 	return interruptedStatus(ctx, inv.dispatch(ctx, rest))

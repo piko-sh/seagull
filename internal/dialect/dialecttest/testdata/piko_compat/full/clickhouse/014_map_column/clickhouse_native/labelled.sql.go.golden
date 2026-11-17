@@ -17,10 +17,15 @@ type GetLabelledRow struct {
 }
 
 func (queries *Queries) GetLabelled(ctx context.Context, id uint64) (GetLabelledRow, error) {
-	var row GetLabelledRow
-	err := queries.db.QueryRow(ctx, getlabelled, clickhouse.Named("p_id", pikoClickHouseShapedValue(id, pikoClickHouseShapes[0]))).Scan(&row.ID, &row.Metadata, &row.Counters)
+	scanned := &struct {
+		row     GetLabelledRow
+		targets [3]any
+	}{}
+	row := &scanned.row
+	scanned.targets = [3]any{&row.ID, &row.Metadata, &row.Counters}
+	err := queries.db.QueryRow(ctx, getlabelled, clickhouse.Named("p_id", pikoClickHouseShapedValue(id, pikoClickHouseShapes[0]))).Scan(scanned.targets[:]...)
 	if err != nil {
 		return GetLabelledRow{}, err
 	}
-	return row, nil
+	return *row, nil
 }

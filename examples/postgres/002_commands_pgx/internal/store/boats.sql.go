@@ -18,12 +18,17 @@ type GetBoatRow struct {
 }
 
 func (queries *Queries) GetBoat(ctx context.Context, id int64) (GetBoatRow, error) {
-	var row GetBoatRow
-	err := queries.db.QueryRow(ctx, getBoatSQL, id).Scan(&row.ID, &row.Name, &row.Berth, &row.AtSea)
+	scanned := &struct {
+		row     GetBoatRow
+		targets [4]any
+	}{}
+	row := &scanned.row
+	scanned.targets = [4]any{&row.ID, &row.Name, &row.Berth, &row.AtSea}
+	err := queries.db.QueryRow(ctx, getBoatSQL, id).Scan(scanned.targets[:]...)
 	if err != nil {
 		return GetBoatRow{}, err
 	}
-	return row, nil
+	return *row, nil
 }
 
 const listBoatsSQL = `SELECT id, name, berth, at_sea FROM boats ORDER BY berth;`
@@ -71,12 +76,17 @@ type MoorBoatRow struct {
 }
 
 func (queries *Queries) MoorBoat(ctx context.Context, params MoorBoatParams) (MoorBoatRow, error) {
-	var row MoorBoatRow
-	err := queries.db.QueryRow(ctx, moorBoatSQL, params.Name, params.Berth).Scan(&row.ID)
+	scanned := &struct {
+		row     MoorBoatRow
+		targets [1]any
+	}{}
+	row := &scanned.row
+	scanned.targets = [1]any{&row.ID}
+	err := queries.db.QueryRow(ctx, moorBoatSQL, params.Name, params.Berth).Scan(scanned.targets[:]...)
 	if err != nil {
 		return MoorBoatRow{}, err
 	}
-	return row, nil
+	return *row, nil
 }
 
 const moveBerthSQL = `UPDATE boats SET berth = $1 WHERE id = $2;`

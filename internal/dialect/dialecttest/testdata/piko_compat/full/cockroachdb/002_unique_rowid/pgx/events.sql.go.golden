@@ -14,12 +14,17 @@ type GenerateIDRow struct {
 }
 
 func (queries *Queries) GenerateID(ctx context.Context) (GenerateIDRow, error) {
-	var row GenerateIDRow
-	err := queries.db.QueryRow(ctx, generateid).Scan(&row.NewID)
+	scanned := &struct {
+		row     GenerateIDRow
+		targets [1]any
+	}{}
+	row := &scanned.row
+	scanned.targets = [1]any{&row.NewID}
+	err := queries.db.QueryRow(ctx, generateid).Scan(scanned.targets[:]...)
 	if err != nil {
 		return GenerateIDRow{}, err
 	}
-	return row, nil
+	return *row, nil
 }
 
 const getevent = `SELECT id, name, occurred_at FROM events WHERE id = $1;`
@@ -31,10 +36,15 @@ type GetEventRow struct {
 }
 
 func (queries *Queries) GetEvent(ctx context.Context, id int64) (GetEventRow, error) {
-	var row GetEventRow
-	err := queries.db.QueryRow(ctx, getevent, id).Scan(&row.ID, &row.Name, &row.OccurredAt)
+	scanned := &struct {
+		row     GetEventRow
+		targets [3]any
+	}{}
+	row := &scanned.row
+	scanned.targets = [3]any{&row.ID, &row.Name, &row.OccurredAt}
+	err := queries.db.QueryRow(ctx, getevent, id).Scan(scanned.targets[:]...)
 	if err != nil {
 		return GetEventRow{}, err
 	}
-	return row, nil
+	return *row, nil
 }

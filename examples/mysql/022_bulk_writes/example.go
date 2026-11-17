@@ -53,8 +53,7 @@ func (counter *statementCounter) ExecContext(ctx context.Context, query string, 
 	return counter.DB.ExecContext(ctx, query, arguments...)
 }
 
-// run records a week of readings from two tide gauges in one batch call, shows how many
-// INSERT statements that took, and summarises what landed in the table.
+// run batches tide gauge readings and summarizes the stored rows.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes output (io.Writer) which receives the statement counts and the summary.
@@ -104,9 +103,9 @@ func tideReadings(stations ...string) []store.RecordReadingsParams {
 	readings := make([]store.RecordReadingsParams, 0, len(stations)*minutesPerWeek)
 	for _, station := range stations {
 		for minute := range int32(minutesPerWeek) {
-			var note *string
+			var note store.Null[string]
 			if minute%60 == 0 {
-				note = new(fmt.Sprintf("hour %d check", minute/60))
+				note = store.NullOf(fmt.Sprintf("hour %d check", minute/60))
 			}
 			readings = append(readings, store.RecordReadingsParams{
 				Station:  station,

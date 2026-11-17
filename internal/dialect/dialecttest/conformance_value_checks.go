@@ -58,7 +58,7 @@ func checkPredicatesHaveTheStatedType(ctx context.Context, _ checkEnvironment, f
 	engine := fixture.NewDialect()
 	emitter, result, err := runGenerate(ctx, engine,
 		map[string]string{"001_items.up.sql": fixture.BaseMigration},
-		map[string]string{"predicates.sql": directiveLine(engine, "Predicates", "many") + predicateProbe})
+		map[string]string{"predicates.sql": directiveLine(engine, "Predicates", conformanceManyCommand) + predicateProbe})
 	if err != nil {
 		return failed(generationFatalFormat, err)
 	}
@@ -114,11 +114,11 @@ func describeType(sqlType *sqlmodel.SQLType) string {
 // Returns checkOutcome which holds every problem found.
 func checkRowValuesFollowTheDialect(ctx context.Context, _ checkEnvironment, fixture *Fixture) checkOutcome {
 	engine := fixture.NewDialect()
-	queries := map[string]string{"rows.sql": directiveLine(engine, "Rows", "many") + rowValueProbe}
+	queries := map[string]string{"rows.sql": directiveLine(engine, "Rows", conformanceManyCommand) + rowValueProbe}
 	toJSON := engine.Info().ToJSON
 	typer, typed := engine.(dialect.RowValueTyperPort)
 	if typed && toJSON != "" {
-		queries["documents.sql"] = directiveLine(engine, "Documents", "many") + "SELECT " + toJSON + "(items) AS document FROM items;"
+		queries["documents.sql"] = directiveLine(engine, "Documents", conformanceManyCommand) + "SELECT " + toJSON + "(items) AS document FROM items;"
 	}
 	emitter, result, err := runGenerate(ctx, engine, map[string]string{"001_items.up.sql": fixture.BaseMigration}, queries)
 	if err != nil {
@@ -214,7 +214,7 @@ func checkUnknownColumnInSelectListReportedOnce(ctx context.Context, _ checkEnvi
 	engine := fixture.NewDialect()
 	_, result, err := runGenerate(ctx, engine,
 		map[string]string{"001_items.up.sql": fixture.BaseMigration},
-		map[string]string{"unknown.sql": directiveLine(engine, "Unknown", "many") + selectListUnknownProbe})
+		map[string]string{"unknown.sql": directiveLine(engine, "Unknown", conformanceManyCommand) + selectListUnknownProbe})
 	if err != nil {
 		return failed(generationFatalFormat, err)
 	}

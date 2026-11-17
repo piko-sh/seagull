@@ -10,7 +10,6 @@
           "Columns": [
             {
               "GeneratedKind": "none",
-              "HasDefault": true,
               "Name": "id",
               "Origin": {
                 "Filename": "001_schema.up.sql",
@@ -101,7 +100,6 @@
           "Columns": [
             {
               "GeneratedKind": "none",
-              "HasDefault": true,
               "Name": "id",
               "Origin": {
                 "Filename": "001_schema.up.sql",
@@ -143,6 +141,9 @@
           ],
           "Indexes": [
             {
+              "Columns": [
+                "label"
+              ],
               "Name": "items_label",
               "Origin": {
                 "Filename": "001_schema.up.sql",

@@ -8,7 +8,7 @@ const addBoatSQL = `INSERT INTO boats (name, home_port) VALUES ($1, $2);`
 
 type AddBoatParams struct {
 	Name     string
-	HomePort *string
+	HomePort Null[string]
 }
 
 func (queries *Queries) AddBoat(ctx context.Context, params AddBoatParams) error {
@@ -19,9 +19,9 @@ func (queries *Queries) AddBoat(ctx context.Context, params AddBoatParams) error
 const listBoatsSQL = `SELECT id, name, home_port FROM boats ORDER BY id;`
 
 type ListBoatsRow struct {
-	ID       int64   `json:"id"`
-	Name     string  `json:"name"`
-	HomePort *string `json:"home_port"`
+	ID       int64        `json:"id"`
+	Name     string       `json:"name"`
+	HomePort Null[string] `json:"home_port"`
 }
 
 func (queries *Queries) ListBoats(ctx context.Context) ([]ListBoatsRow, error) {
@@ -31,12 +31,16 @@ func (queries *Queries) ListBoats(ctx context.Context) ([]ListBoatsRow, error) {
 	}
 	defer rows.Close()
 	var results []ListBoatsRow
-	for rows.Next() {
+	if rows.Next() {
 		var row ListBoatsRow
-		if err := rows.Scan(&row.ID, &row.Name, &row.HomePort); err != nil {
-			return nil, err
+		scanArgs := []any{&row.ID, &row.Name, &row.HomePort}
+		for more := true; more; more = rows.Next() {
+			row = ListBoatsRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

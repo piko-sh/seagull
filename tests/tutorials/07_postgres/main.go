@@ -36,15 +36,24 @@ import (
 	"seagull.sh/seagull/tests/tutorials/07_postgres/internal/store"
 )
 
+// migrations embeds the tutorial migration files.
+//
 //go:embed db/migrations
 var migrations embed.FS
 
+// main runs the tutorial and reports failures.
 func main() {
 	if err := run(context.Background(), os.Getenv("SGL_EXAMPLE_DSN"), os.Stdout); err != nil {
 		log.Fatal(err)
 	}
 }
 
+// run migrates a PostgreSQL database and exercises generated queries.
+//
+// Takes dsn (string) which names a disposable PostgreSQL database.
+// Takes out (io.Writer) which receives the results.
+//
+// Returns error when the DSN is empty, migration fails, or a query fails.
 func run(ctx context.Context, dsn string, out io.Writer) error {
 	if dsn == "" {
 		return fmt.Errorf("set SGL_EXAMPLE_DSN to a disposable PostgreSQL database")

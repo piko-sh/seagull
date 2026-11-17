@@ -23,6 +23,8 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"slices"
+	"strings"
 
 	"piko.sh/goastutil"
 
@@ -311,10 +313,6 @@ func buildSortableOrderByAppend(query *gogen.Query, sortable int) []ast.Stmt {
 	sortField := goastutil.SelectorExprFrom(parametersArgument, query.Naming.ParameterFields[sortable])
 	directionField := goastutil.SelectorExprFrom(parametersArgument, query.Naming.DirectionField)
 
-	columnLabels := make([]ast.Expr, len(columns))
-	for index, column := range columns {
-		columnLabels[index] = goastutil.StrLit(column)
-	}
 	directionSwitch := &ast.SwitchStmt{
 		Tag: directionField,
 		Body: goastutil.BlockStmt(&ast.CaseClause{
@@ -322,11 +320,41 @@ func buildSortableOrderByAppend(query *gogen.Query, sortable int) []ast.Stmt {
 			Body: []ast.Stmt{sortableQueryConcatAssign(directionSeparator, directionField)},
 		}),
 	}
+	clauses := make([]ast.Stmt, len(columns))
+	for index, column := range columns {
+		clauses[index] = &ast.CaseClause{
+			List: []ast.Expr{goastutil.StrLit(column)},
+			Body: []ast.Stmt{sortableColumnAppend(query, column), directionSwitch},
+		}
+	}
 	return []ast.Stmt{&ast.SwitchStmt{
-		Tag: goastutil.CallExpr(goastutil.CachedIdent(goast.IdentString), sortField),
-		Body: goastutil.BlockStmt(&ast.CaseClause{
-			List: columnLabels,
-			Body: []ast.Stmt{sortableQueryConcatAssign(orderByKeyword, sortField), directionSwitch},
-		}),
+		Tag:  goastutil.CallExpr(goastutil.CachedIdent(goast.IdentString), sortField),
+		Body: goastutil.BlockStmt(clauses...),
 	}}
+}
+
+// sortableColumnAppend appends ORDER BY and a sortable column to the query local, the
+// column written as the query's output names it and quoted, so a mixed-case or reserved
+// name orders by that column.
+//
+// Takes query (*gogen.Query) which is the sortable query.
+// Takes column (string) which is the column as the directive lists it.
+//
+// Returns ast.Stmt which appends the clause.
+func sortableColumnAppend(query *gogen.Query, column string) ast.Stmt {
+	name := column
+	outputs := query.Analysed.OutputColumns
+	if index := slices.IndexFunc(outputs, func(output sqlmodel.OutputColumn) bool {
+		return strings.EqualFold(output.Name, column)
+	}); index >= 0 {
+		name = outputs[index].Name
+	}
+	quoted := name
+	if query.Renderer != nil {
+		quoted = query.Renderer.Quote.Quote(name)
+	}
+	return goastutil.AssignStmt(
+		goastutil.CachedIdent(goast.IdentQuery),
+		&ast.BinaryExpr{X: goastutil.CachedIdent(goast.IdentQuery), Op: token.ADD, Y: goastutil.StrLit(orderByKeyword + quoted)},
+	)
 }

@@ -50,7 +50,7 @@ func insertSeedSQL(backend Backend, placeholder string) string {
 func TestBuiltInEnginesPassValidation(t *testing.T) {
 	t.Parallel()
 
-	duckDB, err := engineFromSpec(duckDBSpec)
+	duckDB, err := engineFromSpec(&duckDBSpec)
 	require.NoError(t, err)
 	for name, built := range map[string]*engine{
 		"duckdb":             duckDB,
@@ -213,28 +213,28 @@ func TestMySQLLockKeysAreScopedToTheSchema(t *testing.T) {
 	}
 }
 
-func TestSQLiteBackendUsesNoOpLockAndQuestionPlaceholders(t *testing.T) {
+func TestSQLiteBackendUsesALeaseLockAndQuestionPlaceholders(t *testing.T) {
 	t.Parallel()
 
 	backend := SQLite()
 
-	require.IsType(t, &noOpLock{}, backend.migrationLock)
+	require.IsType(t, &leaseLock{}, backend.migrationLock, "SQLite has no session locks, so runs serialise through a lease")
 	require.Equal(t, "?", backend.placeholder(1))
 	require.True(t, backend.engine.multiStatementSeeds)
 	require.Contains(t, createHistorySQL(backend), "sgl_migrations")
 	require.Contains(t, createSeedSQL(backend), "sgl_seeds")
 }
 
-func TestDuckDBBackendUsesNoOpLockAndNumberedPlaceholders(t *testing.T) {
+func TestDuckDBBackendUsesALeaseLockAndNumberedPlaceholders(t *testing.T) {
 	t.Parallel()
 
 	backend := DuckDB()
 
 	require.NoError(t, backend.err)
 	require.Equal(t, "DuckDB", backend.engine.name)
-	require.Equal(t, LockNone, backend.lockMode)
-	require.IsType(t, &noOpLock{}, backend.migrationLock)
-	require.IsType(t, &noOpLock{}, backend.seedLock)
+	require.Equal(t, LockLease, backend.lockMode)
+	require.IsType(t, &leaseLock{}, backend.migrationLock)
+	require.IsType(t, &leaseLock{}, backend.seedLock)
 	require.Equal(t, "$1", backend.placeholder(1))
 	require.Equal(t, "$8", backend.placeholder(8))
 	require.True(t, backend.engine.transactionalDDL, "DuckDB runs DDL inside transactions")
@@ -285,7 +285,7 @@ func TestWithHistoryTableRenamesDDLAndLockKey(t *testing.T) {
 		},
 		{
 			name:    "sqlite",
-			backend: SQLite(WithHistoryTable("scheduler_sgl_migrations")),
+			backend: SQLite(WithHistoryTable("scheduler_sgl_migrations"), WithLock(LockNone)),
 			table:   "scheduler_sgl_migrations",
 			lock:    &noOpLock{},
 		},
@@ -440,7 +440,7 @@ func TestLexicalSplitterTellsACallbackPanicFromMalformedSQL(t *testing.T) {
 			spec := minimalSpec()
 			spec.Rules = testCase.rules
 			var logs bytes.Buffer
-			ctx := logging.ContextWithLogger(t.Context(), slog.New(slog.NewJSONHandler(&logs, nil)))
+			ctx := logging.WithLogger(t.Context(), slog.New(slog.NewJSONHandler(&logs, nil)))
 			backend := Custom(spec)
 			_, err := backend.engine.split(ctx, testCase.content)
 
@@ -486,7 +486,7 @@ func TestRequiresNoTransactionReturnsAPredicatePanicAsAnError(t *testing.T) {
 			t.Parallel()
 
 			var logs bytes.Buffer
-			ctx := logging.ContextWithLogger(t.Context(), slog.New(slog.NewJSONHandler(&logs, nil)))
+			ctx := logging.WithLogger(t.Context(), slog.New(slog.NewJSONHandler(&logs, nil)))
 			built := &engine{rules: sqllex.Rules{RequiresNoTransaction: testCase.predicate}}
 
 			var required bool

@@ -61,10 +61,10 @@ func main() {
 	reading, device := 21.5, "probe"
 	output := results{}
 	output.record("add_metrics", func() (any, error) {
-		if err := queries.AddMetric(ctx, db.AddMetricParams{ID: 1, RecordedOn: time.Date(2026, 5, 1, 0, 0, 0, 0, time.UTC), Reading: &reading, Device: &device}); err != nil {
+		if err := queries.AddMetric(ctx, db.AddMetricParams{ID: 1, RecordedOn: time.Date(2026, 5, 1, 0, 0, 0, 0, time.UTC), Reading: db.NullOf(reading), Device: db.NullOf(device)}); err != nil {
 			return nil, err
 		}
-		return "added", queries.AddMetric(ctx, db.AddMetricParams{ID: 2, RecordedOn: time.Date(2027, 5, 1, 0, 0, 0, 0, time.UTC), Reading: nil, Device: nil})
+		return "added", queries.AddMetric(ctx, db.AddMetricParams{ID: 2, RecordedOn: time.Date(2027, 5, 1, 0, 0, 0, 0, time.UTC), Reading: db.Null[float64]{}, Device: db.Null[string]{}})
 	})
 	output.record("metrics_2026", func() (any, error) { return queries.ListMetrics2026(ctx) })
 	output.record("metrics_2027", func() (any, error) { return queries.ListMetrics2027(ctx) })

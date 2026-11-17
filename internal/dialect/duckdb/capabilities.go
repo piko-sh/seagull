@@ -37,6 +37,8 @@ var (
 
 	_ dialect.RowValueTyperPort = (*Dialect)(nil)
 
+	_ dialect.KeywordValuePort = (*Dialect)(nil)
+
 	_ dialect.ResultCheckerPort = (*Dialect)(nil)
 
 	_ dialect.ArgumentCoercerPort = (*Dialect)(nil)

@@ -36,14 +36,14 @@ func TestWithAliasesAreReplacedInEveryKindOfExpression(t *testing.T) {
 		wantUnknown   int
 		wantQualified int
 	}{
-		{name: "a comparison", sql: "WITH 5 AS bound SELECT id FROM items WHERE id > bound", wantUnknown: 1},
-		{name: "a lambda body", sql: "WITH 5 AS bound SELECT id FROM items WHERE arrayExists(x -> x > bound, tags)", wantUnknown: 1},
-		{name: "an IN list", sql: "WITH 5 AS bound SELECT id FROM items WHERE id IN (bound, 6)", wantUnknown: 1},
-		{name: "a BETWEEN bound", sql: "WITH 5 AS bound SELECT id FROM items WHERE id BETWEEN bound AND 10", wantUnknown: 1},
-		{name: "a subscript", sql: "WITH 1 AS first SELECT id FROM items WHERE tags[first] = 'x'", wantUnknown: 1},
-		{name: "a CASE branch", sql: "WITH 5 AS bound SELECT id FROM items WHERE CASE WHEN id > bound THEN 1 ELSE bound END = 1", wantUnknown: 2},
-		{name: "a logical operand", sql: "WITH 5 AS bound SELECT id FROM items WHERE id > bound OR NOT bound", wantUnknown: 2},
-		{name: "a qualified column of the same name", sql: "WITH 5 AS bound SELECT id FROM items AS i WHERE i.bound > 1", wantQualified: 1},
+		{name: "a comparison", sql: "WITH {limit:UInt32} AS bound SELECT id FROM items WHERE id > bound", wantUnknown: 1},
+		{name: "a lambda body", sql: "WITH {limit:UInt32} AS bound SELECT id FROM items WHERE arrayExists(x -> x > bound, tags)", wantUnknown: 1},
+		{name: "an IN list", sql: "WITH {limit:UInt32} AS bound SELECT id FROM items WHERE id IN (bound, 6)", wantUnknown: 1},
+		{name: "a BETWEEN bound", sql: "WITH {limit:UInt32} AS bound SELECT id FROM items WHERE id BETWEEN bound AND 10", wantUnknown: 1},
+		{name: "a subscript", sql: "WITH {position:UInt32} AS first SELECT id FROM items WHERE tags[first] = 'x'", wantUnknown: 1},
+		{name: "a CASE branch", sql: "WITH {limit:UInt32} AS bound SELECT id FROM items WHERE CASE WHEN id > bound THEN 1 ELSE bound END = 1", wantUnknown: 2},
+		{name: "a logical operand", sql: "WITH {limit:UInt32} AS bound SELECT id FROM items WHERE id > bound OR NOT bound", wantUnknown: 2},
+		{name: "a qualified column of the same name", sql: "WITH {limit:UInt32} AS bound SELECT id FROM items AS i WHERE i.bound > 1", wantQualified: 1},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
@@ -86,25 +86,25 @@ func TestLambdaParametersShadowWithAliasesInTheirBodies(t *testing.T) {
 		},
 		{
 			name:        "an alias no parameter shadows",
-			sql:         "WITH 5 AS bound SELECT id FROM items WHERE arrayExists(x -> x > bound, tags)",
+			sql:         "WITH {limit:UInt32} AS bound SELECT id FROM items WHERE arrayExists(x -> x > bound, tags)",
 			wantColumns: []string{"x", "tags"},
 			wantUnknown: 1,
 		},
 		{
 			name:        "the alias outside the lambda",
-			sql:         "WITH 5 AS x SELECT id FROM items WHERE arrayExists(x -> x > 1, tags) AND id > x",
+			sql:         "WITH {limit:UInt32} AS x SELECT id FROM items WHERE arrayExists(x -> x > 1, tags) AND id > x",
 			wantColumns: []string{"x", "tags", "id"},
 			wantUnknown: 1,
 		},
 		{
 			name:        "a nested lambda shadows only inside its own body",
-			sql:         "WITH 5 AS y SELECT id FROM items WHERE arrayExists(x -> arrayExists(y -> y > x, tags) AND x > y, tags)",
+			sql:         "WITH {limit:UInt32} AS y SELECT id FROM items WHERE arrayExists(x -> arrayExists(y -> y > x, tags) AND x > y, tags)",
 			wantColumns: []string{"y", "x", "tags", "x", "tags"},
 			wantUnknown: 1,
 		},
 		{
 			name:        "an accumulator bound to the alias",
-			sql:         "WITH 0 AS acc SELECT id FROM items WHERE arrayFold((acc, x) -> acc + x, tags, acc) > 0",
+			sql:         "WITH {start:UInt32} AS acc SELECT id FROM items WHERE arrayFold((acc, x) -> acc + x, tags, acc) > 0",
 			wantColumns: []string{"acc", "x", "tags"},
 			wantUnknown: 2,
 		},
@@ -140,7 +140,7 @@ func TestLambdaParametersShadowWithAliasesInTheirBodies(t *testing.T) {
 func TestWithAliasesAreReplacedInsideNestedQueries(t *testing.T) {
 	t.Parallel()
 
-	analysis := analyse(t, "WITH 5 AS bound SELECT id FROM items WHERE id > (SELECT max(id) FROM tags WHERE n > bound)")
+	analysis := analyse(t, "WITH {limit:UInt32} AS bound SELECT id FROM items WHERE id > (SELECT max(id) FROM tags WHERE n > bound)")
 	require.Len(t, analysis.ClauseExpressions, 1)
 	comparison, isComparison := analysis.ClauseExpressions[0].Expression.(*ast.ComparisonExpression)
 	require.True(t, isComparison)
@@ -199,4 +199,40 @@ func everyPosition(expression ast.Expression) []ast.Expression {
 		positions = append(positions, everyPosition(child)...)
 	}
 	return positions
+}
+
+func TestWithAliasesStandForTheExpressionsTheyName(t *testing.T) {
+	t.Parallel()
+
+	analysis := analyse(t, "WITH 2 AS factor, max(id) AS highest SELECT factor * id AS scaled, highest FROM items")
+	require.Len(t, analysis.OutputColumns, 2)
+	scaled, highest := analysis.OutputColumns[0], analysis.OutputColumns[1]
+	for _, node := range everyPosition(scaled.Expression) {
+		if column, isColumn := node.(*ast.ColumnRefExpression); isColumn {
+			require.NotEqual(t, "factor", column.ColumnName, "the alias stands for its literal, not a column")
+		}
+	}
+	require.Empty(t, highest.ColumnName, "a select-list reference to an alias is the aliased expression, not a column")
+	require.IsType(t, &ast.FunctionCallExpression{}, highest.Expression)
+}
+
+func TestWithAliasesNamingAnotherAliasStandForAnUnknownValue(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name string
+		sql  string
+	}{
+		{name: "an earlier alias", sql: "WITH 2 AS a, a * 3 AS b SELECT b FROM items"},
+		{name: "a subquery", sql: "WITH (SELECT max(id) FROM items) AS top SELECT top FROM items"},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			analysis := analyse(t, testCase.sql)
+			require.Len(t, analysis.OutputColumns, 1)
+			require.IsType(t, &ast.UnknownExpression{}, analysis.OutputColumns[0].Expression)
+		})
+	}
 }

@@ -46,15 +46,7 @@ type delivery struct {
 	Address string `json:"address"`
 }
 
-// run places three chip shop orders and reads them back. A JSON column becomes the
-// generated store.JSON type, which holds the raw document as bytes: encode a value into
-// it with json.Marshal and decode it with json.Unmarshal. A nil store.JSON is SQL NULL.
-//
-// OrdersWithFish selects with ->, which extracts a JSON fragment, so Extras is store.JSON
-// again. It filters with ->>, which extracts the SQL value the document holds: text, a
-// number or NULL, depending on the document, so Seagull types it as any. The query casts
-// the address to TEXT, which makes Address a *string, nil when the delivery column or its
-// address is missing.
+// run places chip shop orders and reads their JSON data.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes output (io.Writer) which receives the decoded orders and the search.
@@ -108,8 +100,8 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 	fmt.Fprintln(output, "\ncod orders:")
 	for _, order := range cod {
 		address := "collecting"
-		if order.Address != nil {
-			address = "to " + *order.Address
+		if order.Address.Valid {
+			address = "to " + order.Address.V
 		}
 		fmt.Fprintf(output, "  order %d  %-9s extras %-30s %s\n", order.ID, order.Customer, order.Extras, address)
 	}

@@ -104,7 +104,7 @@ func TestCorpusGenerationsRecordAPanicAsTheCasesError(t *testing.T) {
 			suite := &Suite{Name: "corpus", New: testCase.emitter, Corpora: []Corpus{{Cases: cases, Dialect: "postgres"}}}
 			current := newSubject(suite, postgres.New(), &runtimeLane{})
 			var output bytes.Buffer
-			ctx := logging.ContextWithLogger(t.Context(), slog.New(slog.NewTextHandler(&output, nil)))
+			ctx := logging.WithLogger(t.Context(), slog.New(slog.NewTextHandler(&output, nil)))
 
 			result := checkCorpusGenerates(ctx, current)
 

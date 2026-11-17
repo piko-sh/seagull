@@ -77,6 +77,6 @@ hut 2 at Polzeath is yellow and free
 
 ## Let the emitter bind the list
 
-With database/sql, values expand into bound placeholders at call time. pgx uses an array with `ANY` or `ALL` instead. ClickHouse takes an `Array` parameter directly and needs no `kind: slice`. A list exceeding the engine’s bind-variable limit returns `ErrSglTooManyBindVariables` before reaching the database.
+With database/sql, values expand into bound placeholders at call time, except on the PostgreSQL family, where a slice of text, integers or booleans is bound as one array parameter to `= ANY($1)` or `<> ALL($1)`. pgx uses an array with `ANY` or `ALL` instead. ClickHouse takes an `Array` parameter directly and needs no `kind: slice`. A list exceeding the engine’s bind-variable limit returns `ErrSglTooManyBindVariables` before reaching the database.
 
 See the [directives reference](../reference/directives.md) for the complete contract. The [example browser](https://seagull.sh/examples/) exposes other engine variants; use their actual SQL rather than changing only the dialect name.

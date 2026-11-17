@@ -22,6 +22,8 @@ import (
 	"strings"
 
 	"seagull.sh/seagull/internal/dialect/ast"
+	"seagull.sh/seagull/internal/dialect/dialectkit"
+	"seagull.sh/seagull/internal/sqlmodel"
 )
 
 const (
@@ -375,4 +377,47 @@ func settingBooleanWord(word string) (value bool, valid bool) {
 	default:
 		return false, false
 	}
+}
+
+// parseJoinQualifier reads the ON or USING clause that follows a JOIN in the chain
+// parseFromJoinChain reads.
+//
+// Takes analysis (*ast.RawQueryAnalysis) which is the analysis to populate.
+//
+// Returns *ast.JoinUsing which describes the columns a USING clause merges, leading the
+// joined row as ClickHouse places them, or nil for an ON clause.
+// Returns error when the USING column list is malformed.
+func (p *parser) parseJoinQualifier(analysis *ast.RawQueryAnalysis) (*ast.JoinUsing, error) {
+	if p.MatchKeyword(kwOn) {
+		start := p.Position
+		p.consumeExpressionTrackingParams(analysis, sqlmodel.ParameterContextComparison, stopJoinOnClause...)
+		p.parseCondition(analysis, ast.ClauseJoinCondition, start)
+		return nil, nil
+	}
+	if !p.MatchKeyword("USING") {
+		return nil, nil
+	}
+	parenthesised := p.Current().Kind == tokenLeftParen
+	if parenthesised {
+		p.Advance()
+	}
+	var columns []string
+	for {
+		column, err := p.parseIdentifierOrKeyword()
+		if err != nil {
+			return nil, err
+		}
+		columns = append(columns, column)
+		if p.Current().Kind != tokenComma {
+			break
+		}
+		p.Advance()
+	}
+	if parenthesised {
+		if p.Current().Kind != tokenRightParen {
+			return nil, dialectkit.NewParseError(p.Current(), "expected ')' to close the USING column list")
+		}
+		p.Advance()
+	}
+	return &ast.JoinUsing{Columns: columns, Natural: false, Placement: ast.JoinColumnsLead}, nil
 }

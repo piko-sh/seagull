@@ -36,6 +36,34 @@
               }
             }
           ],
+          "Constraints": [
+            {
+              "Columns": [
+                "id"
+              ],
+              "Kind": "primary-key",
+              "Name": "invoices_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 11
+              }
+            },
+            {
+              "Columns": [
+                "account_id"
+              ],
+              "ForeignColumns": [
+                "id"
+              ],
+              "ForeignTable": "accounts",
+              "Kind": "foreign-key",
+              "Name": "invoices_account_id_fkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 11
+              }
+            }
+          ],
           "Name": "invoices",
           "Origin": {
             "Filename": "001_schema.up.sql",
@@ -142,6 +170,19 @@
               }
             }
           ],
+          "Constraints": [
+            {
+              "Columns": [
+                "id"
+              ],
+              "Kind": "primary-key",
+              "Name": "accounts_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 6
+              }
+            }
+          ],
           "Name": "accounts",
           "Origin": {
             "Filename": "001_schema.up.sql",
@@ -178,6 +219,15 @@
                 "Category": "text",
                 "EngineName": "text"
               }
+            }
+          ],
+          "Constraints": [
+            {
+              "Columns": [
+                "name"
+              ],
+              "Kind": "primary-key",
+              "Name": "labels_pkey"
             }
           ],
           "Name": "labels",
@@ -235,6 +285,19 @@
               }
             }
           ],
+          "Constraints": [
+            {
+              "Columns": [
+                "rowid_1"
+              ],
+              "Kind": "primary-key",
+              "Name": "marks_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              }
+            }
+          ],
           "Name": "marks",
           "Origin": {
             "Filename": "001_schema.up.sql",
@@ -286,6 +349,18 @@
               }
             }
           ],
+          "Constraints": [
+            {
+              "Columns": [
+                "rowid"
+              ],
+              "Kind": "primary-key",
+              "Name": "notes_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            }
+          ],
           "Name": "notes",
           "Origin": {
             "Filename": "001_schema.up.sql"
@@ -321,6 +396,15 @@
                 "Category": "text",
                 "EngineName": "text"
               }
+            }
+          ],
+          "Constraints": [
+            {
+              "Columns": [
+                "label"
+              ],
+              "Kind": "primary-key",
+              "Name": "tags_pkey"
             }
           ],
           "Name": "tags",

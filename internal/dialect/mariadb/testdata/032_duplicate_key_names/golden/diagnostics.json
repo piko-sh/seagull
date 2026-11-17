@@ -1,0 +1,18 @@
+[
+  {
+    "Code": "Q067",
+    "Column": 1,
+    "Filename": "001_schema.up.sql",
+    "Line": 2,
+    "Message": "key name i is already used in table twice_indexed",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q067",
+    "Column": 1,
+    "Filename": "001_schema.up.sql",
+    "Line": 4,
+    "Message": "key name reading_index is already used in table gauges",
+    "Severity": "error"
+  }
+]

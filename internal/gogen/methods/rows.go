@@ -31,6 +31,9 @@ import (
 	"seagull.sh/seagull/internal/sqlmodel"
 )
 
+// embeddedRowsVariable names the generated embedding scratch value.
+const embeddedRowsVariable = "embedRows"
+
 // ScanRows builds a row loop, sharing scan storage for known value types.
 //
 // Its body reads the scan result and may continue to the next row, return, or yield a
@@ -110,14 +113,15 @@ func reusableEmbedScan(emission *gogen.Emission, query *gogen.Query) (scan Scan,
 			continue
 		}
 		sentinel, found := nilableSentinel(query, group.Columns)
-		if !found || !strings.HasPrefix(ColumnGoType(query, sentinel).Name, "*") {
+		sentinelType := ColumnGoType(query, sentinel)
+		if !found || (!strings.HasPrefix(sentinelType.Name, "*") && !sqlmodel.IsNullValue(sentinelType)) {
 			return Scan{}, nil, nil, false
 		}
 		fields = append(fields, goastutil.Field(group.naming.Field, goastutil.CachedIdent(group.naming.Type)))
-		holder := goastutil.SelectorExpr("embedRows", group.naming.Field)
+		holder := goastutil.SelectorExpr(embeddedRowsVariable, group.naming.Field)
 		values := embedCopies(query, group, holder)
 		finish = append(finish, &ast.IfStmt{
-			Cond: &ast.BinaryExpr{X: goastutil.SelectorExprFrom(holder, query.Naming.ColumnFields[sentinel]), Op: token.NEQ, Y: goastutil.CachedIdent(goast.IdentNil)},
+			Cond: presenceTest(goastutil.SelectorExprFrom(holder, query.Naming.ColumnFields[sentinel]), sentinelType),
 			Body: goastutil.BlockStmt(goastutil.AssignStmt(goastutil.SelectorExpr(goast.IdentRow, group.naming.Field),
 				goastutil.AddressExpr(goastutil.CompositeLit(goastutil.CachedIdent(group.naming.Type), values...)))),
 		})
@@ -126,7 +130,7 @@ func reusableEmbedScan(emission *gogen.Emission, query *gogen.Query) (scan Scan,
 		holder := ast.Expr(goastutil.CachedIdent(goast.IdentRow))
 		if group := byColumn[index]; group != nil {
 			if group.IsOuter {
-				holder = goastutil.CachedIdent("embedRows")
+				holder = goastutil.CachedIdent(embeddedRowsVariable)
 			}
 			holder = goastutil.SelectorExprFrom(holder, group.naming.Field)
 		}
@@ -140,8 +144,8 @@ func reusableEmbedScan(emission *gogen.Emission, query *gogen.Query) (scan Scan,
 		return scan, nil, nil, true
 	}
 	scratch := &ast.StructType{Fields: goastutil.FieldList(fields...)}
-	return scan, []ast.Stmt{goastutil.VarDecl("embedRows", scratch)},
-		[]ast.Stmt{goastutil.AssignStmt(goastutil.CachedIdent("embedRows"), goastutil.CompositeLit(scratch))}, true
+	return scan, []ast.Stmt{goastutil.VarDecl(embeddedRowsVariable, scratch)},
+		[]ast.Stmt{goastutil.AssignStmt(goastutil.CachedIdent(embeddedRowsVariable), goastutil.CompositeLit(scratch))}, true
 }
 
 // reusableScan accepts only destinations whose values cannot retain pointers into scan
@@ -163,7 +167,7 @@ func reusableScan(emission *gogen.Emission, query *gogen.Query, scan Scan) bool 
 			return false
 		}
 		enum := emission.Driver.Enums.Scanned(column, query.Types)
-		if enum.Shape == gogen.EnumValue && !enum.Pointer {
+		if enum.Shape == gogen.EnumValue && !enum.Pointer && !enum.Null {
 			continue
 		}
 		if !reusableValueType(ColumnGoType(query, index)) {
@@ -181,6 +185,9 @@ func reusableScan(emission *gogen.Emission, query *gogen.Query, scan Scan) bool 
 // Returns bool which reports whether the known type can safely reuse its scan
 // destination.
 func reusableValueType(value sqlmodel.GoType) bool {
+	if sqlmodel.IsNullValue(value) {
+		return reusableValueType(value.Composite.Arguments[0])
+	}
 	if value.Composite != nil {
 		return false
 	}

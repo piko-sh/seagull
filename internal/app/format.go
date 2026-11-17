@@ -62,7 +62,8 @@ func FormatDirectives(source []byte, canonical string, aliases ...string) ([]byt
 // FormatDirectivesFor formats SQL directives using the dialect's lexical rules.
 //
 // Text inside quoted values or block comments is preserved, and only the dialect's line
-// comments can contain directives.
+// comments can contain directives. Parameter anchors outside the dialect's input forms
+// remain ordinary comments.
 //
 // Takes engine (dialect.DialectPort) which says how the file writes SQL.
 // Takes source ([]byte) which is the SQL file content.
@@ -90,7 +91,11 @@ func FormatDirectivesFor(engine dialect.DialectPort, source []byte, canonical st
 		return nil, err
 	}
 	lexicon := syntax.Lexicon{LinePrefix: info.Comments.LinePrefix, Rules: info.Lexical}
-	return []byte(syntax.FormatSource(string(source), lexicon, prefixes)), nil
+	sigils := make([]syntax.SigilForm, 0, len(info.Placeholders.Sigils))
+	for _, sigil := range info.Placeholders.Sigils {
+		sigils = append(sigils, syntax.SigilForm{Prefix: sigil.Prefix, Suffix: sigil.Suffix})
+	}
+	return []byte(syntax.FormatSource(string(source), lexicon, prefixes, sigils...)), nil
 }
 
 // formatPrefixes checks the prefixes a formatter rewrites.

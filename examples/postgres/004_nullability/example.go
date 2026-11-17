@@ -28,17 +28,7 @@ import (
 	"seagull.sh/seagull/examples/postgres/004_nullability/internal/store"
 )
 
-// run rings three gulls, records where two of them were seen, and lists them twice.
-// Seagull decides each field's nullability from the SQL, and a field that can be NULL is
-// a pointer:
-//
-//   - gulls.nickname has no NOT NULL, so Nickname is *string, as a parameter and a
-//     column;
-//   - sightings.place is NOT NULL, but the LEFT JOIN gives a gull with no sightings a
-//     NULL place, so Place is *string;
-//   - COALESCE with a non-NULL last argument is never NULL, so KnownAs is string;
-//   - COUNT is never NULL, but MAX over no rows is, so TimesSeen is int64 and LastSeen is
-//     *time.Time, keeping the DATE column's type.
+// run records gull sightings and reads nullable results.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes output (io.Writer) which receives both listings.
@@ -48,9 +38,9 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 	queries := store.New(database)
 
 	gulls := []store.RingGullParams{
-		{Ring: "GB1001", Nickname: new("Steven")},
-		{Ring: "GB1002", Nickname: nil},
-		{Ring: "GB1003", Nickname: new("Gwen")},
+		{Ring: "GB1001", Nickname: store.NullOf("Steven")},
+		{Ring: "GB1002", Nickname: store.Null[string]{}},
+		{Ring: "GB1003", Nickname: store.NullOf("Gwen")},
 	}
 	for _, gull := range gulls {
 		if err := queries.RingGull(ctx, gull); err != nil {
@@ -84,8 +74,8 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 	fmt.Fprintln(output, "\nring    known as     times seen  last seen")
 	for _, summary := range summaries {
 		lastSeen := "NULL"
-		if summary.LastSeen != nil {
-			lastSeen = summary.LastSeen.Format(time.DateOnly)
+		if summary.LastSeen.Valid {
+			lastSeen = summary.LastSeen.V.Format(time.DateOnly)
 		}
 		fmt.Fprintf(output, "%-7s %-12s %-11d %s\n", summary.Ring, summary.KnownAs, summary.TimesSeen, lastSeen)
 	}
@@ -101,14 +91,14 @@ func mayDay(day int) time.Time {
 	return time.Date(2026, time.May, day, 0, 0, 0, 0, time.UTC)
 }
 
-// orNull returns the text a nullable field holds, or NULL when the field is nil.
+// orNull returns the text a nullable field holds, or NULL when it holds none.
 //
-// Takes value (*string) which is a nullable field.
+// Takes value (store.Null[string]) which is a nullable field.
 //
 // Returns string which is the text to print.
-func orNull(value *string) string {
-	if value == nil {
+func orNull(value store.Null[string]) string {
+	if !value.Valid {
 		return "NULL"
 	}
-	return *value
+	return value.V
 }

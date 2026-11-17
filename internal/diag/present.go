@@ -27,6 +27,10 @@ import (
 )
 
 const (
+	// diagnosticDetailSeparator separates a diagnostic's location, severity, code and
+	// message.
+	diagnosticDetailSeparator = ": "
+
 	// caret underlines the span in the quoted source line.
 	caret = "^"
 
@@ -225,9 +229,9 @@ func header(item *Presentation) string {
 		severity += "[" + item.Code + "]"
 	}
 	if item.Location == "" {
-		return severity + ": " + item.Message
+		return severity + diagnosticDetailSeparator + item.Message
 	}
-	return item.Location + ": " + severity + ": " + item.Message
+	return item.Location + diagnosticDetailSeparator + severity + diagnosticDetailSeparator + item.Message
 }
 
 // location renders a path with a line and column.
@@ -276,7 +280,7 @@ func codeTitle(code string) string {
 //
 // Returns string which is the message to print.
 func presentedMessage(diagnostic SourceError) string {
-	message := strings.TrimPrefix(diagnostic.Message, diagnostic.Code+": ")
+	message := strings.TrimPrefix(diagnostic.Message, diagnostic.Code+diagnosticDetailSeparator)
 	if diagnostic.Suggestion == "" {
 		return message
 	}

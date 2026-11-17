@@ -280,8 +280,8 @@ func TestBuildCountsTheRowsOfARuntimeBuilderQuery(t *testing.T) {
 		{
 			name:      "a query whose rows are the rows it reads counts them in place",
 			engine:    postgres.New(),
-			sql:       "-- sgl.query(name: Users, command: many, dynamic: runtime)\nSELECT id, name FROM users WHERE tenant = $1 ORDER BY name LIMIT 10;",
-			template:  "SELECT id, name FROM users WHERE ⟨where:tenant = ⟨p0⟩⟩ ⟨order:ORDER BY name⟩ ⟨pagination:LIMIT 10⟩;⟨arguments p0⟩",
+			sql:       "-- sgl.query(name: Users, command: many, dynamic: runtime)\nSELECT id, name FROM users WHERE tenant = $1 ORDER BY name;",
+			template:  "SELECT id, name FROM users WHERE ⟨where:tenant = ⟨p0⟩⟩ ⟨order:ORDER BY name⟩⟨pagination⟩;⟨arguments p0⟩",
 			count:     "SELECT COUNT(*) FROM users WHERE ⟨where:tenant = ⟨p0⟩⟩⟨arguments p0⟩",
 			configure: runtimeBuilder,
 		},
@@ -295,11 +295,11 @@ func TestBuildCountsTheRowsOfARuntimeBuilderQuery(t *testing.T) {
 			configure: runtimeBuilder,
 		},
 		{
-			name:     "a query that aggregates without grouping is counted in a subquery",
+			name:     "a query that aggregates without grouping is counted in a subquery, its conditions filtering its result rows",
 			engine:   postgres.New(),
 			sql:      "SELECT count(*) AS n FROM items",
-			template: "SELECT count(*) AS n FROM items⟨where⟩⟨order⟩⟨pagination⟩",
-			count:    "SELECT COUNT(*) FROM (SELECT count(*) AS n FROM items⟨where⟩) sub",
+			template: "SELECT count(*) AS n FROM items⟨order⟩⟨pagination⟩",
+			count:    "SELECT COUNT(*) FROM (SELECT count(*) AS n FROM items) sub",
 			wrapped:  true,
 			configure: func(input *sqltemplate.Input) {
 				input.Query.DynamicRuntime = true
@@ -309,8 +309,8 @@ func TestBuildCountsTheRowsOfARuntimeBuilderQuery(t *testing.T) {
 		{
 			name:     "an ORDER BY that returns a set is kept in the wrapped count",
 			engine:   postgres.New(),
-			sql:      "SELECT id FROM items WHERE owner = $1 ORDER BY unnest(tags) LIMIT 10",
-			template: "SELECT id FROM items WHERE ⟨where:owner = ⟨p0⟩⟩ ⟨order:ORDER BY unnest(tags)⟩ ⟨pagination:LIMIT 10⟩⟨arguments p0⟩",
+			sql:      "SELECT id FROM items WHERE owner = $1 ORDER BY unnest(tags)",
+			template: "SELECT id FROM items WHERE ⟨where:owner = ⟨p0⟩⟩ ⟨order:ORDER BY unnest(tags)⟩⟨pagination⟩⟨arguments p0⟩",
 			count:    "SELECT COUNT(*) FROM (SELECT id FROM items WHERE ⟨where:owner = ⟨p0⟩⟩ ORDER BY unnest(tags)) sub⟨arguments p0⟩",
 			wrapped:  true,
 			configure: func(input *sqltemplate.Input) {
@@ -321,8 +321,8 @@ func TestBuildCountsTheRowsOfARuntimeBuilderQuery(t *testing.T) {
 		{
 			name:     "an ORDER BY that returns a set is kept before the clauses that stay last",
 			engine:   clickhouse.New(),
-			sql:      "SELECT id FROM items ORDER BY arrayJoin(tags) LIMIT 5 SETTINGS max_threads = 1",
-			template: "SELECT id FROM items⟨where⟩ ⟨order:ORDER BY arrayJoin(tags)⟩ ⟨pagination:LIMIT 5⟩ SETTINGS max_threads = 1",
+			sql:      "SELECT id FROM items ORDER BY arrayJoin(tags) SETTINGS max_threads = 1",
+			template: "SELECT id FROM items⟨where⟩ ⟨order:ORDER BY arrayJoin(tags)⟩⟨pagination⟩ SETTINGS max_threads = 1",
 			count:    "SELECT COUNT(*) FROM (SELECT id FROM items⟨where⟩ ORDER BY arrayJoin(tags)) sub SETTINGS max_threads = 1",
 			wrapped:  true,
 			configure: func(input *sqltemplate.Input) {
@@ -341,19 +341,49 @@ func TestBuildCountsTheRowsOfARuntimeBuilderQuery(t *testing.T) {
 		{
 			name:      "the clauses that stay last follow the count",
 			engine:    clickhouse.New(),
-			sql:       "SELECT id FROM items WHERE kind = {kind:String} ORDER BY id LIMIT 5 SETTINGS max_threads = 1",
-			template:  "SELECT id FROM items WHERE ⟨where:kind = ⟨p0 String⟩⟩ ⟨order:ORDER BY id⟩ ⟨pagination:LIMIT 5⟩ SETTINGS max_threads = 1⟨arguments p0⟩",
+			sql:       "SELECT id FROM items WHERE kind = {kind:String} ORDER BY id SETTINGS max_threads = 1",
+			template:  "SELECT id FROM items WHERE ⟨where:kind = ⟨p0 String⟩⟩ ⟨order:ORDER BY id⟩⟨pagination⟩ SETTINGS max_threads = 1⟨arguments p0⟩",
 			count:     "SELECT COUNT(*) FROM items WHERE ⟨where:kind = ⟨p0 String⟩⟩ SETTINGS max_threads = 1⟨arguments p0⟩",
 			configure: runtimeBuilder,
 		},
 		{
-			name:      "a row-shaping clause after the ORDER BY keeps it in the wrapped count",
-			engine:    clickhouse.New(),
-			sql:       "SELECT id, kind FROM items ORDER BY id LIMIT 2 BY kind LIMIT 10",
-			template:  "SELECT id, kind FROM items⟨where⟩ ⟨order:ORDER BY id⟩ LIMIT 2 BY kind ⟨pagination:LIMIT 10⟩",
-			count:     "SELECT COUNT(*) FROM (SELECT id, kind FROM items⟨where⟩ ORDER BY id LIMIT 2 BY kind) sub",
+			name:      "a query that picks its own rows counts the rows its LIMIT returns",
+			engine:    postgres.New(),
+			sql:       "SELECT id, name FROM users WHERE tenant = $1 ORDER BY name LIMIT 10;",
+			template:  "SELECT * FROM (SELECT id, name FROM users WHERE tenant = ⟨p0⟩ ORDER BY name LIMIT 10) AS result_rows⟨where⟩⟨order⟩⟨pagination⟩;⟨arguments p0⟩",
+			count:     "SELECT COUNT(*) FROM (SELECT id, name FROM users WHERE tenant = ⟨p0⟩ ORDER BY name LIMIT 10) AS result_rows⟨where⟩⟨arguments p0⟩",
 			wrapped:   true,
 			configure: runtimeBuilder,
+		},
+		{
+			name:      "a row-shaping clause after the ORDER BY keeps it in the count",
+			engine:    clickhouse.New(),
+			sql:       "SELECT id, kind FROM items ORDER BY id LIMIT 2 BY kind",
+			template:  "SELECT * FROM (SELECT id, kind FROM items ORDER BY id LIMIT 2 BY kind) AS result_rows⟨where⟩⟨order⟩⟨pagination⟩",
+			count:     "SELECT COUNT(*) FROM (SELECT id, kind FROM items ORDER BY id LIMIT 2 BY kind) AS result_rows⟨where⟩",
+			wrapped:   true,
+			configure: runtimeBuilder,
+		},
+		{
+			name:      "DISTINCT ON is counted as the rows it keeps",
+			engine:    postgres.New(),
+			sql:       "SELECT DISTINCT ON (kind) id, kind FROM items ORDER BY kind, id DESC",
+			template:  "SELECT * FROM (SELECT DISTINCT ON (kind) id, kind FROM items ORDER BY kind, id DESC) AS result_rows⟨where⟩⟨order⟩⟨pagination⟩",
+			count:     "SELECT COUNT(*) FROM (SELECT DISTINCT ON (kind) id, kind FROM items ORDER BY kind, id DESC) AS result_rows⟨where⟩",
+			wrapped:   true,
+			configure: runtimeBuilder,
+		},
+		{
+			name:     "an ORDER BY that returns a set stays inside the derived table of a query with its own LIMIT",
+			engine:   postgres.New(),
+			sql:      "SELECT id FROM items ORDER BY unnest(tags) LIMIT 10",
+			template: "SELECT * FROM (SELECT id FROM items ORDER BY unnest(tags) LIMIT 10) AS result_rows⟨where⟩⟨order⟩⟨pagination⟩",
+			count:    "SELECT COUNT(*) FROM (SELECT id FROM items ORDER BY unnest(tags) LIMIT 10) AS result_rows⟨where⟩",
+			wrapped:  true,
+			configure: func(input *sqltemplate.Input) {
+				input.Query.DynamicRuntime = true
+				input.OrderByAddsRows = true
+			},
 		},
 		{
 			name:      "a statement that does not read rows has no count",

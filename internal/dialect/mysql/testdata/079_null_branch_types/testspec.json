@@ -1,0 +1,1 @@
+{"description": "A bare NULL takes the type of what it is combined with, as the servers type it (live: CREATE TABLE ... AS of each gives bigint): score is a nullable BIGINT whether the NULL branch of the UNION ALL comes second or first, and so is a CASE whose ELSE is NULL."}

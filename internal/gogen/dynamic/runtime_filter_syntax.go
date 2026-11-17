@@ -31,6 +31,15 @@ import (
 )
 
 const (
+	// filterGroupClose closes a filter pattern group.
+	filterGroupClose = ")"
+
+	// filterGroupOpen opens a non-capturing filter pattern group.
+	filterGroupOpen = "(?:"
+
+	// filterAlternativeSeparator separates filter pattern alternatives.
+	filterAlternativeSeparator = "|"
+
 	// identifierPattern matches a bare identifier. It uses the Unicode-aware RE2 classes
 	// \p{L} (any letter) and \p{Nd} (any decimal digit) rather than the ASCII ranges so an
 	// allow-listed column whose name contains non-ASCII letters is not rejected by the
@@ -94,13 +103,19 @@ func RuntimeSyntax(emission *gogen.Emission) *helpers.RuntimeSyntax {
 	alternatives := make([]string, 0, 1+len(info.Filters.Casts))
 	alternatives = append(alternatives, bare)
 	for index, cast := range info.Filters.Casts {
-		castPatterns[index] = `^(?i:` + castPattern(cast, `(`+bare+`)`, `(`+types+`)`) + `)$`
+		castPatterns[index] = `^(?i:` + castPattern(cast, `(`+bare+filterGroupClose, `(`+types+filterGroupClose) + `)$`
 		alternatives = append(alternatives, castPattern(cast, bare, types))
 	}
+	castFloats := false
+	if binder, ok := emission.Driver.Binder.(gogen.RuntimeFloatBinder); ok {
+		castFloats = binder.CastRuntimeFloats()
+	}
 	return &helpers.RuntimeSyntax{
-		ColumnExpression: `^(?i:` + strings.Join(alternatives, `|`) + `)$`,
+		CastFloats:       castFloats,
+		ColumnExpression: `^(?i:` + strings.Join(alternatives, filterAlternativeSeparator) + `)$`,
 		Lists:            info.Lists,
 		Pagination:       info.Pagination,
+		Ordering:         info.Ordering,
 		Form:             form,
 		Operators:        operators,
 		JSONPathOpenings: openings,
@@ -124,14 +139,14 @@ func RuntimeSyntax(emission *gogen.Emission) *helpers.RuntimeSyntax {
 // Returns string which is the regex source, a non-capturing group.
 func bareColumnExpressionPattern(jsonOperators, jsonPathFunctions []string) string {
 	var builder strings.Builder
-	builder.WriteString(`(?:` + identifierPattern)
+	builder.WriteString(filterGroupOpen + identifierPattern)
 	if alternation := jsonOperatorAlternation(jsonOperators); alternation != "" {
-		builder.WriteString(`(?:` + alternation + jsonPathStepPattern + `)*`)
+		builder.WriteString(filterGroupOpen + alternation + jsonPathStepPattern + `)*`)
 	}
 	for _, function := range jsonPathFunctions {
-		builder.WriteString(`|` + regexp.QuoteMeta(function) + `\(` + identifierPattern + `,\s*` + quotedLiteralPattern + `\)`)
+		builder.WriteString(filterAlternativeSeparator + regexp.QuoteMeta(function) + `\(` + identifierPattern + `,\s*` + quotedLiteralPattern + `\)`)
 	}
-	builder.WriteString(`)`)
+	builder.WriteString(filterGroupClose)
 	return builder.String()
 }
 
@@ -185,7 +200,7 @@ func castTypeAlternation(castTypes []string) string {
 	for _, castType := range sorted {
 		alternatives = append(alternatives, spacedPattern(castType))
 	}
-	return `(?:` + strings.Join(alternatives, `|`) + `)`
+	return filterGroupOpen + strings.Join(alternatives, filterAlternativeSeparator) + filterGroupClose
 }
 
 // spacedPattern returns text quoted for a regex, each run of whitespace in it matching
@@ -220,7 +235,7 @@ func jsonOperatorAlternation(operators []string) string {
 	for _, operator := range sorted {
 		alternatives = append(alternatives, regexp.QuoteMeta(operator))
 	}
-	return `(?:` + strings.Join(alternatives, `|`) + `)`
+	return filterGroupOpen + strings.Join(alternatives, filterAlternativeSeparator) + filterGroupClose
 }
 
 // rootOperators returns the JSON path operators whose first occurrence marks the end of a

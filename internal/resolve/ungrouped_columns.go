@@ -291,14 +291,16 @@ func (r *TypeResolver) ungroupedColumnProblem(reference *ast.ColumnRefExpression
 
 // givesOneRow identifies aggregate subqueries that guarantee one row and let the first
 // column determine nullability. It excludes GROUP BY, clauses that change the row count,
-// and unaggregated local columns in the first output.
+// such as a LIMIT, OFFSET or FETCH written as a literal or a parameter, and unaggregated
+// local columns in the first output.
 //
 // Takes raw (*ast.RawQueryAnalysis) which is the subquery.
 // Takes scope (*ScopeChain) which is the subquery's scope.
 //
 // Returns bool which is true for a subquery that returns one row.
 func (r *TypeResolver) givesOneRow(raw *ast.RawQueryAnalysis, scope *ScopeChain) bool {
-	if raw == nil || scope == nil || len(raw.OutputColumns) == 0 || len(raw.CompoundBranches) > 0 || hasGroupByClause(raw) {
+	if raw == nil || scope == nil || len(raw.OutputColumns) == 0 || len(raw.CompoundBranches) > 0 || hasGroupByClause(raw) ||
+		raw.RowLimited || raw.Spans.Pagination.Known() {
 		return false
 	}
 	for index := range raw.ClauseExpressions {

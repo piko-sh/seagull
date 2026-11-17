@@ -117,7 +117,7 @@ func HoldsJSON(sqlType *sqlmodel.SQLType) bool {
 // MapsJSON reports Maps whose non-null JSON values require entry-by-entry reading.
 //
 // The driver's OrderedMap can read entries individually; ordinary Go maps panic while the
-// row is built (clickhouse-go v2.48).
+// row is built (clickhouse-go v2.48 to v2.51).
 //
 // Takes sqlType (*sqlmodel.SQLType) which is the type, or nil.
 //

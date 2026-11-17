@@ -35,6 +35,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(name: Hourly, command: many)\nSELECT time_bucket('1 hour', time) AS bucket, device_id, max(temperature) AS peak\nFROM conditions\nGROUP BY bucket, device_id\nORDER BY bucket;",
     "Template": "SELECT ⟨c0 aliased:time_bucket('1 hour', time)⟩ AS bucket, ⟨c1:device_id⟩, ⟨c2 aliased:max(temperature)⟩ AS peak\\nFROM conditions\\nGROUP BY bucket, device_id\\nORDER BY bucket;"
   },

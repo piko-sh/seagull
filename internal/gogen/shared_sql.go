@@ -48,8 +48,8 @@ func (texts sqlTexts) claim(driver *Driver, query *Query) bool {
 		return false
 	}
 	shared := texts.claimRendered(&query.Rendered, FirstEdit(query, &query.Rendered, repeatsRow))
-	if query.Count != nil {
-		shared = texts.claimRendered(query.Count, FirstEdit(query, query.Count, repeatsRow)) || shared
+	for _, rendered := range RuntimeForms(query) {
+		shared = texts.claimRendered(rendered, FirstEdit(query, rendered, repeatsRow)) || shared
 	}
 	return shared
 }
@@ -124,6 +124,17 @@ func StatementRun(driver *Driver, query *Query) (runsSQL bool, repeatsRow bool) 
 	default:
 		return true, false
 	}
+}
+
+// RuntimeForms lists the renderings a runtime builder query runs besides its own. These
+// are its count, its filtered form and that form's count, each when it has one.
+//
+// Takes query (*Query) which is the query.
+//
+// Returns []*emitkit.Rendered which holds the renderings in that order.
+func RuntimeForms(query *Query) []*emitkit.Rendered {
+	forms := []*emitkit.Rendered{query.Count, query.Filtered, query.FilteredCount}
+	return slices.DeleteFunc(forms, func(rendered *emitkit.Rendered) bool { return rendered == nil })
 }
 
 // FirstEdit locates the first run-time edit to a query rendering.

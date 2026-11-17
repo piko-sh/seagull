@@ -31,19 +31,7 @@ const (
 	minutesPerDay = 24 * 60
 )
 
-// run records a day of readings from two tide gauges in one batch call, shows how many
-// parts that wrote, and summarises what landed in the table.
-//
-// A batch query takes a slice of Params, one per row. On the native driver the generated
-// method calls PrepareBatch, appends every row with batch.Append and sends them with
-// batch.Send: one INSERT, its rows sent column by column in blocks, with no bind
-// variables and so no chunking. The {name:Type} placeholders in the VALUES list only name
-// and type the columns; the driver takes the values from Append. copyfrom generates the
-// same code.
-//
-// Each INSERT writes a new part, which ClickHouse merges in the background, so writing
-// rows one at a time leaves many small parts to merge. CountParts reads the _part virtual
-// column to show that the whole day landed as one part.
+// run batches tide gauge readings and summarizes the stored rows.
 //
 // Takes connection (store.DBTX) which is a native connection to a migrated database.
 // Takes output (io.Writer) which receives the part counts and the summary.
@@ -104,9 +92,9 @@ func tideReadings(stations ...string) []store.RecordReadingsParams {
 	readings := make([]store.RecordReadingsParams, 0, len(stations)*minutesPerDay)
 	for _, station := range stations {
 		for minute := range uint16(minutesPerDay) {
-			var note *string
+			var note store.Null[string]
 			if minute%60 == 0 {
-				note = new(fmt.Sprintf("hour %d check", minute/60))
+				note = store.NullOf(fmt.Sprintf("hour %d check", minute/60))
 			}
 			readings = append(readings, store.RecordReadingsParams{
 				Station:  station,

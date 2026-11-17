@@ -256,7 +256,11 @@ func viewTypingBuilder(engine dialect.DialectPort, catalogue *sqlmodel.Catalogue
 		statement:               statementSite{filename: "", line: 0},
 		searchPaths:             newSearchPaths(catalogue.SearchPath),
 		followingViews:          nil,
+		viewReads:               nil,
 		lexicon:                 syntax.Lexicon{LinePrefix: "", Rules: sqllex.Rules{}},
+		implicitIndexes:         nil,
+		declaredNames:           nil,
+		constraintNames:         dialect.ConstraintNamesNone,
 	}
 }
 

@@ -1,0 +1,4 @@
+{
+  "description": "PostgreSQL requires the leading ORDER BY keys to be the DISTINCT ON keys, in any order, matching expressions as well as columns, so an ORDER BY led by another key is refused.",
+  "expectedDiagnosticCount": 1
+}

@@ -45,6 +45,9 @@ type goTypeUse struct {
 
 	// inlineJSON is true when a Go type used is the inline JSON type.
 	inlineJSON bool
+
+	// inlineNull is true when a Go type used is an instance of the generated Null type.
+	inlineNull bool
 }
 
 // addModels records the Go type of every column a model holds.
@@ -115,6 +118,9 @@ func (u *goTypeUse) add(goType sqlmodel.GoType) {
 	if goType.Composite == nil {
 		return
 	}
+	if sqlmodel.IsNullValue(goType) {
+		u.inlineNull = true
+	}
 	for _, part := range []*sqlmodel.GoType{goType.Composite.Key, goType.Composite.Value} {
 		if part != nil {
 			u.add(*part)
@@ -136,7 +142,7 @@ func (u *goTypeUse) add(goType sqlmodel.GoType) {
 //
 // Returns goTypeUse which records the Go types found.
 func usedGoTypes(request *emit.Request) goTypeUse {
-	use := goTypeUse{packages: make(map[string]struct{}), inlineJSON: false}
+	use := goTypeUse{packages: make(map[string]struct{}), inlineJSON: false, inlineNull: false}
 	use.add(request.Style.JSONScanInto)
 	use.addModels(request.Catalogue, request.Types)
 	use.addQueries(request.Queries, request.Types)

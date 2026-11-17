@@ -1773,8 +1773,8 @@ func TestFunctionResolverReachesACreatedFunctionOnlyByItsKey(t *testing.T) {
 			called:    "MYFUNC", argument: intType, wantType: intType,
 		},
 		{
-			name: "a built-in is reached in any case in a case-sensitive dialect", identifiers: foldsToLower,
-			functions: nil, called: "LOWER", argument: textType, wantType: textType,
+			name: "a quoted upper-case name misses the lower-case built-in in a case-sensitive dialect", identifiers: foldsToLower,
+			functions: nil, called: "LOWER", argument: textType, wantUnknown: true,
 		},
 	}
 

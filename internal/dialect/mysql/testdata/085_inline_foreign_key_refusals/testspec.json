@@ -1,0 +1,4 @@
+{
+  "description": "MySQL 9 ends a column definition at its REFERENCES clause, names no inline REFERENCES with CONSTRAINT, and takes none in MODIFY or CHANGE: each is a syntax error (1064), as MySQL 9.7 reports it.",
+  "expectedDiagnosticCount": 5
+}

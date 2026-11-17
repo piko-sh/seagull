@@ -1,0 +1,4 @@
+{
+  "description": "GROUP BY ROLLUP (keys) makes its keys nullable, as WITH ROLLUP does, since the grand total row holds NULL in each.",
+  "expectedDiagnosticCount": 0
+}

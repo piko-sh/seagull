@@ -20,6 +20,9 @@
 // variant's files beside it:
 //
 //	go run ./cmd/export -examples .. -out /tmp/examples
+//
+// With -partial it skips a variant that is missing or fails its checks, so an unfinished
+// example does not stop the export.
 package main
 
 import (
@@ -64,6 +67,7 @@ func run(ctx context.Context, arguments []string, stdout, stderr io.Writer) int 
 	flags.SetOutput(stderr)
 	examples := flags.String("examples", "..", "the examples directory")
 	out := flags.String("out", "", "the directory to write manifest.json and the files into")
+	partial := flags.Bool("partial", false, "skip a variant that is missing or fails its checks instead of refusing the export")
 	if err := flags.Parse(arguments); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
 			return 0
@@ -74,7 +78,11 @@ func run(ctx context.Context, arguments []string, stdout, stderr io.Writer) int 
 		_, _ = fmt.Fprintln(stderr, "export: -out is required")
 		return statusUsage
 	}
-	manifest, err := catalogue.Export(ctx, *examples, *out)
+	export := catalogue.Export
+	if *partial {
+		export = catalogue.ExportPartial
+	}
+	manifest, err := export(ctx, *examples, *out)
 	if err != nil {
 		_, _ = fmt.Fprintln(stderr, "export:", err)
 		return statusFailed

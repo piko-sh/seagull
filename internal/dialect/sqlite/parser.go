@@ -19,6 +19,7 @@
 package sqlite
 
 import (
+	"maps"
 	"strconv"
 
 	"seagull.sh/seagull/internal/dialect/ast"
@@ -143,6 +144,26 @@ func (*parsedStatement) IsParsedStatement() {}
 // parser walks a token slice and produces analysis records describing the statement's
 // parameters, derived tables, and other interesting clauses.
 type parser struct {
+	// reservedNames lists the keywords the engine refuses, unquoted, as a table's or a
+	// column's name in a definition.
+	reservedNames dialectkit.ReservedNames
+
+	// columnConstraintName is the name a CONSTRAINT clause of a column definition gives the
+	// constraint that follows it.
+	columnConstraintName string
+
+	// columnConstraints holds the named NOT NULL, CHECK and foreign key constraints of the
+	// column definitions read so far, which ALTER TABLE ... DROP CONSTRAINT can drop.
+	columnConstraints []sqlmodel.Constraint
+
+	// keyNames holds the names the definitions read so far give primary key and unique
+	// constraints, which DROP CONSTRAINT refuses to drop.
+	keyNames []string
+
+	// attributeNames holds the names the column definitions read so far give a DEFAULT or a
+	// COLLATE, which DROP CONSTRAINT drops, leaving the clause.
+	attributeNames []string
+
 	// parenthesisIndex answers the enclosing-parenthesis and enclosing-LIKE lookups the
 	// parameter-context scans make; nil until first used.
 	parenthesisIndex *dialectkit.ParenthesisScanIndex
@@ -292,6 +313,10 @@ type parser struct {
 	// endsInValues reports that the arm of a query parsed last is a VALUES list, after which
 	// SQLite takes no ORDER BY or LIMIT.
 	endsInValues bool
+
+	// rowLimited records that the query this parser analyses has a LIMIT, OFFSET or FETCH
+	// clause.
+	rowLimited bool
 }
 
 // newParser creates a parser over the token stream seeded with the default depth cap.
@@ -301,6 +326,12 @@ type parser struct {
 // Returns *parser which is ready to analyse the statement.
 func newParser(tokens []token) *parser {
 	return &parser{
+		reservedNames:           sqliteReservedNames,
+		columnConstraintName:    "",
+		columnConstraints:       nil,
+		keyNames:                nil,
+		attributeNames:          nil,
+		rowLimited:              false,
 		parenthesisIndex:        nil,
 		groups:                  nil,
 		likeColumns:             nil,
@@ -471,6 +502,7 @@ func (p *parser) requireEnd() error {
 func (p *parser) newChildParser(tokens []token) *parser {
 	child := newParser(tokens)
 	child.Interrupt = p.Interrupt
+	child.reservedNames = p.reservedNames
 	child.parameterCount = p.parameterCount
 	child.placeholderNumbers = p.placeholderNumbers
 	child.scannedSubqueries = p.scannedSubqueries
@@ -480,6 +512,7 @@ func (p *parser) newChildParser(tokens []token) *parser {
 	child.types = p.types
 	child.functions = p.functions
 	child.fullTextTables = p.fullTextTables
+	child.fullTextSources = maps.Clone(p.fullTextSources)
 	child.columnNames = p.columnNames
 	child.warnings = p.warnings
 	return child

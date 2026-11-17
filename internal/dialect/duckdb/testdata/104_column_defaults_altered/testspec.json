@@ -1,0 +1,3 @@
+{
+  "description": "ALTER COLUMN SET DEFAULT gives a column a default and DROP DEFAULT removes it, which decides whether an insert may leave the column out."
+}

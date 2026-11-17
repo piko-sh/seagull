@@ -20,7 +20,7 @@ type CreateArticleRow struct {
 
 func (queries *Queries) CreateArticle(ctx context.Context, params CreateArticleParams) (CreateArticleRow, error) {
 	var row CreateArticleRow
-	err := queries.writer.QueryRowContext(ctx, createarticle, params.Title, params.Body).Scan(&row.ID, &row.Title)
+	err := queries.writer.QueryRowContext(ctx, createarticle, params.Title, params.Body).Scan(pikoScanNumber(&row.ID), &row.Title)
 	if err != nil {
 		return CreateArticleRow{}, err
 	}
@@ -30,15 +30,15 @@ func (queries *Queries) CreateArticle(ctx context.Context, params CreateArticleP
 const getarticle = `SELECT id, title, body, published_at FROM articles WHERE id = ?;`
 
 type GetArticleRow struct {
-	ID          int32      `json:"id"`
-	Title       string     `json:"title"`
-	Body        string     `json:"body"`
-	PublishedAt *time.Time `json:"published_at"`
+	ID          int32           `json:"id"`
+	Title       string          `json:"title"`
+	Body        string          `json:"body"`
+	PublishedAt Null[time.Time] `json:"published_at"`
 }
 
 func (queries *Queries) GetArticle(ctx context.Context, id int32) (GetArticleRow, error) {
 	var row GetArticleRow
-	err := queries.reader.QueryRowContext(ctx, getarticle, id).Scan(&row.ID, &row.Title, &row.Body, &row.PublishedAt)
+	err := queries.reader.QueryRowContext(ctx, getarticle, id).Scan(pikoScanNumber(&row.ID), &row.Title, &row.Body, &row.PublishedAt)
 	if err != nil {
 		return GetArticleRow{}, err
 	}

@@ -165,10 +165,12 @@ func TidyModule(ctx context.Context, t *testing.T, directory string, environment
 	RunGo(ctx, t, directory, environment, "mod", "tidy")
 }
 
-// RunGo runs the go command in a directory, outside the workspace, with the toolchain
-// capped and -buildvcs=false among its flags as every go command a test starts is, so a
-// git operation running in the repository at the same time cannot fail a build, and fails
-// the test with its output when it fails. The command is killed when ctx ends.
+// RunGo runs the go command in a directory, outside the workspace, and fails the test
+// with its output when it fails.
+//
+// The toolchain is capped and -buildvcs=false is among its flags, as for every go command
+// a test starts, so a git operation running in the repository at the same time cannot
+// fail a build. The command is killed when ctx ends.
 //
 // Takes directory (string) which is the directory to run in.
 // Takes environment ([]string) which holds variables to set besides the inherited ones.

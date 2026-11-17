@@ -28,19 +28,7 @@ import (
 	"seagull.sh/seagull/examples/clickhouse/005_type_mapping/internal/store"
 )
 
-// run records a landing of fish and reads it back, printing the Go type sgl chose for
-// each column. ClickHouse types are exact about width and sign, and Seagull follows them:
-// UInt16, UInt32 and UInt64 give uint16, uint32 and uint64, Int64 gives int64, Float32
-// gives float32, and Bool gives bool. DateTime('UTC') gives time.Time; the generated code
-// sends a time as Unix seconds, so the server keeps its moment whatever the zone, and the
-// column's time zone makes it read back in UTC. FixedString(4) and String both give
-// string, which in ClickHouse holds any bytes, and Nullable(String) gives *string.
-//
-// UUID gives uuid.UUID from github.com/google/uuid and Decimal(9, 2) gives
-// decimal.Decimal from github.com/shopspring/decimal, the types clickhouse-go scans them
-// into. A {price:Decimal(9, 2)} placeholder would make the parameter a decimal.Decimal
-// too; this example passes the price and catch id as text and converts them in SQL with
-// toDecimal32 and toUUID, so it needs nothing beyond the standard library.
+// run records a fish landing and prints its generated Go field types.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes output (io.Writer) which receives one line per column.
@@ -61,7 +49,7 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 		OnIce:    true,
 		LandedAt: time.Date(2026, time.May, 1, 5, 30, 0, 0, time.UTC),
 		Tag:      string([]byte{0x04, 0xa2, 0x19, 0xf3}),
-		Notes:    new("landed at Newlyn"),
+		Notes:    store.NullOf("landed at Newlyn"),
 	}); err != nil {
 		return fmt.Errorf("recording a landing: %w", err)
 	}
@@ -81,6 +69,6 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 	fmt.Fprintf(output, "on_ice     %-16T %t\n", landing.OnIce, landing.OnIce)
 	fmt.Fprintf(output, "landed_at  %-16T %s\n", landing.LandedAt, landing.LandedAt.Format(time.RFC3339))
 	fmt.Fprintf(output, "tag        %-16T % x\n", landing.Tag, landing.Tag)
-	fmt.Fprintf(output, "notes      %-16T %s\n", landing.Notes, *landing.Notes)
+	fmt.Fprintf(output, "notes      %-16T %s\n", landing.Notes, landing.Notes.V)
 	return nil
 }

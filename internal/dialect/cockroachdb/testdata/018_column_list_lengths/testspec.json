@@ -1,0 +1,4 @@
+{
+  "description": "CockroachDB refuses a CTE column list naming fewer columns than the CTE returns, though a derived table's shorter list renames its leading columns, and refuses any list naming more.",
+  "expectedDiagnosticCount": 3
+}

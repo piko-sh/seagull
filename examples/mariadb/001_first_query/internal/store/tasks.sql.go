@@ -28,7 +28,7 @@ type CreateTaskRow struct {
 
 func (queries *Queries) CreateTask(ctx context.Context, title string) (CreateTaskRow, error) {
 	var row CreateTaskRow
-	err := queries.writer.QueryRowContext(ctx, createTaskSQL, title).Scan(&row.ID, &row.Title, &row.Completed, &row.CreatedAt)
+	err := queries.writer.QueryRowContext(ctx, createTaskSQL, title).Scan(&row.ID, &row.Title, sglScanNumber(&row.Completed), &row.CreatedAt)
 	if err != nil {
 		return CreateTaskRow{}, err
 	}
@@ -53,7 +53,7 @@ func (queries *Queries) ListTasks(ctx context.Context) ([]ListTasksRow, error) {
 	var results []ListTasksRow
 	if rows.Next() {
 		var row ListTasksRow
-		scanArgs := []any{&row.ID, &row.Title, &row.Completed, &row.CreatedAt}
+		scanArgs := []any{&row.ID, &row.Title, sglScanNumber(&row.Completed), &row.CreatedAt}
 		for more := true; more; more = rows.Next() {
 			row = ListTasksRow{}
 			if err := rows.Scan(scanArgs...); err != nil {

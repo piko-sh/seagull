@@ -193,9 +193,9 @@ func dropsOrderByExpressions(analysis *ast.RawQueryAnalysis) {
 	})
 }
 
-func paginatesTheOrderBy(analysis *ast.RawQueryAnalysis) {
+func locksTheOrderBy(analysis *ast.RawQueryAnalysis) {
 	if analysis.Spans.OrderBy.Known() {
-		analysis.Spans.Pagination, analysis.Spans.OrderBy = analysis.Spans.OrderBy, ast.Span{}
+		analysis.Spans.Locking, analysis.Spans.OrderBy = analysis.Spans.OrderBy, ast.Span{}
 	}
 }
 
@@ -433,7 +433,7 @@ func TestEachCheckReportsHowADialectFailsIt(t *testing.T) {
 			expect: `"SELECT id, unnest(ARRAY[1, 2]) AS element FROM items" must be generated as a runtime builder query with a count`},
 		{check: "SetReturningItemsWrapTheCount", fixture: perturbedFixture(analysisEdit(dropsOrderByExpressions)),
 			expect: `the count of "SELECT id FROM items ORDER BY unnest(ARRAY[1, 2])" must wrap the query`},
-		{check: "SetReturningItemsWrapTheCount", fixture: perturbedFixture(analysisEdit(paginatesTheOrderBy)),
+		{check: "SetReturningItemsWrapTheCount", fixture: perturbedFixture(analysisEdit(locksTheOrderBy)),
 			expect: `the count of "SELECT id FROM items ORDER BY unnest(ARRAY[1, 2])" must keep unnest(ARRAY[1, 2]), which makes the query's rows`},
 		{check: "GroupingModifiersLeaveKeysOut", fixture: perturbedFixture(silentParser()),
 			expect: `"SELECT id, count(*) AS total FROM items GROUP BY ROLLUP (id);" must analyse: parsed into 0 statements, want 1`},

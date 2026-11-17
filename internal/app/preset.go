@@ -108,6 +108,13 @@ type Preset struct {
 	// is off by default.
 	EmptySlices bool
 
+	// NullablePointers writes a nullable value as a pointer, *T, rather than as the
+	// generated Null[T] value type.
+	//
+	// A pointer costs an allocation for every non-NULL value a row reads. It is off by
+	// default.
+	NullablePointers bool
+
 	// DocComments writes doc comments from the SQL: a query's description, the prose comment
 	// lines of its header, on its method, and a table's or a column's comment, such as
 	// COMMENT ON TABLE gives it, on its model or field. It is off by default.
@@ -169,6 +176,7 @@ func (p *Preset) settings() preset.Settings {
 			Interface:            p.Interface,
 			JSONTags:             p.JSONTags,
 			EmptySlices:          p.EmptySlices,
+			NullablePointers:     p.NullablePointers,
 			DocComments:          p.DocComments,
 			ReuseModels:          p.ReuseModels,
 			ModernIdioms:         p.ModernIdioms,
@@ -260,6 +268,7 @@ func DefaultPreset() Preset {
 		Interface:            defaults.Style.Interface,
 		JSONTags:             defaults.Style.JSONTags,
 		EmptySlices:          defaults.Style.EmptySlices,
+		NullablePointers:     defaults.Style.NullablePointers,
 		DocComments:          defaults.Style.DocComments,
 		ReuseModels:          defaults.Style.ReuseModels,
 		ModernIdioms:         defaults.Style.ModernIdioms,

@@ -1,0 +1,3 @@
+{
+  "description": "Arrays read as JSON keep their order, DISTINCT and compound meaning when the query names them through their table or a derived table."
+}

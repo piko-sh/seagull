@@ -1,0 +1,4 @@
+{
+  "description": "CockroachDB refuses, as PostgreSQL does, keywords that are not bare labels, such as YEAR, written straight after a select item, and takes them after AS.",
+  "expectedDiagnosticCount": 1
+}

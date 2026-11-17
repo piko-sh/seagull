@@ -1,0 +1,10 @@
+[
+  {
+    "Code": "Q067",
+    "Column": 1,
+    "Filename": "001_schema.up.sql",
+    "Line": 1,
+    "Message": "column a is declared more than once in table dup",
+    "Severity": "error"
+  }
+]

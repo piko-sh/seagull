@@ -115,6 +115,14 @@ func TestApplyDDL_CreateTable(t *testing.T) {
 				assert.Equal(t, []string{"id"}, mutation.PrimaryKey)
 
 				assert.False(t, mutation.Columns[0].Nullable)
+				assert.False(t, mutation.Columns[0].HasDefault, "a primary key alone gives the column no default")
+			},
+		},
+		{
+			name: "inline primary key with auto increment",
+			sql:  "CREATE TABLE accounts (id BIGINT PRIMARY KEY AUTO_INCREMENT, owner VARCHAR(255));",
+			assertions: func(t *testing.T, mutation *ast.CatalogueMutation) {
+				assert.Equal(t, []string{"id"}, mutation.PrimaryKey)
 				assert.True(t, mutation.Columns[0].HasDefault)
 			},
 		},
@@ -701,6 +709,7 @@ func TestApplyDDL_AlterTable(t *testing.T) {
 				}
 				assert.Equal(t, []ast.MutationKind{
 					ast.MutationAlterTableAddColumn,
+					ast.MutationDropIndex,
 					ast.MutationAlterTableAlterColumn,
 					ast.MutationAlterTableDropColumn,
 					ast.MutationAlterTableAddConstraint,
@@ -854,35 +863,89 @@ func TestApplyDDL_AlterTable_NonColumnActions(t *testing.T) {
 		assert.Equal(t, "users", mutation.TableName)
 	})
 
-	nilTests := []struct {
-		name string
-		sql  string
+	dropTests := []struct {
+		name  string
+		sql   string
+		check func(t *testing.T, mutation *ast.CatalogueMutation)
 	}{
 		{
-			name: "drop index returns nil mutation",
+			name: "drop index drops the named index",
 			sql:  "ALTER TABLE users DROP INDEX idx_name;",
+			check: func(t *testing.T, mutation *ast.CatalogueMutation) {
+				t.Helper()
+				assert.Equal(t, ast.MutationDropIndex, mutation.Kind)
+				assert.Equal(t, "users", mutation.TableName)
+				assert.Equal(t, "idx_name", mutation.NewName)
+			},
 		},
 		{
-			name: "drop primary key returns nil mutation",
-			sql:  "ALTER TABLE users DROP PRIMARY KEY;",
-		},
-		{
-			name: "drop key returns nil mutation",
+			name: "drop key drops the named index",
 			sql:  "ALTER TABLE users DROP KEY idx_name;",
+			check: func(t *testing.T, mutation *ast.CatalogueMutation) {
+				t.Helper()
+				assert.Equal(t, ast.MutationDropIndex, mutation.Kind)
+				assert.Equal(t, "idx_name", mutation.NewName)
+			},
 		},
 		{
-			name: "drop foreign key returns nil mutation",
+			name: "drop primary key drops the key",
+			sql:  "ALTER TABLE users DROP PRIMARY KEY;",
+			check: func(t *testing.T, mutation *ast.CatalogueMutation) {
+				t.Helper()
+				assert.Equal(t, ast.MutationAlterTableDropConstraint, mutation.Kind)
+				assert.True(t, mutation.DropsPrimaryKey)
+			},
+		},
+		{
+			name: "drop foreign key drops the named constraint",
 			sql:  "ALTER TABLE orders DROP FOREIGN KEY fk_user;",
+			check: func(t *testing.T, mutation *ast.CatalogueMutation) {
+				t.Helper()
+				assert.Equal(t, ast.MutationAlterTableDropConstraint, mutation.Kind)
+				assert.Equal(t, "fk_user", mutation.ConstraintName)
+			},
+		},
+		{
+			name: "alter column set default",
+			sql:  "ALTER TABLE users ALTER COLUMN age SET DEFAULT 7;",
+			check: func(t *testing.T, mutation *ast.CatalogueMutation) {
+				t.Helper()
+				assert.Equal(t, ast.MutationAlterTableAlterColumn, mutation.Kind)
+				assert.Equal(t, "age", mutation.ColumnName)
+				assert.True(t, mutation.SetsDefault)
+			},
+		},
+		{
+			name: "alter column drop default",
+			sql:  "ALTER TABLE users ALTER age DROP DEFAULT;",
+			check: func(t *testing.T, mutation *ast.CatalogueMutation) {
+				t.Helper()
+				assert.Equal(t, "age", mutation.ColumnName)
+				assert.True(t, mutation.DropsDefault)
+			},
 		},
 	}
 
-	for _, testCase := range nilTests {
+	for _, testCase := range dropTests {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 			mutation := applyDDL(t, testCase.sql)
-			assert.Nil(t, mutation, "non-column-affecting ALTER TABLE action should return nil")
+			require.NotNil(t, mutation)
+			testCase.check(t, mutation)
 		})
 	}
+
+	t.Run("alter index visibility is consumed without error", func(t *testing.T) {
+		t.Parallel()
+		assert.Nil(t, applyDDL(t, "ALTER TABLE users ALTER INDEX idx_name INVISIBLE;"))
+		assert.Nil(t, applyDDL(t, "ALTER TABLE users ALTER COLUMN age SET INVISIBLE;"))
+	})
+
+	t.Run("sequences are recorded only where the dialect has them", func(t *testing.T) {
+		t.Parallel()
+		assert.Nil(t, applyDDL(t, "CREATE SEQUENCE numbers START WITH 10;"))
+		assert.Nil(t, applyDDL(t, "DROP SEQUENCE numbers;"))
+	})
 }
 
 func TestApplyDDL_DropTable(t *testing.T) {

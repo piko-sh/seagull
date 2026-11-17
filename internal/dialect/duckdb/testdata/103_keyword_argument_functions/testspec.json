@@ -1,0 +1,1 @@
+{"description": "DuckDB writes EXTRACT and POSITION with a keyword between their arguments and refuses a comma there, so both queries are refused.", "expectedDiagnosticCount": 2}

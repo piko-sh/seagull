@@ -1,0 +1,22 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 10,
+    "EndColumn": 14,
+    "EndLine": 2,
+    "Filename": "aliases.sql",
+    "Line": 2,
+    "Message": "failed to analyse query \"BareName\": syntax error near \"name\": this engine reserves NAME here; quote it to use it as an alias",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 34,
+    "EndColumn": 39,
+    "EndLine": 5,
+    "Filename": "aliases.sql",
+    "Line": 5,
+    "Message": "failed to analyse query \"BareLabel\": syntax error near \"label\": this engine reserves LABEL here; quote it to use it as an alias",
+    "Severity": "error"
+  }
+]

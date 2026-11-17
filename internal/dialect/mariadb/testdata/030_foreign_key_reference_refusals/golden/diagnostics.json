@@ -1,0 +1,42 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 89,
+    "EndColumn": 90,
+    "EndLine": 2,
+    "Filename": "001_schema.up.sql",
+    "Line": 2,
+    "Message": "failed to interpret DDL: syntax error near \")\": MariaDB needs the referenced columns after REFERENCES harbours",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 111,
+    "EndColumn": 112,
+    "EndLine": 3,
+    "Filename": "001_schema.up.sql",
+    "Line": 3,
+    "Message": "failed to interpret DDL: syntax error near \")\": MariaDB needs the referenced columns after REFERENCES harbours",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 38,
+    "EndColumn": 48,
+    "EndLine": 5,
+    "Filename": "001_schema.up.sql",
+    "Line": 5,
+    "Message": "failed to interpret DDL: syntax error near \"REFERENCES\": MODIFY and CHANGE take no REFERENCES clause; add the foreign key with ADD FOREIGN KEY",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 43,
+    "EndColumn": 53,
+    "EndLine": 6,
+    "Filename": "001_schema.up.sql",
+    "Line": 6,
+    "Message": "failed to interpret DDL: syntax error near \"REFERENCES\": MODIFY and CHANGE take no REFERENCES clause; add the foreign key with ADD FOREIGN KEY",
+    "Severity": "error"
+  }
+]

@@ -205,7 +205,7 @@ func TestEmitQueriesManyCommand(t *testing.T) {
 
 	files, err := emitQueriesFor(t.Context(), emitter, "db", queries, defaultMappings())
 	require.NoError(t, err)
-	require.Len(t, files, 1)
+	require.Len(t, withoutNumberScanner(files), 1)
 
 	source := string(files[0].Content)
 
@@ -239,7 +239,7 @@ func TestEmitQueriesExecCommand(t *testing.T) {
 
 	files, err := emitQueriesFor(t.Context(), emitter, "db", queries, defaultMappings())
 	require.NoError(t, err)
-	require.Len(t, files, 1)
+	require.Len(t, withoutNumberScanner(files), 1)
 
 	source := string(files[0].Content)
 
@@ -268,7 +268,7 @@ func TestEmitQueriesExecRowsCommand(t *testing.T) {
 
 	files, err := emitQueriesFor(t.Context(), emitter, "db", queries, defaultMappings())
 	require.NoError(t, err)
-	require.Len(t, files, 1)
+	require.Len(t, withoutNumberScanner(files), 1)
 
 	source := string(files[0].Content)
 
@@ -299,7 +299,7 @@ func TestEmitQueriesExecResultCommand(t *testing.T) {
 
 	files, err := emitQueriesFor(t.Context(), emitter, "db", queries, defaultMappings())
 	require.NoError(t, err)
-	require.Len(t, files, 1)
+	require.Len(t, withoutNumberScanner(files), 1)
 
 	source := string(files[0].Content)
 
@@ -334,7 +334,7 @@ func TestEmitQueriesMultipleParameters(t *testing.T) {
 
 	files, err := emitQueriesFor(t.Context(), emitter, "db", queries, defaultMappings())
 	require.NoError(t, err)
-	require.Len(t, files, 1)
+	require.Len(t, withoutNumberScanner(files), 1)
 
 	source := string(files[0].Content)
 
@@ -373,7 +373,7 @@ func TestEmitQueriesStreamCommand(t *testing.T) {
 
 	files, err := emitQueriesFor(t.Context(), emitter, "db", queries, defaultMappings())
 	require.NoError(t, err)
-	require.Len(t, files, 1)
+	require.Len(t, withoutNumberScanner(files), 1)
 
 	source := string(files[0].Content)
 
@@ -415,7 +415,7 @@ func TestEmitQueriesDynamicLimitOffset(t *testing.T) {
 
 	files, err := emitQueriesFor(t.Context(), emitter, "db", queries, defaultMappings())
 	require.NoError(t, err)
-	require.Len(t, files, 1)
+	require.Len(t, withoutNumberScanner(files), 1)
 
 	source := string(files[0].Content)
 
@@ -461,7 +461,7 @@ func TestEmitQueriesDynamicOneCommand(t *testing.T) {
 
 	files, err := emitQueriesFor(t.Context(), emitter, "db", queries, defaultMappings())
 	require.NoError(t, err)
-	require.Len(t, files, 1)
+	require.Len(t, withoutNumberScanner(files), 1)
 
 	source := string(files[0].Content)
 
@@ -521,7 +521,7 @@ func TestEmitQueriesDynamicOrderDirectionDedup(t *testing.T) {
 
 	files, err := emitQueriesFor(t.Context(), emitter, "db", queries, defaultMappings())
 	require.NoError(t, err)
-	require.Len(t, files, 2, "expected the query file and sortable.go")
+	require.Len(t, withoutNumberScanner(files), 2, "expected the query file and sortable.go")
 
 	source := string(files[0].Content)
 
@@ -567,7 +567,7 @@ func TestEmitQueriesDynamicStreamCommand(t *testing.T) {
 
 	files, err := emitQueriesFor(t.Context(), emitter, "db", queries, defaultMappings())
 	require.NoError(t, err)
-	require.Len(t, files, 1)
+	require.Len(t, withoutNumberScanner(files), 1)
 
 	source := string(files[0].Content)
 
@@ -606,7 +606,7 @@ func TestEmitQueriesEmbedInnerJoin(t *testing.T) {
 
 	files, err := emitQueriesFor(t.Context(), emitter, "db", queries, defaultMappings())
 	require.NoError(t, err)
-	require.Len(t, files, 1)
+	require.Len(t, withoutNumberScanner(files), 1)
 
 	source := string(files[0].Content)
 
@@ -647,7 +647,7 @@ func TestEmitQueriesEmbedLeftJoin(t *testing.T) {
 
 	files, err := emitQueriesFor(t.Context(), emitter, "db", queries, defaultMappings())
 	require.NoError(t, err)
-	require.Len(t, files, 1)
+	require.Len(t, withoutNumberScanner(files), 1)
 
 	source := string(files[0].Content)
 
@@ -687,7 +687,7 @@ func TestEmitQueriesGroupByOneToMany(t *testing.T) {
 
 	files, err := emitQueriesFor(t.Context(), emitter, "db", queries, defaultMappings())
 	require.NoError(t, err)
-	require.Len(t, files, 1)
+	require.Len(t, withoutNumberScanner(files), 1)
 
 	source := string(files[0].Content)
 
@@ -726,7 +726,7 @@ func TestEmitQueriesEmbedManyCommand(t *testing.T) {
 
 	files, err := emitQueriesFor(t.Context(), emitter, "db", queries, defaultMappings())
 	require.NoError(t, err)
-	require.Len(t, files, 1)
+	require.Len(t, withoutNumberScanner(files), 1)
 
 	source := string(files[0].Content)
 
@@ -770,7 +770,7 @@ func TestEmitPrepared(t *testing.T) {
 		},
 	}
 
-	file, err := renderPrepared(gogen.NewVocabulary(testRequest("mydb", nil, nil)), preparedRequest("mydb", queries))
+	file, err := renderPrepared(gogen.NewVocabulary(testRequest("mydb", nil, nil)), preparedRequest("mydb", queries), true)
 	require.NoError(t, err)
 	assert.Equal(t, "prepared.go", file.Name)
 
@@ -823,7 +823,7 @@ func TestEmitPreparedCachesOnlyStaticQueries(t *testing.T) {
 		},
 	}
 
-	file, err := renderPrepared(gogen.NewVocabulary(testRequest("mydb", nil, nil)), preparedRequest("mydb", queries))
+	file, err := renderPrepared(gogen.NewVocabulary(testRequest("mydb", nil, nil)), preparedRequest("mydb", queries), true)
 	require.NoError(t, err)
 
 	source := string(file.Content)
@@ -864,7 +864,7 @@ func TestEmitPreparedNoStaticQueries(t *testing.T) {
 		},
 	}
 
-	file, err := renderPrepared(gogen.NewVocabulary(testRequest("mydb", nil, nil)), preparedRequest("mydb", queries))
+	file, err := renderPrepared(gogen.NewVocabulary(testRequest("mydb", nil, nil)), preparedRequest("mydb", queries), true)
 	require.NoError(t, err)
 
 	source := string(file.Content)
@@ -896,7 +896,7 @@ func TestEmitPreparedExcludesSliceQueries(t *testing.T) {
 		},
 	}
 
-	file, err := renderPrepared(gogen.NewVocabulary(testRequest("mydb", nil, nil)), preparedRequest("mydb", queries))
+	file, err := renderPrepared(gogen.NewVocabulary(testRequest("mydb", nil, nil)), preparedRequest("mydb", queries), true)
 	require.NoError(t, err)
 
 	source := string(file.Content)
@@ -910,7 +910,7 @@ func TestEmitPreparedExcludesSliceQueries(t *testing.T) {
 	assert.NotContains(t, source, "fetchbystatuses")
 }
 
-func taggedArrayQuery(name string, sql string) *sqlmodel.AnalysedQuery {
+func taggedArrayQuery(name string, sql string, element sqlmodel.SQLType) *sqlmodel.AnalysedQuery {
 	return &sqlmodel.AnalysedQuery{
 		Name:     name,
 		Command:  sqlmodel.QueryCommandMany,
@@ -920,7 +920,7 @@ func taggedArrayQuery(name string, sql string) *sqlmodel.AnalysedQuery {
 			{Name: "id", SQLType: sqlmodel.SQLType{Category: sqlmodel.TypeCategoryInteger}},
 			{Name: "tags", SQLType: sqlmodel.SQLType{
 				Category:    sqlmodel.TypeCategoryArray,
-				ElementType: &sqlmodel.SQLType{Category: sqlmodel.TypeCategoryText},
+				ElementType: &element,
 			}},
 		},
 	}
@@ -929,12 +929,28 @@ func taggedArrayQuery(name string, sql string) *sqlmodel.AnalysedQuery {
 func TestPostgresEmitterLoudErrorsOnUnwrappableArrayColumn(t *testing.T) {
 	t.Parallel()
 	emitter := New()
-	queries := []*sqlmodel.AnalysedQuery{taggedArrayQuery("ListTagged", "SELECT * FROM tagged")}
+	element := sqlmodel.NewTemporalType("timestamptz", sqlmodel.TemporalKindTimestamp, true)
+	queries := []*sqlmodel.AnalysedQuery{taggedArrayQuery("ListTagged", "SELECT * FROM tagged", element)}
 
 	_, err := emitQueriesForDialect(t.Context(), emitter, dialect.Wrap(postgres.New()).Info(), "db", queries, defaultMappings())
 	require.Error(t, err, "an array column under SELECT * must fail generation loudly, not silently emit a broken scan")
 	assert.Contains(t, err.Error(), "tags", "the error must name the offending column")
 	assert.Contains(t, err.Error(), "to_json", "the error must point at the wrapping fix")
+}
+
+func TestPostgresEmitterReadsATextArrayUnderSelectStarFromItsTextForm(t *testing.T) {
+	t.Parallel()
+	emitter := New()
+	queries := []*sqlmodel.AnalysedQuery{taggedArrayQuery("ListTagged", "SELECT * FROM tagged", sqlmodel.SQLType{Category: sqlmodel.TypeCategoryText})}
+
+	files, err := emitQueriesForDialect(t.Context(), emitter, dialect.Wrap(postgres.New()).Info(), "db", queries, defaultMappings())
+	require.NoError(t, err, "an array the driver returns in its text form needs no wrapping")
+	source := ""
+	for _, file := range files {
+		source += string(file.Content)
+	}
+	assert.Contains(t, source, "sglScanArray(&row.Tags)")
+	assert.NotContains(t, source, "to_json")
 }
 
 func TestDefaultTypesFollowTheDriverProfile(t *testing.T) {
@@ -1179,4 +1195,14 @@ func TestEmitQueriesBindsABinaryOverrideAsTheBytesItMarshalsItselfTo(t *testing.
 	assert.Contains(t, querySource, "params.Label)")
 	assert.Contains(t, helperSource, "func (wrapped sglDriverBinary) Value() (driver.Value, error)")
 	assert.NotContains(t, helperSource, "sglDriverText")
+}
+
+func withoutNumberScanner(files []sqlmodel.GeneratedFile) []sqlmodel.GeneratedFile {
+	kept := make([]sqlmodel.GeneratedFile, 0, len(files))
+	for _, file := range files {
+		if file.Name != "scan_numbers.go" {
+			kept = append(kept, file)
+		}
+	}
+	return kept
 }

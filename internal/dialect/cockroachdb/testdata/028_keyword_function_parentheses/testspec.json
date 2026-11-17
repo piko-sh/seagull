@@ -1,0 +1,16 @@
+{
+  "description": "CockroachDB refuses empty parentheses after CURRENT_ROLE and CURRENT_CATALOG, which it reads only as keywords.",
+  "expectedDiagnosticCount": 2,
+  "diagnostics": [
+    {
+      "severity": "error",
+      "code": "Q010",
+      "messageContains": "CURRENT_ROLE takes no parentheses"
+    },
+    {
+      "severity": "error",
+      "code": "Q010",
+      "messageContains": "CURRENT_CATALOG takes no parentheses"
+    }
+  ]
+}

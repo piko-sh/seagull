@@ -56,6 +56,11 @@ var (
 		CountScan:          "uint64",
 		NoRows:             sqlmodel.GoType{Composite: nil, Package: "database/sql", Name: "ErrNoRows"},
 		RowsAffectedErrors: false,
+		ScansNarrowNumbers: false,
+		NilSlicesAsNull:    false,
+		NativeValues:       true,
+		RowIsInterface:     true,
+		NullMethods:        nil,
 	}
 
 	// contextParameter is the context every DBTX method takes first.
@@ -206,10 +211,7 @@ func (n *nativeDriver) Bind(access ast.Expr, parameter *sqlmodel.QueryParameter,
 	)
 }
 
-// BindPositional binds a parameter of a runtime builder, which the driver formats into
-// the statement's text itself: a nullable parameter held through a pointer through
-// sglClickHouseNullable, so a nil one binds NULL rather than panicking in the driver, and
-// any other as it is.
+// BindPositional adapts floating-point values and nullable pointers for runtime queries.
 //
 // Takes access (ast.Expr) which is the parameter access expression.
 // Takes parameter (*sqlmodel.QueryParameter) which is the parameter.
@@ -336,6 +338,13 @@ func (n *nativeDriver) CopyFrom(query *gogen.Query) (ast.Decl, error) {
 		return nil, err
 	}
 	return method, nil
+}
+
+// CastRuntimeFloats enables exact floating-point values in runtime filters.
+//
+// Returns bool which requests casts from decimal text.
+func (n *nativeDriver) CastRuntimeFloats() bool {
+	return n.dialect.Placeholders.BindsByName()
 }
 
 // readingFiles renders the files a package reading columns through the converting scan

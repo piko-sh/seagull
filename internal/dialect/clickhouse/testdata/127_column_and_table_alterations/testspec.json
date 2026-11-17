@@ -1,0 +1,3 @@
+{
+  "description": "A CHECK constraint is recorded, DROP TABLE drops a materialised view, ADD COLUMN with a default honours AFTER, MODIFY COLUMN with a new type keeps the default and comment, MODIFY COLUMN DEFAULT keeps the type, and REMOVE DEFAULT drops the default."
+}

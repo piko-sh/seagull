@@ -129,10 +129,42 @@
           "Constraints": [
             {
               "Columns": [
+                "crdb_internal_created_at_id_shard_16",
+                "created_at",
+                "id"
+              ],
+              "Kind": "primary-key",
+              "Name": "users_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            },
+            {
+              "Columns": [
                 "email"
               ],
               "Kind": "unique",
               "Name": "users_email_key",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            }
+          ],
+          "Indexes": [
+            {
+              "Columns": [
+                "settings"
+              ],
+              "Name": "users_settings_idx",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            },
+            {
+              "Columns": [
+                "email_domain"
+              ],
+              "Name": "users_domain_idx",
               "Origin": {
                 "Filename": "001_schema.up.sql"
               }

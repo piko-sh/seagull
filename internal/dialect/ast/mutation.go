@@ -20,6 +20,7 @@ package ast
 
 import (
 	"fmt"
+	"slices"
 
 	"seagull.sh/seagull/internal/sqlmodel"
 )
@@ -62,6 +63,41 @@ const (
 
 	// PlacementAfter puts the column or value just after Placement.Anchor, as AFTER does.
 	PlacementAfter
+)
+
+// IndexNameScope defines which objects share an index name namespace.
+type IndexNameScope uint8
+
+const (
+	// IndexNamesInSchema shares names among indexes in one schema.
+	IndexNamesInSchema IndexNameScope = iota
+
+	// IndexNamesInTable shares names only among indexes on one table.
+	IndexNamesInTable
+
+	// IndexNamesInRelations shares names with schema tables, views and sequences.
+	IndexNamesInRelations
+)
+
+// ColumnIndexPolicy defines how dropping a column affects its indexes.
+type ColumnIndexPolicy uint8
+
+const (
+	// ColumnIndexesUnchanged leaves index handling outside the mutation's contract.
+	ColumnIndexesUnchanged ColumnIndexPolicy = iota
+
+	// ColumnIndexesDrop removes each index containing a dropped key.
+	ColumnIndexesDrop
+
+	// ColumnIndexesTrim removes dropped keys and deletes indexes left without keys.
+	ColumnIndexesTrim
+
+	// ColumnIndexesRestrict refuses to drop a column used by an index.
+	ColumnIndexesRestrict
+
+	// ColumnIndexesPreserveUnique trims ordinary indexes and rejects partial unique key
+	// removal.
+	ColumnIndexesPreserveUnique
 )
 
 // ObjectKind names the kind of catalogue object a mutation is restricted to.
@@ -378,6 +414,10 @@ const (
 	mutationKindCount
 )
 
+// EngineSpecificCascade is the EngineSpecific key a DROP written with CASCADE sets to
+// "true", so the catalogue drops the views that read the dropped object with it.
+const EngineSpecificCascade = "cascade"
+
 // String names the object kind, such as "sequence", or gives the number of a value that
 // is not a declared kind.
 //
@@ -421,6 +461,13 @@ type CatalogueMutation struct {
 	// ViewDefinition holds the SELECT body used to derive columns for CREATE VIEW or CREATE
 	// TABLE AS SELECT.
 	ViewDefinition *RawQueryAnalysis
+
+	// Index holds a CREATE INDEX definition with ordered keys and uniqueness.
+	Index *sqlmodel.Index
+
+	// IndexElements holds what the engine names an unnamed CREATE INDEX after: each
+	// element's column, or the name it gives an expression element, in order.
+	IndexElements []string
 
 	// ConstraintName is the constraint affected by DROP CONSTRAINT.
 	ConstraintName string
@@ -514,6 +561,14 @@ type CatalogueMutation struct {
 	// path, by their canonical names.
 	SearchPath []string
 
+	// KeyNames lists the names a CREATE TABLE or ADD COLUMN gives primary key and unique
+	// constraints, which SQLite's DROP CONSTRAINT refuses to drop.
+	KeyNames []string
+
+	// AttributeNames lists the names a CREATE TABLE or ADD COLUMN gives a column's DEFAULT
+	// or COLLATE, which SQLite's DROP CONSTRAINT drops, leaving the clause as it was.
+	AttributeNames []string
+
 	// UnanalysedParts lists the parts of the statement the dialect could not analyse, such
 	// as a view body whose columns it could not work out, each with a message saying what
 	// was skipped and the span of the part.
@@ -522,12 +577,20 @@ type CatalogueMutation struct {
 	// but the gap is not silent.
 	UnanalysedParts []Warning
 
+	// Notes lists warnings about how the engine runs the statement, such as a setting under
+	// which it refuses it, each with a message and the span it is about. The catalogue
+	// builder reports each one at the statement.
+	Notes []Warning
+
 	// Origin records which migration file produced this mutation. Set by the catalogue
 	// builder before applying each mutation.
 	Origin sqlmodel.MigrationOrigin
 
 	// Kind identifies the type of mutation (create table, alter column, etc.).
 	Kind MutationKind
+
+	// DroppedColumnIndexes selects the index dependency rule for DROP COLUMN.
+	DroppedColumnIndexes ColumnIndexPolicy
 
 	// TargetKind restricts the kind of object a rename, move or drop applies to, such as
 	// ObjectKindSequence for ALTER SEQUENCE, so the catalogue builder changes only an object
@@ -536,6 +599,9 @@ type CatalogueMutation struct {
 	//
 	// The zero value, ObjectKindAny, applies to whatever object Kind addresses.
 	TargetKind ObjectKind
+
+	// IndexScope selects which objects share the index name namespace.
+	IndexScope IndexNameScope
 
 	// IsWithoutRowID indicates the table was created with WITHOUT ROWID.
 	IsWithoutRowID bool
@@ -550,6 +616,40 @@ type CatalogueMutation struct {
 	// DropsNotNull marks an ALTER COLUMN that lets ColumnName hold NULL and changes nothing
 	// else about it, such as ALTER COLUMN c DROP NOT NULL. Such a mutation has no Columns.
 	DropsNotNull bool
+
+	// SetsDefault marks an ALTER COLUMN that gives ColumnName a default and changes nothing
+	// else about it, such as ALTER COLUMN c SET DEFAULT 0. Such a mutation has no Columns.
+	SetsDefault bool
+
+	// DropsDefault marks an ALTER COLUMN that removes the default of ColumnName and changes
+	// nothing else about it, such as ALTER COLUMN c DROP DEFAULT. Such a mutation has no
+	// Columns.
+	DropsDefault bool
+
+	// KeepsUnstated marks an ALTER COLUMN whose new definition keeps the column's default,
+	// generation expression and comment where it states none, as ClickHouse MODIFY COLUMN
+	// does.
+	KeepsUnstated bool
+
+	// DropsColumnChecks marks an ALTER COLUMN whose new definition replaces the checks the
+	// column declared itself, as MariaDB MODIFY and CHANGE do. A check the new definition
+	// declares is added after it.
+	DropsColumnChecks bool
+
+	// DropsPrimaryKey marks a DROP CONSTRAINT that drops the table's primary key whatever
+	// its name, as MySQL DROP PRIMARY KEY does.
+	DropsPrimaryKey bool
+
+	// DropsView marks a DROP TABLE that also drops a view of the name, as ClickHouse's does.
+	DropsView bool
+
+	// RefusesNullKey marks an ALTER COLUMN whose definition writes NULL, which MySQL refuses
+	// for a primary key's column.
+	RefusesNullKey bool
+
+	// RefusesUnknownConstraint marks a DROP CONSTRAINT that fails when the table has no
+	// constraint of the name, as SQLite's does.
+	RefusesUnknownConstraint bool
 
 	// SetsType marks an ALTER COLUMN that changes only the type of ColumnName, such as ALTER
 	// COLUMN c TYPE bigint, keeping its nullability, default and every other attribute. The
@@ -927,6 +1027,19 @@ func WithColumnNullability(nullable bool) CatalogueMutationOption {
 	}
 }
 
+// WithColumnDefault makes an ALTER COLUMN mutation change only whether its column has a
+// default, as SET DEFAULT and DROP DEFAULT do.
+//
+// Takes present (bool) which is true for SET DEFAULT and false for DROP DEFAULT.
+//
+// Returns CatalogueMutationOption which sets SetsDefault or DropsDefault.
+func WithColumnDefault(present bool) CatalogueMutationOption {
+	return func(mutation *CatalogueMutation) {
+		mutation.SetsDefault = present
+		mutation.DropsDefault = !present
+	}
+}
+
 // WithColumnType makes an ALTER COLUMN mutation change only its column's type, keeping
 // its nullability, default and every other attribute, as ALTER COLUMN c TYPE t does.
 //
@@ -984,4 +1097,61 @@ func WithUnanalysedPart(part Warning) CatalogueMutationOption {
 	return func(mutation *CatalogueMutation) {
 		mutation.UnanalysedParts = append(mutation.UnanalysedParts, part)
 	}
+}
+
+// WithIndexDefinition records the name, ordered keys and uniqueness of an index.
+//
+// Takes name (string) which is the declared index name.
+// Takes columns ([]string) which contains supported plain-column keys.
+// Takes unique (bool) which records the UNIQUE modifier.
+//
+// Returns CatalogueMutationOption which attaches the index without changing table
+// columns.
+func WithIndexDefinition(name string, columns []string, unique bool) CatalogueMutationOption {
+	return func(mutation *CatalogueMutation) {
+		mutation.NewName = name
+		mutation.Index = &sqlmodel.Index{Name: name, Columns: slices.Clone(columns), IsUnique: unique, IsPrimary: false, IsFullText: false, Origin: sqlmodel.MigrationOrigin{}}
+	}
+}
+
+// WithIndexElements sets what the engine names an unnamed index after.
+//
+// Takes elements ([]string) which name the index's elements in order.
+//
+// Returns CatalogueMutationOption which sets IndexElements.
+func WithIndexElements(elements []string) CatalogueMutationOption {
+	return func(mutation *CatalogueMutation) {
+		mutation.IndexElements = elements
+	}
+}
+
+// WithFullTextIndex marks the index a mutation defines as a full-text index, so a
+// full-text search over exactly its columns is known to have one. It must follow
+// WithIndexDefinition, and without an index before it there is nothing to mark.
+//
+// Returns CatalogueMutationOption which marks the index.
+func WithFullTextIndex() CatalogueMutationOption {
+	return func(mutation *CatalogueMutation) {
+		if mutation.Index != nil {
+			mutation.Index.IsFullText = true
+		}
+	}
+}
+
+// WithDroppedColumnIndexes sets the index dependency rule for a column drop.
+//
+// Takes policy (ColumnIndexPolicy) which describes dependent index handling.
+//
+// Returns CatalogueMutationOption which attaches the dialect's dependency rule.
+func WithDroppedColumnIndexes(policy ColumnIndexPolicy) CatalogueMutationOption {
+	return func(mutation *CatalogueMutation) { mutation.DroppedColumnIndexes = policy }
+}
+
+// WithIndexScope selects the namespace shared by an index name.
+//
+// Takes scope (IndexNameScope) which defines the objects sharing names.
+//
+// Returns CatalogueMutationOption which assigns the namespace.
+func WithIndexScope(scope IndexNameScope) CatalogueMutationOption {
+	return func(mutation *CatalogueMutation) { mutation.IndexScope = scope }
 }

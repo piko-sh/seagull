@@ -1,0 +1,98 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "public": {
+      "Functions": {
+        "pick": [
+          {
+            "Arguments": [
+              {
+                "Name": "x",
+                "Type": {
+                  "Category": "float",
+                  "EngineName": "float8",
+                  "Width": 64
+                }
+              }
+            ],
+            "BodySQL": "SELECT x",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "pick",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_functions.up.sql"
+            },
+            "ReturnType": {
+              "Category": "float",
+              "EngineName": "float8",
+              "Width": 64
+            }
+          },
+          {
+            "Arguments": [
+              {
+                "Name": "x",
+                "Type": {
+                  "Category": "text",
+                  "EngineName": "text"
+                }
+              }
+            ],
+            "BodySQL": "SELECT x",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "pick",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_functions.up.sql",
+              "Statement": 1
+            },
+            "ReturnType": {
+              "Category": "text",
+              "EngineName": "text"
+            }
+          }
+        ],
+        "weigh": [
+          {
+            "Arguments": [
+              {
+                "Name": "x",
+                "Type": {
+                  "Category": "integer",
+                  "EngineName": "int8",
+                  "Width": 64
+                }
+              }
+            ],
+            "BodySQL": "SELECT x",
+            "DataAccess": "read-only",
+            "Language": "sql",
+            "MinArguments": 1,
+            "Name": "weigh",
+            "NullableBehaviour": "called-on-null",
+            "Origin": {
+              "Filename": "001_functions.up.sql",
+              "Statement": 2
+            },
+            "ReturnType": {
+              "Category": "integer",
+              "EngineName": "int8",
+              "Width": 64
+            }
+          }
+        ]
+      },
+      "Name": "public"
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

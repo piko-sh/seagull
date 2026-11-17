@@ -43,6 +43,7 @@ func (p *parser) parseCreateFunction(engine *Dialect) (*ast.CatalogueMutation, e
 		p.skipDefinerClause()
 	}
 
+	isFunction := p.IsKeyword(keywordFUNCTION)
 	if _, err := p.ExpectKeyword(keywordFUNCTION, keywordPROCEDURE); err != nil {
 		return nil, err
 	}
@@ -51,6 +52,7 @@ func (p *parser) parseCreateFunction(engine *Dialect) (*ast.CatalogueMutation, e
 	if nameError != nil {
 		return nil, nameError
 	}
+	nameToken := p.Tokens[p.Position-1]
 
 	arguments, argumentsError := p.parseFunctionArgumentList(engine)
 	if argumentsError != nil {
@@ -61,15 +63,25 @@ func (p *parser) parseCreateFunction(engine *Dialect) (*ast.CatalogueMutation, e
 	definition.Arguments = arguments
 
 	p.parseFunctionReturnsClause(engine, definition.Function)
+	attributesStart := p.Position
 	p.parseFunctionAttributes(definition.Function)
+	attributes := p.Tokens[attributesStart:p.Position]
 	p.parseFunctionBodyCapture(definition.Function)
 
-	return ast.NewCatalogueMutation(
+	mutation := ast.NewCatalogueMutation(
 		ast.MutationCreateFunction,
 		schema,
 		"",
 		ast.WithFunction(definition),
-	), nil
+	)
+	if isFunction && !declaresBinaryLogSafety(attributes) {
+		mutation.Notes = append(mutation.Notes, ast.Warning{
+			Message: "a function that declares none of DETERMINISTIC, NO SQL or READS SQL DATA is refused while binary logging is on, " +
+				"as it is by default in MySQL and wherever replication is set up, unless log_bin_trust_function_creators is set",
+			Span: ast.Span{Start: nameToken.Start, End: nameToken.End},
+		})
+	}
+	return mutation, nil
 }
 
 // parseDropFunction parses a DROP FUNCTION or DROP PROCEDURE statement and produces a
@@ -330,4 +342,27 @@ func (p *parser) parseFunctionBodyCapture(signature *sqlmodel.Function) {
 		signature.Language = "sql"
 	}
 	signature.BodySQL = dialectkit.SourceBetween(p.source, p.Tokens, start, end)
+}
+
+// declaresBinaryLogSafety reports whether a function's characteristics declare it
+// DETERMINISTIC, NO SQL or READS SQL DATA, one of which the engine requires of a function
+// while binary logging is on.
+//
+// Takes attributes ([]token) which are the characteristic clauses.
+//
+// Returns bool which is true when one of them is declared.
+func declaresBinaryLogSafety(attributes []token) bool {
+	for index, current := range attributes {
+		switch {
+		case current.IsKeyword(tokenIdentifier, keywordDETERMINISTIC):
+			if index == 0 || !attributes[index-1].IsKeyword(tokenIdentifier, keywordNOT) {
+				return true
+			}
+		case current.IsKeyword(tokenIdentifier, keywordREADS):
+			return true
+		case current.IsKeyword(tokenIdentifier, keywordNO) && index+1 < len(attributes) && attributes[index+1].IsKeyword(tokenIdentifier, keywordSQL):
+			return true
+		}
+	}
+	return false
 }

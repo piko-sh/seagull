@@ -33,7 +33,8 @@ import (
 // in {true: false}, is no placeholder: ClickHouse reads it as a map literal in the rows
 // of INSERT ... VALUES and has no type named false. ClickHouse has no procedural blocks,
 // so every terminator outside quotes and comments ends a statement, and no statement
-// needs to run outside a transaction.
+// needs to run outside a transaction. Unquoted identifiers can contain dollar signs after
+// the first character.
 //
 // Returns sqllex.Rules which describes ClickHouse.
 func Rules() sqllex.Rules {
@@ -70,6 +71,6 @@ func Rules() sqllex.Rules {
 		DelimiterCommand:             false,
 		MetaCommands:                 false,
 		TerminatorOutsideParentheses: false,
-		DollarInIdentifiers:          false,
+		DollarInIdentifiers:          true,
 	}
 }

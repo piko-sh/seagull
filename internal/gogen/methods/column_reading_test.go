@@ -19,6 +19,7 @@
 package methods
 
 import (
+	"go/ast"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -74,6 +75,78 @@ func TestCheckColumnsReadableRefusesAJSONColumnTheSQLCannotWrap(t *testing.T) {
 			}
 			require.ErrorIs(t, err, errUnwrappableColumn)
 			require.ErrorContains(t, err, testCase.want)
+		})
+	}
+}
+
+type decimalTextReader struct{}
+
+func (decimalTextReader) ColumnReading(sqlType sqlmodel.SQLType) gogen.ColumnReading {
+	if sqlType.Category == sqlmodel.TypeCategoryArray {
+		return gogen.ColumnReadAsJSON
+	}
+	if sqlType.Category == sqlmodel.TypeCategoryDecimal || sqlType.Temporal == sqlmodel.TemporalKindInterval {
+		return gogen.ColumnReadAsText
+	}
+	return gogen.ColumnReadAsIs
+}
+
+type convertingTextReader struct{ decimalTextReader }
+
+func (convertingTextReader) ConvertingScan(destination ast.Expr) ast.Expr { return destination }
+
+func TestCheckRewrittenShapesRefusesClausesThatWouldUseTheRewrite(t *testing.T) {
+	t.Parallel()
+
+	amount := sqlmodel.OutputColumn{Name: "amount", SourceTable: "prices", SourceColumn: "amount", SQLType: sqlmodel.SQLType{Category: sqlmodel.TypeCategoryDecimal, EngineName: "decimal"}}
+	wait := sqlmodel.OutputColumn{Name: "wait", SQLType: sqlmodel.SQLType{Category: sqlmodel.TypeCategoryTemporal, Temporal: sqlmodel.TemporalKindInterval, EngineName: "interval"}}
+	tags := sqlmodel.OutputColumn{Name: "tags", SQLType: sqlmodel.SQLType{Category: sqlmodel.TypeCategoryArray, EngineName: "text[]", ElementType: &sqlmodel.SQLType{Category: sqlmodel.TypeCategoryText}}}
+	plain := sqlmodel.OutputColumn{Name: "id", SQLType: sqlmodel.SQLType{Category: sqlmodel.TypeCategoryInteger, EngineName: "bigint"}}
+	testCases := []struct {
+		name       string
+		columns    []sqlmodel.OutputColumn
+		shape      sqlmodel.ResultShape
+		want       string
+		converting bool
+	}{
+		{name: "an order by a rewritten column's output name", columns: []sqlmodel.OutputColumn{plain, amount}, shape: sqlmodel.ResultShape{Named: []int{1}}, want: "ORDER BY prices.amount"},
+		{name: "an order by position", columns: []sqlmodel.OutputColumn{amount}, shape: sqlmodel.ResultShape{Ordinal: true}, want: "position"},
+		{name: "DISTINCT over an interval read as text", columns: []sqlmodel.OutputColumn{wait}, shape: sqlmodel.ResultShape{Distinct: true}, want: "DISTINCT"},
+		{name: "DISTINCT over an array read as JSON", columns: []sqlmodel.OutputColumn{tags}, shape: sqlmodel.ResultShape{Distinct: true}, want: "DISTINCT"},
+		{name: "a compound statement", columns: []sqlmodel.OutputColumn{amount}, shape: sqlmodel.ResultShape{Compound: true}, want: "UNION"},
+		{name: "DISTINCT over a decimal read as text at its fixed scale", columns: []sqlmodel.OutputColumn{amount}, shape: sqlmodel.ResultShape{Distinct: true}},
+		{name: "an order by the name of a column read as it is", columns: []sqlmodel.OutputColumn{plain, amount}, shape: sqlmodel.ResultShape{Named: []int{0}}},
+		{name: "a query that rewrites nothing", columns: []sqlmodel.OutputColumn{plain}, shape: sqlmodel.ResultShape{Distinct: true, Compound: true, Ordinal: true, Named: []int{0}}},
+		{name: "a driver that converts its own value reads the column unwrapped", columns: []sqlmodel.OutputColumn{wait}, shape: sqlmodel.ResultShape{Distinct: true, Ordinal: true}, converting: true},
+		{name: "a converting driver still cannot read an array without JSON", columns: []sqlmodel.OutputColumn{tags}, shape: sqlmodel.ResultShape{Distinct: true}, converting: true, want: "DISTINCT"},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			driver := testDriver()
+			driver.Reader = decimalTextReader{}
+			if testCase.converting {
+				driver.Reader = convertingTextReader{}
+			}
+			info := testDialectInfo(dollar, dialect.PlaceholderSigil{})
+			info.ToJSON = "to_json"
+			info.TextType = "text"
+			emission := testEmission(info, textMappings(), driver)
+			query := &sqlmodel.AnalysedQuery{
+				Name: "ListPrices", Filename: "prices.sql", Command: sqlmodel.QueryCommandMany, ReadOnly: true,
+				OutputColumns: testCase.columns, ResultShape: testCase.shape,
+			}
+
+			problems := CheckRewrittenShapes(emission, query)
+			if testCase.want == "" {
+				require.Empty(t, problems)
+				return
+			}
+			require.Len(t, problems, 1)
+			require.Same(t, query, problems[0].Query)
+			require.Contains(t, problems[0].Message, testCase.want)
 		})
 	}
 }

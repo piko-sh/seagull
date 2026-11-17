@@ -1,0 +1,41 @@
+[
+  {
+    "Command": "exec",
+    "Filename": "stock.sql",
+    "InsertColumns": [
+      "id",
+      "price"
+    ],
+    "InsertTarget": {
+      "Name": "stock"
+    },
+    "Line": 1,
+    "Name": "AddStock",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "price",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: AddStock, command: exec)\nINSERT INTO stock (id, price) VALUES (?, ?);",
+    "Template": "INSERT INTO stock (id, price) VALUES ⟨values:(⟨p0⟩, ⟨p1⟩)⟩;⟨arguments p0 p1⟩"
+  }
+]

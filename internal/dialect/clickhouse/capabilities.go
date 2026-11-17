@@ -34,6 +34,10 @@ var (
 
 	_ dialect.AliasPrecedencePort = (*Dialect)(nil)
 
+	_ dialect.TableNameQualifierPort = (*Dialect)(nil)
+
+	_ dialect.CorrelatedSubqueryPort = (*Dialect)(nil)
+
 	_ dialect.ArrayJoinTyperPort = (*Dialect)(nil)
 
 	_ dialect.ResultCheckerPort = (*Dialect)(nil)

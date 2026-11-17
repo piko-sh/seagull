@@ -86,6 +86,9 @@ var (
 // IsPrimaryKey flags identify whether Columns or PrimaryKey is populated; both are false
 // for a skipped secondary declaration.
 type createTableEntry struct {
+	// Check holds a CONSTRAINT name CHECK expression entry, or is nil.
+	Check *sqlmodel.Constraint
+
 	// PrimaryKey holds the table-level primary key columns when IsPrimaryKey is true.
 	PrimaryKey []string
 
@@ -145,12 +148,9 @@ func (p *parser) parseCreateTable() (*ast.CatalogueMutation, error) {
 		return mutation, nil
 	}
 
-	columns, primaryKey, parseErr := p.parseCreateTableBody()
-	if parseErr != nil {
+	if parseErr := p.parseCreateTableBody(mutation); parseErr != nil {
 		return nil, parseErr
 	}
-	mutation.Columns = columns
-	mutation.PrimaryKey = primaryKey
 
 	if err := p.parseTableEngineClauses(mutation); err != nil {
 		return nil, err
@@ -335,46 +335,41 @@ func (p *parser) matchOnCluster() string {
 // ALIAS, EPHEMERAL, CODEC, TTL, and COMMENT. PRIMARY KEY is declared as a table-level
 // clause or implicitly via the table-engine ORDER BY.
 //
-// Returns []sqlmodel.Column which are the parsed column definitions.
-// Returns []string which are the table-level primary key columns, or nil when none.
+// Takes mutation (*ast.CatalogueMutation) which receives the columns, the table-level
+// primary key and the CHECK constraints.
+//
 // Returns error which is non-nil on malformed input.
-func (p *parser) parseCreateTableBody() ([]sqlmodel.Column, []string, error) {
+func (p *parser) parseCreateTableBody(mutation *ast.CatalogueMutation) error {
 	if p.Current().Kind != tokenLeftParen {
-		return nil, nil, dialectkit.NewParseError(p.Current(), "expected '('")
+		return dialectkit.NewParseError(p.Current(), "expected '('")
 	}
 	p.Advance()
 
-	var columns []sqlmodel.Column
-	var primaryKey []string
-
-	for {
-		if p.Current().Kind == tokenRightParen {
-			p.Advance()
-			return columns, primaryKey, nil
-		}
-
+	for p.Current().Kind != tokenRightParen {
 		entry, err := p.parseCreateTableEntry()
 		if err != nil {
-			return nil, nil, err
+			return err
 		}
 		if entry.IsColumn {
-			columns = append(columns, entry.Columns...)
+			mutation.Columns = append(mutation.Columns, entry.Columns...)
 		}
 		if entry.IsPrimaryKey {
-			primaryKey = entry.PrimaryKey
+			mutation.PrimaryKey = entry.PrimaryKey
+		}
+		if entry.Check != nil {
+			mutation.Constraints = append(mutation.Constraints, *entry.Check)
 		}
 
 		switch p.Current().Kind {
 		case tokenComma:
 			p.Advance()
-			continue
 		case tokenRightParen:
-			p.Advance()
-			return columns, primaryKey, nil
 		default:
-			return nil, nil, dialectkit.NewParseError(p.Current(), "expected ',' or ')'")
+			return dialectkit.NewParseError(p.Current(), "expected ',' or ')'")
 		}
 	}
+	p.Advance()
+	return nil
 }
 
 // parseCreateTableEntry handles one entry inside a CREATE TABLE body.
@@ -389,8 +384,20 @@ func (p *parser) parseCreateTableBody() ([]sqlmodel.Column, []string, error) {
 // Returns error which is non-nil for malformed input.
 func (p *parser) parseCreateTableEntry() (createTableEntry, error) {
 	if p.IsKeyword("INDEX", "CONSTRAINT", "PROJECTION") {
+		if err := p.checkSecondaryDeclaration(); err != nil {
+			return createTableEntry{}, err
+		}
+		var check *sqlmodel.Constraint
+		if p.IsKeyword("CONSTRAINT") && p.PeekAt(2).IsKeyword(tokenIdentifier, "CHECK") {
+			p.Advance()
+			name, err := p.parseIdentifierOrKeyword()
+			if err != nil {
+				return createTableEntry{}, err
+			}
+			check = checkConstraint(name)
+		}
 		p.skipUntilCommaOrCloseParen()
-		return createTableEntry{}, nil
+		return createTableEntry{PrimaryKey: nil, Columns: nil, Check: check, IsColumn: false, IsPrimaryKey: false}, nil
 	}
 	parsedKeys, isPrimaryKey, keyErr := p.tryParsePrimaryKeyClause()
 	if keyErr != nil {
@@ -399,6 +406,7 @@ func (p *parser) parseCreateTableEntry() (createTableEntry, error) {
 	if isPrimaryKey {
 		return createTableEntry{
 			PrimaryKey:   parsedKeys,
+			Check:        nil,
 			IsPrimaryKey: true,
 			Columns:      nil,
 			IsColumn:     false,
@@ -408,7 +416,7 @@ func (p *parser) parseCreateTableEntry() (createTableEntry, error) {
 	if columnErr != nil {
 		return createTableEntry{}, columnErr
 	}
-	return createTableEntry{Columns: parsedColumns, IsColumn: true, PrimaryKey: nil, IsPrimaryKey: false}, nil
+	return createTableEntry{Columns: parsedColumns, IsColumn: true, PrimaryKey: nil, Check: nil, IsPrimaryKey: false}, nil
 }
 
 // tryParsePrimaryKeyClause checks for a table-level PRIMARY KEY declaration.
@@ -591,12 +599,14 @@ func (p *parser) readClickHouseTypeText() (string, error) {
 	}
 	builder.WriteString(first.Value)
 	p.Advance()
+	alias := p.readColumnTypeAlias(&builder, first.Value)
 
 	for p.Current().Kind == tokenLeftParen {
 		builder.WriteByte('(')
 		p.Advance()
 		p.readNestedTypeBody(&builder)
 	}
+	p.readColumnTypeAlias(&builder, alias)
 
 	return builder.String(), nil
 }
@@ -650,7 +660,8 @@ func (p *parser) readNestedTypeBody(builder *strings.Builder) {
 // skipColumnModifierExpression advances past a column-modifier expression (DEFAULT, TTL).
 //
 // The expression is parsed only for forward-progress: the parser consumes until it hits a
-// top-level comma or close paren. Nested parens are honoured.
+// top-level comma or close paren, another modifier, or the column's placement. Nested
+// parens are honoured.
 func (p *parser) skipColumnModifierExpression() {
 	depth := 0
 	for !p.AtEnd() {
@@ -659,6 +670,9 @@ func (p *parser) skipColumnModifierExpression() {
 			return
 		}
 		if p.IsKeyword("DEFAULT", "MATERIALIZED", "ALIAS", "EPHEMERAL", "CODEC", "TTL", "COMMENT") && depth == 0 {
+			return
+		}
+		if depth == 0 && p.atPlacement() {
 			return
 		}
 		switch current.Kind {
@@ -981,13 +995,17 @@ scan:
 
 // parseDropTable handles `DROP TABLE [IF EXISTS] [db.]table`.
 //
-// It produces a CatalogueMutation with MutationDropTable kind; the catalogue builder uses
-// this to remove the table from the schema.
+// It produces a CatalogueMutation with MutationDropTable kind, which also drops a view or
+// materialised view of the name, as the engine's DROP TABLE does.
 //
 // Returns *ast.CatalogueMutation with Kind=MutationDropTable.
 // Returns error on malformed input.
 func (p *parser) parseDropTable() (*ast.CatalogueMutation, error) {
-	return p.parseDropQualifiedObject("TABLE", ast.MutationDropTable)
+	mutation, err := p.parseDropQualifiedObject("TABLE", ast.MutationDropTable)
+	if mutation != nil {
+		mutation.DropsView = true
+	}
+	return mutation, err
 }
 
 // parseDropView handles `DROP VIEW [IF EXISTS] [db.]view [ON CLUSTER c]`.

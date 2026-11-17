@@ -84,6 +84,19 @@
               }
             }
           ],
+          "Constraints": [
+            {
+              "Columns": [
+                "id"
+              ],
+              "Kind": "primary-key",
+              "Name": "orders_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              }
+            }
+          ],
           "Name": "orders",
           "Origin": {
             "Filename": "001_schema.up.sql",

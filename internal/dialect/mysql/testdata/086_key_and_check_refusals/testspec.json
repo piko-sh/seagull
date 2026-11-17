@@ -1,0 +1,4 @@
+{
+  "description": "MySQL 9.7 refuses renaming a column a check reads, by RENAME COLUMN or CHANGE, and dropping one a check reads with another column (3959); declaring a primary key's column NULL, in CREATE TABLE or MODIFY (1171); and a key name the table holds already, from another index or a unique key (1061).",
+  "expectedDiagnosticCount": 10
+}

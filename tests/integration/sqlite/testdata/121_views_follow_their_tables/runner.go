@@ -67,10 +67,10 @@ func main() {
 	output := results{}
 	tall := 1.5
 	output.record("insert_plants", func() (any, error) {
-		if err := queries.InsertPlant(ctx, db.InsertPlantParams{ID: 1, Name: "fern", Height: &tall}); err != nil {
+		if err := queries.InsertPlant(ctx, db.InsertPlantParams{ID: 1, Name: "fern", Height: db.NullOf(tall)}); err != nil {
 			return nil, err
 		}
-		return "inserted", queries.InsertPlant(ctx, db.InsertPlantParams{ID: 2, Name: "moss", Height: nil})
+		return "inserted", queries.InsertPlant(ctx, db.InsertPlantParams{ID: 2, Name: "moss", Height: db.Null[float64]{}})
 	})
 	output.record("plant_list", func() (any, error) { return queries.ListPlants(ctx) })
 	output.record("plant_names", func() (any, error) { return queries.ListPlantNames(ctx) })

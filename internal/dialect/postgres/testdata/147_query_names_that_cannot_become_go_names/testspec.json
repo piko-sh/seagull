@@ -1,0 +1,12 @@
+{
+  "description": "A query name must become an exported Go name. A name that starts with a digit or holds a dot is an error at the name itself, in the query file that holds it. Every diagnostic points into a query file that was read, also when the statement is not valid SQL either, or when the header has no command and a later directive is never closed.",
+  "expectedDiagnosticCount": 8,
+  "diagnostics": [
+    {"code": "Q028", "severity": "error", "filename": "digit_name.sql", "onLine": 1, "messageContains": "starts with a letter"},
+    {"code": "Q028", "severity": "error", "filename": "dotted_name.sql", "onLine": 1, "messageContains": "starts with a letter"},
+    {"code": "Q028", "severity": "error", "filename": "name_and_statement.sql", "onLine": 1},
+    {"code": "Q010", "severity": "error", "filename": "name_and_statement.sql", "onLine": 2},
+    {"code": "Q028", "severity": "error", "filename": "name_without_command.sql", "onLine": 1},
+    {"code": "Q032", "severity": "error", "filename": "name_without_command.sql", "onLine": 2}
+  ]
+}

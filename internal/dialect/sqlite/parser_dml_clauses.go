@@ -528,6 +528,10 @@ func (p *parser) parseGroupByList() []ast.ColumnReference {
 	for {
 		start := p.Position
 		columns = append(columns, p.parseGroupByItem()...)
+		if !p.wholeExpression(start, p.Position) {
+			p.recordSyntaxError(dialectkit.NewParseError(p.tokenAt(start), "expected a single expression for each GROUP BY key; "+
+				"this engine has no WITH ROLLUP, ROLLUP, CUBE or GROUPING SETS grouping"))
+		}
 		p.recordClauseExpressions(ast.ClauseGroupBy, p.reparse(start, p.Position, false, true))
 
 		if p.Current().Kind != tokenComma {
@@ -537,6 +541,24 @@ func (p *parser) parseGroupByList() []ast.ColumnReference {
 	}
 
 	return columns
+}
+
+// wholeExpression reports whether the tokens from start to end form one expression, so a
+// key the GROUP BY scan took whole is not two expressions written side by side.
+//
+// Takes start (int) which is the index of the first token.
+// Takes end (int) which is the index past the last token.
+//
+// Returns bool which is true when the expression parser consumes every token, or when
+// there are none.
+func (p *parser) wholeExpression(start, end int) bool {
+	if start < 0 || start >= end || end > len(p.Tokens) {
+		return true
+	}
+	scratch := p.newChildParser(p.Tokens[start:end:end])
+	scratch.skipSubqueries = true
+	scratch.parseExpression()
+	return scratch.AtEnd()
 }
 
 // parseGroupByItem parses one GROUP BY item.
@@ -564,6 +586,7 @@ func (p *parser) parseGroupByItem() []ast.ColumnReference {
 // Returns []ast.ColumnReference which holds the single parsed column reference.
 // Returns bool which is true when a plain column reference was consumed.
 func (p *parser) tryParseGroupByColumn() ([]ast.ColumnReference, bool) {
+	const qualifiedColumnWidth = 3
 	if p.Current().Kind != tokenIdentifier {
 		return nil, false
 	}
@@ -576,7 +599,7 @@ func (p *parser) tryParseGroupByColumn() ([]ast.ColumnReference, bool) {
 		return nil, false
 	}
 
-	if p.tokenAt(p.Position+2).Kind != tokenIdentifier || !isGroupByItemBoundary(p.tokenAt(p.Position+3)) {
+	if p.tokenAt(p.Position+2).Kind != tokenIdentifier || !isGroupByItemBoundary(p.tokenAt(p.Position+qualifiedColumnWidth)) {
 		return nil, false
 	}
 
@@ -657,6 +680,7 @@ func (p *parser) parseOrderByList() {
 // parseLimitOffset consumes a LIMIT value with an optional OFFSET or comma-separated
 // second value, registering any parameter bindings.
 func (p *parser) parseLimitOffset() {
+	p.rowLimited = true
 	referenceCountBefore := len(p.parameterReferences)
 	p.consumeLimitOffsetValue(sqlmodel.ParameterContextLimit)
 
@@ -672,6 +696,15 @@ func (p *parser) parseLimitOffset() {
 	p.consumeLimitOffsetValue(sqlmodel.ParameterContextLimit)
 }
 
+// missingPaginationValue reports whether a LIMIT or OFFSET has no value: the statement
+// ends, a parenthesis closes, or a clause starts where the value belongs.
+//
+// Returns bool which is true when the value is missing.
+func (p *parser) missingPaginationValue() bool {
+	return p.AtEnd() || p.Current().Kind == tokenRightParen || p.Current().Kind == tokenComma ||
+		p.IsKeyword("OFFSET", "FETCH", "FOR", "UNION", "INTERSECT", "EXCEPT", "ORDER", "LIMIT", "RETURNING", "WINDOW", "LOCK")
+}
+
 // consumeLimitOffsetValue consumes a single LIMIT or OFFSET value.
 //
 // A bare placeholder is registered with the given context (preserving the integer typing
@@ -682,6 +715,18 @@ func (p *parser) parseLimitOffset() {
 //
 // Takes context (sqlmodel.ParameterContext) which tags a bare-placeholder value.
 func (p *parser) consumeLimitOffsetValue(context sqlmodel.ParameterContext) {
+	if p.missingPaginationValue() {
+		p.recordSyntaxError(dialectkit.NewParseError(p.Current(), "expected a row count"))
+		return
+	}
+	p.consumeLimitOffsetExpression(context)
+}
+
+// consumeLimitOffsetExpression consumes a LIMIT or OFFSET value that is present, a lone
+// placeholder or an expression scanned to the next clause.
+//
+// Takes context (sqlmodel.ParameterContext) which tags a bare-placeholder value.
+func (p *parser) consumeLimitOffsetExpression(context sqlmodel.ParameterContext) {
 	if p.consumeLoneLimitOffsetPlaceholder(context) {
 		return
 	}

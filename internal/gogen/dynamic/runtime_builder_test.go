@@ -64,7 +64,7 @@ func TestRuntimeBuilderDeclaresItsWholeSurface(t *testing.T) {
 	require.Contains(t, source, "type SearchPostsBuilder struct {\n\tqueries\t\t*Queries\n\tparams\t\tSearchPostsParams\n\tpredicates\t[]sglPredicate\n\torders\t\t[]string\n\tlimit\t\tint\n\toffset\t\tint\n\tpendingError\terror\n}")
 	require.Contains(t, source, "func (queries *Queries) SearchPosts(params SearchPostsParams) *SearchPostsBuilder {\n\treturn &SearchPostsBuilder{queries: queries, params: params}\n}")
 	require.Contains(t, source, "predicate, err := sglNewPredicate(column, operator, value, searchPostsAllowedColumns)")
-	require.Contains(t, source, "order, err := sglNewOrder(column, direction, searchPostsAllowedColumns)")
+	require.Contains(t, source, "order, err := sglNewOrder(column, direction, searchPostsAllowedColumns, false)")
 	require.Contains(t, source, "func (builder *SearchPostsBuilder) Limit(n int) *SearchPostsBuilder")
 	require.Contains(t, source, "func (builder *SearchPostsBuilder) Offset(n int) *SearchPostsBuilder")
 	require.Contains(t, source, "func (builder *SearchPostsBuilder) All(ctx context.Context) ([]SearchPostsRow, error)")

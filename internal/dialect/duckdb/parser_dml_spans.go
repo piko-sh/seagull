@@ -138,6 +138,22 @@ func (p *parser) parseCondition(clause ast.Clause, terminators map[string]struct
 	return start
 }
 
+// newScratchParser builds an isolated parser over tokens a clause scan already visited,
+// whose parameters, subqueries and errors stay out of the statement's.
+//
+// Takes start (int) which is the index of the first token.
+// Takes end (int) which is one past the index of the last token.
+//
+// Returns *parser which reads the tokens from start to end.
+func (p *parser) newScratchParser(start, end int) *parser {
+	scratch := p.newChildParser(tokenView(p.Tokens, start, end))
+	scratch.statement = newStatementState(scratch.Tokens)
+	scratch.namedParameterMap = maps.Clone(p.namedParameterMap)
+	scratch.parameterCount = p.parameterCount
+	scratch.skipSubqueries = true
+	return scratch
+}
+
 // parseConditionExpression parses the tokens a condition's scan stepped over, from start
 // up to end, as one expression, in a parser of its own whose parameters and subqueries
 // are discarded, as reparse does.
@@ -151,11 +167,7 @@ func (p *parser) parseCondition(clause ast.Clause, terminators map[string]struct
 // grammar's own, placed at the token after the condition when it ran out of tokens, or
 // one at the first token left over after the expression.
 func (p *parser) parseConditionExpression(start, end int) (expression ast.Expression, problem error) {
-	scratch := p.newChildParser(tokenView(p.Tokens, start, end))
-	scratch.statement = newStatementState(scratch.Tokens)
-	scratch.namedParameterMap = maps.Clone(p.namedParameterMap)
-	scratch.parameterCount = p.parameterCount
-	scratch.skipSubqueries = true
+	scratch := p.newScratchParser(start, end)
 	expression = scratch.locate(scratch.parseExpression(), 0)
 	if err := scratch.syntaxError(); err != nil {
 		return nil, p.conditionSyntaxError(err, end)
@@ -241,11 +253,7 @@ func (p *parser) reparse(start, end int, list bool) (expressions []ast.Expressio
 	if start < 0 || start >= end || end > len(p.Tokens) {
 		return nil
 	}
-	scratch := p.newChildParser(tokenView(p.Tokens, start, end))
-	scratch.statement = newStatementState(scratch.Tokens)
-	scratch.namedParameterMap = maps.Clone(p.namedParameterMap)
-	scratch.parameterCount = p.parameterCount
-	scratch.skipSubqueries = true
+	scratch := p.newScratchParser(start, end)
 	for !scratch.AtEnd() {
 		before := scratch.Position
 		expressions = append(expressions, scratch.locate(scratch.parseExpression(), before))
@@ -259,6 +267,35 @@ func (p *parser) reparse(start, end int, list bool) (expressions []ast.Expressio
 	}
 	p.adoptArgumentNames(scratch)
 	return expressions
+}
+
+// checkSortList records a syntax error unless the tokens from start to end are one or
+// more sort keys, each an expression and its direction and NULLS placement, separated by
+// commas, so a key followed by stray words is refused rather than skipped.
+//
+// Takes start (int) which is the index of the list's first token.
+// Takes end (int) which is the index past its last token.
+func (p *parser) checkSortList(start, end int) {
+	if start >= end || end > len(p.Tokens) {
+		p.recordSyntaxError(dialectkit.NewParseError(p.Tokens[min(start, len(p.Tokens)-1)], "expected an ORDER BY key"))
+		return
+	}
+	scratch := p.newScratchParser(start, end)
+	for !scratch.AtEnd() {
+		before := scratch.Position
+		scratch.parseExpression()
+		for scratch.MatchKeyword("COLLATE") && !scratch.AtEnd() {
+			scratch.Advance()
+		}
+		scratch.skipSortModifiers()
+		if scratch.Current().Kind != tokenComma || scratch.Position == before {
+			break
+		}
+		scratch.Advance()
+	}
+	if !scratch.AtEnd() {
+		p.recordSyntaxError(dialectkit.NewParseError(p.Tokens[start+scratch.Position], "expected ',' or the end of the ORDER BY list"))
+	}
 }
 
 // skipSortModifiers consumes the direction and NULLS placement that may follow an ORDER

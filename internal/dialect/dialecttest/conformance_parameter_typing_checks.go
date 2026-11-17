@@ -28,6 +28,9 @@ import (
 	"seagull.sh/seagull/internal/sqlmodel"
 )
 
+// conformanceStatementEnd terminates a generated probe statement.
+const conformanceStatementEnd = ";\n"
+
 const (
 	// parameterTypingQueriesFile is the query file the parameter typing checks generate
 	// from.
@@ -69,7 +72,7 @@ func checkAssignedExpressionParametersAreNotTypedAsTheColumn(ctx context.Context
 	statement := fmt.Sprintf("INSERT INTO items (id, name) VALUES (length(%s), %s)",
 		sigil.Render(1, info.Placeholders.BoundName("label"), ""), sigil.Render(2, info.Placeholders.BoundName("name"), ""))
 	emitter, result, err := runGenerate(ctx, engine, map[string]string{baseMigrationFile: fixture.BaseMigration},
-		map[string]string{parameterTypingQueriesFile: directiveLine(engine, "AssignedExpression", "exec") + statement + ";\n"})
+		map[string]string{parameterTypingQueriesFile: directiveLine(engine, "AssignedExpression", "exec") + statement + conformanceStatementEnd})
 	if err != nil {
 		return failed(generationFatalFormat, err)
 	}
@@ -111,7 +114,7 @@ func checkComparedExpressionParametersAreNotTypedAsTheColumn(ctx context.Context
 	statement := fmt.Sprintf("SELECT id FROM items WHERE coalesce(name, 'none') = %s AND length(name) = %s",
 		sigil.Render(1, info.Placeholders.BoundName("label"), ""), sigil.Render(2, info.Placeholders.BoundName("size"), ""))
 	emitter, result, err := runGenerate(ctx, engine, map[string]string{baseMigrationFile: fixture.BaseMigration},
-		map[string]string{parameterTypingQueriesFile: directiveLine(engine, "ComparedExpression", "many") + statement + ";\n"})
+		map[string]string{parameterTypingQueriesFile: directiveLine(engine, "ComparedExpression", "many") + statement + conformanceStatementEnd})
 	if err != nil {
 		return failed(generationFatalFormat, err)
 	}
@@ -158,7 +161,7 @@ func checkRowComparisonsTypeTheirParameters(ctx context.Context, _ checkEnvironm
 	}
 	statement := fmt.Sprintf(rowComparisonQuery, placeholders...)
 	emitter, result, err := runGenerate(ctx, engine, map[string]string{baseMigrationFile: fixture.BaseMigration},
-		map[string]string{parameterTypingQueriesFile: directiveLine(engine, "RowComparison", "many") + statement + ";\n"})
+		map[string]string{parameterTypingQueriesFile: directiveLine(engine, "RowComparison", "many") + statement + conformanceStatementEnd})
 	if err != nil {
 		return failed(generationFatalFormat, err)
 	}
@@ -273,7 +276,7 @@ func sharesItsArgumentsType(signature *sqlmodel.Function) bool {
 // Returns []string which describes each problem found.
 func sharedTypeProblems(ctx context.Context, fixture *Fixture, engine dialect.DialectPort, statement string) []string {
 	emitter, result, err := runGenerate(ctx, engine, map[string]string{baseMigrationFile: fixture.BaseMigration},
-		map[string]string{parameterTypingQueriesFile: directiveLine(engine, "SharedType", "exec") + statement + ";\n"})
+		map[string]string{parameterTypingQueriesFile: directiveLine(engine, "SharedType", "exec") + statement + conformanceStatementEnd})
 	if err != nil {
 		return []string{fmt.Sprintf(generationFatalFormat, err)}
 	}

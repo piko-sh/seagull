@@ -1,0 +1,3 @@
+{
+  "description": "A nil []byte or nil slice written into a NOT NULL column, by a single insert, by a batch and by a copyfrom, is stored as an empty value rather than sent as NULL, which the column would refuse, while a nil value for a nullable column stays NULL. Covers array values."
+}

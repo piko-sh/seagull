@@ -1,0 +1,24 @@
+[
+  {
+    "Command": "many",
+    "Filename": "keepers.sql",
+    "Line": 1,
+    "Name": "Keepers",
+    "OutputColumns": [
+      {
+        "Name": "owner_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "owner_id",
+        "SourceQualifier": "keepers",
+        "SourceTable": "keepers"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Keepers, command: many)\nSELECT owner_id FROM keepers;",
+    "Template": "SELECT ⟨c0:owner_id⟩ FROM keepers;"
+  }
+]

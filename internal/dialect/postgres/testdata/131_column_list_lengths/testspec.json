@@ -1,0 +1,4 @@
+{
+  "description": "PostgreSQL takes a CTE or derived table column list naming fewer columns than the relation returns, renaming the leading columns, and refuses one naming more.",
+  "expectedDiagnosticCount": 2
+}

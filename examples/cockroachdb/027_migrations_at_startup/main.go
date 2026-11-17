@@ -16,14 +16,7 @@
 // oppression. We built this to empower people, not to enable those who would
 // strip others of their rights and dignity.
 
-// Command 027_migrations_at_startup connects to a CockroachDB database and runs the
-// example in example.go, which starts several replicas at once, each applying the
-// migrations embedded in the binary before it works, then restarts one.
-//
-// Run it with `go run .` against a local insecure node, which `docker run -d -p
-// 26257:26257 cockroachdb/cockroach:latest-v25.1 start-single-node --insecure` starts, or
-// point it elsewhere with `go run . -dsn <connection string>` or DATABASE_URL. The
-// migrations run against an empty database; a second run finds nothing to migrate.
+// Command 027_migrations_at_startup demonstrates startup migrations.
 package main
 
 import (
@@ -47,6 +40,7 @@ const localDSN = "postgresql://root@localhost:26257/defaultdb?sslmode=disable"
 //go:embed db/migrations
 var migrations embed.FS
 
+// main selects the database and reports example failures.
 func main() {
 	dsn := flag.String("dsn", cmp.Or(os.Getenv("DATABASE_URL"), localDSN), "CockroachDB connection string")
 	flag.Parse()

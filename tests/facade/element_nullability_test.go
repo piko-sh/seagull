@@ -72,6 +72,9 @@ func generateElementProject(t *testing.T, engine dialect.Dialect, files map[stri
 	require.Empty(t, result.Diagnostics)
 	var source strings.Builder
 	for _, file := range result.Files {
+		if arrayHelperFile(file.Name) {
+			continue
+		}
 		source.WriteString(strings.Join(strings.Fields(string(file.Content)), " "))
 		source.WriteString("\n")
 	}

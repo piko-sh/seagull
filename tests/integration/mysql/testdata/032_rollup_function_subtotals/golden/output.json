@@ -1,0 +1,30 @@
+{
+  "rollup_function": [
+    {
+      "category": "a",
+      "total": 2
+    },
+    {
+      "category": "b",
+      "total": 1
+    },
+    {
+      "category": null,
+      "total": 3
+    }
+  ],
+  "with_rollup": [
+    {
+      "category": "a",
+      "total": 2
+    },
+    {
+      "category": "b",
+      "total": 1
+    },
+    {
+      "category": null,
+      "total": 3
+    }
+  ]
+}

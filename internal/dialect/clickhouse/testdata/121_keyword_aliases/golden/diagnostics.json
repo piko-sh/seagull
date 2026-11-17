@@ -1,0 +1,32 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 8,
+    "EndColumn": 9,
+    "EndLine": 2,
+    "Filename": "aliases.sql",
+    "Line": 2,
+    "Message": "failed to analyse query \"BareJoin\": syntax error near \"1\": expected each select item to be one expression with an optional alias",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 8,
+    "EndColumn": 9,
+    "EndLine": 5,
+    "Filename": "aliases.sql",
+    "Line": 5,
+    "Message": "failed to analyse query \"BareAnd\": syntax error near \"1\": expected each select item to be one expression with an optional alias",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 10,
+    "EndColumn": 13,
+    "EndLine": 8,
+    "Filename": "aliases.sql",
+    "Line": 8,
+    "Message": "failed to analyse query \"BareMod\": syntax error near \"mod\": this engine reserves MOD here; quote it to use it as an alias",
+    "Severity": "error"
+  }
+]

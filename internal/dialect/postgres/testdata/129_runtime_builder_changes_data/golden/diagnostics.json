@@ -1,0 +1,18 @@
+[
+  {
+    "Code": "Q072",
+    "Column": 1,
+    "Filename": "items.sql",
+    "Line": 1,
+    "Message": "a dynamic: runtime query's statement changes data, and each of the builder's terminals, Count among them, would run it again; leave dynamic: runtime out and filter or count the returned rows in Go",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q072",
+    "Column": 1,
+    "Filename": "items.sql",
+    "Line": 4,
+    "Message": "a dynamic: runtime query's statement changes data, and each of the builder's terminals, Count among them, would run it again; leave dynamic: runtime out and filter or count the returned rows in Go",
+    "Severity": "error"
+  }
+]

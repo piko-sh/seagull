@@ -33,7 +33,7 @@ var testConnectionString string
 
 func startMariaDBContainer(ctx context.Context) (testcontainers.Container, string, error) {
 	request := testcontainers.ContainerRequest{
-		Image:        "mariadb:11",
+		Image:        "mariadb:12.3.3",
 		ExposedPorts: []string{"3306/tcp"},
 		Env: map[string]string{
 			"MARIADB_ROOT_PASSWORD": "test",

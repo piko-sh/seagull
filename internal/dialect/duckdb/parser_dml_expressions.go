@@ -46,13 +46,15 @@ var (
 		keywordWHERE: {}, keywordWINDOW: {}, keywordWITH: {},
 	}
 
-	// implicitFunctionIdentifiers lists identifiers that act as zero-argument function calls
-	// without parentheses, such as CURRENT_TIMESTAMP.
-	implicitFunctionIdentifiers = map[string]struct{}{
-		"CURRENT_TIMESTAMP": {}, "CURRENT_DATE": {}, "CURRENT_TIME": {},
-		"CURRENT_USER": {}, "SESSION_USER": {}, "LOCALTIME": {},
-		"LOCALTIMESTAMP": {}, "CURRENT_ROLE": {}, "CURRENT_CATALOG": {},
-		"CURRENT_SCHEMA": {},
+	// implicitFunctionIdentifiers lists zero-argument functions usable without parentheses.
+	//
+	// A column of the same name in the query's FROM clause takes precedence. True marks
+	// names DuckDB also accepts with parentheses, unlike keyword-only forms.
+	implicitFunctionIdentifiers = map[string]bool{
+		"CURRENT_TIMESTAMP": false, "CURRENT_DATE": true, "CURRENT_TIME": false,
+		"CURRENT_USER": true, "SESSION_USER": true, "LOCALTIME": false,
+		"LOCALTIMESTAMP": false, "CURRENT_ROLE": true, "CURRENT_CATALOG": true,
+		"CURRENT_SCHEMA": true, "USER": true,
 	}
 
 	// intervalFieldKeywords lists the unit keywords accepted after an INTERVAL value, in
@@ -64,6 +66,12 @@ var (
 		"MICROSECOND": {}, "MICROSECONDS": {}, "QUARTER": {}, "QUARTERS": {},
 		"DECADE": {}, "DECADES": {}, "CENTURY": {}, "CENTURIES": {},
 		"MILLENNIUM": {}, "MILLENNIA": {}, "TO": {},
+	}
+
+	// keywordsEndingInOperand lists the keywords that cannot open the list or subquery after
+	// IN, because they end the expression the IN belongs to.
+	keywordsEndingInOperand = []string{
+		keywordFROM, keywordWHERE, keywordGROUP, keywordHAVING, keywordORDER, keywordLIMIT, keywordAND, "OR", "THEN",
 	}
 )
 
@@ -150,6 +158,7 @@ func (p *parser) parseComparisonExpression() ast.Expression {
 	}
 
 	if notNegated {
+		p.recordSyntaxError(p.syntaxErrorAt("expected IN, LIKE, BETWEEN or NULL after NOT"))
 		return &ast.UnaryOpExpression{Operator: keywordNOT, Operand: left}
 	}
 
@@ -498,6 +507,10 @@ func (p *parser) parseSubscriptBound() {
 // Returns ast.Expression which is the parsed literal, parameter, parenthesised expression
 // or identifier.
 func (p *parser) parsePrimaryExpression() ast.Expression {
+	if p.AtEnd() {
+		p.recordSyntaxError(p.syntaxErrorAt("expected an expression"))
+		return &ast.UnknownExpression{}
+	}
 	current := p.Current()
 
 	switch current.Kind {
@@ -618,15 +631,13 @@ func (p *parser) parseIdentifierRootedExpression() ast.Expression {
 		return handler()
 	}
 
-	if _, isImplicit := implicitFunctionIdentifiers[upper]; isImplicit {
+	if callable, isImplicit := implicitFunctionIdentifiers[upper]; isImplicit && p.Peek().Kind != tokenDot &&
+		(!callable || p.Peek().Kind != tokenLeftParen) {
 		p.Advance()
-		return &ast.FunctionCallExpression{
-			FunctionName:     strings.ToLower(upper),
-			FilterExpression: nil,
-			Schema:           "",
-			Arguments:        nil,
-			Span:             ast.Span{},
+		if p.Current().Kind == tokenLeftParen {
+			p.recordSyntaxError(dialectkit.NewParseError(p.Current(), "DuckDB writes "+upper+" without parentheses"))
 		}
+		return &ast.ColumnRefExpression{TableAlias: "", ColumnName: strings.ToLower(upper), Span: ast.Span{}}
 	}
 
 	if literal, isTypedLiteral := p.parseTypedLiteral(upper); isTypedLiteral {
@@ -785,10 +796,15 @@ func (p *parser) parseColumnOrFunctionReference() ast.Expression {
 	}
 
 	if p.Current().Kind == tokenLeftParen {
-		if call := p.parseSpecialFunctionCall(name); call != nil {
-			return call
+		fractional := p.namesFractionalDatePart(name)
+		call := p.parseSpecialFunctionCall(name)
+		if call == nil {
+			call = p.parseFunctionCall(name, "")
 		}
-		return p.parseFunctionCall(name, "")
+		if fractional {
+			return &ast.CastExpression{Inner: call, TypeName: "double"}
+		}
+		return call
 	}
 
 	return &ast.ColumnRefExpression{
@@ -940,6 +956,18 @@ func (p *parser) parseIsOperandComparison(left ast.Expression, negated bool) ast
 	return &ast.ComparisonExpression{Operator: operator, Left: left, Right: right, Quantifier: ""}
 }
 
+// missingInOperand reports whether the cursor, just after IN, holds no list or subquery.
+//
+// Returns bool which is true at the end of the input, at a closing parenthesis or comma,
+// or at a keyword that ends the expression.
+func (p *parser) missingInOperand() bool {
+	if p.AtEnd() {
+		return true
+	}
+	kind := p.Current().Kind
+	return kind == tokenRightParen || kind == tokenComma || p.IsKeyword(keywordsEndingInOperand...)
+}
+
 // parseInListSuffix parses an IN (...) list or subquery predicate.
 //
 // Takes left (ast.Expression) which is the value being tested for membership.
@@ -947,6 +975,10 @@ func (p *parser) parseIsOperandComparison(left ast.Expression, negated bool) ast
 // Returns ast.Expression which is the resulting IN predicate.
 func (p *parser) parseInListSuffix(left ast.Expression) ast.Expression {
 	p.Advance()
+	if p.missingInOperand() {
+		p.recordSyntaxError(p.syntaxErrorAt("expected a list or a subquery after IN"))
+		return &ast.InListExpression{Inner: left, Values: nil}
+	}
 
 	if p.isSubqueryStart() {
 		innerAnalysis, analyseError := p.analyseSubqueryBody()

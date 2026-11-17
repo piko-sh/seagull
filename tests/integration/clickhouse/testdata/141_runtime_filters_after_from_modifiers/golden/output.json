@@ -1,0 +1,36 @@
+{
+  "finalised": [
+    {
+      "id": 2,
+      "kind": "c"
+    }
+  ],
+  "finalised_count": 1,
+  "prefiltered": [
+    {
+      "id": 1,
+      "kind": "a"
+    },
+    {
+      "id": 3,
+      "kind": "a"
+    }
+  ],
+  "sampled": [
+    {
+      "id": 1,
+      "kind": "a"
+    },
+    {
+      "id": 3,
+      "kind": "a"
+    }
+  ],
+  "unrolled": [
+    {
+      "id": 1,
+      "tag": "y"
+    }
+  ],
+  "unrolled_count": 1
+}

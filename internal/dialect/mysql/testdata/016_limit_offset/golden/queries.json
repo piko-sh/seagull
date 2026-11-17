@@ -74,6 +74,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        3
+      ]
+    },
     "SQL": "-- sgl.query(name: PaginatedLogs, command: many)\nSELECT id, message, level, created_at FROM logs ORDER BY created_at DESC LIMIT ?, ?;",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1:message⟩, ⟨c2:level⟩, ⟨c3:created_at⟩ FROM logs ORDER BY created_at DESC LIMIT ⟨p0⟩, ⟨p1⟩;⟨arguments p0 p1⟩"
   },
@@ -141,6 +146,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        3
+      ]
+    },
     "SQL": "-- sgl.query(name: RecentLogs, command: many)\nSELECT id, message, level, created_at FROM logs ORDER BY created_at DESC LIMIT ?;",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1:message⟩, ⟨c2:level⟩, ⟨c3:created_at⟩ FROM logs ORDER BY created_at DESC LIMIT ⟨p0⟩;⟨arguments p0⟩"
   }

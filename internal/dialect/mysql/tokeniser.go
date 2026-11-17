@@ -534,7 +534,7 @@ func (t *tokeniser) readIdentifier() (token, error) {
 // readAtToken scans an @user or @@system variable reference.
 //
 // Returns token which holds the variable token including the @ prefix.
-// Returns error which is always nil; the signature aligns with peer readers.
+// Returns error when a quoted user variable name is unterminated.
 func (t *tokeniser) readAtToken() (token, error) {
 	startPosition := t.position
 	t.position++
@@ -546,8 +546,25 @@ func (t *tokeniser) readAtToken() (token, error) {
 		return t.emit(tokenSystemVariable, startPosition, t.input[startPosition:t.position]), nil
 	}
 
-	t.consumeVariableName()
+	if err := t.consumeUserVariableName(); err != nil {
+		return noToken, err
+	}
 	return t.emit(tokenUserVariable, startPosition, t.input[startPosition:t.position]), nil
+}
+
+// consumeUserVariableName reads an unquoted or quoted user variable name.
+//
+// Unquoted names admit dollar signs and dots. Quoted names follow the configured string
+// and identifier rules.
+//
+// Returns error when a quoted name is unterminated.
+func (t *tokeniser) consumeUserVariableName() error {
+	if t.position < len(t.input) && strings.ContainsRune("'\"`", rune(t.input[t.position])) {
+		_, err := t.readMultiCharacterToken(t.input[t.position])
+		return err
+	}
+	t.consumeNameAllowing("$.")
+	return nil
 }
 
 // consumeSystemVariableQualifier consumes a GLOBAL, SESSION or LOCAL qualifier and the
@@ -576,13 +593,18 @@ func (t *tokeniser) consumeSystemVariableQualifier() {
 }
 
 // consumeVariableName advances over an unquoted variable name.
-//
-// Advances by UTF-8 rune width so multi-byte code points within the name are not
-// truncated mid-code-point.
 func (t *tokeniser) consumeVariableName() {
+	t.consumeNameAllowing("")
+}
+
+// consumeNameAllowing advances over identifier characters and any of the extra characters
+// given. It steps by UTF-8 rune width so a multi-byte code point is never cut.
+//
+// Takes extra (string) which lists the further characters the name may hold.
+func (t *tokeniser) consumeNameAllowing(extra string) {
 	for t.position < len(t.input) {
 		character, width := utf8.DecodeRuneInString(t.input[t.position:])
-		if !isIdentifierPart(character) {
+		if !isIdentifierPart(character) && !strings.ContainsRune(extra, character) {
 			break
 		}
 		t.position += width
@@ -594,17 +616,19 @@ func (t *tokeniser) consumeVariableName() {
 // :name is a parameter only where an operand is expected.
 //
 // Returns token which holds the placeholder or operator token.
-// Returns error which is always nil; the signature aligns with peer readers.
+// Returns error which is always nil. The signature matches the other readers.
 func (t *tokeniser) readColonToken() (token, error) {
 	startPosition := t.position
 
-	if t.position+1 < len(t.input) && !t.followsOperand(startPosition) {
-		leading, _ := utf8.DecodeRuneInString(t.input[t.position+1:])
-		if isIdentifierStart(leading) {
-			t.position++
-			t.consumeVariableName()
-			return t.emit(tokenNamedParameter, startPosition, t.input[startPosition:t.position]), nil
-		}
+	if t.position+1 >= len(t.input) || t.followsOperand(startPosition) {
+		t.position++
+		return t.emit(tokenOperator, startPosition, ":"), nil
+	}
+	leading, _ := utf8.DecodeRuneInString(t.input[t.position+1:])
+	if isIdentifierStart(leading) {
+		t.position++
+		t.consumeNameAllowing("$")
+		return t.emit(tokenNamedParameter, startPosition, t.input[startPosition:t.position]), nil
 	}
 
 	t.position++
@@ -622,7 +646,7 @@ func (t *tokeniser) followsOperand(offset int) bool {
 		return false
 	}
 	previous, _ := utf8.DecodeLastRuneInString(t.input[:offset])
-	return isIdentifierPart(previous) || strings.ContainsRune("'\"`)]}", previous)
+	return isIdentifierPart(previous) || strings.ContainsRune("$'\"`)]}", previous)
 }
 
 // readOperator scans an operator token, preferring longer matches.

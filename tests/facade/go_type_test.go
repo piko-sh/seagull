@@ -169,7 +169,9 @@ func generatedSource(t *testing.T, result *seagull.Result) string {
 
 	var builder strings.Builder
 	for _, file := range result.Files {
-		builder.Write(file.Content)
+		if !arrayHelperFile(file.Name) {
+			builder.Write(file.Content)
+		}
 	}
 	return builder.String()
 }
@@ -289,7 +291,7 @@ func TestOverridesOfArrayColumnsNameTheirElementsEverywhere(t *testing.T) {
 		wantReads []string
 	}{
 		{name: "database/sql", emitter: emit_driver_databasesql.New(), wantReads: []string{
-			`to_json("items"."amounts") AS "amounts"`, "sglScanInto(&row.Amounts)", "sglScanInto(&row.Tags)"}},
+			`to_json("items"."amounts") AS "amounts"`, "sglScanInto(&row.Amounts)", "sglScanArray(&row.Tags)"}},
 		{name: "pgx", emitter: emit_driver_pgx.New(), wantReads: []string{"&row.Amounts", "&row.Tags"}},
 	}
 	for _, testCase := range tests {
@@ -433,4 +435,8 @@ func TestTypeOverridesThatMatchNoTypeAreReported(t *testing.T) {
 			require.Equal(t, testCase.want, reported, "%v", report.Diagnostics)
 		})
 	}
+}
+
+func arrayHelperFile(name string) bool {
+	return name == "scan_arrays.go" || name == "array_literals.go"
 }

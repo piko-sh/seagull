@@ -1,0 +1,68 @@
+[
+  {
+    "Code": "Q004",
+    "Column": 39,
+    "EndColumn": 40,
+    "EndLine": 2,
+    "Filename": "membership.sql",
+    "Line": 2,
+    "Message": "IN compares a value only with constants, parameters or a subquery on this engine, and \"a\" reads a column of the row",
+    "Severity": "error",
+    "Suggestion": "compare with each column separately, such as x \u003c\u003e a AND x \u003c\u003e b, or select the values in a subquery"
+  },
+  {
+    "Code": "Q004",
+    "Column": 42,
+    "EndColumn": 43,
+    "EndLine": 2,
+    "Filename": "membership.sql",
+    "Line": 2,
+    "Message": "IN compares a value only with constants, parameters or a subquery on this engine, and \"b\" reads a column of the row",
+    "Severity": "error",
+    "Suggestion": "compare with each column separately, such as x \u003c\u003e a AND x \u003c\u003e b, or select the values in a subquery"
+  },
+  {
+    "Code": "Q004",
+    "Column": 41,
+    "EndColumn": 44,
+    "EndLine": 5,
+    "Filename": "membership.sql",
+    "Line": 5,
+    "Message": "IN compares a value only with constants, parameters or a subquery on this engine, and \"a\" reads a column of the row",
+    "Severity": "error",
+    "Suggestion": "compare with each column separately, such as x \u003c\u003e a AND x \u003c\u003e b, or select the values in a subquery"
+  },
+  {
+    "Code": "Q004",
+    "Column": 15,
+    "EndColumn": 16,
+    "EndLine": 8,
+    "Filename": "membership.sql",
+    "Line": 8,
+    "Message": "IN compares a value only with constants, parameters or a subquery on this engine, and \"a\" reads a column of the row",
+    "Severity": "error",
+    "Suggestion": "compare with each column separately, such as x \u003c\u003e a AND x \u003c\u003e b, or select the values in a subquery"
+  },
+  {
+    "Code": "Q004",
+    "Column": 18,
+    "EndColumn": 19,
+    "EndLine": 8,
+    "Filename": "membership.sql",
+    "Line": 8,
+    "Message": "IN compares a value only with constants, parameters or a subquery on this engine, and \"b\" reads a column of the row",
+    "Severity": "error",
+    "Suggestion": "compare with each column separately, such as x \u003c\u003e a AND x \u003c\u003e b, or select the values in a subquery"
+  },
+  {
+    "Code": "Q004",
+    "Column": 67,
+    "EndColumn": 68,
+    "EndLine": 11,
+    "Filename": "membership.sql",
+    "Line": 11,
+    "Message": "IN compares a value only with constants, parameters or a subquery on this engine, and \"a\" reads a column of the row",
+    "Severity": "error",
+    "Suggestion": "compare with each column separately, such as x \u003c\u003e a AND x \u003c\u003e b, or select the values in a subquery"
+  }
+]

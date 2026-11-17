@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"maps"
 	"math"
+	"slices"
 	"strings"
 
 	"seagull.sh/seagull/internal/diag"
@@ -34,6 +35,12 @@ import (
 )
 
 const (
+	// keywordDistinct opens a quantifier that compares the result rows.
+	keywordDistinct = "DISTINCT"
+
+	// keywordOn follows DISTINCT in a quantifier that compares only its own keys.
+	keywordOn = "ON"
+
 	// maxPortableBound is the largest value an int holds on every platform Go builds for,
 	// where an int may be 32 bits wide.
 	maxPortableBound = math.MaxInt32
@@ -133,33 +140,132 @@ func (a *QueryAnalyser) assembleQuery(input *assembleQueryInput) (*sqlmodel.Anal
 	}
 
 	query := &sqlmodel.AnalysedQuery{
-		Name:           input.queryName,
-		Description:    input.directives.Description,
-		Command:        input.queryCommand,
-		SQL:            input.block.SQL,
-		Filename:       input.filename,
-		Line:           input.block.StartLine,
-		OutputColumns:  input.outputColumns,
-		Parameters:     input.parameters,
-		IsDynamic:      input.isDynamic,
-		GroupByKey:     input.directives.GroupByKeys,
-		InsertColumns:  input.rawAnalysis.InsertColumns,
-		DynamicRuntime: input.directives.DynamicRuntime,
-		ReadOnly:       readOnly,
-		Optional:       input.directives.Optional,
-		AllowedColumns: nil,
-		CountTemplate:  nil,
-		InsertTarget:   sqlmodel.TableName{},
-		Template:       sqlmodel.SQLTemplate{},
-		RowType:        "",
-		RowModel:       sqlmodel.TableName{},
+		Name:                  input.queryName,
+		Description:           input.directives.Description,
+		Command:               input.queryCommand,
+		SQL:                   input.block.SQL,
+		Filename:              input.filename,
+		Line:                  input.block.StartLine,
+		OutputColumns:         input.outputColumns,
+		Parameters:            input.parameters,
+		IsDynamic:             input.isDynamic,
+		GroupByKey:            input.directives.GroupByKeys,
+		InsertColumns:         input.rawAnalysis.InsertColumns,
+		DynamicRuntime:        input.directives.DynamicRuntime,
+		ReadsResultRows:       false,
+		ReadOnly:              readOnly,
+		Optional:              input.directives.Optional,
+		AllowedColumns:        nil,
+		CountTemplate:         nil,
+		InsertTarget:          sqlmodel.TableName{},
+		FilteredTemplate:      nil,
+		FilteredCountTemplate: nil,
+		Template:              sqlmodel.SQLTemplate{},
+		RowType:               "",
+		RowModel:              sqlmodel.TableName{},
+		ResultShape:           resultShape(input),
 	}
 
 	if input.directives.DynamicRuntime {
-		query.AllowedColumns = extractAllowedColumns(input.outputColumns)
+		query.AllowedColumns = runtimeAllowedColumns(input)
 	}
 
 	return query, a.buildTemplates(query, input)
+}
+
+// runtimeAllowedColumns returns the columns a runtime builder may filter and order the
+// query by, unqualified output names for a compound statement.
+//
+// Takes input (*assembleQueryInput) which holds the statement's analysis and output
+// columns.
+//
+// Returns []sqlmodel.AllowedColumn which holds the allowed columns.
+func runtimeAllowedColumns(input *assembleQueryInput) []sqlmodel.AllowedColumn {
+	if len(input.rawAnalysis.CompoundBranches) > 0 {
+		return extractCompoundAllowedColumns(input.outputColumns)
+	}
+	return extractAllowedColumns(input.outputColumns)
+}
+
+// resultShape records how a statement's own clauses use its result columns. It notes a
+// compound statement, a DISTINCT quantifier, an ORDER BY or GROUP BY position, and an
+// ORDER BY output name.
+//
+// Takes input (*assembleQueryInput) which holds the statement's analysis, text and output
+// columns.
+//
+// Returns sqlmodel.ResultShape which describes the uses.
+func resultShape(input *assembleQueryInput) sqlmodel.ResultShape {
+	raw := input.rawAnalysis
+	shape := sqlmodel.ResultShape{Named: nil, Distinct: distinctQuantifier(input), Compound: len(raw.CompoundBranches) > 0, Ordinal: false}
+	for index := range raw.ClauseExpressions {
+		item := &raw.ClauseExpressions[index]
+		ordering := item.Clause.Includes(ast.ClauseOrderBy)
+		if !ordering && !item.Clause.Includes(ast.ClauseGroupBy) {
+			continue
+		}
+		switch expression := item.Expression.(type) {
+		case *ast.LiteralExpression:
+			shape.Ordinal = true
+		case *ast.ColumnRefExpression:
+			if ordering && expression.TableAlias == "" {
+				shape.Named = namedOutputs(shape.Named, input.outputColumns, expression.ColumnName)
+			}
+		}
+	}
+	return shape
+}
+
+// distinctQuantifier reports whether the statement's quantifier is a plain DISTINCT,
+// which compares every output column, rather than DISTINCT ON, which compares only its
+// keys read from the source columns, ALL or none.
+//
+// Takes input (*assembleQueryInput) which holds the statement's spans and text.
+//
+// Returns bool which is true for a DISTINCT quantifier.
+func distinctQuantifier(input *assembleQueryInput) bool {
+	quantifier := input.rawAnalysis.Spans.Quantifier
+	if !quantifier.Known() || len(input.location.statements) == 0 {
+		return false
+	}
+	start := input.location.statements[len(input.location.statements)-1].Location
+	if start+quantifier.End > len(input.block.SQL) {
+		return false
+	}
+	written := strings.TrimSpace(input.block.SQL[start+quantifier.Start : start+quantifier.End])
+	if len(written) < len(keywordDistinct) || !strings.EqualFold(written[:len(keywordDistinct)], keywordDistinct) {
+		return false
+	}
+	return !opensDistinctOn(strings.Fields(written[len(keywordDistinct):]))
+}
+
+// opensDistinctOn reports whether the words after DISTINCT start an ON list.
+//
+// Takes rest ([]string) which holds the words after DISTINCT.
+//
+// Returns bool which is true when the first word is ON, alone or followed by its list.
+func opensDistinctOn(rest []string) bool {
+	if len(rest) == 0 {
+		return false
+	}
+	first := strings.ToUpper(rest[0])
+	return first == keywordOn || strings.HasPrefix(first, keywordOn+"(")
+}
+
+// namedOutputs adds the result columns an ORDER BY name matches to those already found.
+//
+// Takes named ([]int) which holds the columns found so far.
+// Takes outputs ([]sqlmodel.OutputColumn) which are the result columns.
+// Takes name (string) which is the name the ORDER BY writes.
+//
+// Returns []int which holds the columns found, each once.
+func namedOutputs(named []int, outputs []sqlmodel.OutputColumn, name string) []int {
+	for column := range outputs {
+		if strings.EqualFold(outputs[column].Name, name) && !slices.Contains(named, column) {
+			named = append(named, column)
+		}
+	}
+	return named
 }
 
 // applyQueryColumnOverrides applies each `-- sgl.column(name, ...)` directive declared in
@@ -471,6 +577,38 @@ func isDynamicQuery(parameters []sqlmodel.QueryParameter) bool {
 // Returns []sqlmodel.AllowedColumn which holds the deduplicated set of columns available
 // for dynamic filtering and ordering, keyed on output name.
 func extractAllowedColumns(outputColumns []sqlmodel.OutputColumn) []sqlmodel.AllowedColumn {
+	return allowedColumns(outputColumns, func(column *sqlmodel.OutputColumn, _ string) (string, string) {
+		return column.SourceQualifier, column.SourceColumn
+	})
+}
+
+// extractCompoundAllowedColumns returns the columns a runtime builder may filter and
+// order a compound statement, such as a UNION ALL, or a statement read from a derived
+// table, by. No table of the statement is in scope of its result, so each column is its
+// output name, unqualified.
+//
+// Takes outputColumns ([]sqlmodel.OutputColumn) which holds the query's projected
+// columns.
+//
+// Returns []sqlmodel.AllowedColumn which holds the deduplicated set of columns, keyed on
+// output name.
+func extractCompoundAllowedColumns(outputColumns []sqlmodel.OutputColumn) []sqlmodel.AllowedColumn {
+	return allowedColumns(outputColumns, func(_ *sqlmodel.OutputColumn, outputName string) (string, string) {
+		return "", outputName
+	})
+}
+
+// allowedColumns lists the output columns that carry a source column, once per output
+// name, reading each one's qualifier and column through sourceOf.
+//
+// Takes outputColumns ([]sqlmodel.OutputColumn) which holds the query's projected
+// columns.
+// Takes sourceOf (func(...) (string, string)) which returns the qualifier and column a
+// builder writes for a column and its output name.
+//
+// Returns []sqlmodel.AllowedColumn which holds the allowed columns.
+func allowedColumns(outputColumns []sqlmodel.OutputColumn,
+	sourceOf func(column *sqlmodel.OutputColumn, outputName string) (string, string)) []sqlmodel.AllowedColumn {
 	var allowed []sqlmodel.AllowedColumn
 	seen := make(map[string]struct{})
 
@@ -489,14 +627,17 @@ func extractAllowedColumns(outputColumns []sqlmodel.OutputColumn) []sqlmodel.All
 		}
 		seen[outputName] = struct{}{}
 
-		sourceExpression := column.SourceColumn
-		if column.SourceQualifier != "" {
-			sourceExpression = column.SourceQualifier + "." + column.SourceColumn
+		qualifier, source := sourceOf(column, outputName)
+		sourceExpression := source
+		if qualifier != "" {
+			sourceExpression = qualifier + "." + source
 		}
 
 		allowed = append(allowed, sqlmodel.AllowedColumn{
 			Name:             outputName,
 			SourceExpression: sourceExpression,
+			SourceQualifier:  qualifier,
+			SourceColumn:     source,
 			SQLType:          column.SQLType,
 		})
 	}

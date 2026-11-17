@@ -300,6 +300,14 @@ func TestPromoteType(t *testing.T) {
 		assert.Equal(t, "bigint", result.EngineName, "bigint should still win when on the left")
 	})
 
+	t.Run("two booleans stay boolean", func(t *testing.T) {
+		t.Parallel()
+
+		boolean := engine.NormaliseTypeName("boolean")
+		result := engine.PromoteType(boolean, boolean)
+		assert.Equal(t, sqlmodel.TypeCategoryBoolean, result.Category, "a boolean compared with a boolean parameter stays a bool")
+	})
+
 	t.Run("float promotion selects the wider type", func(t *testing.T) {
 		t.Parallel()
 
@@ -1053,14 +1061,30 @@ func TestMySQLFunctionResolver_ResolveFunctionCall(t *testing.T) {
 		assert.Nil(t, resolution)
 	})
 
-	t.Run("AVG returns double", func(t *testing.T) {
+	t.Run("AVG and SUM are DECIMAL for an exact argument and DOUBLE for a float or text one", func(t *testing.T) {
 		t.Parallel()
 
+		for _, name := range []string{"AVG", "SUM"} {
+			for _, testCase := range []struct {
+				argument sqlmodel.SQLType
+				want     string
+			}{
+				{argument: sqlmodel.SQLType{Category: sqlmodel.TypeCategoryInteger, EngineName: "bigint"}, want: "decimal"},
+				{argument: sqlmodel.SQLType{Category: sqlmodel.TypeCategoryDecimal, EngineName: "decimal"}, want: "decimal"},
+				{argument: sqlmodel.SQLType{Category: sqlmodel.TypeCategoryTemporal, EngineName: "datetime"}, want: "decimal"},
+				{argument: sqlmodel.SQLType{Category: sqlmodel.TypeCategoryFloat, EngineName: "float"}, want: "double"},
+				{argument: sqlmodel.SQLType{Category: sqlmodel.TypeCategoryText, EngineName: "varchar"}, want: "double"},
+			} {
+				resolution, err := resolver.ResolveFunctionCall(nil, name, "", []sqlmodel.SQLType{testCase.argument})
+				require.NoError(t, err)
+				require.NotNil(t, resolution)
+				assert.Equal(t, testCase.want, resolution.ReturnType.EngineName, "%s(%s)", name, testCase.argument.EngineName)
+				assert.True(t, resolution.IsAggregate)
+			}
+		}
 		resolution, err := resolver.ResolveFunctionCall(nil, "AVG", "", nil)
 		require.NoError(t, err)
-		require.NotNil(t, resolution)
-		assert.Equal(t, "double", resolution.ReturnType.EngineName)
-		assert.True(t, resolution.IsAggregate)
+		require.Nil(t, resolution, "AVG needs its argument to be typed")
 	})
 
 	t.Run("MIN returns identity type", func(t *testing.T) {
@@ -1197,14 +1221,28 @@ func TestPromoteTypes_Internal(t *testing.T) {
 		assert.Equal(t, "bigint", promoteTypes(bigint, smallint).EngineName)
 	})
 
-	t.Run("unknown category has zero rank", func(t *testing.T) {
+	t.Run("a mixed pair that is not two numbers is text", func(t *testing.T) {
 		t.Parallel()
 
 		left := sqlmodel.SQLType{Category: sqlmodel.TypeCategoryJSON, EngineName: "json"}
 		right := sqlmodel.NewIntegerType("int", 32, false)
-		result := promoteTypes(left, right)
-		assert.Equal(t, sqlmodel.TypeCategoryInteger, result.Category,
-			"json has rank 0 so integer with rank 1 should win")
+		assert.Equal(t, sqlmodel.TypeCategoryText, promoteTypes(left, right).Category,
+			"MySQL reads a JSON value and an integer together as text")
+	})
+
+	t.Run("a signed and an unsigned integer meet in a wider signed one", func(t *testing.T) {
+		t.Parallel()
+
+		signed := sqlmodel.NewIntegerType("int", 32, false)
+		unsigned := sqlmodel.NewIntegerType("int", 32, true)
+		promoted := promoteTypes(unsigned, signed)
+		assert.Equal(t, "bigint", promoted.EngineName)
+		assert.False(t, promoted.Unsigned)
+		wide := sqlmodel.NewIntegerType("bigint", 64, true)
+		assert.Equal(t, sqlmodel.TypeCategoryDecimal, promoteTypes(wide, sqlmodel.NewIntegerType("bigint", 64, false)).Category,
+			"no signed integer holds a BIGINT UNSIGNED, so MySQL uses a DECIMAL")
+		small := sqlmodel.NewIntegerType("mediumint", 24, true)
+		assert.Equal(t, "int", promoteTypes(small, signed).EngineName)
 	})
 }
 
@@ -1650,7 +1688,7 @@ func TestApplyDDLReturnsSyntaxErrors(t *testing.T) {
 		{name: "rename column without TO", sql: "ALTER TABLE t RENAME COLUMN a b", wantError: "expected keyword TO"},
 		{name: "unterminated DEFAULT expression", sql: "CREATE TABLE t (a INT DEFAULT (1", wantError: "unmatched parenthesis"},
 		{name: "unterminated CHECK expression", sql: "CREATE TABLE t (a INT CHECK (a > 0", wantError: "unmatched parenthesis"},
-		{name: "unterminated REFERENCES column list", sql: "CREATE TABLE t (a INT REFERENCES u(id", wantError: "unmatched parenthesis"},
+		{name: "unterminated REFERENCES column list", sql: "CREATE TABLE t (a INT REFERENCES u(id", wantError: "expected ',' or ')' in the column list"},
 		{name: "unterminated generated column expression", sql: "CREATE TABLE t (a INT GENERATED ALWAYS AS (a + 1", wantError: "unmatched parenthesis"},
 		{name: "unterminated ON UPDATE precision", sql: "CREATE TABLE t (a TIMESTAMP ON UPDATE CURRENT_TIMESTAMP(3", wantError: "unmatched parenthesis"},
 		{name: "unterminated group in an unrecognised ALTER action", sql: "ALTER TABLE t ENGINE = (x", wantError: "unmatched parenthesis"},
@@ -2512,7 +2550,7 @@ func newLoggingContext(t *testing.T) (context.Context, *bytes.Buffer) {
 	t.Helper()
 
 	logs := &bytes.Buffer{}
-	return logging.ContextWithLogger(t.Context(), slog.New(slog.NewJSONHandler(logs, nil))), logs
+	return logging.WithLogger(t.Context(), slog.New(slog.NewJSONHandler(logs, nil))), logs
 }
 
 func decodeLogRecords(t *testing.T, logs *bytes.Buffer) []map[string]any {

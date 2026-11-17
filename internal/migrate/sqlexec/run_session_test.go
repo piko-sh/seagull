@@ -327,7 +327,7 @@ func TestASessionWithoutACurrentSchemaLeavesTheTablesUnqualified(t *testing.T) {
 			require.NoError(t, executor.ReleaseLock(t.Context()))
 
 			require.True(t, recorder.asked(testCase.schemaSQL))
-			require.True(t, recorder.asked("CREATE TABLE IF NOT EXISTS sgl_migrations"))
+			require.True(t, recorder.asked("SELECT 1 FROM sgl_migrations WHERE 1 = 0"), "the history table is named unqualified")
 		})
 	}
 }
@@ -391,8 +391,8 @@ func TestEnginesWithoutASessionSchemaRunAsBefore(t *testing.T) {
 
 			require.False(t, recorder.asked(postgresEngine().currentSchemaSQL))
 			require.False(t, recorder.asked(mysqlEngine().currentSchemaSQL))
-			require.True(t, recorder.asked("CREATE TABLE IF NOT EXISTS sgl_migrations"))
-			require.True(t, recorder.asked("CREATE TABLE IF NOT EXISTS sgl_seeds"))
+			require.True(t, recorder.asked("SELECT 1 FROM sgl_migrations WHERE 1 = 0"), "the history table is named unqualified")
+			require.True(t, recorder.asked("SELECT 1 FROM sgl_seeds WHERE 1 = 0"), "the seed table is named unqualified")
 			require.Nil(t, executor.held)
 		})
 	}

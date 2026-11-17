@@ -16,13 +16,7 @@
 // oppression. We built this to empower people, not to enable those who would
 // strip others of their rights and dignity.
 
-// Command 004_nullability applies its migrations to a MySQL database, then runs the
-// example in example.go: ringed gulls and their sightings are listed through a LEFT JOIN,
-// COALESCE and aggregates, printing NULL where a pointer field is nil.
-//
-// Run it with `go run . -dsn 'user:password@tcp(localhost:3306)/colony'`, or set
-// DATABASE_URL instead of passing -dsn. Give it an empty database of its own, as the
-// migrations create its tables and the example adds rows each time it runs.
+// Command 004_nullability demonstrates nullable query results.
 package main
 
 import (
@@ -46,6 +40,7 @@ import (
 //go:embed db/migrations
 var migrations embed.FS
 
+// main selects the database and reports example failures.
 func main() {
 	dsn := flag.String("dsn", os.Getenv("DATABASE_URL"), "MySQL data source name; defaults to $DATABASE_URL")
 	flag.Parse()

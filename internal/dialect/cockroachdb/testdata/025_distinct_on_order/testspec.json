@@ -1,0 +1,4 @@
+{
+  "description": "CockroachDB requires the leading ORDER BY keys to be the DISTINCT ON keys, matching only columns and select-list aliases, so an ORDER BY led by another key, or an expression written out on both sides, is refused.",
+  "expectedDiagnosticCount": 2
+}

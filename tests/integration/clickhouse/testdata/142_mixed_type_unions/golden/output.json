@@ -1,0 +1,32 @@
+{
+  "Extremes": [
+    {
+      "biggest": 7,
+      "smallest": -1,
+      "widest": 18446744073709551615
+    },
+    {
+      "biggest": 4000000000,
+      "smallest": 2,
+      "widest": 9
+    }
+  ],
+  "MixedColumns": [
+    {
+      "narrow": -5,
+      "short": 1
+    },
+    {
+      "narrow": 3,
+      "short": 2
+    },
+    {
+      "narrow": 7,
+      "short": -1
+    },
+    {
+      "narrow": 4000000000,
+      "short": 2
+    }
+  ]
+}

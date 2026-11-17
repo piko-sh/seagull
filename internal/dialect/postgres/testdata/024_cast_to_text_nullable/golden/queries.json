@@ -22,10 +22,7 @@
         "SQLType": {
           "Category": "text",
           "EngineName": "text"
-        },
-        "SourceColumn": "level",
-        "SourceQualifier": "logs",
-        "SourceTable": "logs"
+        }
       }
     ],
     "ReadOnly": true,

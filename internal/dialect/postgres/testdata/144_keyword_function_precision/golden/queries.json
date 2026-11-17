@@ -1,0 +1,67 @@
+[
+  {
+    "Command": "one",
+    "Filename": "clock.sql",
+    "Line": 1,
+    "Name": "Precise",
+    "OutputColumns": [
+      {
+        "Name": "time_with_zone",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timetz",
+          "Temporal": "time",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "stamp_with_zone",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      },
+      {
+        "Name": "local_time",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "time",
+          "Temporal": "time"
+        }
+      },
+      {
+        "Name": "local_stamp",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamp",
+          "Temporal": "timestamp"
+        }
+      },
+      {
+        "Name": "schema_name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Precise, command: one)\nSELECT current_time(2) AS time_with_zone, current_timestamp(3) AS stamp_with_zone, localtime(1) AS local_time,\n       localtimestamp(0) AS local_stamp, current_schema() AS schema_name\nFROM events WHERE id = $1;",
+    "Template": "SELECT ⟨c0 aliased:current_time(2)⟩ AS time_with_zone, ⟨c1 aliased:current_timestamp(3)⟩ AS stamp_with_zone, ⟨c2 aliased:localtime(1)⟩ AS local_time,\\n       ⟨c3 aliased:localtimestamp(0)⟩ AS local_stamp, ⟨c4 aliased:current_schema()⟩ AS schema_name\\nFROM events WHERE id = ⟨p0⟩;⟨arguments p0⟩"
+  }
+]

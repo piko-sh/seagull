@@ -1,0 +1,4 @@
+{
+  "description": "Keys follow the migrations that alter them: a renamed column is renamed in its unique key, primary key and the foreign keys that reference it, a renamed table is renamed in the foreign keys that reference it, a dropped primary key constraint drops the key, SET DEFAULT and DROP DEFAULT change whether a column has a default, and a foreign key to another schema keeps that schema.",
+  "expectedDiagnosticCount": 0
+}

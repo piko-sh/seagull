@@ -1,0 +1,4 @@
+{
+  "description": "MariaDB reserves RETURNING and OFFSET, which MySQL does not, and refuses them as an alias unless quoted, while it takes RANK, which MySQL reserves.",
+  "expectedDiagnosticCount": 2
+}

@@ -112,10 +112,10 @@ func sglClickHouseDocumentText(source any) ([]byte, bool, error) {
 		if typed == nil {
 			return nil, false, nil
 		}
-		text, err := json.Marshal(typed)
+		text, err := sglJSONMarshal(typed)
 		return text, true, err
 	case sglClickHouseDocument:
-		text, err := json.Marshal(&typed)
+		text, err := sglJSONMarshal(&typed)
 		return text, true, err
 	default:
 		return nil, false, nil
@@ -156,7 +156,7 @@ func sglReadClickHouseText(target reflect.Value, text []byte) error {
 		target.SetString(string(text))
 		return nil
 	default:
-		return json.Unmarshal(text, target.Addr().Interface())
+		return sglJSONUnmarshal(text, target.Addr().Interface())
 	}
 }
 
@@ -170,7 +170,7 @@ func sglReadClickHouseText(target reflect.Value, text []byte) error {
 func sglReadClickHouseLooseText(target reflect.Value, text []byte) error {
 	jsonType := reflect.TypeFor[sglClickHouseJSON]()
 	if jsonType.Kind() == reflect.Interface {
-		return json.Unmarshal(text, target.Addr().Interface())
+		return sglJSONUnmarshal(text, target.Addr().Interface())
 	}
 	if !jsonType.AssignableTo(target.Type()) {
 		return fmt.Errorf("cannot read a JSON document into %s", target.Type())

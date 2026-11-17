@@ -275,13 +275,12 @@ var codeTable = []CodeInfo{
 		Code:     CodeCountSemanticsWrapped,
 		Title:    "Count query wraps the original query",
 		Severity: SeverityHint,
-		Explanation: "The count query generated for a `dynamic: runtime` query wraps the original statement as " +
-			"`SELECT COUNT(*) FROM (...) sub`, because the rows the statement returns are not the rows it reads: " +
-			"it uses `GROUP BY`, `HAVING`, `DISTINCT`, an aggregate, a window function or a set-returning " +
-			"function such as `unnest` in its select list, a set-returning function in its `ORDER BY`, a clause " +
-			"that shapes its rows after `HAVING`, or it is compound. The count therefore reports the number of " +
-			"result rows, not the number of rows in the underlying table.\n\n" +
-			"This is informational; no change is needed.",
+		Explanation: "The count query for a `dynamic: runtime` query wraps the original statement in " +
+			"`SELECT COUNT(*) FROM (...)` when its result rows differ from the rows it reads. This " +
+			"includes grouping, aggregates, window or set-returning functions, `DISTINCT`, compound " +
+			"queries, and clauses that pick rows such as `LIMIT`, `OFFSET`, `FETCH` and `DISTINCT ON`. " +
+			"The count reports result rows after those clauses, including any limit the query sets.\n\n" +
+			"This is informational. No change is needed.",
 	},
 	{
 		Code:     CodeCountRewriteUnavailable,
@@ -889,6 +888,46 @@ var codeTable = []CodeInfo{
 			"Look for views that read each other in a cycle, directly or through other views, and break the cycle. " +
 			"Shorten long chains of views that read views, or drop and create the affected views again after the " +
 			"change to their tables, so their columns are derived from the tables as they now are.",
+	},
+	{
+		Code:     CodeRuntimeBuilderChangesData,
+		Title:    "Runtime builder over a statement that changes data",
+		Severity: SeverityError,
+		Explanation: "A `dynamic: runtime` builder runs its statement on every terminal call. A data-modifying " +
+			"CTE or function would therefore change data again when callers use `Count` or another " +
+			"terminal.\n\n" +
+			"Remove `dynamic: runtime` from the write query. Use a separate read query if callers need " +
+			"to filter or count the resulting data.",
+	},
+	{
+		Code:     CodeMigrationTransactionControl,
+		Title:    "Migration controls its own transaction",
+		Severity: SeverityError,
+		Explanation: "The runner refuses a migration that contains `BEGIN`, `START TRANSACTION`, `COMMIT`, " +
+			"`END`, `ROLLBACK`, `SAVEPOINT` or `RELEASE` before running any statement. These statements " +
+			"can end the runner's transaction and leave changes without a history record.\n\n" +
+			"Remove the transaction-control statement. Mark a migration that must run without a " +
+			"transaction with `sgl.migration(no_transaction: true)`.",
+	},
+	{
+		Code:     CodeFullTextWithoutIndex,
+		Title:    "Full-text search without a matching index",
+		Severity: SeverityWarning,
+		Explanation: "A MySQL or MariaDB `MATCH (columns) AGAINST (...)` search lacks a `FULLTEXT` index " +
+			"covering exactly those columns, in any order. Separate indexes on `title` and `body` do not " +
+			"serve `MATCH (title, body)`. The engine also refuses a search across two tables.\n\n" +
+			"Add a matching `FULLTEXT` index or change the search to use an existing one. Seagull " +
+			"warns because a matching index may exist outside the migrations it reads.",
+	},
+	{
+		Code:     CodeRuntimeBuilderRowNames,
+		Title:    "Runtime builder over picked rows without distinct column names",
+		Severity: SeverityError,
+		Explanation: "A `dynamic: runtime` query with its own `LIMIT`, `OFFSET`, `FETCH`, `DISTINCT ON`, " +
+			"`QUALIFY` or `LIMIT n BY` applies builder methods to the rows it selects. Those methods " +
+			"need distinct output column names. Duplicate or unnamed columns cannot be addressed by " +
+			"name, and some engines refuse the derived table the builder uses.\n\n" +
+			"Give the columns distinct aliases, such as `SELECT a.id AS author_id, b.id AS book_id ...`.",
 	},
 }
 

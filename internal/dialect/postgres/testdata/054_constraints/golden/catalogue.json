@@ -34,6 +34,28 @@
               }
             }
           ],
+          "Constraints": [
+            {
+              "Columns": [
+                "id"
+              ],
+              "Kind": "primary-key",
+              "Name": "categories_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            },
+            {
+              "Columns": [
+                "name"
+              ],
+              "Kind": "unique",
+              "Name": "categories_name_key",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            }
+          ],
           "Name": "categories",
           "Origin": {
             "Filename": "001_schema.up.sql"
@@ -100,6 +122,28 @@
             }
           ],
           "Constraints": [
+            {
+              "Columns": [
+                "id"
+              ],
+              "Kind": "primary-key",
+              "Name": "products_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              }
+            },
+            {
+              "Columns": [
+                "price"
+              ],
+              "Kind": "check",
+              "Name": "products_price_check",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              }
+            },
             {
               "Columns": [
                 "category_id"

@@ -165,7 +165,6 @@ func TestBackendLockModes(t *testing.T) {
 		{name: "cockroachdb defaults to a durable table lock", backend: CockroachDB(), wantLocks: cockroachTable},
 		{name: "cockroachdb without a lock", backend: CockroachDB(WithLock(LockNone)), wantLocks: none},
 		{name: "cockroachdb advisory lock is unsupported", backend: CockroachDB(WithLock(LockAdvisory)), wantError: ErrUnsupportedLock},
-		{name: "duckdb defaults to no lock", backend: DuckDB(), wantLocks: none},
 		{name: "duckdb without a lock", backend: DuckDB(WithLock(LockNone)), wantLocks: none},
 		{name: "duckdb advisory lock is unsupported", backend: DuckDB(WithLock(LockAdvisory)), wantError: ErrUnsupportedLock},
 		{name: "duckdb table lock is unsupported", backend: DuckDB(WithLock(LockTable)), wantError: ErrUnsupportedLock},
@@ -182,6 +181,20 @@ func TestBackendLockModes(t *testing.T) {
 			require.NoError(t, testCase.backend.err)
 			assert.Equal(t, testCase.wantLocks, lockPair{migration: testCase.backend.migrationLock, seed: testCase.backend.seedLock})
 		})
+	}
+}
+
+func TestEmbeddedEnginesDefaultToALeaseLock(t *testing.T) {
+	t.Parallel()
+	for name, backend := range map[string]Backend{"sqlite": SQLite(), "duckdb": DuckDB()} {
+		require.NoError(t, backend.err, name)
+		require.Equal(t, LockLease, backend.lockMode, name)
+		migration, isLease := backend.migrationLock.(*leaseLock)
+		require.True(t, isLease, "%s migrations serialise through a lease", name)
+		seed, isLease := backend.seedLock.(*leaseLock)
+		require.True(t, isLease, "%s seeds serialise through a lease", name)
+		require.Equal(t, "sgl_migration_lock_lease", migration.table)
+		require.Equal(t, "sgl_seed_lock_lease", seed.table)
 	}
 }
 
@@ -241,6 +254,9 @@ func TestBackendOptionsComposeInAnyOrder(t *testing.T) {
 		SeedLockConstraint:      "app_seed_lock_single_row",
 		LockKey:                 "history",
 		SeedLockKey:             "app_seeds",
+		MigrationLease:          "app_migration_lock_lease",
+		SeedLease:               "app_seed_lock_lease",
+		SeedProgress:            "app_seeds_progress",
 	}, first.Names())
 	assert.Contains(t, createHistorySQL(first), "CREATE TABLE IF NOT EXISTS history (")
 }
@@ -347,6 +363,9 @@ func TestDefaultNamespaceNames(t *testing.T) {
 		SeedLockConstraint:      "sgl_seed_lock_single_row",
 		LockKey:                 "sgl_migrations",
 		SeedLockKey:             "sgl_seeds",
+		MigrationLease:          "sgl_migration_lock_lease",
+		SeedLease:               "sgl_seed_lock_lease",
+		SeedProgress:            "sgl_seeds_progress",
 	}
 	for _, constructor := range everyConstructor {
 		assert.Equalf(t, expected, constructor.build(WithServerWideLockKey()).Names(), "constructor %s", constructor.name)
@@ -368,6 +387,9 @@ func TestWithNamespaceDerivesEveryPersistedName(t *testing.T) {
 		SeedLockConstraint:      "acme_seed_lock_single_row",
 		LockKey:                 "acme_migrations",
 		SeedLockKey:             "acme_seeds",
+		MigrationLease:          "acme_migration_lock_lease",
+		SeedLease:               "acme_seed_lock_lease",
+		SeedProgress:            "acme_seeds_progress",
 	}
 	for _, constructor := range everyConstructor {
 		for _, scope := range [][]BackendOption{{WithServerWideLockKey()}, nil} {
@@ -508,7 +530,7 @@ func TestAcmeNamespaceLeavesNoSeagullPersistedNames(t *testing.T) {
 		names := backend.Names()
 		persisted := []string{
 			names.History, names.Seeds, names.MigrationLock, names.SeedLock,
-			names.MigrationLockConstraint, names.SeedLockConstraint, names.LockKey, names.SeedLockKey,
+			names.MigrationLockConstraint, names.SeedLockConstraint, names.LockKey, names.SeedLockKey, names.MigrationLease, names.SeedLease,
 			renderPersistedText(backend),
 		}
 		for _, text := range persisted {

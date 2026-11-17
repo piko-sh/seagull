@@ -200,7 +200,7 @@ func buildModelStruct(table *sqlmodel.Table, model *emit.ModelNaming, mappings s
 		fields = append(fields, &ast.Field{
 			Names: []*ast.Ident{goastutil.CachedIdent(model.Fields[index])},
 			Type:  tracker.AddType(goType),
-			Tag:   goast.TagLiteral(tags[len(fields)]),
+			Tag:   goast.TagLiteral(emitkit.TagForType(tags[len(fields)], goType)),
 		})
 	}
 	declaration := goastutil.GenDeclType(model.Type, goastutil.StructType(fields...))
@@ -247,10 +247,11 @@ func buildNamedType(named *emit.NamedType, mappings sqlmodel.GoTypeResolver, tra
 	fields := make([]*ast.Field, 0, len(structFields))
 	for index := range structFields {
 		fieldType := structFields[index].SQLType
+		goType := sqlmodel.NullAsPointer(goast.ResolveGoType(fieldType, fieldType.Nullable, mappings))
 		fields = append(fields, &ast.Field{
 			Names: []*ast.Ident{goastutil.CachedIdent(named.Fields[index])},
-			Type:  tracker.AddType(goast.ResolveGoType(fieldType, fieldType.Nullable, mappings)),
-			Tag:   goast.TagLiteral(tags[index]),
+			Type:  tracker.AddType(goType),
+			Tag:   goast.TagLiteral(emitkit.TagForType(tags[index], goType)),
 		})
 	}
 	return []ast.Decl{goastutil.GenDeclType(named.Name, goastutil.StructType(fields...))}

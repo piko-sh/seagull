@@ -1,0 +1,32 @@
+[
+  {
+    "Code": "Q003",
+    "Column": 1,
+    "EndColumn": 24,
+    "EndLine": 2,
+    "Filename": "views.sql",
+    "Line": 2,
+    "Message": "the engine no longer resolves this view: view v reads src, which a migration dropped",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q001",
+    "Column": 8,
+    "EndColumn": 10,
+    "EndLine": 2,
+    "Filename": "views.sql",
+    "Line": 2,
+    "Message": "unknown column \"id\"",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q001",
+    "Column": 12,
+    "EndColumn": 17,
+    "EndLine": 2,
+    "Filename": "views.sql",
+    "Line": 2,
+    "Message": "unknown column \"label\"",
+    "Severity": "warning"
+  }
+]

@@ -157,10 +157,7 @@
           "Category": "temporal",
           "EngineName": "date",
           "Temporal": "date"
-        },
-        "SourceColumn": "born",
-        "SourceQualifier": "people",
-        "SourceTable": "people"
+        }
       },
       {
         "Name": "converted",
@@ -169,10 +166,7 @@
           "Category": "temporal",
           "EngineName": "datetime",
           "Temporal": "timestamp"
-        },
-        "SourceColumn": "born",
-        "SourceQualifier": "people",
-        "SourceTable": "people"
+        }
       },
       {
         "Name": "signed_up_day",
@@ -180,10 +174,7 @@
           "Category": "temporal",
           "EngineName": "date",
           "Temporal": "date"
-        },
-        "SourceColumn": "signed_up",
-        "SourceQualifier": "people",
-        "SourceTable": "people"
+        }
       }
     ],
     "ReadOnly": true,
@@ -333,6 +324,12 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Compound": true,
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(name: NewestAndOldest, command: many)\n(SELECT id, first_name FROM people WHERE visits \u003e ? ORDER BY id DESC LIMIT 1)\nUNION ALL\n(SELECT id, first_name FROM archived_people ORDER BY id LIMIT 1)\nORDER BY id;",
     "Template": "(SELECT id, first_name FROM people WHERE visits \u003e ⟨p0⟩ ORDER BY id DESC LIMIT 1)\\nUNION ALL\\n(SELECT id, first_name FROM archived_people ORDER BY id LIMIT 1)\\nORDER BY id;⟨arguments p0⟩"
   },
@@ -372,6 +369,9 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Compound": true
+    },
     "SQL": "-- sgl.query(name: WithDefaults, command: many)\nVALUES ROW(0, 'nobody') UNION ALL SELECT id, first_name FROM people WHERE id = ?;",
     "Template": "VALUES ROW(0, 'nobody') UNION ALL SELECT id, first_name FROM people WHERE id = ⟨p0⟩;⟨arguments p0⟩"
   },

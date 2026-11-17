@@ -1,0 +1,22 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 49,
+    "EndColumn": 49,
+    "EndLine": 1,
+    "Filename": "002_short.up.sql",
+    "Line": 1,
+    "Message": "failed to interpret DDL: syntax error at end of input: the view's column list has fewer names than its query has columns (1 names, 2 columns); the engine needs a name for every column",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 57,
+    "EndColumn": 57,
+    "EndLine": 1,
+    "Filename": "003_surplus.up.sql",
+    "Line": 1,
+    "Message": "failed to interpret DDL: syntax error at end of input: the view's column list has more names than its query has columns (3 names, 2 columns); the engine refuses the surplus names",
+    "Severity": "error"
+  }
+]

@@ -37,6 +37,10 @@ var (
 	// statement that declares the batch, and its loop refers to no planned name, so neither
 	// name needs keeping clear.
 	batchLocals = multirow.Locals
+
+	// oneRowLocals lists the local a one-row method holds its row and scan destinations in,
+	// since clickhouse-go's QueryRow returns an interface.
+	oneRowLocals = []string{"scanned"}
 )
 
 // Reserve returns the names used by the emitter's generated code and helpers.
@@ -47,7 +51,7 @@ var (
 //
 // Returns emit.Reservation which holds the names.
 func (*Emitter) Reserve(info *dialect.Facts, style *emit.Style) emit.Reservation {
-	return reservation.For(info, style, slices.Concat(batchLocals, reservation.EnumLocals),
+	return reservation.For(info, style, slices.Concat(batchLocals, oneRowLocals, reservation.EnumLocals),
 		reservation.Helpers(style,
 			slices.Concat(chvalues.Helpers, chvalues.EncodedHelpers, chvalues.NullableHelpers, chvalues.DurationHelpers, compositeHelpers, documentHelpers, entriesHelpers, chvalues.DocumentHelpers,
 				chvalues.AppendingHelpers, valuereading.Helpers, reservation.EnumHelpers),

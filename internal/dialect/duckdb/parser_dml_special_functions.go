@@ -32,20 +32,23 @@ import (
 // It maps them to DuckDB's underlying function calls for type resolution. Comma-separated
 // calls use the ordinary parser.
 //
-// Takes name (string) which is the function name; the cursor is on its '('.
+// Takes name (string) which is the function name. The cursor is on its '('.
 //
 // Returns ast.Expression which is the call, or nil when name is not one of these
 // functions or the call uses commas.
 func (p *parser) parseSpecialFunctionCall(name string) ast.Expression {
 	if p.usesCommaArguments() {
+		if keywordOnly := strings.ToLower(name); keywordOnly == functionExtract || keywordOnly == functionPosition {
+			p.recordSyntaxError(dialectkit.NewParseError(p.Current(), "DuckDB writes "+strings.ToUpper(name)+" with a keyword between its arguments, not a comma"))
+		}
 		return nil
 	}
 	referenceCountBefore := len(p.parameterReferences)
 	var call ast.Expression
 	switch strings.ToLower(name) {
-	case "extract":
+	case functionExtract:
 		call = p.parseExtractCall()
-	case "position":
+	case functionPosition:
 		call = p.parsePositionCall()
 	case "substring":
 		call = p.parseKeywordArgumentCall("substring", keywordFROM, keywordFOR)
@@ -60,6 +63,35 @@ func (p *parser) parseSpecialFunctionCall(name string) ast.Expression {
 		}
 	}
 	return call
+}
+
+// namesFractionalDatePart reports whether a call at the cursor extracts a field DuckDB
+// returns as a DOUBLE, epoch or julian, named as a constant. Every other field, and a
+// field the query computes, gives a BIGINT.
+//
+// Takes name (string) which is the function name. The cursor is on its '('.
+//
+// Returns bool which is true for EXTRACT, date_part or datepart naming epoch or julian.
+func (p *parser) namesFractionalDatePart(name string) bool {
+	field := p.PeekAt(1)
+	switch strings.ToLower(name) {
+	case functionExtract:
+		if field.Kind != tokenIdentifier && field.Kind != tokenString {
+			return false
+		}
+	case "date_part", "datepart":
+		if field.Kind != tokenString || p.PeekAt(2).Kind != tokenComma {
+			return false
+		}
+	default:
+		return false
+	}
+	switch strings.ToLower(field.Value) {
+	case "epoch", "julian":
+		return true
+	default:
+		return false
+	}
 }
 
 // usesCommaArguments reports whether the parenthesised argument list at the cursor
@@ -99,7 +131,7 @@ func (p *parser) parseExtractCall() ast.Expression {
 	}
 	p.requireKeywordOrRecord(keywordFROM)
 	source := p.parseExpression()
-	return p.finishSpecialCall("extract", []ast.Expression{&ast.LiteralExpression{TypeName: "text"}, source})
+	return p.finishSpecialCall(functionExtract, []ast.Expression{&ast.LiteralExpression{TypeName: "text"}, source})
 }
 
 // parsePositionCall parses POSITION(substring IN string).
@@ -110,7 +142,7 @@ func (p *parser) parsePositionCall() ast.Expression {
 	substring := p.parseAddExpression()
 	p.requireKeywordOrRecord(keywordIN)
 	text := p.parseExpression()
-	return p.finishSpecialCall("position", []ast.Expression{substring, text})
+	return p.finishSpecialCall(functionPosition, []ast.Expression{substring, text})
 }
 
 // parseKeywordArgumentCall parses a call whose first argument is followed by further

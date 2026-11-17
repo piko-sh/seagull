@@ -109,8 +109,8 @@ func TestPostgresDriversReadTheSameGoTypes(t *testing.T) {
 	t.Parallel()
 
 	want := map[string]string{
-		"ID": "int32", "At": "string", "MaybeAt": "*string", "Flags": "string", "Mask": "*string",
-		"Price": "string", "Refund": "*string", "Span": "string",
+		"ID": "int32", "At": "string", "MaybeAt": "Null[string]", "Flags": "string", "Mask": "Null[string]",
+		"Price": "string", "Refund": "Null[string]", "Span": "string",
 	}
 	sqlFields, _ := generatedModelFields(t, emit_driver_databasesql.New())
 	pgxFields, pgxSource := generatedModelFields(t, emit_driver_pgx.New())
@@ -129,9 +129,9 @@ func TestSQLiteColumnsReadAsTheDriversReturnTheirDeclaredTypes(t *testing.T) {
 	fields, result := generatedSQLiteFields(t)
 	require.Empty(t, result.Diagnostics)
 	require.Equal(t, map[string]string{
-		"ID": "int64", "ExternalID": "uuid.UUID", "OtherID": "*uuid.UUID", "StartsAt": "*string", "Zoned": "*string",
-		"Span": "*string", "Raw": "[]byte", "Price": "*apd.Decimal", "Label": "*string",
-		"Lowered": "string", "Either": "*string", "Converted": "*apd.Decimal",
+		"ID": "int64", "ExternalID": "uuid.UUID", "OtherID": "Null[uuid.UUID]", "StartsAt": "Null[string]", "Zoned": "Null[string]",
+		"Span": "Null[string]", "Raw": "[]byte", "Price": "Null[apd.Decimal]", "Label": "Null[string]",
+		"Lowered": "string", "Either": "Null[string]", "Converted": "Null[apd.Decimal]",
 	}, fields)
 }
 
@@ -141,6 +141,6 @@ func TestASQLiteTypeOverrideOfUUIDAppliesToUUIDColumns(t *testing.T) {
 	fields, result := generatedSQLiteFields(t, seagull.TypeOverride{SQLTypeName: "uuid", GoName: "string"})
 	require.Empty(t, result.Diagnostics)
 	require.Equal(t, "string", fields["ExternalID"])
-	require.Equal(t, "*string", fields["OtherID"])
-	require.Equal(t, "*apd.Decimal", fields["Converted"])
+	require.Equal(t, "Null[string]", fields["OtherID"])
+	require.Equal(t, "Null[apd.Decimal]", fields["Converted"])
 }

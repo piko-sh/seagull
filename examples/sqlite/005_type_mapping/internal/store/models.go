@@ -5,14 +5,14 @@ package store
 import "time"
 
 type Landings struct {
-	ID       int64     `json:"id"`
-	Species  string    `json:"species"`
-	Boxes    int64     `json:"boxes"`
-	Fish     int64     `json:"fish"`
-	WeightG  int64     `json:"weight_g"`
-	LengthCm float64   `json:"length_cm"`
-	OnIce    bool      `json:"on_ice"`
-	LandedAt time.Time `json:"landed_at"`
-	Tag      []byte    `json:"tag"`
-	Notes    *string   `json:"notes"`
+	ID       int64        `json:"id"`
+	Species  string       `json:"species"`
+	Boxes    int64        `json:"boxes"`
+	Fish     int64        `json:"fish"`
+	WeightG  int64        `json:"weight_g"`
+	LengthCm float64      `json:"length_cm"`
+	OnIce    bool         `json:"on_ice"`
+	LandedAt time.Time    `json:"landed_at"`
+	Tag      []byte       `json:"tag"`
+	Notes    Null[string] `json:"notes"`
 }

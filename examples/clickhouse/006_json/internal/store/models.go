@@ -3,8 +3,8 @@
 package store
 
 type Orders struct {
-	ID       uint64  `json:"id"`
-	Customer string  `json:"customer"`
-	Basket   string  `json:"basket"`
-	Delivery *string `json:"delivery"`
+	ID       uint64       `json:"id"`
+	Customer string       `json:"customer"`
+	Basket   string       `json:"basket"`
+	Delivery Null[string] `json:"delivery"`
 }

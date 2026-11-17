@@ -35,6 +35,9 @@ const (
 	GoCompositeInstance
 )
 
+// NullTypeName names the generic type a generated package declares for a nullable value.
+const NullTypeName = "Null"
+
 // GoType identifies a Go type by its import path and name, or describes a map, struct or
 // generic instance built from other Go types.
 type GoType struct {
@@ -76,6 +79,39 @@ func NewGoStruct(fields []GoField) GoType {
 		Package:   "",
 		Name:      "",
 	}
+}
+
+// NullAsPointer turns the generated Null[T] back into a pointer, *T, for a place that
+// holds a nullable value through a pointer whatever the style, such as a field of a
+// struct type the package declares for a composite SQL type, which the driver binds and
+// reads itself.
+//
+// Every other type is returned as it is.
+//
+// Takes goType (GoType) which is the Go type.
+//
+// Returns GoType which is *T for Null[T], or goType unchanged.
+func NullAsPointer(goType GoType) GoType {
+	if !IsNullValue(goType) {
+		return goType
+	}
+	element := goType.Composite.Arguments[0]
+	if element.Composite != nil {
+		return goType
+	}
+	return GoType{Composite: nil, Package: element.Package, Name: "*" + element.Name}
+}
+
+// IsNullValue reports whether a Go type is an instance of the generated Null type, which
+// holds a nullable value in place with a Valid flag, rather than a pointer.
+//
+// Takes goType (GoType) which is the Go type.
+//
+// Returns bool which is true for Null[T].
+func IsNullValue(goType GoType) bool {
+	composite := goType.Composite
+	return composite != nil && composite.Kind == GoCompositeInstance && composite.Value != nil &&
+		composite.Value.Package == "" && composite.Value.Name == NullTypeName && len(composite.Arguments) == 1
 }
 
 // NewGoInstance returns the instance of a generic Go type with the given type arguments,
@@ -152,6 +188,18 @@ type AnalysedQuery struct {
 	// counting does not apply to the query.
 	CountTemplate *SQLTemplate
 
+	// FilteredTemplate is the SQL a runtime builder runs once Where added a condition, for a
+	// query whose select list aggregates, holds a window function or returns a set.
+	//
+	// It wraps the statement as written in a derived table, so the conditions filter the
+	// rows the query returns, and marks the places of the filter, ORDER BY and pagination
+	// after it. It is nil for any other query, whose conditions join its own WHERE.
+	FilteredTemplate *SQLTemplate
+
+	// FilteredCountTemplate counts the rows FilteredTemplate reads, for the Count terminal
+	// once Where added a condition. It is nil when either template is nil.
+	FilteredCountTemplate *SQLTemplate
+
 	// InsertTarget is the table an INSERT writes, with the schema as the query writes it,
 	// used by bulk-insert generation. It is zero for non-INSERT statements.
 	InsertTarget TableName
@@ -181,6 +229,9 @@ type AnalysedQuery struct {
 	// clauses.
 	AllowedColumns []AllowedColumn
 
+	// ResultShape records how the query's own clauses use its result columns.
+	ResultShape ResultShape
+
 	// Line is the line number of the query in the source file.
 	Line int
 
@@ -195,6 +246,12 @@ type AnalysedQuery struct {
 	// builder instead of a standard method.
 	DynamicRuntime bool
 
+	// ReadsResultRows reports whether a runtime builder filters the statement's result rows.
+	//
+	// The statement may pick rows with LIMIT, OFFSET, FETCH, DISTINCT ON, or QUALIFY. The
+	// builder wraps its result in a derived table and uses output column names.
+	ReadsResultRows bool
+
 	// ReadOnly indicates the query does not modify data. Downstream consumers can use this
 	// to route read-only queries to read replicas.
 	ReadOnly bool
@@ -203,6 +260,27 @@ type AnalysedQuery struct {
 	// makes a zero-row result return (row, false, nil) instead of the driver no-rows
 	// sentinel; the emitter widens the method signature to (row, bool, error).
 	Optional bool
+}
+
+// ResultShape records how a query's own clauses use its result columns, which an emitter
+// that rewrites a column in the select list, such as a cast to text or a conversion to
+// JSON, must leave meaning the same.
+type ResultShape struct {
+	// Named lists the result columns an ORDER BY names by their output name, which an engine
+	// reads as the select list's value rather than the table's.
+	Named []int
+
+	// Distinct reports a plain DISTINCT quantifier, which compares the values of every
+	// result column. DISTINCT ON compares only its own keys and is not reported.
+	Distinct bool
+
+	// Compound reports a UNION, INTERSECT or EXCEPT, whose other branches the select list of
+	// the first does not cover.
+	Compound bool
+
+	// Ordinal reports an ORDER BY or GROUP BY item written as a position, which may name any
+	// result column.
+	Ordinal bool
 }
 
 // AllowedColumn represents a column available for runtime query building.
@@ -215,6 +293,14 @@ type AllowedColumn struct {
 	// place of the caller's text (for example "users.email"). It is unambiguous across joins
 	// and references the real column behind an aliased projection.
 	SourceExpression string
+
+	// SourceQualifier is the table reference that qualifies the source column, or empty when
+	// the column is unqualified. Together with SourceColumn it names the column without the
+	// ambiguity of a dotted SourceExpression when an identifier holds a dot itself.
+	SourceQualifier string
+
+	// SourceColumn is the name of the source column, unquoted.
+	SourceColumn string
 
 	// SQLType is the column's resolved SQL type.
 	SQLType SQLType
@@ -314,8 +400,8 @@ type QueryParameter struct {
 	// Name is the parameter name from sgl.param directive, or inferred from the column name.
 	Name string
 
-	// Placeholder identifies a named placeholder that a directive renamed. Empty means the
-	// parameter uses its Name or binds by position.
+	// Placeholder preserves a named placeholder's identity when its parameter is renamed. An
+	// empty value means the parameter uses its Name or binds by position.
 	Placeholder string
 
 	// SortableColumns holds the allowed ORDER BY column names from a sgl.sortable

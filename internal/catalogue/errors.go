@@ -50,6 +50,22 @@ var (
 	// errAlreadyPartition marks a table attached as a partition while it partitions another
 	// table already.
 	errAlreadyPartition = errors.New("the table is a partition already")
+
+	// errKeyColumnNotNull marks a mutation that would let a primary key's column hold NULL,
+	// which the engine refuses.
+	errKeyColumnNotNull = errors.New("the column is in a primary key")
+
+	// errCheckUsesColumn marks renaming or dropping a column a check reads, which MySQL
+	// refuses.
+	errCheckUsesColumn = errors.New("a check constraint uses the column")
+
+	// errKeyConstraintDrop marks a DROP CONSTRAINT of a primary key or unique constraint,
+	// which SQLite refuses.
+	errKeyConstraintDrop = errors.New("the constraint may not be dropped")
+
+	// errNotNullTaken marks a NOT NULL constraint added under a new name to a column whose
+	// NOT NULL constraint has another, which PostgreSQL refuses.
+	errNotNullTaken = errors.New("the column has a NOT NULL constraint already")
 )
 
 // mutationError is a mutation the catalogue refuses: the sentinel that says why, and the

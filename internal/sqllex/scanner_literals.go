@@ -161,7 +161,7 @@ func (s *Scanner) parameterAt(start int) (int, bool) {
 	case character == '{' && parameters.Braced:
 		return s.bracedParameterEnd(start)
 	case strings.IndexByte(parameters.NamedSigils, character) >= 0:
-		if parameters.NoNamedParameterAfterOperand && endsOperand(s.input[:start]) {
+		if character == ':' && parameters.NoNamedParameterAfterOperand && endsOperand(s.input[:start]) {
 			return 0, false
 		}
 		return s.namedParameterEnd(start)
@@ -339,8 +339,8 @@ func unterminated(kind Kind) error {
 	return ErrUnterminatedString
 }
 
-// endsOperand reports whether text ends with the last character of an operand: a name or
-// number, a closing quote, or a closing bracket.
+// endsOperand reports whether text ends with the last character of an operand, such as a
+// name, a number, a closing quote, a closing bracket or the $ that closes a dollar quote.
 //
 // Takes text (string) which is the input before a candidate sigil.
 //
@@ -350,7 +350,7 @@ func endsOperand(text string) bool {
 		return false
 	}
 	last, _ := utf8.DecodeLastRuneInString(text)
-	return isIdentifierPart(last) || strings.ContainsRune("'\"`)]}", last)
+	return isIdentifierPart(last) || strings.ContainsRune("$'\"`)]}", last)
 }
 
 // startsWithName reports whether text starts with a name after any blanks.

@@ -29,6 +29,9 @@ import (
 	"seagull.sh/seagull/internal/dialect/ast"
 )
 
+// engineWhereClause introduces an engine probe predicate.
+const engineWhereClause = " WHERE "
+
 const (
 	// fixtureRowCount is how many rows EngineFixture.Table holds.
 	fixtureRowCount = 3
@@ -157,7 +160,7 @@ func checkViewsFollowTheirTables(t *testing.T, fixture *EngineFixture) {
 			t.Fatalf(failedFormat, statement, err)
 		}
 	}
-	query := "SELECT * FROM " + view + " WHERE " + unmatchedCondition
+	query := "SELECT * FROM " + view + engineWhereClause + unmatchedCondition
 	columns := resultColumns(t, fixture, query)
 	want := []string{"id", "label"}
 	if fixture.Info.ViewsFollowTheirTables {
@@ -194,7 +197,7 @@ func checkSelectAliasOperands(t *testing.T, fixture *EngineFixture) {
 func checkUngroupedColumns(t *testing.T, fixture *EngineFixture) {
 	t.Helper()
 
-	query := "SELECT label, count(*) FROM " + fixture.Table + " WHERE " + unmatchedCondition
+	query := "SELECT label, count(*) FROM " + fixture.Table + engineWhereClause + unmatchedCondition
 	labels, err := selectUngroupedLabels(t, fixture, query)
 	switch fixture.Info.UngroupedColumns {
 	case dialect.UngroupedColumnsRejected, dialect.UngroupedColumnsWarned:
@@ -252,7 +255,7 @@ func checkEmptyLists(t *testing.T, fixture *EngineFixture) {
 	lists := fixture.Info.Lists
 	for _, column := range []string{"id", "label"} {
 		for test, expected := range map[string]int{lists.EmptyMembership: 0, lists.EmptyExclusion: fixtureRowCount} {
-			query := "SELECT id FROM " + fixture.Table + " WHERE " + column + " " + test
+			query := "SELECT id FROM " + fixture.Table + engineWhereClause + column + " " + test
 			if found := len(selectIdentifiers(t, fixture, query)); found != expected {
 				t.Errorf("%s matched %d rows, want %d", query, found, expected)
 			}
@@ -329,7 +332,7 @@ func checkCasts(t *testing.T, fixture *EngineFixture) {
 	for _, cast := range filters.Casts {
 		for _, castType := range filters.CastTypes {
 			expression := cast.Before + "label" + cast.Middle + castType + cast.After
-			requireAccepted(t, fixture, "SELECT "+expression+" FROM "+fixture.Table+" WHERE "+unmatchedCondition)
+			requireAccepted(t, fixture, "SELECT "+expression+" FROM "+fixture.Table+engineWhereClause+unmatchedCondition)
 		}
 	}
 }

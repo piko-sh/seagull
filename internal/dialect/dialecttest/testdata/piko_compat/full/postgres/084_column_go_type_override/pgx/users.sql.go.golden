@@ -16,10 +16,15 @@ type GetUserUUIDRow struct {
 }
 
 func (queries *Queries) GetUserUUID(ctx context.Context, id uuid.UUID) (GetUserUUIDRow, error) {
-	var row GetUserUUIDRow
-	err := queries.db.QueryRow(ctx, getuseruuid, id).Scan(&row.ID, &row.Email)
+	scanned := &struct {
+		row     GetUserUUIDRow
+		targets [2]any
+	}{}
+	row := &scanned.row
+	scanned.targets = [2]any{&row.ID, &row.Email}
+	err := queries.db.QueryRow(ctx, getuseruuid, id).Scan(scanned.targets[:]...)
 	if err != nil {
 		return GetUserUUIDRow{}, err
 	}
-	return row, nil
+	return *row, nil
 }

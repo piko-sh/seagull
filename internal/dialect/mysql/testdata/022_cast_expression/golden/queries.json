@@ -23,10 +23,7 @@
           "EngineName": "decimal",
           "Precision": 10,
           "Scale": 2
-        },
-        "SourceColumn": "raw_value",
-        "SourceQualifier": "measurements",
-        "SourceTable": "measurements"
+        }
       },
       {
         "Name": "int_value",
@@ -34,10 +31,7 @@
           "Category": "integer",
           "EngineName": "bigint",
           "Width": 64
-        },
-        "SourceColumn": "raw_value",
-        "SourceQualifier": "measurements",
-        "SourceTable": "measurements"
+        }
       }
     ],
     "ReadOnly": true,

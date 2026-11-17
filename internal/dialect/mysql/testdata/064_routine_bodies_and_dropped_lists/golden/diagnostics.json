@@ -1,5 +1,15 @@
 [
   {
+    "Code": "Q063",
+    "Column": 17,
+    "EndColumn": 24,
+    "EndLine": 12,
+    "Filename": "001_schema.up.sql",
+    "Line": 12,
+    "Message": "a function that declares none of DETERMINISTIC, NO SQL or READS SQL DATA is refused while binary logging is on, as it is by default in MySQL and wherever replication is set up, unless log_bin_trust_function_creators is set",
+    "Severity": "warning"
+  },
+  {
     "Code": "Q003",
     "Column": 1,
     "EndColumn": 24,

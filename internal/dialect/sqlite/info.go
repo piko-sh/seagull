@@ -91,9 +91,11 @@ var (
 	// where an offset needs a limit before it, so a lone offset follows a negative limit,
 	// which SQLite reads as no limit at all.
 	paginationSyntax = dialect.PaginationSyntax{
-		Limit:          dialect.Affix{Before: "LIMIT ", After: ""},
-		Offset:         dialect.Affix{Before: "OFFSET ", After: ""},
-		UnboundedLimit: "-1",
-		OffsetFirst:    false,
+		Limit:                   dialect.Affix{Before: "LIMIT ", After: ""},
+		Offset:                  dialect.Affix{Before: "OFFSET ", After: ""},
+		UnboundedLimit:          "-1",
+		OffsetFirst:             false,
+		CompoundBindsLastBranch: false,
+		DerivedOrderLimit:       "",
 	}
 )

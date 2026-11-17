@@ -300,9 +300,11 @@ func (b *catalogueBuilder) applyCreateView(ctx context.Context, mutation *ast.Ca
 		Origin:     mutation.Origin,
 		Definition: "",
 		Comment:    "",
+		Broken:     "",
 	}
 	schema.Views[b.key(mutation.TableName)] = view
 	b.followView(view, mutation)
+	b.recordViewReads(view, mutation.ViewDefinition)
 	return nil
 }
 

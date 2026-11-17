@@ -11,12 +11,17 @@ type CountPartsRow struct {
 }
 
 func (queries *Queries) CountParts(ctx context.Context) (CountPartsRow, error) {
-	var row CountPartsRow
-	err := queries.db.QueryRow(ctx, countPartsSQL).Scan(&row.Parts)
+	scanned := &struct {
+		row     CountPartsRow
+		targets [1]any
+	}{}
+	row := &scanned.row
+	scanned.targets = [1]any{&row.Parts}
+	err := queries.db.QueryRow(ctx, countPartsSQL).Scan(scanned.targets[:]...)
 	if err != nil {
 		return CountPartsRow{}, err
 	}
-	return row, nil
+	return *row, nil
 }
 
 const recordReadingsSQL = `INSERT INTO readings (station, minute, height_cm, note)
@@ -26,7 +31,7 @@ type RecordReadingsParams struct {
 	Station  string
 	Minute   uint16
 	HeightCm uint16
-	Note     *string
+	Note     Null[string]
 }
 
 func (queries *Queries) RecordReadings(ctx context.Context, params []RecordReadingsParams) error {

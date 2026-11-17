@@ -45,11 +45,12 @@ runs the query. Each call returns the same builder, so calls chain:
 | `Count(ctx)` | Counts the query's result rows with the same conditions, omitting builder-added ordering and pagination. With any error the count is 0. |
 
 A builder gets `Where` only when its query has a place for a condition, `OrderBy` only
-when it has a place for an ordering, and `Limit` and `Offset` only when the query writes no
-pagination of its own. `Count` is present only when analysis can produce a count rewrite;
-Q024 warns when it is unavailable. The rewrite can retain the query's own ordering or
-pagination when it shapes the counted rows, such as ordering before ClickHouse LIMIT BY
-or pagination within compound branches.
+when it has a place for an ordering, and `Limit` and `Offset` only when it has a place for
+pagination. A compound statement that writes its own pagination has none on a dialect that
+applies it to the whole statement. `Count` is present only when analysis can produce a
+count rewrite; Q024 warns when it is unavailable. The rewrite keeps the query's own
+ordering or pagination when it shapes the counted rows, such as an `ORDER BY` that returns
+a set or pagination within compound branches.
 
 With database/sql, read-only queries run on the reader of a `Queries` built with
 `NewWithReplica`; row-locking reads and queries that may write use the writer.
@@ -63,6 +64,28 @@ either can never widen the other. Orderings follow the query's own `ORDER BY` ke
 and an offset come before any locking or trailing clause. An offset without a limit is written
 alone where the dialect accepts that, and after the dialect's unbounded limit where it needs
 one (`LIMIT 18446744073709551615` on MySQL and MariaDB, `LIMIT -1` on SQLite).
+
+When a query aggregates, uses a window function or returns a set, `Where` filters the
+result rows so it does not change what the query computes. The builder places the
+query in a derived table and applies filters, ordering and pagination to its named
+output columns. `Count` counts the filtered rows. Without an added condition, the
+query runs unchanged. A query with duplicate output names gets no `Where`.
+
+### A query that picks its own rows
+
+A query with its own `LIMIT`, `OFFSET`, `FETCH`, `DISTINCT ON`, DuckDB `QUALIFY` or
+ClickHouse `LIMIT n BY` picks rows before the builder filters or pages them. The builder
+reads the query through a derived table and addresses its output columns by name. For
+a query ending `ORDER BY score DESC LIMIT 10`:
+
+- `Where` keeps the matching rows among those ten.
+- `OrderBy` sorts those ten rows.
+- `Limit(20)` returns at most the ten rows, and `Offset(10)` returns none.
+- `Count` counts the rows the query returns, so it is at most ten.
+
+On a `DISTINCT ON` query, `Where` filters the rows it kept. Add `OrderBy` when order
+matters because a derived table need not preserve it. Give every output column a
+distinct name. [Q075](diagnostics.md#q075) reports ambiguous names.
 
 The comparison operators are `=`, `<>`, `!=`, `<`, `<=`, `>`, `>=`, `LIKE`, `IN`, `NOT IN`,
 `IS NULL` and `IS NOT NULL`, plus those the dialect adds, such as `ILIKE` and the `jsonb` key

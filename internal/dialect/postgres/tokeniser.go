@@ -447,7 +447,7 @@ func (t *tokeniser) readColonToken() (token, error) {
 		t.position++
 		for t.position < len(t.input) {
 			character, width := utf8.DecodeRuneInString(t.input[t.position:])
-			if !isIdentifierPart(character) {
+			if !isIdentifierPart(character) && character != '$' {
 				break
 			}
 			t.position += width
@@ -470,7 +470,7 @@ func (t *tokeniser) followsOperand(offset int) bool {
 		return false
 	}
 	previous, _ := utf8.DecodeLastRuneInString(t.input[:offset])
-	return isIdentifierPart(previous) || strings.ContainsRune("'\"`)]}", previous)
+	return isIdentifierPart(previous) || strings.ContainsRune("$'\"`)]}", previous)
 }
 
 // readOperator reads an arrow, multi-character, or single-character operator.

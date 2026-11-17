@@ -1,0 +1,22 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 13,
+    "EndColumn": 22,
+    "EndLine": 2,
+    "Filename": "aliases.sql",
+    "Line": 2,
+    "Message": "failed to analyse query \"AsReturning\": syntax error near \"returning\": this engine reserves RETURNING here; quote it to use it as an alias",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 13,
+    "EndColumn": 19,
+    "EndLine": 5,
+    "Filename": "aliases.sql",
+    "Line": 5,
+    "Message": "failed to analyse query \"AsOffset\": syntax error near \"offset\": this engine reserves OFFSET here; quote it to use it as an alias",
+    "Severity": "error"
+  }
+]

@@ -58,14 +58,7 @@ var readings = []reading{
 	{buoy: "Stepper Point", minutes: 210, temperature: 14.0},
 }
 
-// run records the buoys' readings in the readings hypertable, then summarises them by the
-// hour with time_bucket, fills the missing hour with time_bucket_gapfill and locf, and
-// picks each buoy's first and last reading.
-//
-// The migration makes readings a hypertable with create_hypertable, which TimescaleDB
-// splits into one chunk per day. To Seagull it is still the table the CREATE TABLE
-// declared, so inserting and selecting look as they would on PostgreSQL; what the
-// TimescaleDB dialect adds is the types of its functions.
+// run summarizes buoy readings with TimescaleDB hypertable queries.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes output (io.Writer) which receives the summaries.
@@ -134,7 +127,7 @@ func printHourly(ctx context.Context, queries *store.Queries, output io.Writer) 
 // The query names its bounds with `$2 as sgl.param(start)` and `$3 as sgl.param(finish)`,
 // and casts them to timestamptz where it passes them to time_bucket_gapfill, since
 // PostgreSQL cannot tell their type from that call alone. Seagull types the gapfilled
-// bucket as *time.Time, though it is never NULL.
+// bucket as Null[time.Time], though it is never NULL.
 //
 // Takes queries (*store.Queries) which runs the query.
 // Takes start (time.Time) which is the first hour.
@@ -153,8 +146,8 @@ func printGapfilled(ctx context.Context, queries *store.Queries, start time.Time
 	fmt.Fprintln(output, "Doom Bar by the hour, gaps filled (time_bucket_gapfill, locf):")
 	for _, hour := range hours {
 		bucket := "--:--"
-		if hour.Bucket != nil {
-			bucket = hour.Bucket.UTC().Format(clock)
+		if hour.Bucket.Valid {
+			bucket = hour.Bucket.V.UTC().Format(clock)
 		}
 		fmt.Fprintf(output, "  %s  mean %s  carried %s\n", bucket, celsius(hour.Mean), celsius(hour.Carried))
 	}
@@ -167,7 +160,7 @@ func printGapfilled(ctx context.Context, queries *store.Queries, start time.Time
 //
 // first, last and locf are polymorphic, returning the type of the value they are given.
 // Seagull types first and last from their value, but leaves locf of an aggregate as any,
-// so the queries cast their results to double precision, which arrives as *float64.
+// so the queries cast their results to double precision, which arrives as Null[float64].
 //
 // Takes queries (*store.Queries) which runs the query.
 // Takes output (io.Writer) which receives the readings.
@@ -187,12 +180,12 @@ func printFirstAndLast(ctx context.Context, queries *store.Queries, output io.Wr
 
 // celsius formats a temperature that may be NULL.
 //
-// Takes value (*float64) which is the temperature, or nil.
+// Takes value (store.Null[float64]) which is the temperature, or NULL.
 //
-// Returns string which is the temperature to one decimal place, or a dash for nil.
-func celsius(value *float64) string {
-	if value == nil {
+// Returns string which is the temperature to one decimal place, or a dash for NULL.
+func celsius(value store.Null[float64]) string {
+	if !value.Valid {
 		return "   -"
 	}
-	return fmt.Sprintf("%4.1f", *value)
+	return fmt.Sprintf("%4.1f", value.V)
 }

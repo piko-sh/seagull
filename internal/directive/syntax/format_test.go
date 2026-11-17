@@ -124,6 +124,11 @@ func TestFormat(t *testing.T) {
 			want:   "-- sgl.query(\nSELECT  1;\n--   x ,  y\n",
 		},
 		{
+			name:   "an unterminated directive string leaves following prose unchanged",
+			source: "-- sgl.query(\n-- 'unfinished\n-- Keep  ( this ) exactly.\n-- sgl.query(A,one)\nSELECT 1;",
+			want:   "-- sgl.query(\n-- 'unfinished\n-- Keep  ( this ) exactly.\n-- sgl.query(A, one)\nSELECT 1;",
+		},
+		{
 			name:   "empty input",
 			source: "",
 			want:   "",
@@ -145,11 +150,16 @@ func FuzzFormatIsIdempotent(f *testing.F) {
 	f.Add("-- seagull.query(  GetUser ,one )\nSELECT 'x';\n")
 	f.Add("-- sgl.query(\n--  A ,\n-- )\n")
 	f.Add("-- $1 as seagull.param( a , [ b ,c ] )   -- note\n")
+	f.Add("-- sgl(\n-- 'unfinished\n-- Keep  ( this ) exactly.\n-- sgl.query(A,one)\nSELECT 1;")
 	prefixes := namespace.Set{Canonical: "sgl", Aliases: []string{"seagull"}, Foreign: nil}
 
 	f.Fuzz(func(t *testing.T, source string) {
+		if len(source) > 4096 {
+			t.Skip("input exceeds the formatting bound")
+		}
 		formatted := FormatSource(source, NeutralLexicon(), prefixes)
 		require.Equal(t, formatted, FormatSource(formatted, NeutralLexicon(), prefixes), "formatting the formatted text changed it")
+		require.Equal(t, StripDirectives(source, NeutralLexicon(), prefixes), StripDirectives(formatted, NeutralLexicon(), prefixes), "formatting changed content outside directives")
 	})
 }
 
@@ -242,5 +252,21 @@ func TestFormatSourceRecognisesAParameterDirectiveOnlyWhenSpacesAndTabsSeparateI
 			assert.Equal(t, testCase.want, formatted)
 			assert.Equal(t, formatted, FormatSource(formatted, NeutralLexicon(), prefixes), "formatting must be idempotent")
 		})
+	}
+}
+
+func TestFormatPreservesMalformedParameterDirectiveClassification(t *testing.T) {
+	t.Parallel()
+	source := "--( as seagull.A"
+	prefixes := namespace.Set{Canonical: "sgl", Aliases: []string{"seagull"}, Foreign: nil}
+	require.Equal(t, source, FormatSource(source, NeutralLexicon(), prefixes))
+	require.Empty(t, StripDirectives(source, NeutralLexicon(), prefixes))
+}
+
+func TestStripParameterDirectiveWithHorizontalWhitespace(t *testing.T) {
+	t.Parallel()
+	prefixes := namespace.Set{Canonical: "sgl", Aliases: []string{"seagull"}, Foreign: nil}
+	for _, source := range []string{"-- $1 \t as\tseagull.param(a)\nSELECT 1;", "-- {n:Int64}  as  seagull.param(a)\nSELECT 1;"} {
+		require.Equal(t, "SELECT 1;", StripDirectives(source, NeutralLexicon(), prefixes))
 	}
 }

@@ -52,7 +52,7 @@
         }
       },
       {
-        "Name": "nothing",
+        "Name": "below_one",
         "Nullable": true,
         "SQLType": {
           "Category": "float",
@@ -62,8 +62,8 @@
       }
     ],
     "ReadOnly": true,
-    "SQL": "-- sgl.query(name: Shares, command: many)\nSELECT id, amount / parts AS share, amount % parts AS remainder, rate / parts AS rate_share, amount / 2 AS half,\n    amount % 0.5 AS nothing\nFROM ledger;",
-    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:amount / parts⟩ AS share, ⟨c2 aliased:amount % parts⟩ AS remainder, ⟨c3 aliased:rate / parts⟩ AS rate_share, ⟨c4 aliased:amount / 2⟩ AS half,\\n    ⟨c5 aliased:amount % 0.5⟩ AS nothing\\nFROM ledger;"
+    "SQL": "-- sgl.query(name: Shares, command: many)\nSELECT id, amount / parts AS share, amount % parts AS remainder, rate / parts AS rate_share, amount / 2 AS half,\n    amount % 0.5 AS below_one\nFROM ledger;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:amount / parts⟩ AS share, ⟨c2 aliased:amount % parts⟩ AS remainder, ⟨c3 aliased:rate / parts⟩ AS rate_share, ⟨c4 aliased:amount / 2⟩ AS half,\\n    ⟨c5 aliased:amount % 0.5⟩ AS below_one\\nFROM ledger;"
   },
   {
     "Command": "many",
@@ -360,6 +360,12 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        1,
+        0
+      ]
+    },
     "SQL": "-- sgl.query(name: LedgerAfter, command: many)\nSELECT id, category FROM ledger WHERE (category, id) \u003e (?, ?) ORDER BY category, id;",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1:category⟩ FROM ledger WHERE (category, id) \u003e (⟨p0⟩, ⟨p1⟩) ORDER BY category, id;⟨arguments p0 p1⟩"
   },
@@ -474,6 +480,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(name: Paths, command: many)\nSELECT category || '/' || dir AS path FROM ledger WHERE path LIKE ? ORDER BY path;",
     "Template": "SELECT ⟨c0 aliased:category || '/' || dir⟩ AS path FROM ledger WHERE path LIKE ⟨p0⟩ ORDER BY path;⟨arguments p0⟩"
   },
@@ -587,6 +598,9 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Compound": true
+    },
     "SQL": "-- sgl.query(name: Mixed, command: many)\nVALUES (0, 'none') UNION ALL SELECT id, category FROM ledger;",
     "Template": "VALUES (0, 'none') UNION ALL SELECT id, category FROM ledger;"
   }

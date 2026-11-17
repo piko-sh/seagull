@@ -1,0 +1,89 @@
+[
+  {
+    "Command": "many",
+    "Filename": "walk.sql",
+    "Line": 1,
+    "Name": "Walk",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "walk",
+        "SourceTable": "walk"
+      },
+      {
+        "Name": "name",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "name",
+        "SourceQualifier": "walk",
+        "SourceTable": "walk"
+      },
+      {
+        "Name": "ancestor",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "ancestor",
+        "SourceQualifier": "walk",
+        "SourceTable": "walk"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(Walk, many)\nWITH RECURSIVE walk(id, name, ancestor) AS (\n    SELECT id, name, name FROM nodes WHERE parent_id IS NULL\n    UNION ALL\n    SELECT n.id, n.name, p.name FROM nodes n JOIN walk w ON n.parent_id = w.id LEFT JOIN nodes p ON p.id = n.parent_id + 1000\n)\nSELECT id, name, ancestor FROM walk;",
+    "Template": "WITH RECURSIVE walk(id, name, ancestor) AS (\\n    SELECT id, name, name FROM nodes WHERE parent_id IS NULL\\n    UNION ALL\\n    SELECT n.id, n.name, p.name FROM nodes n JOIN walk w ON n.parent_id = w.id LEFT JOIN nodes p ON p.id = n.parent_id + 1000\\n)\\nSELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:ancestor⟩ FROM walk;"
+  },
+  {
+    "Command": "many",
+    "Filename": "walk.sql",
+    "Line": 9,
+    "Name": "Shift",
+    "OutputColumns": [
+      {
+        "Name": "n",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "n",
+        "SourceQualifier": "chain",
+        "SourceTable": "chain"
+      },
+      {
+        "Name": "a",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "a",
+        "SourceQualifier": "chain",
+        "SourceTable": "chain"
+      },
+      {
+        "Name": "b",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        },
+        "SourceColumn": "b",
+        "SourceQualifier": "chain",
+        "SourceTable": "chain"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(Shift, many)\nWITH RECURSIVE chain(n, a, b) AS (\n    SELECT 1, 'x'::text, 'y'::text\n    UNION ALL\n    SELECT n + 1, b, NULL::text FROM chain WHERE n \u003c 3\n)\nSELECT n, a, b FROM chain;",
+    "Template": "WITH RECURSIVE chain(n, a, b) AS (\\n    SELECT 1, 'x'::text, 'y'::text\\n    UNION ALL\\n    SELECT n + 1, b, NULL::text FROM chain WHERE n \u003c 3\\n)\\nSELECT ⟨c0:n⟩, ⟨c1:a⟩, ⟨c2:b⟩ FROM chain;"
+  }
+]

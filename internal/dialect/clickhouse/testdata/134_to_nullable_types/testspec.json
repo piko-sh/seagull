@@ -1,0 +1,4 @@
+{
+  "description": "toNullable returns its argument's type made nullable, so toNullable of an Int64 column is a nullable Int64, also when it starts a recursive CTE whose later rows hold NULL.",
+  "expectedDiagnosticCount": 0
+}

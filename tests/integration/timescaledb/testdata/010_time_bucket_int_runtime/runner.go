@@ -87,7 +87,7 @@ func main() {
 	}
 	out := []bucketRow{}
 	for _, row := range rows {
-		out = append(out, bucketRow{Bucket: row.Bucket, Total: row.Total})
+		out = append(out, bucketRow{Bucket: row.Bucket, Total: row.Total.Ptr()})
 	}
 
 	if err := json.NewEncoder(os.Stdout).Encode(map[string]any{

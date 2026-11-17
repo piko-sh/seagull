@@ -1,0 +1,323 @@
+[
+  {
+    "AllowedColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceExpression": "id"
+      },
+      {
+        "Name": "grp",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "grp",
+        "SourceExpression": "grp"
+      },
+      {
+        "Name": "score",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "score",
+        "SourceExpression": "score"
+      }
+    ],
+    "Command": "many",
+    "CountTemplate": "SELECT COUNT(*) FROM (SELECT ⟨c0:id⟩, ⟨c1:grp⟩, ⟨c2:score⟩ FROM items WHERE score IS NOT NULL ORDER BY score DESC LIMIT 10) AS result_rows⟨where⟩",
+    "DynamicRuntime": true,
+    "Filename": "builders.sql",
+    "Line": 1,
+    "Name": "TopItems",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "grp",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "grp",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "score",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "score",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      }
+    ],
+    "ReadOnly": true,
+    "ReadsResultRows": true,
+    "ResultShape": {
+      "Named": [
+        2
+      ]
+    },
+    "SQL": "-- sgl.query(name: TopItems, command: many, dynamic: runtime)\nSELECT id, grp, score FROM items WHERE score IS NOT NULL ORDER BY score DESC LIMIT 10;",
+    "Template": "SELECT * FROM (SELECT ⟨c0:id⟩, ⟨c1:grp⟩, ⟨c2:score⟩ FROM items WHERE score IS NOT NULL ORDER BY score DESC LIMIT 10) AS result_rows⟨where⟩⟨order⟩⟨pagination⟩;"
+  },
+  {
+    "AllowedColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceExpression": "id"
+      },
+      {
+        "Name": "grp",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "grp",
+        "SourceExpression": "grp"
+      }
+    ],
+    "Command": "many",
+    "CountTemplate": "SELECT COUNT(*) FROM (SELECT ⟨c0:id⟩, ⟨c1:grp⟩ FROM items ORDER BY id LIMIT ⟨p0⟩ OFFSET ⟨p1⟩) AS result_rows⟨where⟩⟨arguments p0 p1⟩",
+    "DynamicRuntime": true,
+    "Filename": "builders.sql",
+    "Line": 4,
+    "Name": "ItemPage",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "grp",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "grp",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "limit",
+        "Kind": "none",
+        "Name": "limit",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "offset",
+        "Kind": "none",
+        "Name": "offset",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "ReadsResultRows": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
+    "SQL": "-- sgl.query(name: ItemPage, command: many, dynamic: runtime)\nSELECT id, grp FROM items ORDER BY id LIMIT $1 OFFSET $2;",
+    "Template": "SELECT * FROM (SELECT ⟨c0:id⟩, ⟨c1:grp⟩ FROM items ORDER BY id LIMIT ⟨p0⟩ OFFSET ⟨p1⟩) AS result_rows⟨where⟩⟨order⟩⟨pagination⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "AllowedColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceExpression": "id"
+      },
+      {
+        "Name": "grp",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "grp",
+        "SourceExpression": "grp"
+      }
+    ],
+    "Command": "many",
+    "CountTemplate": "SELECT COUNT(*) FROM (SELECT ⟨c0:id⟩, ⟨c1:grp⟩ FROM items ORDER BY id OFFSET 5 ROWS FETCH FIRST 10 ROWS ONLY) AS result_rows⟨where⟩",
+    "DynamicRuntime": true,
+    "Filename": "builders.sql",
+    "Line": 7,
+    "Name": "LaterItems",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "grp",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "grp",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      }
+    ],
+    "ReadOnly": true,
+    "ReadsResultRows": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
+    "SQL": "-- sgl.query(name: LaterItems, command: many, dynamic: runtime)\nSELECT id, grp FROM items ORDER BY id OFFSET 5 ROWS FETCH FIRST 10 ROWS ONLY;",
+    "Template": "SELECT * FROM (SELECT ⟨c0:id⟩, ⟨c1:grp⟩ FROM items ORDER BY id OFFSET 5 ROWS FETCH FIRST 10 ROWS ONLY) AS result_rows⟨where⟩⟨order⟩⟨pagination⟩;"
+  },
+  {
+    "AllowedColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceExpression": "id"
+      },
+      {
+        "Name": "grp",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "grp",
+        "SourceExpression": "grp"
+      },
+      {
+        "Name": "score",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "score",
+        "SourceExpression": "score"
+      }
+    ],
+    "Command": "many",
+    "CountTemplate": "SELECT COUNT(*) FROM (SELECT DISTINCT ON (grp) ⟨c0:id⟩, ⟨c1:grp⟩, ⟨c2:score⟩ FROM items WHERE score IS NOT NULL ORDER BY grp, score DESC) AS result_rows⟨where⟩",
+    "DynamicRuntime": true,
+    "Filename": "builders.sql",
+    "Line": 10,
+    "Name": "BestPerGroup",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "grp",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "grp",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "score",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "score",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      }
+    ],
+    "ReadOnly": true,
+    "ReadsResultRows": true,
+    "ResultShape": {
+      "Named": [
+        1,
+        2
+      ]
+    },
+    "SQL": "-- sgl.query(name: BestPerGroup, command: many, dynamic: runtime)\nSELECT DISTINCT ON (grp) id, grp, score FROM items WHERE score IS NOT NULL ORDER BY grp, score DESC;",
+    "Template": "SELECT * FROM (SELECT DISTINCT ON (grp) ⟨c0:id⟩, ⟨c1:grp⟩, ⟨c2:score⟩ FROM items WHERE score IS NOT NULL ORDER BY grp, score DESC) AS result_rows⟨where⟩⟨order⟩⟨pagination⟩;"
+  }
+]

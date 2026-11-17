@@ -1,0 +1,4 @@
+{
+  "description": "SQLite 3.53's ALTER TABLE ADD [CONSTRAINT name] CHECK, DROP CONSTRAINT and ALTER COLUMN SET or DROP NOT NULL. Dropping a named NOT NULL lets the column hold NULL, dropping a named check removes it, and a named DEFAULT keeps its default.",
+  "expectedDiagnosticCount": 0
+}

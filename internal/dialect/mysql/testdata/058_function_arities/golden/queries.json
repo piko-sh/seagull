@@ -103,6 +103,7 @@
       },
       {
         "Name": "mapped",
+        "Nullable": true,
         "SQLType": {
           "Category": "integer",
           "EngineName": "bigint",
@@ -111,6 +112,7 @@
       },
       {
         "Name": "compat",
+        "Nullable": true,
         "SQLType": {
           "Category": "integer",
           "EngineName": "bigint",
@@ -173,7 +175,8 @@
         "Nullable": true,
         "SQLType": {
           "Category": "integer",
-          "EngineName": "bigint",
+          "EngineName": "bigint unsigned",
+          "Unsigned": true,
           "Width": 64
         }
       }

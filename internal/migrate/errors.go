@@ -58,6 +58,26 @@ var (
 	// then roll back.
 	ErrDirtyRollback = errors.New("cannot roll back while a migration is dirty")
 
+	// ErrSeedChangedSinceInterrupted is returned when a seed that stopped partway on an
+	// engine whose seeds cannot run in a transaction has changed since, so its completed
+	// statements cannot be told apart from the rest. Restore the seed as it was to resume
+	// it, or reseed.
+	ErrSeedChangedSinceInterrupted = errors.New("the seed stopped partway and has changed since")
+
+	// ErrTransactionControl rejects transaction commands in a migration file.
+	//
+	// The runner owns the migration transaction. A COMMIT inside the file would leave later
+	// statements and the history row outside it. A migration marked
+	// sgl.migration(no_transaction: true) is recorded statement by statement.
+	ErrTransactionControl = errors.New("a migration controls its own transaction")
+
+	// ErrSettingInsideTransaction rejects ineffective session setting changes.
+	//
+	// A setting such as SQLite's PRAGMA foreign_keys has no effect inside a transaction. The
+	// runner applies it before the transaction opens or after it commits, and rejects
+	// changes between other statements.
+	ErrSettingInsideTransaction = errors.New("a migration changes a setting the engine ignores inside its transaction")
+
 	// ErrInvalidConfig is returned by New and NewSeeder, and by the sqlexec constructors,
 	// for a configuration that cannot be used. It is the generator's sentinel of the same
 	// name.

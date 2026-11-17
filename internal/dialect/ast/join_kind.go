@@ -84,3 +84,41 @@ var (
 func (kind JoinKind) String() string {
 	return kind.Keyword
 }
+
+// LeavesRightMissing reports whether the join can keep a row of its left side with no row
+// of the source it brings in, as a LEFT or FULL join can, so every table of that source
+// may be missing from a result row.
+//
+// Returns bool which is true when the joined side's columns may be NULL.
+func (kind JoinKind) LeavesRightMissing() bool {
+	return kind.Nullable.Includes(JoinSideRight)
+}
+
+// EncloseGroup relabels the tables of a parenthesised join group that an outer join
+// brings in.
+//
+// Under an outer join that can leave the group missing, every table of the group may be
+// NULL whatever join brought it into the group, so each join, derived table and table
+// function inside the group takes the outer join's kind. Under any other outer join the
+// group keeps its own joins.
+//
+// Takes outer (JoinKind) which is the join that brings the group in.
+// Takes joins ([]JoinClause) which are the group's joins, relabelled in place.
+// Takes derived ([]RawDerivedTableReference) which are the group's derived tables,
+// relabelled in place.
+// Takes functions ([]RawTableValuedFunctionReference) which are the group's table
+// functions, relabelled in place.
+func EncloseGroup(outer JoinKind, joins []JoinClause, derived []RawDerivedTableReference, functions []RawTableValuedFunctionReference) {
+	if !outer.LeavesRightMissing() {
+		return
+	}
+	for index := range joins {
+		joins[index].Kind = outer
+	}
+	for index := range derived {
+		derived[index].JoinKind = outer
+	}
+	for index := range functions {
+		functions[index].JoinKind = outer
+	}
+}

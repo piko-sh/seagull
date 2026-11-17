@@ -1,0 +1,24 @@
+{
+  "MixedColumns": [
+    {
+      "number_or_text": "gull",
+      "small": -5,
+      "wide": -9
+    },
+    {
+      "number_or_text": "tern",
+      "small": 3,
+      "wide": 9
+    },
+    {
+      "number_or_text": "-5",
+      "small": 7,
+      "wide": 18446744073709551615
+    },
+    {
+      "number_or_text": "3",
+      "small": 4000000000,
+      "wide": 5
+    }
+  ]
+}

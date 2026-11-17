@@ -101,19 +101,108 @@ func proceduralBlock(leadingWords []string) bool {
 	return false
 }
 
-// requiresNoTransaction reports whether a statement cannot run inside a transaction: one
-// that mentions CONCURRENTLY (CREATE INDEX, DROP INDEX and REINDEX CONCURRENTLY) or one
-// that begins with VACUUM.
+// requiresNoTransaction reports whether a statement cannot run inside a transaction. That
+// is one that mentions CONCURRENTLY (CREATE INDEX, DROP INDEX and REINDEX CONCURRENTLY),
+// or one of the commands refusedInTransaction and alterRefusedInTransaction name.
 //
 // Takes tokens ([]sqllex.Token) which holds the statement's significant tokens.
 //
 // Returns bool which is true for such a statement.
 func requiresNoTransaction(tokens []sqllex.Token) bool {
-	if len(tokens) > 0 && tokens[0].IsWord("VACUUM") {
-		return true
+	if len(tokens) == 0 {
+		return false
 	}
 	for index := range tokens {
 		if tokens[index].IsWord("CONCURRENTLY") {
+			return true
+		}
+	}
+	return refusedInTransaction(tokens) || alterRefusedInTransaction(tokens)
+}
+
+// refusedInTransaction reports the commands PostgreSQL refuses inside a transaction
+// block: VACUUM, CREATE or DROP of a database or tablespace, REINDEX of a database or the
+// system catalogues, CLUSTER of every table and DISCARD ALL.
+//
+// Takes tokens ([]sqllex.Token) which are the statement's significant tokens.
+//
+// Returns bool which is true for such a command.
+func refusedInTransaction(tokens []sqllex.Token) bool {
+	switch {
+	case tokens[0].IsWord("VACUUM"):
+		return true
+	case tokens[0].IsWord("CREATE") || tokens[0].IsWord("DROP"):
+		return wordAt(tokens, 1, "DATABASE") || wordAt(tokens, 1, "TABLESPACE")
+	case tokens[0].IsWord("REINDEX"):
+		return wordAt(tokens, 1, "DATABASE") || wordAt(tokens, 1, "SYSTEM")
+	case tokens[0].IsWord("CLUSTER"):
+		return clustersEveryTable(tokens)
+	case tokens[0].IsWord("DISCARD"):
+		return wordAt(tokens, 1, "ALL")
+	default:
+		return false
+	}
+}
+
+// alterRefusedInTransaction reports the ALTER commands that cannot run usefully inside a
+// transaction.
+//
+// These are ALTER SYSTEM and ALTER DATABASE ... SET TABLESPACE, which PostgreSQL refuses
+// there, and ALTER TYPE ... ADD VALUE, whose new value the same transaction cannot use,
+// so the statements after it in the migration could not use it either.
+//
+// Takes tokens ([]sqllex.Token) which are the statement's significant tokens.
+//
+// Returns bool which is true for such a command.
+func alterRefusedInTransaction(tokens []sqllex.Token) bool {
+	if !tokens[0].IsWord("ALTER") {
+		return false
+	}
+	switch {
+	case wordAt(tokens, 1, "SYSTEM"):
+		return true
+	case wordAt(tokens, 1, "DATABASE"):
+		return followedBy(tokens, "SET", "TABLESPACE")
+	case wordAt(tokens, 1, "TYPE"):
+		return followedBy(tokens, "ADD", "VALUE")
+	default:
+		return false
+	}
+}
+
+// clustersEveryTable reports whether a CLUSTER statement names no table, written as
+// CLUSTER or CLUSTER VERBOSE, so it reclusters every table.
+//
+// Takes tokens ([]sqllex.Token) which are the statement's significant tokens.
+//
+// Returns bool which is true for such a statement.
+func clustersEveryTable(tokens []sqllex.Token) bool {
+	bare := len(tokens) == 1
+	verboseOnly := len(tokens) == 2 && tokens[1].IsWord("VERBOSE")
+	return bare || verboseOnly
+}
+
+// wordAt reports whether the token at an index is a given word.
+//
+// Takes tokens ([]sqllex.Token) which are the tokens.
+// Takes index (int) which is the position.
+// Takes word (string) which is the word, matched without regard to case.
+//
+// Returns bool which is true when the token is the word.
+func wordAt(tokens []sqllex.Token, index int, word string) bool {
+	return index < len(tokens) && tokens[index].IsWord(word)
+}
+
+// followedBy reports whether two words appear next to each other among the tokens.
+//
+// Takes tokens ([]sqllex.Token) which are the tokens.
+// Takes first (string) which is the first word.
+// Takes second (string) which is the word right after it.
+//
+// Returns bool which is true when the pair appears.
+func followedBy(tokens []sqllex.Token, first, second string) bool {
+	for index := 0; index+1 < len(tokens); index++ {
+		if tokens[index].IsWord(first) && tokens[index+1].IsWord(second) {
 			return true
 		}
 	}

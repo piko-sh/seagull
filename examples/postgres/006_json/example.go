@@ -48,27 +48,7 @@ type delivery struct {
 	Address string `json:"address"`
 }
 
-// run places three chip shop orders and reads them back. A JSONB column becomes the
-// generated store.JSON type, which holds the raw document as bytes: encode a value into
-// it with json.Marshal and decode it with json.Unmarshal. A nil store.JSON is SQL NULL.
-//
-// JSONB stores a parsed document, not the text it was sent, and writes it back in its own
-// form: a space after each comma and colon, keys reordered and duplicate keys dropped, so
-// compare documents by decoding them, not by their bytes.
-//
-// OrdersWithFish filters with ->>, which extracts a value as text, and selects with ->,
-// which extracts a JSONB fragment, so Extras is store.JSON again. DeliveryAddress is
-// *string because ->> gives NULL when the delivery column or its address is missing. The
-// ->> comparison's parameter is pinned with sgl.param(fish, type: text), as inference
-// leaves it as any. OrdersContaining uses @>, which matches a document containing the one
-// bound to $1::jsonb.
-//
-// The rows go straight out as JSON, as an HTTP handler would send them, so sgl.yaml
-// shapes the generated structs for that: go.json_tags writes each field's json tag in
-// camel case with omitempty, so delivery_address is "deliveryAddress" and a nil one is
-// left out; go.struct_tags adds a db tag holding the column's name, {name}, for libraries
-// that map columns by tag; and go.empty_slices makes a many method return an empty slice
-// when no row matches, which encodes as [] rather than null.
+// run places chip shop orders and reads their JSON data.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes output (io.Writer) which receives the decoded orders and the searches.
@@ -121,8 +101,8 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 	fmt.Fprintln(output, "\ncod orders:")
 	for _, order := range cod {
 		address := "collecting"
-		if order.DeliveryAddress != nil {
-			address = "to " + *order.DeliveryAddress
+		if order.DeliveryAddress.Valid {
+			address = "to " + order.DeliveryAddress.V
 		}
 		fmt.Fprintf(output, "  order %d  %-9s extras %-30s %s\n", order.ID, order.Customer, order.Extras, address)
 	}

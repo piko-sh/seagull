@@ -41,6 +41,12 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        0,
+        1
+      ]
+    },
     "SQL": "-- sgl.query(name: HourlyConditions, command: many)\nSELECT bucket, device_id, avg_temp FROM conditions_hourly ORDER BY bucket, device_id;",
     "Template": "SELECT ⟨c0:bucket⟩, ⟨c1:device_id⟩, ⟨c2:avg_temp⟩ FROM conditions_hourly ORDER BY bucket, device_id;"
   },
@@ -100,6 +106,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(name: RecentConditions, command: many)\nSELECT time, device_id, temperature FROM conditions WHERE time \u003e $1 ORDER BY time;",
     "Template": "SELECT ⟨c0:time⟩, ⟨c1:device_id⟩, ⟨c2:temperature⟩ FROM conditions WHERE time \u003e ⟨p0⟩ ORDER BY time;⟨arguments p0⟩"
   }

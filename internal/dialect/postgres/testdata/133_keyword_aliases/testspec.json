@@ -1,0 +1,4 @@
+{
+  "description": "PostgreSQL takes every keyword as an alias after AS but refuses those that are not bare labels, such as YEAR and WITHIN, written straight after a select item.",
+  "expectedDiagnosticCount": 2
+}

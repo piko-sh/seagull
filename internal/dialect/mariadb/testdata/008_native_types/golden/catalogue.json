@@ -10,7 +10,6 @@
           "Columns": [
             {
               "GeneratedKind": "none",
-              "HasDefault": true,
               "Name": "id",
               "Origin": {
                 "Filename": "001_schema.up.sql"
@@ -77,6 +76,17 @@
               "SQLType": {
                 "Category": "binary",
                 "EngineName": "vector"
+              }
+            }
+          ],
+          "Indexes": [
+            {
+              "Columns": [
+                "embedding"
+              ],
+              "Name": "embedding",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
               }
             }
           ],

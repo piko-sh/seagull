@@ -36,6 +36,12 @@ import (
 )
 
 // Open creates a SQLite connection and applies the supplied migrations.
+//
+// Takes files (fs.FS) which contains the migration files.
+// Takes path (string) which names the SQLite database file.
+//
+// Returns *sql.DB which owns the migrated connection and must be closed by the caller.
+// Returns error when the connection cannot be opened or migration fails.
 func Open(ctx context.Context, files fs.FS, path string) (*sql.DB, error) {
 	db, err := sql.Open("sqlite", "file:"+path)
 	if err != nil {
@@ -54,6 +60,11 @@ func Open(ctx context.Context, files fs.FS, path string) (*sql.DB, error) {
 }
 
 // Main runs one checkpoint against a disposable SQLite file.
+//
+// Takes files (fs.FS) which contains the migration files.
+// Takes run (func(context.Context, *sql.DB, io.Writer) error) which runs the checkpoint.
+//
+// Returns error when setup, migration, or the checkpoint fails.
 func Main(files fs.FS, run func(context.Context, *sql.DB, io.Writer) error) error {
 	directory, err := os.MkdirTemp("", "seagull-tutorial-")
 	if err != nil {

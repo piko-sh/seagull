@@ -96,7 +96,7 @@ func Replicas(t *testing.T, database *sql.DB, backend migrate.Backend, files fs.
 func RaceUp(t *testing.T, boots []Boot) []ReplicaResult {
 	t.Helper()
 
-	ctx, cancel := context.WithTimeoutCause(t.Context(), MigrationDeadline, errReplicaDeadline)
+	ctx, cancel := context.WithTimeoutCause(t.Context(), scaled(MigrationDeadline), errReplicaDeadline)
 	defer cancel()
 	return raceUp(ctx, boots)
 }

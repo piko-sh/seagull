@@ -19,8 +19,8 @@
 package clickhouse
 
 import (
-	"fmt"
 	"strconv"
+	"strings"
 
 	"seagull.sh/seagull/internal/dialect/ast"
 	"seagull.sh/seagull/internal/dialect/dialectkit"
@@ -28,6 +28,13 @@ import (
 )
 
 const (
+	// columnListAsOffset is the offset of AS from the last name of a CTE's column list.
+	columnListAsOffset = 2
+
+	// columnListBodyOffset is the offset of the parenthesis opening a CTE's body from the
+	// last name of its column list.
+	columnListBodyOffset = 3
+
 	// kwWhere is the WHERE clause keyword used as a stop token.
 	kwWhere = "WHERE"
 
@@ -244,6 +251,28 @@ var (
 	// It includes WINDOW because GROUP BY can precede WINDOW in the SELECT grammar.
 	stopGroupByClause = []string{kwGroup, kwHaving, kwOrder, kwLimit, kwOffset, kwSettings, kwFormat, kwUnion, kwIntersect, kwExcept, kwWindow, kwQualify}
 
+	// paginationValueStops lists the words that, met where a LIMIT or OFFSET value belongs,
+	// start another clause and so leave the value missing.
+	paginationValueStops = []string{
+		kwOffset, "FETCH", "FOR", kwUnion, kwIntersect, kwExcept, kwOrder, kwLimit,
+		kwReturning, kwWindow, "LOCK", kwSettings, kwFormat, kwWith, kwBy,
+	}
+
+	// groupByKeyStops lists the words that, met where the first GROUP BY key belongs, start
+	// another clause and so leave the key missing.
+	groupByKeyStops = []string{kwHaving, kwOrder, kwLimit, kwWindow, kwSettings, kwFormat, kwUnion, kwQualify, kwWith}
+
+	// aliasStopKeywords lists the words that, written straight after an expression or a
+	// relation, start a clause or a join rather than alias it.
+	aliasStopKeywords = []string{
+		kwFrom, kwWhere, kwGroup, kwHaving, kwOrder, kwLimit, kwOffset,
+		kwSettings, kwFormat, kwUnion, kwIntersect, kwExcept, kwJoin,
+		kwInner, kwLeft, kwRight, kwFull, kwCross, kwOn, "USING",
+		kwPrewhere, kwArray, kwFinal, "SAMPLE", kwAsof, kwSemi, kwAnti,
+		kwWindow, kwWith, "RECURSIVE", kwBy, kwTies, kwFill,
+		kwQualify, kwAny, kwAll, kwGlobal,
+	}
+
 	// projectionStopKeywords is the stop-keyword set that terminates a single projection
 	// item: the trailing alias keyword and every clause that can follow the SELECT list.
 	projectionStopKeywords = []string{kwAs, kwFrom, kwWhere, kwGroup, kwHaving, kwOrder, kwLimit, kwOffset, kwSettings, kwFormat, kwUnion, kwIntersect, kwExcept}
@@ -341,6 +370,12 @@ func (p *parser) analyseSelect() (*ast.RawQueryAnalysis, error) {
 	}
 	if err := p.analyseCompoundBranches(analysis); err != nil {
 		return nil, err
+	}
+	if p.strayItem != nil && p.syntaxError == nil {
+		p.recordSyntaxError(p.strayItem)
+	}
+	if p.analysisDepth == 1 && !p.AtEnd() && p.syntaxError == nil {
+		p.recordSyntaxError(dialectkit.NewParseError(p.Current(), "expected the end of the statement"))
 	}
 	if p.syntaxError != nil {
 		return nil, p.syntaxError
@@ -473,6 +508,8 @@ func (p *parser) parseGroupByBody(analysis *ast.RawQueryAnalysis) error {
 			return err
 		}
 		grouping.leftOut, grouping.modified = keys, true
+	case p.AtEnd() || p.IsKeyword(groupByKeyStops...):
+		return dialectkit.NewParseError(p.Current(), "expected a GROUP BY key")
 	default:
 		keys, err := p.parseGroupByColumns(analysis)
 		if err != nil {
@@ -610,62 +647,6 @@ func (p *parser) captureCTEMaterializedQualifier(definition *ast.RawCTEDefinitio
 	}
 }
 
-// parseSingleCTE consumes one CTE entry from the WITH list. Returns more=true when the
-// caller should keep iterating because a trailing comma promised another entry;
-// more=false otherwise.
-//
-// Recognises the optional trailing `MATERIALIZED` and `NOT MATERIALIZED` qualifiers the
-// parser accepts after the closing paren of the CTE body. When present the qualifier is
-// captured in the definition's detail.
-//
-// Takes analysis (*ast.RawQueryAnalysis), the analysis to populate with the parsed CTE.
-// Takes isRecursive (bool), the WITH RECURSIVE flag propagated from parseCTEList.
-//
-// Returns more (bool), true when another CTE follows.
-// Returns error when the entry is malformed.
-func (p *parser) parseSingleCTE(analysis *ast.RawQueryAnalysis, isRecursive bool) (more bool, err error) {
-	if p.Current().Kind != tokenIdentifier || !p.Peek().IsKeyword(tokenIdentifier, kwAs) || p.PeekAt(2).Kind != tokenLeftParen {
-		return p.parseExpressionAlias(analysis)
-	}
-	cteName, parseErr := p.parseIdentifierOrKeyword()
-	if parseErr != nil {
-		return false, parseErr
-	}
-	p.Advance()
-	body, bodyErr := p.collectParenthesised()
-	if bodyErr != nil {
-		return false, bodyErr
-	}
-	nested := p.newChildParser(body)
-	nestedAnalysis, nestedErr := nested.analyseSelect()
-	if nestedErr != nil {
-		return false, fmt.Errorf("CTE %q: %w", cteName, nestedErr)
-	}
-	definition := ast.RawCTEDefinition{
-		Name:             cteName,
-		ColumnNames:      nil,
-		OutputColumns:    nestedAnalysis.OutputColumns,
-		FromTables:       nestedAnalysis.FromTables,
-		JoinClauses:      nestedAnalysis.JoinClauses,
-		CompoundBranches: nestedAnalysis.CompoundBranches,
-		FromOrder:        nestedAnalysis.FromOrder,
-		Query:            nestedAnalysis,
-
-		ParameterReferences: nestedAnalysis.ParameterReferences,
-		IsRecursive:         isRecursive,
-		Detail:              nil,
-	}
-	p.captureCTEMaterializedQualifier(&definition)
-	p.mergeNestedParameterReferences(analysis, nested, nestedAnalysis)
-
-	analysis.CTEDefinitions = append(analysis.CTEDefinitions, definition)
-	if p.Current().Kind == tokenComma {
-		p.Advance()
-		return true, nil
-	}
-	return false, nil
-}
-
 // parseProjectionColumn reads one item of the SELECT list.
 //
 // The analysis is threaded through so a `{name:Type}` placeholder inside a projection
@@ -704,12 +685,16 @@ func (p *parser) parseProjectionColumn(analysis *ast.RawQueryAnalysis) (ast.RawO
 	if aliasAt >= 0 {
 		p.consumeTokensUntil(analysis, aliasAt, sqlmodel.ParameterContextComparison)
 	} else {
+		itemStart := p.Position
 		p.consumeExpressionUntilCommaOrKeyword(
 			analysis, sqlmodel.ParameterContextComparison,
 			projectionStopKeywords...,
 		)
+		if p.strayItem == nil && !p.wholeProjectionItem(itemStart, p.Position) {
+			p.strayItem = dialectkit.NewParseError(p.Tokens[itemStart], "expected each select item to be one expression with an optional alias")
+		}
 	}
-	alias, _, err := p.parseOptionalAlias()
+	alias, err := p.parseProjectionAlias()
 	if err != nil {
 		return ast.RawOutputColumn{}, err
 	}
@@ -723,6 +708,34 @@ func (p *parser) parseProjectionColumn(analysis *ast.RawQueryAnalysis) (ast.RawO
 		ColumnName: "",
 		IsStar:     false,
 	}, nil
+}
+
+// wholeProjectionItem reports whether the tokens from first to end are one expression and
+// an optional alias, so a scan that took stray words into a select item is caught.
+//
+// Takes first (int) which is the index of the item's first token.
+// Takes end (int) which is one past the index of its last token.
+//
+// Returns bool which is true when the item parses whole, or holds a subquery or cannot be
+// reparsed, which the scan leaves to the subquery's own analysis.
+func (p *parser) wholeProjectionItem(first, end int) bool {
+	for index := first; index+1 < end; index++ {
+		if p.Tokens[index].Kind == tokenLeftParen && (p.Tokens[index+1].IsKeyword(tokenIdentifier, "SELECT") || p.Tokens[index+1].IsKeyword(tokenIdentifier, "WITH")) {
+			return true
+		}
+	}
+	scratch, ok := p.reparser(first, end)
+	if !ok || scratch.AtEnd() {
+		return true
+	}
+	scratch.parseExpression()
+	if scratch.syntaxError != nil || scratch.missingOperand {
+		return false
+	}
+	if _, err := scratch.parseProjectionAlias(); err != nil {
+		return false
+	}
+	return scratch.AtEnd()
 }
 
 // tryParseStarProjection consumes a `*` or `table.*` star expansion when the cursor is
@@ -776,7 +789,7 @@ func (p *parser) tryParseStarProjection() (column ast.RawOutputColumn, ok bool) 
 func (p *parser) finaliseDirectColumnProjection(tableAlias string, columnName string, aliasNeedsAs bool) (ast.RawOutputColumn, error) {
 	alias := ""
 	if !aliasNeedsAs || p.IsKeyword(kwAs) {
-		parsed, _, err := p.parseOptionalAlias()
+		parsed, err := p.parseProjectionAlias()
 		if err != nil {
 			return ast.RawOutputColumn{}, err
 		}
@@ -868,6 +881,27 @@ func (p *parser) tryParseDirectColumnReference() (tableAlias string, columnName 
 	return first, second, true
 }
 
+// parseProjectionAlias reads an optional `[AS] alias` after a select item, refusing a
+// keyword ClickHouse refuses as an alias written straight after the item.
+//
+// Returns string which is the alias, or "" when none is present.
+// Returns error when the alias is refused or AS is followed by no alias.
+func (p *parser) parseProjectionAlias() (string, error) {
+	if word := p.Current().Keyword(tokenIdentifier); !p.IsKeyword(kwAs) && p.aliasKeywords.RefusesBare(word) && !p.isProjectionStop() {
+		return "", dialectkit.NewParseError(p.Current(), dialectkit.RefusalMessage(word))
+	}
+	alias, _, err := p.parseOptionalAlias()
+	return alias, err
+}
+
+// isProjectionStop reports whether the current token starts a clause or a join rather
+// than an alias written without AS.
+//
+// Returns bool which is true at such a keyword.
+func (p *parser) isProjectionStop() bool {
+	return p.IsKeyword(aliasStopKeywords...)
+}
+
 // parseOptionalAlias reads an optional `[AS] alias` after a projection-list expression.
 //
 // Without AS, the keyword rejection list covers every clause-starting word so downstream
@@ -894,14 +928,7 @@ func (p *parser) parseOptionalAlias() (string, bool, error) {
 		return "", hadAs, nil
 	}
 
-	if !hadAs && p.IsKeyword(
-		kwFrom, kwWhere, kwGroup, kwHaving, kwOrder, kwLimit, kwOffset,
-		kwSettings, kwFormat, kwUnion, kwIntersect, kwExcept, kwJoin,
-		kwInner, kwLeft, kwRight, kwFull, kwCross, kwOn, "USING",
-		kwPrewhere, kwArray, kwFinal, "SAMPLE", kwAsof, kwSemi, kwAnti,
-		kwWindow, kwWith, "RECURSIVE", kwBy, kwTies, kwFill,
-		kwQualify, kwAny, kwAll, kwGlobal,
-	) {
+	if !hadAs && p.isProjectionStop() {
 		return "", hadAs, nil
 	}
 	alias := p.Current().Value
@@ -987,7 +1014,7 @@ func (p *parser) parseFromTrailingModifiers(analysis *ast.RawQueryAnalysis) erro
 }
 
 // parseFromJoinChain processes the JOIN chain that may follow the initial table
-// reference.
+// reference. A comma joins the next source as CROSS JOIN does, as ClickHouse reads it.
 //
 // Each JOIN reads a fresh source and its ON or USING qualifier; ON predicates run through
 // the parameter tracker because ClickHouse parameters can appear in join conditions.
@@ -997,6 +1024,16 @@ func (p *parser) parseFromTrailingModifiers(analysis *ast.RawQueryAnalysis) erro
 // Returns error when a JOIN clause is malformed.
 func (p *parser) parseFromJoinChain(analysis *ast.RawQueryAnalysis) error {
 	for {
+		if p.Current().Kind == tokenComma {
+			p.Advance()
+			if _, err := p.parseRecordedFromSource(analysis, ast.JoinCross); err != nil {
+				return err
+			}
+			if err := p.parseFromTrailingModifiers(analysis); err != nil {
+				return err
+			}
+			continue
+		}
 		joinKind, matched := p.matchJoinKeyword()
 		if !matched {
 			return nil
@@ -1054,49 +1091,6 @@ func (p *parser) parseRecordedFromSource(analysis *ast.RawQueryAnalysis, joinKin
 	return added, nil
 }
 
-// parseJoinQualifier reads the ON or USING clause that follows a JOIN in the chain
-// parseFromJoinChain reads.
-//
-// Takes analysis (*ast.RawQueryAnalysis) which is the analysis to populate.
-//
-// Returns *ast.JoinUsing which describes the columns a USING clause merges, leading the
-// joined row as ClickHouse places them, or nil for an ON clause.
-// Returns error when the USING column list is malformed.
-func (p *parser) parseJoinQualifier(analysis *ast.RawQueryAnalysis) (*ast.JoinUsing, error) {
-	if p.MatchKeyword(kwOn) {
-		start := p.Position
-		p.consumeExpressionTrackingParams(analysis, sqlmodel.ParameterContextComparison, stopJoinOnClause...)
-		p.parseCondition(analysis, ast.ClauseJoinCondition, start)
-		return nil, nil
-	}
-	if !p.MatchKeyword("USING") {
-		return nil, nil
-	}
-	parenthesised := p.Current().Kind == tokenLeftParen
-	if parenthesised {
-		p.Advance()
-	}
-	var columns []string
-	for {
-		column, err := p.parseIdentifierOrKeyword()
-		if err != nil {
-			return nil, err
-		}
-		columns = append(columns, column)
-		if p.Current().Kind != tokenComma {
-			break
-		}
-		p.Advance()
-	}
-	if parenthesised {
-		if p.Current().Kind != tokenRightParen {
-			return nil, dialectkit.NewParseError(p.Current(), "expected ')' to close the USING column list")
-		}
-		p.Advance()
-	}
-	return &ast.JoinUsing{Columns: columns, Natural: false, Placement: ast.JoinColumnsLead}, nil
-}
-
 // parseFromSource reads one table reference in a FROM or JOIN clause, handling plain
 // tables, derived-table subqueries, and table-valued function calls.
 //
@@ -1118,6 +1112,9 @@ func (p *parser) parseFromSource(analysis *ast.RawQueryAnalysis, joinKind ast.Jo
 	if p.Current().Kind == tokenLeftParen {
 		return p.parseFromTableValuedFunction(analysis, joinKind, first)
 	}
+	if err := p.refuseBareAliasAfterFrom(first); err != nil {
+		return err
+	}
 	alias, _, aliasErr := p.parseOptionalAlias()
 	if aliasErr != nil {
 		return aliasErr
@@ -1128,6 +1125,20 @@ func (p *parser) parseFromSource(analysis *ast.RawQueryAnalysis, joinKind ast.Jo
 		Schema: "",
 	}, joinKind)
 	return nil
+}
+
+// refuseBareAliasAfterFrom refuses an alias without AS after an unqualified table named
+// from, quoted in any case, which ClickHouse reads as a syntax error. Every other table
+// name takes one.
+//
+// Takes name (string) which is the table name just read.
+//
+// Returns error when an alias without AS follows a table named from.
+func (p *parser) refuseBareAliasAfterFrom(name string) error {
+	if !strings.EqualFold(name, kwFrom) || p.Current().Kind != tokenIdentifier || p.IsKeyword(kwAs) || p.isProjectionStop() {
+		return nil
+	}
+	return dialectkit.NewParseError(p.Current(), "ClickHouse takes an alias after a table named from only with AS")
 }
 
 // parseFromDerivedSubquery handles `(SELECT ...) [AS] alias` derived table references.
@@ -1153,11 +1164,17 @@ func (p *parser) parseFromDerivedSubquery(analysis *ast.RawQueryAnalysis, joinKi
 	if aliasErr != nil {
 		return aliasErr
 	}
+	var columnNames []string
+	if alias != "" && p.Current().Kind == tokenLeftParen {
+		if columnNames, aliasErr = p.parseInsertColumnList(); aliasErr != nil {
+			return aliasErr
+		}
+	}
 	p.mergeNestedParameterReferences(analysis, nested, nestedAnalysis)
 	analysis.RawDerivedTables = append(analysis.RawDerivedTables, ast.RawDerivedTableReference{
 		InnerQuery:  nestedAnalysis,
 		Alias:       alias,
-		ColumnNames: nil,
+		ColumnNames: columnNames,
 		JoinKind:    joinKind,
 		Using:       nil,
 	})
@@ -1409,6 +1426,11 @@ func (p *parser) matchRowsKeyword() {
 // Returns limitValue which locates the value's parameter references.
 func (p *parser) consumeLimitValue(analysis *ast.RawQueryAnalysis, context sqlmodel.ParameterContext, stopKeywords []string) limitValue {
 	value := limitValue{firstReference: len(analysis.ParameterReferences), placeholderOnly: false}
+	analysis.RowLimited = true
+	if p.missingPaginationValue() {
+		p.recordSyntaxError(dialectkit.NewParseError(p.Current(), "expected a row count"))
+		return value
+	}
 	start := p.Position
 	p.consumeExpressionTrackingParamsCommaAware(analysis, sqlmodel.ParameterContextComparison, stopKeywords...)
 	value.placeholderOnly = p.Position == start+1 && p.Tokens[start].Kind == tokenClickHouseParam
@@ -1416,8 +1438,17 @@ func (p *parser) consumeLimitValue(analysis *ast.RawQueryAnalysis, context sqlmo
 	return value
 }
 
-// matchCompoundOperator recognises UNION ALL, UNION DISTINCT, INTERSECT, and EXCEPT and
-// consumes the operator tokens.
+// missingPaginationValue reports whether a LIMIT or OFFSET has no value. That is so when
+// the statement ends, a parenthesis closes, or a clause starts where the value belongs.
+//
+// Returns bool which is true when the value is missing.
+func (p *parser) missingPaginationValue() bool {
+	return p.AtEnd() || p.Current().Kind == tokenRightParen || p.Current().Kind == tokenComma ||
+		p.IsKeyword(paginationValueStops...)
+}
+
+// matchCompoundOperator recognises UNION, INTERSECT and EXCEPT, each with an optional ALL
+// or DISTINCT, and consumes the operator tokens.
 //
 // Returns ast.CompoundOperator which is the matched operator enum value.
 // Returns bool which is true when an operator was consumed.
@@ -1430,11 +1461,21 @@ func (p *parser) matchCompoundOperator() (ast.CompoundOperator, bool) {
 		p.MatchKeyword("DISTINCT")
 		return ast.CompoundUnion, true
 	case p.MatchKeyword("INTERSECT"):
+		p.matchQuantifier()
 		return ast.CompoundIntersect, true
 	case p.MatchKeyword("EXCEPT"):
+		p.matchQuantifier()
 		return ast.CompoundExcept, true
 	}
 	return 0, false
+}
+
+// matchQuantifier consumes an ALL or DISTINCT after INTERSECT or EXCEPT. Both forms give
+// the same columns, so the analysis does not record which was written.
+func (p *parser) matchQuantifier() {
+	if !p.MatchKeyword("ALL") {
+		p.MatchKeyword("DISTINCT")
+	}
 }
 
 // topLevelElements splits a token list at its commas outside any parentheses.

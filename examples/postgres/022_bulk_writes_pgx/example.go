@@ -53,8 +53,7 @@ func (reporter batchReporter) SendBatch(ctx context.Context, batch *pgx.Batch) p
 	return reporter.Pool.SendBatch(ctx, batch)
 }
 
-// run records a week of readings from one tide gauge with a batch query and loads the
-// other gauge's week with a copyfrom query, then summarises what landed in the table.
+// run batches tide gauge readings with pgx and summarizes the stored rows.
 //
 // Takes pool (*pgxpool.Pool) which is a pool on a migrated database.
 // Takes output (io.Writer) which receives each write and the summary.
@@ -107,9 +106,9 @@ func run(ctx context.Context, pool *pgxpool.Pool, output io.Writer) error {
 func tideReadings(station string) []store.RecordReadingsParams {
 	readings := make([]store.RecordReadingsParams, 0, minutesPerWeek)
 	for minute := range int64(minutesPerWeek) {
-		var note *string
+		var note store.Null[string]
 		if minute%60 == 0 {
-			note = new(fmt.Sprintf("hour %d check", minute/60))
+			note = store.NullOf(fmt.Sprintf("hour %d check", minute/60))
 		}
 		readings = append(readings, store.RecordReadingsParams{
 			Station:  station,

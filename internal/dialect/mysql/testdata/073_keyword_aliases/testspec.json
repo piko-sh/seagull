@@ -1,0 +1,4 @@
+{
+  "description": "MySQL refuses its reserved words, such as INTERVAL and RANK, as an alias, after AS or not, unless quoted, and takes unreserved keywords such as STATUS.",
+  "expectedDiagnosticCount": 2
+}

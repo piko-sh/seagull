@@ -25,6 +25,7 @@ import (
 	"seagull.sh/seagull/internal/emit"
 	"seagull.sh/seagull/internal/emit/emitkit"
 	"seagull.sh/seagull/internal/gogen"
+	"seagull.sh/seagull/internal/gogen/methods"
 	"seagull.sh/seagull/internal/sqlmodel"
 )
 
@@ -35,12 +36,16 @@ const (
 
 var (
 	_ emit.CheckerPort = (*Emitter)(nil)
+
+	_ emit.NullTypePort = (*Emitter)(nil)
 )
 
 // Check reports request shapes that pgx cannot read, bind or copy.
 //
 // CopyFrom requires one INSERT row of lone placeholders with no clause after it, and
-// excludes enum arrays and types pgx writes in binary only once registered. Statement
+// excludes enum arrays and types pgx writes in binary only once registered. A query is
+// refused when its clauses use a column the select list casts to text. That covers use by
+// output name, by position, through DISTINCT or in a compound statement. Statement
 // batches can queue any statement. A parameter that is an array of a composite type is
 // refused, since pgx encodes it only once the connection registers the type, and so is a
 // value whose type nests deeper than generated code follows.
@@ -51,7 +56,9 @@ var (
 // Returns []emit.Problem which holds the problems, or nil when there are none.
 func (*Emitter) Check(request *emit.Request) []emit.Problem {
 	problems := emitkit.CheckTypeDepth(request)
+	emission := gogen.NewEmission(request, pgxDriver(request))
 	for _, query := range request.Queries {
+		problems = append(problems, methods.CheckRewrittenShapes(emission, query)...)
 		if query.Command == sqlmodel.QueryCommandCopyFrom {
 			problems = append(problems, copyFromProblems(request, query)...)
 			continue
@@ -60,6 +67,14 @@ func (*Emitter) Check(request *emit.Request) []emit.Problem {
 		problems = append(problems, compositeArrayProblems(request, query)...)
 	}
 	return problems
+}
+
+// DeclaresNullType reports that the emitter declares the generated Null type and reads
+// and binds nullable values as it.
+//
+// Returns bool which is always true.
+func (*Emitter) DeclaresNullType() bool {
+	return true
 }
 
 // compositeArrayProblems reports arrays of composite or table row types whose Go types

@@ -184,11 +184,12 @@ func (p *parser) parseReturningIfPresent(analysis *ast.RawQueryAnalysis) error {
 
 // recordCollectedReferences marks a SELECT analysis read-only and attaches the
 // parameters, derived tables, predicate subqueries, and table-valued functions the parser
-// has collected so far.
+// has collected so far, and whether a LIMIT or OFFSET bounds its rows.
 //
 // Takes analysis (*ast.RawQueryAnalysis) which receives the collected references.
 func (p *parser) recordCollectedReferences(analysis *ast.RawQueryAnalysis) {
 	analysis.ReadOnly = true
+	analysis.RowLimited = analysis.RowLimited || p.rowLimited
 	analysis.ParameterReferences = p.parameterReferences
 	analysis.RawDerivedTables = p.rawDerivedTables
 	analysis.PredicateSubqueries = p.predicateSubqueries
@@ -213,7 +214,12 @@ func (p *parser) parseSelectBody(analysis *ast.RawQueryAnalysis) error {
 	if p.IsKeyword(keywordGROUP) {
 		start := p.Position
 		p.Advance()
-		p.MatchKeyword("BY")
+		if !p.MatchKeyword("BY") {
+			p.recordSyntaxError(dialectkit.NewParseError(p.Current(), "expected BY after GROUP"))
+		}
+		if p.AtEnd() || p.IsKeyword(keywordHAVING, keywordORDER, keywordLIMIT, "WINDOW", keywordUNION, keywordINTERSECT, keywordEXCEPT) {
+			p.recordSyntaxError(dialectkit.NewParseError(p.Current(), "expected a GROUP BY key"))
+		}
 		groupByColumns := p.parseGroupByList()
 		analysis.GroupByColumns = groupByColumns
 		dialectkit.RecordTokenRange(p.spans, dialectkit.SpanGroupBy, p.Tokens, start, p.Position)
@@ -279,9 +285,12 @@ func (p *parser) parseSelectTrailer() {
 	if p.IsKeyword(keywordORDER) {
 		start := p.Position
 		p.Advance()
-		p.MatchKeyword("BY")
+		if !p.MatchKeyword("BY") {
+			p.recordSyntaxError(dialectkit.NewParseError(p.Current(), "expected BY after ORDER"))
+		}
 		listStart := p.Position
 		p.parseOrderByList()
+		p.checkSortList(listStart, p.Position)
 		p.recordClauseExpressions(ast.ClauseOrderBy, p.reparse(listStart, p.Position, true, true))
 		dialectkit.RecordTokenRange(p.spans, dialectkit.SpanOrderBy, p.Tokens, start, p.Position)
 	}
@@ -782,12 +791,18 @@ func (p *parser) parseSelectItem() (ast.RawOutputColumn, error) {
 
 	p.aliasStart = p.Position
 	if p.MatchKeyword(keywordAS) {
+		if word := p.Current().Keyword(tokenIdentifier); nonExpressionKeywords[word] || reservedOperandKeywords[word] {
+			return ast.RawOutputColumn{}, dialectkit.NewParseError(p.Current(), "SQLite reserves "+word+"; quote it to use it as an alias")
+		}
 		alias, aliasError := p.parseIdentifierOrKeyword()
 		if aliasError != nil {
 			return ast.RawOutputColumn{}, aliasError
 		}
 		column.Name = alias
 	} else if p.Current().Kind == tokenIdentifier && !p.isSelectTerminator() {
+		if word := p.Current().Keyword(tokenIdentifier); nonExpressionKeywords[word] || reservedOperandKeywords[word] || bareAliasKeywords[word] {
+			return ast.RawOutputColumn{}, dialectkit.NewParseError(p.Current(), "SQLite reserves "+word+" after a select item; quote it to use it as an alias")
+		}
 		column.Name = p.Advance().Value
 	}
 

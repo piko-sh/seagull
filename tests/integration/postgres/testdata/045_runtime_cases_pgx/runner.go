@@ -57,7 +57,7 @@ func run() error {
 		return fmt.Errorf("UpsertItems again: %w", err)
 	}
 	calm, stormy := db.MoodCalm, db.MoodStormy
-	for _, change := range []db.SetMoodParams{{ID: 1, Mood: &calm}, {ID: 2, Mood: &stormy}, {ID: 3, Mood: nil}} {
+	for _, change := range []db.SetMoodParams{{ID: 1, Mood: db.NullOf(calm)}, {ID: 2, Mood: db.NullOf(stormy)}, {ID: 3, Mood: db.Null[db.Mood]{}}} {
 		if _, err := queries.SetMood(ctx, change); err != nil {
 			return fmt.Errorf("SetMood %d: %w", change.ID, err)
 		}
@@ -117,7 +117,7 @@ func run() error {
 	}
 	output["entries"] = entries
 
-	copiedItems, err := queries.CopyItems(ctx, []db.CopyItemsParams{{ID: 10, Kind: "delta", Mood: &stormy}, {ID: 11, Kind: "epsilon", Mood: nil}})
+	copiedItems, err := queries.CopyItems(ctx, []db.CopyItemsParams{{ID: 10, Kind: "delta", Mood: db.NullOf(stormy)}, {ID: 11, Kind: "epsilon", Mood: db.Null[db.Mood]{}}})
 	if err != nil {
 		return fmt.Errorf("CopyItems: %w", err)
 	}

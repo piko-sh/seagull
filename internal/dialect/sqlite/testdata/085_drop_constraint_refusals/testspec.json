@@ -1,0 +1,4 @@
+{
+  "description": "SQLite 3.54 refuses to drop a primary key or unique constraint by its name, on the column or the table (constraint may not be dropped), and a name the table does not have, including one already dropped (no such constraint), as SQLite 3.54.1 reports them.",
+  "expectedDiagnosticCount": 6
+}

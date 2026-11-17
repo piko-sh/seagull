@@ -26,7 +26,7 @@ LEFT JOIN authors a ON a.id = b.author_id;
 ```
 
 Even if `authors.name` is `NOT NULL`, the join can find no author. The query's name field
-therefore needs to represent NULL, usually as `*string`, while the table model keeps a
+therefore needs to represent NULL, usually as `Null[string]`, while the table model keeps a
 plain `string`. CTEs and derived tables carry the same distinction: their projections
 are resolved in the scope where they are used.
 

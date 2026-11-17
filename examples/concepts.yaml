@@ -306,7 +306,7 @@ concepts:
       sqlite: {status: variant}
       postgres: {status: variant}
       postgres-pgx: {status: omitted}
-      cockroachdb: {status: equivalent, twin: postgres}
+      cockroachdb: {status: variant}
       timescaledb: {status: equivalent, twin: postgres}
       mysql: {status: variant}
       mariadb: {status: variant}

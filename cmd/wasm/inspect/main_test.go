@@ -107,7 +107,7 @@ func TestBatchWritesAMirrorTree(t *testing.T) {
 	require.Zero(t, response.DurationMS)
 	require.Empty(t, response.Stages)
 	require.NoFileExists(t, filepath.Join(project, inspectFile))
-	require.Contains(t, stderr.String(), "3 files, 3 queries, 0 errors")
+	require.Contains(t, stderr.String(), "5 files, 3 queries, 0 errors")
 }
 
 func TestStartersWritesOneFilePerDialect(t *testing.T) {
@@ -154,11 +154,11 @@ func TestBatchWritesEachProjectsInspectJSONBesideIt(t *testing.T) {
 	}{
 		{
 			name: "a project the playground runs", files: starter, flags: nil,
-			messages: []string{"3 files, 3 queries, 0 errors"}, status: exitOK, timed: false,
+			messages: []string{"5 files, 3 queries, 0 errors"}, status: exitOK, timed: false,
 		},
 		{
 			name: "a project the playground runs, with its timings kept", files: starter, flags: []string{"-timings"},
-			messages: []string{"3 files, 3 queries, 0 errors"}, status: exitOK, timed: true,
+			messages: []string{"5 files, 3 queries, 0 errors"}, status: exitOK, timed: true,
 		},
 		{
 			name: "a project the playground cannot run",

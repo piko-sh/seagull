@@ -387,7 +387,7 @@ func (t *tokeniser) readNumber() (token, error) {
 // Returns error which is always nil for the unquoted identifier path.
 func (t *tokeniser) readIdentifier() (token, error) {
 	startPosition := t.position
-	t.advanceOverIdentifierBody()
+	t.advanceOverIdentifier()
 	return t.emit(tokenIdentifier, startPosition, t.input[startPosition:t.position]), nil
 }
 
@@ -431,7 +431,7 @@ func (t *tokeniser) readDollarToken() (token, error) {
 
 	if !t.opensDollarQuote() && isIdentStart(t.runeAt(startPosition+1)) {
 		t.position++
-		t.advanceOverIdentifierBody()
+		t.advanceOverDollarName()
 		return t.emit(tokenNamedParam, startPosition, t.input[startPosition:t.position]), nil
 	}
 
@@ -502,7 +502,7 @@ func (t *tokeniser) readDollarQuoteTag() (string, bool) {
 	}
 
 	tagStart := t.position
-	t.advanceOverIdentifierBody()
+	t.advanceOverDollarName()
 	if t.position >= len(t.input) || t.input[t.position] != '$' {
 		return "", false
 	}
@@ -533,7 +533,7 @@ func (t *tokeniser) readColonToken() (token, error) {
 
 	if t.position+1 < len(t.input) && isIdentStart(t.runeAt(t.position+1)) && !t.followsOperand(startPosition) {
 		t.position++
-		t.advanceOverIdentifierBody()
+		t.advanceOverIdentifier()
 		return t.emit(tokenNamedParam, startPosition, t.input[startPosition:t.position]), nil
 	}
 
@@ -552,7 +552,7 @@ func (t *tokeniser) followsOperand(offset int) bool {
 		return false
 	}
 	previous, _ := utf8.DecodeLastRuneInString(t.input[:offset])
-	return isIdentPart(previous) || strings.ContainsRune(`'")]}`, previous)
+	return isIdentPart(previous) || strings.ContainsRune(`$'")]}`, previous)
 }
 
 // runeAt decodes the UTF-8 rune that begins at the given byte offset. When the offset is
@@ -571,14 +571,26 @@ func (t *tokeniser) runeAt(offset int) rune {
 	return character
 }
 
-// advanceOverIdentifierBody moves the cursor forward over every rune that may appear in
-// an identifier body, advancing by UTF-8 rune width so that multi-byte codepoints are not
-// truncated mid-codepoint. The cursor stops on the first rune that cannot continue an
-// identifier, or at the end of the input.
-func (t *tokeniser) advanceOverIdentifierBody() {
+// advanceOverIdentifier consumes the body of an unquoted identifier or a colon parameter
+// name. Dollar signs can continue these names, and UTF-8 runes remain intact.
+func (t *tokeniser) advanceOverIdentifier() {
+	t.advanceWhile(func(character rune) bool { return isIdentPart(character) || character == '$' })
+}
+
+// advanceOverDollarName consumes the body of a dollar parameter name or a dollar-quote
+// tag. A dollar sign ends these names, and UTF-8 runes remain intact.
+func (t *tokeniser) advanceOverDollarName() {
+	t.advanceWhile(isIdentPart)
+}
+
+// advanceWhile moves the cursor over each rune the predicate accepts, stepping by UTF-8
+// rune width so no codepoint is cut.
+//
+// Takes accepts (func(rune) bool) which reports whether a rune continues the name.
+func (t *tokeniser) advanceWhile(accepts func(rune) bool) {
 	for t.position < len(t.input) {
 		character, width := utf8.DecodeRuneInString(t.input[t.position:])
-		if !isIdentPart(character) {
+		if !accepts(character) {
 			break
 		}
 		t.position += width

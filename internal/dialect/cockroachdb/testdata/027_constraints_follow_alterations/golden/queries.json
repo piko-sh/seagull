@@ -1,0 +1,67 @@
+[
+  {
+    "Command": "exec",
+    "Filename": "pets.sql",
+    "InsertColumns": [
+      "id",
+      "tag",
+      "account",
+      "weight"
+    ],
+    "InsertTarget": {
+      "Name": "pets"
+    },
+    "Line": 1,
+    "Name": "AddPet",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "tag",
+        "Nullable": true,
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "account",
+        "Nullable": true,
+        "Number": 3,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "weight",
+        "Nullable": true,
+        "Number": 4,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: AddPet, command: exec)\nINSERT INTO pets (id, tag, account, weight) VALUES ($1, $2, $3, $4);",
+    "Template": "INSERT INTO pets (id, tag, account, weight) VALUES ⟨values:(⟨p0⟩, ⟨p1⟩, ⟨p2⟩, ⟨p3⟩)⟩;⟨arguments p0 p1 p2 p3⟩"
+  }
+]

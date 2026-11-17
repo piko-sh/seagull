@@ -68,7 +68,9 @@ func TestConnectionBackends(t *testing.T) {
 		backend, err := opened.backend()
 		require.NoError(t, err, testCase.dialect)
 		assert.Equal(t, "app_seeds", backend.Names().Seeds, testCase.dialect)
-		assert.Len(t, opened.bookkeepingTables(), 4)
+		assert.Subset(t, opened.bookkeepingTables(), []string{"app_migration_lock_lease", "app_seed_lock_lease", "app_seeds_progress"},
+			"%s: the lease and seed progress tables are the runtime's own", testCase.dialect)
+		assert.Len(t, opened.bookkeepingTables(), 7)
 	}
 
 	for dialectName, wantUnsupported := range map[string]bool{"cockroachdb": true, "postgres": false, "duckdb": true} {

@@ -1,0 +1,7 @@
+{
+  "description": "Through the native driver, which scans a value only into its exact Go type, a UNION of a UInt32 and an Int32 reads as an Int64, and of an Int8 and a UInt8 as an Int16, as the server types them, and a UNION of a UInt64 and an Int64, which have no common type, is warned about with Q063 (the runner does not call it, since the server refuses it unless use_variant_as_common_type is set). greatest and least type as the server does: a UInt32 and an Int32 as an Int64, a UInt64 and an Int8 as an Int128, and greatest of a UInt64 and an Int64 as the UInt64.",
+  "expectedDiagnostics": [
+    "Q063"
+  ],
+  "emitter": "native"
+}

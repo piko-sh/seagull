@@ -57,6 +57,18 @@ func sglClickHouseShapedValue(value any, shape sglClickHouseShape) string {
 	return text
 }
 
+func sglClickHouseFloatValue(value any, shape string, named bool) any {
+	current, err := sglClickHouseFollow(reflect.ValueOf(value), 0)
+	if err == nil && !current.IsValid() {
+		return "NULL"
+	}
+	text := sglClickHouseValue(value, shape)
+	if named {
+		return sglClickHouseTextEscaper.Replace(text)
+	}
+	return text
+}
+
 func sglClickHouseWhole(value reflect.Value, shape sglClickHouseShape) (string, error) {
 	current, err := sglClickHouseFollow(value, 0)
 	if err != nil {
@@ -97,7 +109,7 @@ func sglClickHouseAppendElement(text []byte, value reflect.Value, shape sglClick
 	if err != nil {
 		return nil, err
 	}
-	if shape.kind == 'n' {
+	if shape.kind == 'n' || shape.kind == 'f' || shape.kind == 'F' {
 		return append(text, scalar...), nil
 	}
 	text = append(text, '\'')
@@ -128,17 +140,36 @@ func sglClickHouseAppendNumber(text []byte, value reflect.Value) []byte {
 }
 
 func sglClickHouseFollow(value reflect.Value, depth int) (reflect.Value, error) {
-	for value.IsValid() && (value.Kind() == reflect.Pointer || value.Kind() == reflect.Interface) {
-		if value.IsNil() {
-			return reflect.Value{}, nil
+	for value.IsValid() {
+		switch {
+		case value.Kind() == reflect.Pointer || value.Kind() == reflect.Interface:
+			if value.IsNil() {
+				return reflect.Value{}, nil
+			}
+			value = value.Elem()
+		case sglClickHouseHoldsNull(value):
+			if !value.FieldByName("Valid").Bool() {
+				return reflect.Value{}, nil
+			}
+			value = value.Field(0)
+		default:
+			return value, nil
 		}
 		depth++
 		if depth > sglClickHouseMaxDepth {
 			return reflect.Value{}, fmt.Errorf("%w: it nests more than %d levels deep or refers to itself", errSglClickHouseValue, sglClickHouseMaxDepth)
 		}
-		value = value.Elem()
 	}
 	return value, nil
+}
+
+func sglClickHouseHoldsNull(value reflect.Value) bool {
+	if value.Kind() != reflect.Struct || value.NumField() != 2 || !strings.HasPrefix(value.Type().Name(), "Null[") {
+		return false
+	}
+	valid := value.Type().Field(1)
+	held := value.Type().Field(0).Name
+	return held == "V" && valid.Name == "Valid" && valid.Type.Kind() == reflect.Bool
 }
 
 func sglClickHouseResolve(value reflect.Value, shape sglClickHouseShape) sglClickHouseShape {
@@ -289,7 +320,10 @@ func sglClickHouseTupleElements(value reflect.Value, shape sglClickHouseShape) (
 }
 
 func sglClickHouseScalar(value reflect.Value, shape sglClickHouseShape) (string, error) {
-	if shape.kind == '4' || shape.kind == '6' {
+	switch shape.kind {
+	case 'f', 'F':
+		return sglClickHouseFloatBits(value, shape.kind == 'F')
+	case '4', '6':
 		address, isAddress, failure := sglClickHouseAddress(value, shape.kind)
 		if failure != "" {
 			return "", fmt.Errorf("%w: %s", errSglClickHouseValue, failure)
@@ -351,7 +385,12 @@ func sglClickHouseTime(moment time.Time, shape sglClickHouseShape) (string, erro
 	case 'd':
 		return moment.Format("2006-01-02"), nil
 	case 't':
-		return sglClickHouseEpoch(moment, shape.digits), nil
+		epoch := sglClickHouseEpoch(moment, shape.digits)
+		if strings.HasPrefix(epoch, "-0.") {
+			return "", fmt.Errorf("%w: %s is less than a second before 1970, and ClickHouse reads the Unix time %s as after 1970, so it cannot be sent faithfully",
+				errSglClickHouseValue, moment.UTC().Format(time.RFC3339Nano), epoch)
+		}
+		return epoch, nil
 	case 'q':
 		return moment.Format(time.RFC3339Nano), nil
 	default:
@@ -507,7 +546,7 @@ func sglClickHouseReadShape(text string, depth int) (sglClickHouseShape, string,
 	}
 	shape.kind, text = text[0], text[1:]
 	switch shape.kind {
-	case 'q', 'n', 'd', 'a', '4', '6':
+	case 'q', 'n', 'd', 'a', '4', '6', 'f', 'F':
 		return shape, text, nil
 	case 't':
 		shape.digits = 0
@@ -582,4 +621,34 @@ func sglClickHouseReadName(text string) (name string, rest string, err error) {
 		break
 	}
 	return "", "", fmt.Errorf("%w: a tuple field's name is not closed by '=", errSglClickHouseShape)
+}
+
+func sglClickHouseNumberText(value reflect.Value) (string, error) {
+	if sglClickHouseIsNumber(value) {
+		return sglClickHouseNumber(value), nil
+	}
+	return sglClickHouseText(value)
+}
+
+func sglClickHouseFloatBits(value reflect.Value, narrow bool) (string, error) {
+	const floatBits = 64
+	const decimalBase = 10
+	var number float64
+	if value.Kind() == reflect.Float32 || value.Kind() == reflect.Float64 {
+		number = value.Float()
+	} else {
+		text, err := sglClickHouseNumberText(value)
+		if err != nil {
+			return "", err
+		}
+		parsed, err := strconv.ParseFloat(text, floatBits)
+		if err != nil {
+			return "", fmt.Errorf("%w: %w", errSglClickHouseValue, err)
+		}
+		number = parsed
+	}
+	if narrow {
+		return strconv.FormatUint(uint64(math.Float32bits(float32(number))), decimalBase), nil
+	}
+	return strconv.FormatUint(math.Float64bits(number), decimalBase), nil
 }

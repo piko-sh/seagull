@@ -27,26 +27,7 @@ import (
 	"seagull.sh/seagull/examples/mysql/039_mysql_dialect_features/internal/store"
 )
 
-// run keeps a harbour's register with SQL that only MySQL and MariaDB speak, and prints
-// what each statement did:
-//
-//   - kit is a SET column, which holds any number of the values it lists. It maps to a
-//     string of the chosen values joined by commas, and MySQL stores them in the order
-//     the SET lists them, once each. FIND_IN_SET looks one up;
-//   - crossings is INT UNSIGNED, so Crossings is a uint32, and berth is TINYINT UNSIGNED,
-//     so Berth is a uint8;
-//   - RegisterBoat is INSERT IGNORE: a registration already on the books counts 0 rows
-//     instead of failing. IGNORE turns other errors into warnings too, so a kit item the
-//     SET does not list is dropped without a word;
-//   - AssignBerth is REPLACE INTO, which deletes every row that clashes with the new one
-//     on any unique key, then inserts it. execrows counts the deleted rows as well;
-//   - Harbour gathers each boat's crew into one string with GROUP_CONCAT, which is NULL
-//     for a boat with no crew. The crew's `rank` column is quoted with backticks, as RANK
-//     is a reserved word since MySQL 8.0;
-//   - boats documents itself with MySQL's COMMENT, after a column's definition and as the
-//     table's COMMENT = option. sgl.yaml sets go.doc_comments, so they become the doc
-//     comments of the Boats model and its Kit and Crossings fields: open internal/store
-//     to see them.
+// run records and reads harbour data with MySQL-specific SQL.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes output (io.Writer) which receives what each statement did.
@@ -125,8 +106,8 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 	}
 	for _, boat := range harbour {
 		crewList := "no crew"
-		if boat.Crew != nil {
-			crewList = *boat.Crew
+		if boat.Crew.Valid {
+			crewList = boat.Crew.V
 		}
 		fmt.Fprintf(output, "GROUP_CONCAT   %s %-10s crossings %d (%T), crew: %s\n", boat.Registration, boat.Name, boat.Crossings, boat.Crossings, crewList)
 	}

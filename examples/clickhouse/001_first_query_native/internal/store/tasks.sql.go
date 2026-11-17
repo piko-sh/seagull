@@ -36,12 +36,17 @@ type GetTaskRow struct {
 }
 
 func (queries *Queries) GetTask(ctx context.Context, id uint64) (GetTaskRow, error) {
-	var row GetTaskRow
-	err := queries.db.QueryRow(ctx, getTaskSQL, clickhouse.Named("p_id", sglClickHouseShapedValue(id, sglClickHouseShapes[0]))).Scan(&row.ID, &row.Title, &row.Completed, &row.CreatedAt)
+	scanned := &struct {
+		row     GetTaskRow
+		targets [4]any
+	}{}
+	row := &scanned.row
+	scanned.targets = [4]any{&row.ID, &row.Title, &row.Completed, &row.CreatedAt}
+	err := queries.db.QueryRow(ctx, getTaskSQL, clickhouse.Named("p_id", sglClickHouseShapedValue(id, sglClickHouseShapes[0]))).Scan(scanned.targets[:]...)
 	if err != nil {
 		return GetTaskRow{}, err
 	}
-	return row, nil
+	return *row, nil
 }
 
 const listTasksSQL = `SELECT id, title, completed, created_at FROM tasks ORDER BY id;`

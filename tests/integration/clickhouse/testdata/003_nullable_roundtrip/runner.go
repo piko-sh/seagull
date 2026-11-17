@@ -41,9 +41,9 @@ func main() {
 	ctx := context.Background()
 	queries := db.New(conn)
 
-	must(queries.InsertWith(ctx, db.InsertWithParams{ID: 1, Label: new("primary")}))
-	must(queries.InsertWith(ctx, db.InsertWithParams{ID: 2, Label: nil}))
-	must(queries.InsertWith(ctx, db.InsertWithParams{ID: 3, Label: new(`back\slash and tab\t`)}))
+	must(queries.InsertWith(ctx, db.InsertWithParams{ID: 1, Label: db.NullOf("primary")}))
+	must(queries.InsertWith(ctx, db.InsertWithParams{ID: 2, Label: db.Null[string]{}}))
+	must(queries.InsertWith(ctx, db.InsertWithParams{ID: 3, Label: db.NullOf(`back\slash and tab\t`)}))
 
 	rows, err := queries.List(ctx)
 	if err != nil {

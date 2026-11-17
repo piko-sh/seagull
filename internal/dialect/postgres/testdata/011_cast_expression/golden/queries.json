@@ -63,6 +63,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        2
+      ]
+    },
     "SQL": "-- sgl.query(name: EventsInRange, command: many)\nSELECT id, name, event_date FROM events\nWHERE event_date \u003e= $1::date AND event_date \u003c= $2::date\nORDER BY event_date;",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:event_date⟩ FROM events\\nWHERE event_date \u003e= ⟨p0⟩::date AND event_date \u003c= ⟨p1⟩::date\\nORDER BY event_date;⟨arguments p0 p1⟩"
   }

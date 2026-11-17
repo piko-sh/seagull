@@ -67,9 +67,11 @@ var (
 	// paginationSyntax is how PostgreSQL writes a row limit and an offset: LIMIT and OFFSET,
 	// each of which may stand alone.
 	paginationSyntax = dialect.PaginationSyntax{
-		Limit:          dialect.Affix{Before: "LIMIT ", After: ""},
-		Offset:         dialect.Affix{Before: "OFFSET ", After: ""},
-		UnboundedLimit: "",
-		OffsetFirst:    false,
+		Limit:                   dialect.Affix{Before: "LIMIT ", After: ""},
+		Offset:                  dialect.Affix{Before: "OFFSET ", After: ""},
+		UnboundedLimit:          "",
+		OffsetFirst:             false,
+		CompoundBindsLastBranch: false,
+		DerivedOrderLimit:       "",
 	}
 )

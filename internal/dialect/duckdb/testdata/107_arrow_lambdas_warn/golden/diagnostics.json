@@ -1,0 +1,22 @@
+[
+  {
+    "Code": "Q063",
+    "Column": 34,
+    "EndColumn": 36,
+    "EndLine": 2,
+    "Filename": "boats.sql",
+    "Line": 2,
+    "Message": "DuckDB 2.0 refuses a lambda written with an arrow unless the session sets lambda_syntax = 'ENABLE_SINGLE_ARROW', and later releases drop the form: write it with the LAMBDA keyword, as lambda x: x + 1 or lambda x, i: x + i",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q063",
+    "Column": 43,
+    "EndColumn": 45,
+    "EndLine": 3,
+    "Filename": "boats.sql",
+    "Line": 3,
+    "Message": "DuckDB 2.0 refuses a lambda written with an arrow unless the session sets lambda_syntax = 'ENABLE_SINGLE_ARROW', and later releases drop the form: write it with the LAMBDA keyword, as lambda x: x + 1 or lambda x, i: x + i",
+    "Severity": "warning"
+  }
+]

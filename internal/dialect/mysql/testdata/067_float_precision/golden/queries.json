@@ -77,10 +77,7 @@
           "Category": "float",
           "EngineName": "float",
           "Width": 32
-        },
-        "SourceColumn": "widened",
-        "SourceQualifier": "readings",
-        "SourceTable": "readings"
+        }
       }
     ],
     "Parameters": [

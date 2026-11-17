@@ -72,7 +72,7 @@ func main() {
 		err = queries.InsertTemperature(ctx, db.InsertTemperatureParams{
 			Ts:          baseline.Add(time.Duration(sample.offsetMinutes) * time.Minute),
 			LocationID:  sample.locationID,
-			Temperature: &value,
+			Temperature: db.NullOf(value),
 		})
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)

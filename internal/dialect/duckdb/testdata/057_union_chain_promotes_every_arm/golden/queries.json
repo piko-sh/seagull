@@ -18,6 +18,9 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Compound": true
+    },
     "SQL": "-- sgl.query(name: ListSlugs, command: many)\nSELECT slug FROM events\nUNION ALL\nSELECT slug FROM events\nUNION ALL\nSELECT NULL;",
     "Template": "SELECT slug FROM events\\nUNION ALL\\nSELECT slug FROM events\\nUNION ALL\\nSELECT NULL;"
   }

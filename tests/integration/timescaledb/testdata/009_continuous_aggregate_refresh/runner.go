@@ -69,7 +69,7 @@ func main() {
 		err = queries.InsertPulse(ctx, db.InsertPulseParams{
 			Ts:     baseline.Add(time.Duration(sample.offsetMinutes) * time.Minute),
 			Source: sample.source,
-			Value:  &value,
+			Value:  db.NullOf(value),
 		})
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)

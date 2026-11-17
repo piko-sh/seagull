@@ -112,8 +112,8 @@ WHERE places_search.description MATCH ?1
 ORDER BY rank;`
 
 type SearchDescriptionsRow struct {
-	Name    string  `json:"name"`
-	Excerpt *string `json:"excerpt"`
+	Name    string       `json:"name"`
+	Excerpt Null[string] `json:"excerpt"`
 }
 
 func (queries *Queries) SearchDescriptions(ctx context.Context, terms string) ([]SearchDescriptionsRow, error) {
@@ -123,12 +123,16 @@ func (queries *Queries) SearchDescriptions(ctx context.Context, terms string) ([
 	}
 	defer rows.Close()
 	var results []SearchDescriptionsRow
-	for rows.Next() {
+	if rows.Next() {
 		var row SearchDescriptionsRow
-		if err := rows.Scan(&row.Name, &row.Excerpt); err != nil {
-			return nil, err
+		scanArgs := []any{&row.Name, &row.Excerpt}
+		for more := true; more; more = rows.Next() {
+			row = SearchDescriptionsRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

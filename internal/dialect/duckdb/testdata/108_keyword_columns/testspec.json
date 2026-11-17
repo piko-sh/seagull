@@ -1,0 +1,4 @@
+{
+  "description": "DuckDB reads a bare CURRENT_DATE, CURRENT_ROLE, LOCALTIME, USER and the other keyword values as a column when the FROM clause of their own query has one of that name, in a view too, and as the keyword's value otherwise, never as a column of an enclosing query: the int columns read as int32, the values as DATE, VARCHAR and TIMESTAMPTZ, as DuckDB 2.0 types them. user.id still names a relation's column.",
+  "expectedDiagnosticCount": 0
+}

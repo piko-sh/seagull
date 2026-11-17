@@ -59,7 +59,7 @@ FROM quotes GROUP BY lower(category) HAVING count(*) > $1 AND max(price) < $2 OR
 SELECT DISTINCT lower(category) AS kind FROM quotes ORDER BY lower(category);
 
 -- sgl.query(name: LatestPerKind, command: many)
-SELECT DISTINCT ON (category, date_trunc('day', quote_date)) id, category FROM quotes ORDER BY category, date_trunc('day', quote_date), id DESC;
+SELECT DISTINCT ON (category, day) id, category, date_trunc('day', quote_date) AS day FROM quotes ORDER BY category, day, id DESC;
 
 -- sgl.query(name: PageByExpression, command: many)
 SELECT id FROM quotes ORDER BY id LIMIT $1 + 1 OFFSET ($2 - 1) * 10;

@@ -40,6 +40,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(name: ListAccounts, command: many)\nSELECT * FROM accounts ORDER BY id;",
     "Template": "SELECT ⟨star 0=accounts.id 1=accounts.email 2=accounts.region:*⟩ FROM accounts ORDER BY id;"
   },

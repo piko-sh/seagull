@@ -27,16 +27,7 @@ import (
 	"seagull.sh/seagull/examples/sqlite/016_one_to_many/internal/store"
 )
 
-// run takes three chip shop orders and lists them with their lines. The join in
-// ListOrders returns one row per order line, repeating the order's columns each time.
-// group_by: orders.id collapses those rows: each distinct orders.id becomes one
-// ListOrdersRow, holding the order's columns in Orders and every matching line in the
-// OrderLines slice. Groups keep the order the rows arrive in.
-//
-// It is a LEFT JOIN, so an order with no lines still appears, with an empty slice, and
-// the line fields are pointers. sgl vet checks the directive: group_by must name a column
-// the query returns (Q014), the other tables need sgl.embed (Q015), and the command must
-// be many (Q016).
+// run lists chip shop orders with their lines.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes output (io.Writer) which receives each order and its lines.
@@ -72,7 +63,7 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 			fmt.Fprintln(output, "  nothing ordered yet")
 		}
 		for _, line := range order.OrderLines {
-			fmt.Fprintf(output, "  %d x %s\n", *line.Quantity, *line.Dish)
+			fmt.Fprintf(output, "  %d x %s\n", line.Quantity.V, line.Dish.V)
 		}
 	}
 	return nil

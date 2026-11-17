@@ -43,6 +43,10 @@ const (
 	// fieldOrders is the builder field holding the orderings OrderBy added.
 	fieldOrders = "orders"
 
+	// fieldFilteredOrders is the builder field holding the orderings OrderBy added, written
+	// for the filtered form of a query whose conditions filter its result rows.
+	fieldFilteredOrders = "filteredOrders"
+
 	// fieldLimit is the builder field holding the row limit.
 	fieldLimit = "limit"
 
@@ -74,6 +78,10 @@ const (
 	// identOrder is the local holding the ordering OrderBy built.
 	identOrder = "order"
 
+	// identFilteredOrder is the local holding the ordering OrderBy built for the filtered
+	// form.
+	identFilteredOrder = "filteredOrder"
+
 	// identInt64 is the int64 type the Count terminal returns.
 	identInt64 = "int64"
 
@@ -96,7 +104,8 @@ type builder struct {
 	// query is the query.
 	query *gogen.Query
 
-	// filter is the query's filter mark, or nil when it has no place for a condition.
+	// filter is the query's filter mark, in its filtered form when it has one, or nil when
+	// it has no place for a condition.
 	filter *emitkit.FilterMark
 
 	// order is the query's ORDER BY mark, or nil when it has no place for an ordering.
@@ -105,6 +114,18 @@ type builder struct {
 	// pagination is the place for a limit and an offset, or nil when the query has none or
 	// writes its own.
 	pagination *emitkit.Range
+}
+
+// chainStep is one part a chainable method builds and appends to a builder field.
+type chainStep struct {
+	// call builds the part, returning it and an error.
+	call ast.Expr
+
+	// local names the part the call returns.
+	local string
+
+	// field is the builder field the part is appended to.
+	field string
 }
 
 // newBuilder reads what a runtime builder's declarations need from its query.
@@ -116,10 +137,21 @@ type builder struct {
 func newBuilder(emission *gogen.Emission, query *gogen.Query) *builder {
 	marks := &query.Rendered.Marks
 	built := &builder{emission: emission, query: query, filter: marks.Filter, order: marks.OrderBy, pagination: nil}
+	if query.Filtered != nil {
+		built.filter = query.Filtered.Marks.Filter
+	}
 	if marks.Pagination != nil && marks.Pagination.Start == marks.Pagination.End {
 		built.pagination = marks.Pagination
 	}
 	return built
+}
+
+// filtersResult reports whether the builder's conditions filter the query's result rows
+// through its filtered form.
+//
+// Returns bool which is true when the query has a filtered form.
+func (b *builder) filtersResult() bool {
+	return b.query.Filtered != nil
 }
 
 // allowedColumns constructs the package-level map from each column the query selects to
@@ -131,24 +163,47 @@ func newBuilder(emission *gogen.Emission, query *gogen.Query) *builder {
 //
 // Returns ast.Decl which is the variable declaration.
 func (b *builder) allowedColumns() ast.Decl {
+	return b.columnsDecl(b.query.Naming.AllowedColumns, func(column *sqlmodel.AllowedColumn) string {
+		return quoteAllowedSource(column, b.emission)
+	})
+}
+
+// filteredColumns constructs the package-level map from each column the query selects to
+// its quoted output name, which the filtered form reads it by from the derived table.
+//
+// Returns ast.Decl which is the variable declaration.
+func (b *builder) filteredColumns() ast.Decl {
+	return b.columnsDecl(b.query.Naming.FilteredColumns, func(column *sqlmodel.AllowedColumn) string {
+		return methods.QuoteIdentifier(b.emission, column.Name)
+	})
+}
+
+// columnsDecl constructs a package-level map from each column the query selects to the
+// SQL the builder writes for it, its entries sorted by name.
+//
+// Takes name (string) which names the variable.
+// Takes written (func(*sqlmodel.AllowedColumn) string) which gives the SQL for a column.
+//
+// Returns ast.Decl which is the variable declaration.
+func (b *builder) columnsDecl(name string, written func(column *sqlmodel.AllowedColumn) string) ast.Decl {
 	query := b.query.Analysed
-	sourceByName := make(map[string]string, len(query.AllowedColumns))
+	sqlByName := make(map[string]string, len(query.AllowedColumns))
 	sortedNames := make([]string, 0, len(query.AllowedColumns))
 	for index := range query.AllowedColumns {
-		name := query.AllowedColumns[index].Name
-		sourceByName[name] = quoteSourceExpression(query.AllowedColumns[index].SourceExpression, b.emission)
-		sortedNames = append(sortedNames, name)
+		column := query.AllowedColumns[index].Name
+		sqlByName[column] = written(&query.AllowedColumns[index])
+		sortedNames = append(sortedNames, column)
 	}
 	slices.Sort(sortedNames)
 	elements := make([]ast.Expr, 0, len(sortedNames))
-	for _, name := range sortedNames {
-		elements = append(elements, &ast.KeyValueExpr{Key: goastutil.StrLit(name), Value: goastutil.StrLit(sourceByName[name])})
+	for _, column := range sortedNames {
+		elements = append(elements, &ast.KeyValueExpr{Key: goastutil.StrLit(column), Value: goastutil.StrLit(sqlByName[column])})
 	}
 	return &ast.GenDecl{
 		Tok: token.VAR,
 		Specs: []ast.Spec{
 			&ast.ValueSpec{
-				Names: []*ast.Ident{goastutil.CachedIdent(b.query.Naming.AllowedColumns)},
+				Names: []*ast.Ident{goastutil.CachedIdent(name)},
 				Values: []ast.Expr{&ast.CompositeLit{
 					Type: &ast.MapType{Key: goastutil.CachedIdent(goast.IdentString), Value: goastutil.CachedIdent(goast.IdentString)},
 					Elts: elements,
@@ -172,6 +227,9 @@ func (b *builder) structDecl() ast.Decl {
 	}
 	if b.order != nil {
 		fields = append(fields, goastutil.Field(fieldOrders, &ast.ArrayType{Elt: goastutil.CachedIdent(goast.IdentString)}))
+	}
+	if b.order != nil && b.filtersResult() {
+		fields = append(fields, goastutil.Field(fieldFilteredOrders, &ast.ArrayType{Elt: goastutil.CachedIdent(goast.IdentString)}))
 	}
 	if b.pagination != nil {
 		fields = append(fields,
@@ -225,61 +283,78 @@ func (b *builder) entryPoint() *ast.FuncDecl {
 	}
 }
 
-// whereMethod constructs Where(column, operator, value), which adds a condition the
-// helper checks against the query's columns and the operator allow-list, or records the
-// first error it meets for the terminals to return, so the chain never panics.
+// whereMethod builds the builder's Where method.
+//
+// Where validates the column and operator, retaining the first error for a terminal
+// method to return without panicking. Queries filtered on result rows use output column
+// names.
 //
 // Returns *ast.FuncDecl which is the Where method declaration.
 func (b *builder) whereMethod() *ast.FuncDecl {
+	columns := b.query.Naming.AllowedColumns
+	if b.filtersResult() {
+		columns = b.query.Naming.FilteredColumns
+	}
 	return b.chainable("Where",
 		goastutil.FieldList(
 			goastutil.Field(identColumn, goastutil.CachedIdent(goast.IdentString)),
 			goastutil.Field(identOperator, goastutil.CachedIdent(goast.IdentString)),
 			goastutil.Field(identValue, goastutil.CachedIdent(goast.IdentAny)),
 		),
-		identPredicate, fieldPredicates,
-		goastutil.CallExpr(goastutil.CachedIdent(b.helper(suffixNewPredicate)),
+		chainStep{local: identPredicate, field: fieldPredicates, call: goastutil.CallExpr(goastutil.CachedIdent(b.helper(suffixNewPredicate)),
 			goastutil.CachedIdent(identColumn), goastutil.CachedIdent(identOperator), goastutil.CachedIdent(identValue),
-			goastutil.CachedIdent(b.query.Naming.AllowedColumns)),
+			goastutil.CachedIdent(columns))},
 	)
 }
 
-// orderByMethod constructs OrderBy(column, direction), which adds an ordering the helper
-// checks against the query's columns and the direction allow-list, so callers compose
-// multi-key sorts with repeated calls.
+// orderByMethod builds the builder's OrderBy method.
+//
+// Repeated calls add sort keys after column and direction checks. A filtered form uses
+// output names. A query read from a derived table sorts outside DISTINCT.
 //
 // Returns *ast.FuncDecl which is the OrderBy method declaration.
 func (b *builder) orderByMethod() *ast.FuncDecl {
+	distinct := b.query.Analysed.ResultShape.Distinct && !b.query.Analysed.ReadsResultRows
+	steps := []chainStep{{local: identOrder, field: fieldOrders, call: b.newOrder(b.query.Naming.AllowedColumns, distinct)}}
+	if b.filtersResult() {
+		steps = append(steps, chainStep{local: identFilteredOrder, field: fieldFilteredOrders, call: b.newOrder(b.query.Naming.FilteredColumns, false)})
+	}
 	return b.chainable("OrderBy",
 		goastutil.FieldList(
 			goastutil.Field(identColumn, goastutil.CachedIdent(goast.IdentString)),
 			goastutil.Field(identDirection, goastutil.CachedIdent(goast.IdentString)),
 		),
-		identOrder, fieldOrders,
-		goastutil.CallExpr(goastutil.CachedIdent(b.helper(suffixNewOrder)),
-			goastutil.CachedIdent(identColumn), goastutil.CachedIdent(identDirection),
-			goastutil.CachedIdent(b.query.Naming.AllowedColumns)),
+		steps...,
 	)
 }
 
-// chainable constructs a chainable method that builds one part with a helper call and
-// appends it to a builder field, or records the helper's error as the pending error when
-// there is none yet, and returns the builder.
+// newOrder returns the helper call that checks and writes an ordering.
+//
+// Takes columns (string) which names the map of the columns it may name.
+// Takes distinct (bool) which is true when the SQL it is written into is a SELECT
+// DISTINCT.
+//
+// Returns ast.Expr which is the call.
+func (b *builder) newOrder(columns string, distinct bool) ast.Expr {
+	return goastutil.CallExpr(goastutil.CachedIdent(b.helper(suffixNewOrder)),
+		goastutil.CachedIdent(identColumn), goastutil.CachedIdent(identDirection), goastutil.CachedIdent(columns), boolIdent(distinct))
+}
+
+// chainable constructs a chainable method that builds its parts with helper calls and
+// appends each to its builder field, or records the first helper error as the pending
+// error when there is none yet, and returns the builder.
 //
 // Takes name (string) which names the method.
 // Takes parameters (*ast.FieldList) which are its arguments.
-// Takes local (string) which names the part the call returns.
-// Takes field (string) which is the builder field the part is appended to.
-// Takes call (ast.Expr) which builds the part.
+// Takes steps (...chainStep) which are the parts it builds, in order.
 //
 // Returns *ast.FuncDecl which is the method declaration.
-func (b *builder) chainable(name string, parameters *ast.FieldList, local, field string, call ast.Expr) *ast.FuncDecl {
-	return &ast.FuncDecl{
-		Recv: b.receiver(),
-		Name: goastutil.CachedIdent(name),
-		Type: &ast.FuncType{Params: parameters, Results: goastutil.FieldList(goastutil.Field("", b.pointer()))},
-		Body: goastutil.BlockStmt(
-			goastutil.DefineStmtMulti([]string{local, goast.IdentErr}, call),
+func (b *builder) chainable(name string, parameters *ast.FieldList, steps ...chainStep) *ast.FuncDecl {
+	const statementsPerStep = 3
+	body := make([]ast.Stmt, 0, statementsPerStep*len(steps)+1)
+	for _, step := range steps {
+		body = append(body,
+			goastutil.DefineStmtMulti([]string{step.local, goast.IdentErr}, step.call),
 			&ast.IfStmt{
 				Cond: &ast.BinaryExpr{X: goastutil.CachedIdent(goast.IdentErr), Op: token.NEQ, Y: goastutil.CachedIdent(goast.IdentNil)},
 				Body: goastutil.BlockStmt(
@@ -290,10 +365,17 @@ func (b *builder) chainable(name string, parameters *ast.FieldList, local, field
 					goastutil.ReturnStmt(goastutil.CachedIdent(goast.IdentBuilder)),
 				),
 			},
-			goastutil.AssignStmt(builderField(field),
-				goastutil.CallExpr(goastutil.CachedIdent("append"), builderField(field), goastutil.CachedIdent(local))),
-			goastutil.ReturnStmt(goastutil.CachedIdent(goast.IdentBuilder)),
-		),
+		)
+	}
+	for _, step := range steps {
+		body = append(body, goastutil.AssignStmt(builderField(step.field),
+			goastutil.CallExpr(goastutil.CachedIdent("append"), builderField(step.field), goastutil.CachedIdent(step.local))))
+	}
+	return &ast.FuncDecl{
+		Recv: b.receiver(),
+		Name: goastutil.CachedIdent(name),
+		Type: &ast.FuncType{Params: parameters, Results: goastutil.FieldList(goastutil.Field("", b.pointer()))},
+		Body: goastutil.BlockStmt(append(body, goastutil.ReturnStmt(goastutil.CachedIdent(goast.IdentBuilder)))...),
 	}
 }
 
@@ -351,6 +433,66 @@ func (b *builder) parameterAccess(index int) ast.Expr {
 	return methods.ParameterFrom(b.query, builderField(fieldParams), index)
 }
 
+// dataDeclarations constructs the package-level maps of the columns the builder may name
+// and the constants of the SQL it runs.
+//
+// Returns []ast.Decl which holds the declarations.
+func (b *builder) dataDeclarations() []ast.Decl {
+	query := b.query
+	declarations := []ast.Decl{b.allowedColumns()}
+	if b.filtersResult() {
+		declarations = append(declarations, b.filteredColumns())
+	}
+	if query.Count != nil {
+		declarations = append(declarations, methods.BuildConstant(query.Naming.CountConstant, query.Count.SQL))
+	}
+	if b.filtersResult() {
+		declarations = append(declarations, methods.BuildConstant(query.Naming.FilteredConstant, query.Filtered.SQL))
+	}
+	if query.FilteredCount != nil {
+		declarations = append(declarations, methods.BuildConstant(query.Naming.FilteredCountConstant, query.FilteredCount.SQL))
+	}
+	return declarations
+}
+
+// chainableMethods constructs Where, OrderBy, Limit and Offset for the places the query
+// has for them.
+//
+// Returns []ast.Decl which holds the methods.
+func (b *builder) chainableMethods() []ast.Decl {
+	var declarations []ast.Decl
+	if b.filter != nil {
+		declarations = append(declarations, b.whereMethod())
+	}
+	if b.order != nil {
+		declarations = append(declarations, b.orderByMethod())
+	}
+	if b.pagination != nil {
+		declarations = append(declarations, b.setterMethod("Limit", fieldLimit), b.setterMethod("Offset", fieldOffset))
+	}
+	return declarations
+}
+
+// terminalMethods constructs the methods that assemble the query's SQL and the terminals
+// that run it.
+//
+// Returns []ast.Decl which holds the methods.
+func (b *builder) terminalMethods() []ast.Decl {
+	declarations := []ast.Decl{b.buildQueryMethod()}
+	if b.filtersResult() {
+		declarations = append(declarations, b.buildFilteredQueryMethod())
+	}
+	declarations = append(declarations, b.allMethod(), b.oneMethod())
+	if b.query.Count == nil {
+		return declarations
+	}
+	declarations = append(declarations, b.buildCountQueryMethod())
+	if b.query.FilteredCount != nil {
+		declarations = append(declarations, b.buildFilteredCountQueryMethod())
+	}
+	return append(declarations, b.countMethod())
+}
+
 // BuildRuntimeBuilderDeclarations constructs all AST declarations for a runtime query
 // builder: the allowed-columns variable, the count constant, the builder struct, the
 // entry point, the chainable methods and the terminals.
@@ -360,7 +502,9 @@ func (b *builder) parameterAccess(index int) ast.Expr {
 // writes none of its own; its terminals write what the caller added at the places the
 // query's rendering marked, so a condition joins the query's own inside parentheses, an
 // ordering follows the query's ORDER BY keys, and pagination comes before any locking or
-// trailing clause.
+// trailing clause. A query whose select list aggregates, holds a window function or
+// returns a set runs its filtered form once Where added a condition, so the conditions,
+// orderings and pagination apply to the rows the query returns.
 //
 // Takes emission (*gogen.Emission) which is the package's generation.
 // Takes query (*gogen.Query) which is the runtime builder query.
@@ -368,25 +512,10 @@ func (b *builder) parameterAccess(index int) ast.Expr {
 // Returns []ast.Decl which contains the builder declarations.
 func BuildRuntimeBuilderDeclarations(emission *gogen.Emission, query *gogen.Query) []ast.Decl {
 	built := newBuilder(emission, query)
-	declarations := []ast.Decl{built.allowedColumns()}
-	if query.Count != nil {
-		declarations = append(declarations, methods.BuildConstant(query.Naming.CountConstant, query.Count.SQL))
-	}
+	declarations := built.dataDeclarations()
 	declarations = append(declarations, built.structDecl(), built.entryPoint())
-	if built.filter != nil {
-		declarations = append(declarations, built.whereMethod())
-	}
-	if built.order != nil {
-		declarations = append(declarations, built.orderByMethod())
-	}
-	if built.pagination != nil {
-		declarations = append(declarations, built.setterMethod("Limit", fieldLimit), built.setterMethod("Offset", fieldOffset))
-	}
-	declarations = append(declarations, built.buildQueryMethod(), built.allMethod(), built.oneMethod())
-	if query.Count != nil {
-		declarations = append(declarations, built.buildCountQueryMethod(), built.countMethod())
-	}
-	return declarations
+	declarations = append(declarations, built.chainableMethods()...)
+	return append(declarations, built.terminalMethods()...)
 }
 
 // UsesRuntimeBuilder reports whether any query is a runtime builder, so its package needs
@@ -404,10 +533,27 @@ func UsesRuntimeBuilder(queries []*sqlmodel.AnalysedQuery) bool {
 	return false
 }
 
-// quoteSourceExpression quotes a runtime-builder source reference, so a reserved-word or
-// special-character identifier stays valid in the SQL the builder writes. The reference
-// is a bare "column" or a "qualifier.column"; each identifier is wrapped with the
-// engine's quote characters.
+// quoteAllowedSource quotes a runtime-builder source reference, so a reserved-word or
+// special-character identifier stays valid in the SQL the builder writes. Each identifier
+// is wrapped with the engine's quote characters, and a qualifier and column recorded
+// separately keep an identifier holding a dot whole.
+//
+// Takes column (*sqlmodel.AllowedColumn) which names the source column.
+// Takes emission (*gogen.Emission) which supplies the engine's identifier quoting.
+//
+// Returns string which is the quoted reference.
+func quoteAllowedSource(column *sqlmodel.AllowedColumn, emission *gogen.Emission) string {
+	if column.SourceColumn == "" {
+		return quoteSourceExpression(column.SourceExpression, emission)
+	}
+	if column.SourceQualifier == "" {
+		return methods.QuoteIdentifier(emission, column.SourceColumn)
+	}
+	return methods.QuoteIdentifier(emission, column.SourceQualifier) + "." + methods.QuoteIdentifier(emission, column.SourceColumn)
+}
+
+// quoteSourceExpression quotes a dotted runtime-builder source reference recorded without
+// its parts. The reference is a bare "column" or a "qualifier.column".
 //
 // Takes sourceExpression (string) which is the unquoted source reference.
 // Takes emission (*gogen.Emission) which supplies the engine's identifier quoting.

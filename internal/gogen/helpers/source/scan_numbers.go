@@ -1,0 +1,81 @@
+// Copyright 2026 PolitePixels Limited
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// This project stands against fascism, authoritarianism, and all forms of
+// oppression. We built this to empower people, not to enable those who would
+// strip others of their rights and dignity.
+
+package source
+
+import (
+	"database/sql"
+	"fmt"
+)
+
+// sglNarrowNumber lists the Go number types database/sql fills from a driver's int64 or
+// float64 through text, which allocates for every value it reads.
+type sglNarrowNumber interface {
+	~int | ~int8 | ~int16 | ~int32 | ~uint8 | ~uint16 | ~uint32 | ~float32
+}
+
+// sglNumberScanner reads a driver value into a narrow number without database/sql's
+// conversion through text. It holds only a pointer, so passing it as an any allocates
+// nothing.
+type sglNumberScanner[T sglNarrowNumber] struct {
+	// target is the field the value is read into.
+	target *T
+}
+
+// sglScanNumber returns the scanner reading into a narrow number field.
+//
+// Takes target (*T) which is the field.
+//
+// Returns sglNumberScanner[T] which reads into it.
+func sglScanNumber[T sglNarrowNumber](target *T) sglNumberScanner[T] {
+	return sglNumberScanner[T]{target: target}
+}
+
+// Scan implements sql.Scanner. An int64 or float64 that T holds exactly, and a value of
+// T, are stored directly, and any other value is converted as database/sql converts it,
+// so a value that does not fit T is refused as database/sql refuses it.
+//
+// Takes source (any) which is the driver value.
+//
+// Returns error when the value cannot be stored in T.
+func (scanner sglNumberScanner[T]) Scan(source any) error {
+	switch value := source.(type) {
+	case T:
+		*scanner.target = value
+		return nil
+	case int64:
+		if converted := T(value); int64(converted) == value {
+			*scanner.target = converted
+			return nil
+		}
+	case float64:
+		if converted := T(value); float64(converted) == value {
+			*scanner.target = converted
+			return nil
+		}
+	}
+	var read sql.Null[T]
+	if err := read.Scan(source); err != nil {
+		return err
+	}
+	if !read.Valid {
+		return fmt.Errorf("sgl: cannot read NULL into %T", *scanner.target)
+	}
+	*scanner.target = read.V
+	return nil
+}

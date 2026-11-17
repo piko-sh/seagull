@@ -1,0 +1,47 @@
+[
+  {
+    "Command": "many",
+    "Filename": "keys.sql",
+    "Line": 1,
+    "Name": "Keys",
+    "OutputColumns": [
+      {
+        "Name": "null_key_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "null_key",
+        "SourceTable": "null_key"
+      },
+      {
+        "Name": "modified_key_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "modified_key",
+        "SourceTable": "modified_key"
+      },
+      {
+        "Name": "minimum",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "minimum",
+        "SourceQualifier": "gauges",
+        "SourceTable": "gauges"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Keys, command: many)\nSELECT null_key.id AS null_key_id, modified_key.id AS modified_key_id, gauges.minimum FROM null_key, modified_key, gauges;",
+    "Template": "SELECT ⟨c0 aliased:null_key.id⟩ AS null_key_id, ⟨c1 aliased:modified_key.id⟩ AS modified_key_id, ⟨c2:gauges.minimum⟩ FROM null_key, modified_key, gauges;"
+  }
+]

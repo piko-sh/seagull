@@ -33,6 +33,10 @@ var (
 	// scope where it queues the query's SQL constant: the batch and the loop's item. The
 	// copyfrom method's row index refers to no planned name, so it stays free.
 	batchLocals = []string{"batch", "item"}
+
+	// oneRowLocals lists the local a one-row method holds its row and scan destinations in,
+	// since pgx's QueryRow returns an interface.
+	oneRowLocals = []string{"scanned"}
 )
 
 // Reserve returns the names the emitter's generated code uses: the default reservation's
@@ -46,6 +50,6 @@ var (
 //
 // Returns emit.Reservation which holds the names.
 func (*Emitter) Reserve(info *dialect.Facts, style *emit.Style) emit.Reservation {
-	return reservation.For(info, style, slices.Concat(batchLocals, reservation.EnumLocals),
+	return reservation.For(info, style, slices.Concat(batchLocals, oneRowLocals, reservation.EnumLocals),
 		reservation.Helpers(style, reservation.EnumHelpers, nil), reservation.EnumFiles)
 }

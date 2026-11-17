@@ -345,3 +345,21 @@ func TestValidateRejectsOverlappingOutputDirectories(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateRefusesSeedsInTheMigrationDirectory(t *testing.T) {
+	t.Parallel()
+
+	data := `
+version: 1
+databases:
+  - name: app
+    dialect: sqlite
+    migrations: db/migrations
+    seeds: db/migrations/
+    go: { package: store }
+`
+	_, err := Parse([]byte(data), false)
+
+	require.ErrorIs(t, err, ErrInvalid)
+	require.Contains(t, err.Error(), "seeds and migrations need directories of their own")
+}

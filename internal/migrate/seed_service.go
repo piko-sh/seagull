@@ -171,7 +171,7 @@ func (s *Seeder) Status(ctx context.Context) (_ []SeedStatus, err error) {
 		if record, ok := appliedByVersion[file.Version]; ok {
 			status.Applied = true
 			status.AppliedAt = record.AppliedAt
-			status.ChecksumMatch = record.Checksum == file.Checksum
+			status.ChecksumMatch = file.MatchesChecksum(record.Checksum)
 		}
 
 		statuses = append(statuses, status)
@@ -180,7 +180,9 @@ func (s *Seeder) Status(ctx context.Context) (_ []SeedStatus, err error) {
 	return statuses, nil
 }
 
-// Reseed clears the seed history table and re-applies all seed files.
+// Reseed clears the seed history table and re-applies all seed files. It reads and
+// validates every seed file before it clears the history, so a seed directory that cannot
+// be read leaves the history as it was.
 //
 // Returns int which is the number of seeds applied.
 // Returns error which is a *LockAcquisitionError naming the seed lock when it cannot be
@@ -202,6 +204,11 @@ func (s *Seeder) Reseed(ctx context.Context) (_ int, err error) {
 	}
 	defer func() { err = s.joinReleaseError(ctx, err) }()
 
+	files, err := readSeedFiles(ctx, s.callReader(s.fileReader), s.directory)
+	if err != nil {
+		return 0, err
+	}
+
 	if err := s.executor.EnsureSeedTable(ctx); err != nil {
 		return 0, fmt.Errorf("ensuring seed table: %w", err)
 	}
@@ -210,7 +217,7 @@ func (s *Seeder) Reseed(ctx context.Context) (_ int, err error) {
 		return 0, fmt.Errorf("clearing seed history: %w", err)
 	}
 
-	return s.applyLocked(ctx)
+	return s.applyFiles(ctx, files)
 }
 
 // acquireSeedLock acquires the seed lock, without waiting when WithNonBlockingLock is
@@ -253,12 +260,24 @@ func (s *Seeder) joinReleaseError(ctx context.Context, runError error) error {
 // Returns int which is the number of seeds applied.
 // Returns error when a seed fails to execute.
 func (s *Seeder) applyLocked(ctx context.Context) (int, error) {
-	logger := logging.LoggerFrom(ctx)
-
 	files, err := readSeedFiles(ctx, s.callReader(s.fileReader), s.directory)
 	if err != nil {
 		return 0, err
 	}
+	return s.applyFiles(ctx, files)
+}
+
+// applyFiles applies the seed files the history does not hold, in version order. The
+// caller holds the seed lock and has read the files, so a directory that cannot be read
+// fails before the history changes.
+//
+// Takes files ([]sqlfile.SeedFile) which holds every seed file, read and validated.
+//
+// Returns int which is the number of seeds applied.
+// Returns error when a seed fails to execute.
+func (s *Seeder) applyFiles(ctx context.Context, files []sqlfile.SeedFile) (int, error) {
+	ctx, logger := logging.From(ctx)
+
 	if len(files) == 0 {
 		return 0, nil
 	}
@@ -330,7 +349,7 @@ func filterPendingSeeds(
 	files []sqlfile.SeedFile,
 	appliedByVersion map[int64]AppliedSeed,
 ) []sqlfile.SeedFile {
-	logger := logging.LoggerFrom(ctx)
+	ctx, logger := logging.From(ctx)
 
 	pending := make([]sqlfile.SeedFile, 0, len(files))
 
@@ -341,7 +360,7 @@ func filterPendingSeeds(
 			continue
 		}
 
-		if record.Checksum != file.Checksum {
+		if !file.MatchesChecksum(record.Checksum) {
 			logger.WarnContext(ctx, "seed file checksum changed since last application",
 				slog.Int64(logFieldVersion, file.Version),
 				slog.String("name", file.Name),

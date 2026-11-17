@@ -46,9 +46,10 @@ type Starter func(ctx context.Context) (stop func(ctx context.Context) error, er
 
 // Main runs a suite's tests, for its TestMain: it starts the suite's database server when
 // it has one, runs the tests, stops the server and, when every test passed, fails the run
-// on a leaked goroutine. A suite whose tests hold real sockets passes
-// leakcheck.IgnoreNetworkPollers among options; a suite that opens only in-process
-// databases passes none.
+// on a leaked goroutine.
+//
+// A suite whose tests hold real sockets passes leakcheck.IgnoreNetworkPollers among
+// options; a suite that opens only in-process databases passes none.
 //
 // Takes m (*testing.M) which runs the tests.
 // Takes start (Starter) which starts the server, or is nil for a suite without a server.

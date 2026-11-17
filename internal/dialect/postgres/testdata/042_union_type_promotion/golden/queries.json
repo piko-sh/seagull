@@ -18,6 +18,9 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Compound": true
+    },
     "SQL": "-- sgl.query(name: UnionWiden, command: many)\nSELECT val FROM narrow\nUNION ALL\nSELECT val FROM wide;",
     "Template": "SELECT val FROM narrow\\nUNION ALL\\nSELECT val FROM wide;"
   }

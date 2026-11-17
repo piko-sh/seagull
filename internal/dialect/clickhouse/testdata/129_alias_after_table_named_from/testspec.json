@@ -1,0 +1,7 @@
+{
+  "description": "ClickHouse refuses an alias without AS after an unqualified table named from, in any case and quoting, in FROM and in a JOIN. With AS, with a schema, and after any other quoted keyword the alias is taken.",
+  "expectedDiagnosticCount": 3,
+  "diagnostics": [
+    {"severity": "error", "code": "Q010", "messageContains": "alias after a table named from only with AS"}
+  ]
+}

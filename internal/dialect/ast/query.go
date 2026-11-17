@@ -181,6 +181,17 @@ type RawQueryAnalysis struct {
 	// (INSERT/UPDATE/DELETE inside WITH).
 	ReadOnly bool
 
+	// ChangesData reports a statement that changes data while it reads, through a
+	// data-modifying common table expression, so running it again changes data again.
+	ChangesData bool
+
+	// RowLimited reports a LIMIT, OFFSET, FETCH or similar clause that bounds the rows the
+	// query returns, written as a literal or a parameter.
+	//
+	// A dialect sets it on nested queries as well as the top-level one, so an aggregate
+	// subquery with such a clause is not taken to return exactly one row.
+	RowLimited bool
+
 	// HasWhereClause reports a WHERE clause on the statement, or a PREWHERE clause for
 	// ClickHouse. Spans.Where locates an actual WHERE clause for SQL rewriting.
 	HasWhereClause bool
@@ -647,4 +658,25 @@ type ScopedColumn struct {
 type EngineDetail interface {
 	// EngineDetail marks the type as a dialect's detail.
 	EngineDetail()
+}
+
+// FullTextSearch is a full-text search over a list of columns, such as MySQL's MATCH
+// (title, body) AGAINST (...), which the engine runs only through a full-text index of
+// exactly those columns.
+type FullTextSearch struct {
+	// Query is the query, or nested query, whose FROM clause the columns are read in, or nil
+	// when the dialect does not say.
+	Query *RawQueryAnalysis
+
+	// Columns are the columns the search names, in order.
+	Columns []ColumnReference
+}
+
+// FullTextSearcher is the detail of a dialect that records its queries' full-text
+// searches.
+type FullTextSearcher interface {
+	// FullTextSearches returns the query's full-text searches.
+	//
+	// Returns []FullTextSearch which holds them in the order the query writes them.
+	FullTextSearches() []FullTextSearch
 }

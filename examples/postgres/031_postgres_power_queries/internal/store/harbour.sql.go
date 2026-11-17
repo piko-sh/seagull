@@ -78,9 +78,9 @@ LEFT JOIN LATERAL (
 ORDER BY boats.name, biggest.kilos DESC;`
 
 type BiggestLandingsRow struct {
-	Name    string  `json:"name"`
-	Species *string `json:"species"`
-	Kilos   *int32  `json:"kilos"`
+	Name    string       `json:"name"`
+	Species Null[string] `json:"species"`
+	Kilos   Null[int32]  `json:"kilos"`
 }
 
 func (queries *Queries) BiggestLandings(ctx context.Context) ([]BiggestLandingsRow, error) {
@@ -90,12 +90,16 @@ func (queries *Queries) BiggestLandings(ctx context.Context) ([]BiggestLandingsR
 	}
 	defer rows.Close()
 	var results []BiggestLandingsRow
-	for rows.Next() {
+	if rows.Next() {
 		var row BiggestLandingsRow
-		if err := rows.Scan(&row.Name, &row.Species, &row.Kilos); err != nil {
-			return nil, err
+		scanArgs := []any{&row.Name, &row.Species, &row.Kilos}
+		for more := true; more; more = rows.Next() {
+			row = BiggestLandingsRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -190,9 +194,9 @@ WHERE landings.search @@ websearch_to_tsquery('english', $1)
 ORDER BY rank DESC, landings.id;`
 
 type SearchNotesRow struct {
-	ID    int64    `json:"id"`
-	Notes string   `json:"notes"`
-	Rank  *float32 `json:"rank"`
+	ID    int64         `json:"id"`
+	Notes string        `json:"notes"`
+	Rank  Null[float32] `json:"rank"`
 }
 
 func (queries *Queries) SearchNotes(ctx context.Context, terms string) ([]SearchNotesRow, error) {
@@ -202,12 +206,16 @@ func (queries *Queries) SearchNotes(ctx context.Context, terms string) ([]Search
 	}
 	defer rows.Close()
 	var results []SearchNotesRow
-	for rows.Next() {
+	if rows.Next() {
 		var row SearchNotesRow
-		if err := rows.Scan(&row.ID, &row.Notes, &row.Rank); err != nil {
-			return nil, err
+		scanArgs := []any{&row.ID, &row.Notes, &row.Rank}
+		for more := true; more; more = rows.Next() {
+			row = SearchNotesRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

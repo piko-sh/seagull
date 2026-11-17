@@ -1,0 +1,110 @@
+{
+  "best_all": [
+    {
+      "grp": 1,
+      "id": 2,
+      "score": 90
+    },
+    {
+      "grp": 2,
+      "id": 4,
+      "score": 80
+    },
+    {
+      "grp": 3,
+      "id": 5,
+      "score": 60
+    }
+  ],
+  "best_by_id_desc": [
+    {
+      "grp": 3,
+      "id": 5,
+      "score": 60
+    },
+    {
+      "grp": 2,
+      "id": 4,
+      "score": 80
+    },
+    {
+      "grp": 1,
+      "id": 2,
+      "score": 90
+    }
+  ],
+  "best_where": [
+    {
+      "grp": 2,
+      "id": 4,
+      "score": 80
+    },
+    {
+      "grp": 3,
+      "id": 5,
+      "score": 60
+    }
+  ],
+  "best_where_count": 2,
+  "top_all": [
+    {
+      "grp": 1,
+      "id": 2,
+      "score": 90
+    },
+    {
+      "grp": 1,
+      "id": 6,
+      "score": 85
+    },
+    {
+      "grp": 2,
+      "id": 4,
+      "score": 80
+    }
+  ],
+  "top_count": 3,
+  "top_limit_above": [
+    {
+      "grp": 1,
+      "id": 2,
+      "score": 90
+    },
+    {
+      "grp": 1,
+      "id": 6,
+      "score": 85
+    },
+    {
+      "grp": 2,
+      "id": 4,
+      "score": 80
+    }
+  ],
+  "top_offset_past": null,
+  "top_ordered_page": [
+    {
+      "grp": 2,
+      "id": 4,
+      "score": 80
+    },
+    {
+      "grp": 1,
+      "id": 6,
+      "score": 85
+    }
+  ],
+  "top_where": [
+    {
+      "grp": 1,
+      "id": 2,
+      "score": 90
+    },
+    {
+      "grp": 1,
+      "id": 6,
+      "score": 85
+    }
+  ],
+  "top_where_count": 2
+}

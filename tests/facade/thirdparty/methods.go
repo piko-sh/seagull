@@ -30,6 +30,12 @@ const (
 	// commentMarker opens a line of a doc comment.
 	commentMarker = "//"
 
+	// commentWordSpace separates the comment marker from a line of its text.
+	commentWordSpace = " "
+
+	// parameterTypeSpace separates a parameter's name from its type.
+	parameterTypeSpace = " "
+
 	// byteOrderMark is the rune Go source may hold only at its very start.
 	byteOrderMark = '\uFEFF'
 
@@ -131,11 +137,11 @@ func (current *generation) parameters(file *source, rendered *query) string {
 	list := "ctx " + file.qualified(contextPackage, "Context")
 	switch {
 	case rendered.naming.Params != "" && rendered.analysed.Command == emit.QueryCommandBatch:
-		return list + argumentSeparator + rendered.naming.ParamsArgument + " " + slicePrefix + rendered.naming.Params
+		return list + argumentSeparator + rendered.naming.ParamsArgument + parameterTypeSpace + slicePrefix + rendered.naming.Params
 	case rendered.naming.Params != "":
-		return list + argumentSeparator + rendered.naming.ParamsArgument + " " + rendered.naming.Params
+		return list + argumentSeparator + rendered.naming.ParamsArgument + parameterTypeSpace + rendered.naming.Params
 	case len(rendered.naming.ParameterFields) > 0:
-		return list + argumentSeparator + rendered.naming.ParameterFields[0] + " " + current.parameterSource(file, rendered, 0)
+		return list + argumentSeparator + rendered.naming.ParameterFields[0] + parameterTypeSpace + current.parameterSource(file, rendered, 0)
 	default:
 		return list
 	}
@@ -181,7 +187,7 @@ func commentLines(text string) []string {
 			comment = append(comment, commentMarker)
 			continue
 		}
-		comment = append(comment, commentMarker+" "+line)
+		comment = append(comment, commentMarker+commentWordSpace+line)
 	}
 	return comment
 }

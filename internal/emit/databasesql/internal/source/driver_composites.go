@@ -671,13 +671,13 @@ func sglReadOverrideJSON(target reflect.Value, source any) error {
 	case string:
 		document = []byte(typed)
 	default:
-		encoded, err := json.Marshal(typed)
+		encoded, err := sglJSONMarshal(typed)
 		if err != nil {
 			return err
 		}
 		document = encoded
 	}
-	return json.Unmarshal(document, target.Addr().Interface())
+	return sglJSONUnmarshal(document, target.Addr().Interface())
 }
 
 // sglReadOverride reads a value database/sql cannot store into an override's Go type, as
@@ -866,7 +866,7 @@ func sglReadDriverLeaf(target reflect.Value, source any) (bool, error) {
 	}
 	address := target.Addr().Interface()
 	if unmarshaler, ok := address.(json.Unmarshaler); ok {
-		encoded, err := json.Marshal(source)
+		encoded, err := sglJSONMarshal(source)
 		if err != nil {
 			return true, err
 		}

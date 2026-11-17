@@ -428,6 +428,9 @@ func (p *parser) parseQualifiedStar() (string, bool) {
 func (p *parser) parseOutputColumnAlias(column *ast.RawOutputColumn) error {
 	p.aliasStart = p.Position
 	if p.MatchKeyword(keywordAS) {
+		if word := p.Current().Keyword(tokenIdentifier); p.aliasKeywords.RefusesAfterAs(word) {
+			return dialectkit.NewParseError(p.Current(), dialectkit.RefusalMessage(word))
+		}
 		alias, aliasErr := p.parseIdentifierOrKeyword()
 		if aliasErr != nil {
 			return aliasErr
@@ -436,6 +439,9 @@ func (p *parser) parseOutputColumnAlias(column *ast.RawOutputColumn) error {
 		return nil
 	}
 	if p.Current().Kind == tokenIdentifier && !p.isSelectTerminator() {
+		if word := p.Current().Keyword(tokenIdentifier); p.aliasKeywords.RefusesBare(word) {
+			return dialectkit.NewParseError(p.Current(), dialectkit.RefusalMessage(word))
+		}
 		column.Name = p.Advance().Value
 	}
 	return nil
@@ -588,8 +594,9 @@ func (p *parser) parseFromItem(tables *[]ast.TableReference, joins *[]ast.JoinCl
 // appendExplicitJoin parses an explicit JOIN and appends it to joins.
 //
 // When the joined source is a parenthesised join, its first table takes the outer join's
-// kind and its own joins follow it; under a LEFT or FULL join the inner joins become
-// outer too, because every table inside the parentheses can then be missing.
+// kind and its own joins follow it; under a LEFT or FULL join every join, derived table
+// and table function inside becomes outer too, because every table inside the parentheses
+// can then be missing.
 //
 // Takes joinKind (ast.JoinKind) which classifies the join.
 // Takes natural (bool) which is true for a NATURAL join.
@@ -601,17 +608,12 @@ func (p *parser) appendExplicitJoin(joinKind ast.JoinKind, natural bool, joins *
 
 	insertAt := len(*joins)
 	derivedAt := len(p.rawDerivedTables)
+	functionsAt := len(p.rawTableValuedFunctions)
 	tableReference, err := p.parseTableSource(joinKind, joins)
 	if err != nil {
 		return err
 	}
-	if joinKind == ast.JoinLeft || joinKind == ast.JoinFull {
-		for index := insertAt; index < len(*joins); index++ {
-			if (*joins)[index].Kind == ast.JoinInner || (*joins)[index].Kind == ast.JoinCross {
-				(*joins)[index].Kind = joinKind
-			}
-		}
-	}
+	ast.EncloseGroup(joinKind, (*joins)[insertAt:], p.rawDerivedTables[derivedAt:], p.rawTableValuedFunctions[functionsAt:])
 	if tableReference != nil {
 		*joins = slices.Insert(*joins, insertAt, ast.JoinClause{Kind: joinKind, Table: *tableReference, Using: nil})
 	}

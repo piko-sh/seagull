@@ -36,7 +36,7 @@ func (queries *Queries) StreamReadings(ctx context.Context) iter.Seq2[StreamRead
 		defer rows.Close()
 		if rows.Next() {
 			var row StreamReadingsRow
-			scanArgs := []any{&row.TakenAt, &row.LevelCm}
+			scanArgs := []any{&row.TakenAt, sglScanNumber(&row.LevelCm)}
 			for more := true; more; more = rows.Next() {
 				row = StreamReadingsRow{}
 				if err := rows.Scan(scanArgs...); err != nil {

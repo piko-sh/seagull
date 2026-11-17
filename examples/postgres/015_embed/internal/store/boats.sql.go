@@ -9,7 +9,7 @@ const addBoatSQL = `INSERT INTO boats (name, harbour_id, skipper_id) VALUES ($1,
 type AddBoatParams struct {
 	Name      string
 	HarbourID int64
-	SkipperID *int64
+	SkipperID Null[int64]
 }
 
 func (queries *Queries) AddBoat(ctx context.Context, params AddBoatParams) error {
@@ -73,9 +73,9 @@ LEFT JOIN skippers ON skippers.id = boats.skipper_id
 ORDER BY boats.id;`
 
 type ListCrewsSkippers struct {
-	ID      *int64  `json:"id"`
-	Name    *string `json:"name"`
-	Licence *string `json:"licence"`
+	ID      Null[int64]  `json:"id"`
+	Name    Null[string] `json:"name"`
+	Licence Null[string] `json:"licence"`
 }
 
 type ListCrewsRow struct {
@@ -105,7 +105,7 @@ func (queries *Queries) ListCrews(ctx context.Context) ([]ListCrewsRow, error) {
 			if err := rows.Scan(scanArgs...); err != nil {
 				return nil, err
 			}
-			if embedRows.Skippers.ID != nil {
+			if embedRows.Skippers.ID.Valid {
 				row.Skippers = &ListCrewsSkippers{ID: embedRows.Skippers.ID, Name: embedRows.Skippers.Name, Licence: embedRows.Skippers.Licence}
 			}
 			results = append(results, row)

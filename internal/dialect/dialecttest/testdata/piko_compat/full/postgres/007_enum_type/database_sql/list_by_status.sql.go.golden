@@ -21,7 +21,7 @@ func (queries *Queries) ListByStatus(ctx context.Context, status string) ([]List
 	var results []ListByStatusRow
 	if rows.Next() {
 		var row ListByStatusRow
-		scanArgs := []any{&row.ID, &row.Name, &row.Status}
+		scanArgs := []any{pikoScanNumber(&row.ID), &row.Name, &row.Status}
 		for more := true; more; more = rows.Next() {
 			row = ListByStatusRow{}
 			if err := rows.Scan(scanArgs...); err != nil {

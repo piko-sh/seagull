@@ -1,0 +1,10 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 1,
+    "Filename": "001_schema.up.sql",
+    "Line": 7,
+    "Message": "cannot drop table src because view v reads it. Drop the view first or write CASCADE",
+    "Severity": "error"
+  }
+]

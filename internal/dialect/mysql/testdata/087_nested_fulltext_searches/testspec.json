@@ -1,0 +1,4 @@
+{
+  "description": "A MATCH in a nested query is read against that query's tables: one with a FULLTEXT index of its columns runs, and one without is warned of (Q074), as MySQL 9.7 refuses it with error 1191. An unqualified column no table of the query holds is warned of as unknown (Q001), as MySQL refuses it with error 1054.",
+  "expectedDiagnosticCount": 3
+}

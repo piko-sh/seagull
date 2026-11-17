@@ -1,0 +1,68 @@
+[
+  {
+    "Command": "exec",
+    "Filename": "inserts.sql",
+    "InsertColumns": [
+      "id",
+      "name"
+    ],
+    "InsertTarget": {
+      "Name": "accounts"
+    },
+    "Line": 1,
+    "Name": "AddAccount",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "id",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      },
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "name",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar",
+          "Length": 40
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: AddAccount, command: exec)\nINSERT INTO accounts (id, name) VALUES (?, ?);",
+    "Template": "INSERT INTO accounts (id, name) VALUES ⟨values:(⟨p0⟩, ⟨p1⟩)⟩;⟨arguments p0 p1⟩"
+  },
+  {
+    "Command": "exec",
+    "Filename": "inserts.sql",
+    "InsertColumns": [
+      "total"
+    ],
+    "InsertTarget": {
+      "Name": "orders"
+    },
+    "Line": 4,
+    "Name": "AddOrder",
+    "Parameters": [
+      {
+        "Context": "assignment",
+        "Kind": "none",
+        "Name": "total",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        }
+      }
+    ],
+    "SQL": "-- sgl.query(name: AddOrder, command: exec)\nINSERT INTO orders (total) VALUES (?);",
+    "Template": "INSERT INTO orders (total) VALUES ⟨values:(⟨p0⟩)⟩;⟨arguments p0⟩"
+  }
+]

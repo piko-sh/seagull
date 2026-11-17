@@ -23,7 +23,7 @@
             },
             {
               "GeneratedKind": "none",
-              "Name": "lines",
+              "Name": "line_items",
               "Origin": {
                 "Filename": "001_schema.up.sql"
               },

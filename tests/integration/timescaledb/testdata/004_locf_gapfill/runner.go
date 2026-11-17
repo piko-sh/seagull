@@ -68,7 +68,7 @@ func main() {
 		err = queries.InsertSparseReading(ctx, db.InsertSparseReadingParams{
 			Ts:       baseline.Add(time.Duration(sample.offsetMinutes) * time.Minute),
 			SensorID: sensor,
-			Value:    &value,
+			Value:    db.NullOf(value),
 		})
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
@@ -94,8 +94,8 @@ func main() {
 	out := []bucketEntry{}
 	for _, row := range rows {
 		bucket := ""
-		if row.Bucket != nil {
-			bucket = row.Bucket.UTC().Format(time.RFC3339)
+		if row.Bucket.Valid {
+			bucket = row.Bucket.V.UTC().Format(time.RFC3339)
 		}
 		out = append(out, bucketEntry{
 			BucketISO:   bucket,

@@ -28,9 +28,9 @@ func (queries *Queries) CreateTask(ctx context.Context, title string) (CreateTas
 const findTaskSQL = `SELECT id, title, notes FROM tasks WHERE id = ?1;`
 
 type FindTaskRow struct {
-	ID    int64   `json:"id"`
-	Title string  `json:"title"`
-	Notes *string `json:"notes"`
+	ID    int64        `json:"id"`
+	Title string       `json:"title"`
+	Notes Null[string] `json:"notes"`
 }
 
 func (queries *Queries) FindTask(ctx context.Context, id int64) (FindTaskRow, bool, error) {
@@ -80,7 +80,7 @@ func (queries *Queries) ListTasks(ctx context.Context) ([]ListTasksRow, error) {
 const setNotesSQL = `UPDATE tasks SET notes = ?1 WHERE id = ?2;`
 
 type SetNotesParams struct {
-	Notes *string
+	Notes Null[string]
 	ID    int64
 }
 

@@ -13,7 +13,7 @@ UPDATE claimed = true, owner_phone = {p_owner_phone:Nullable(String)}
 WHERE id = {p_id:UInt64};`
 
 type ClaimParams struct {
-	OwnerPhone *string
+	OwnerPhone Null[string]
 	ID         uint64
 }
 
@@ -81,7 +81,7 @@ func (builder *SearchUnclaimedBuilder) Where(column string, operator string, val
 }
 
 func (builder *SearchUnclaimedBuilder) OrderBy(column string, direction string) *SearchUnclaimedBuilder {
-	order, err := sglNewOrder(column, direction, searchUnclaimedAllowedColumns)
+	order, err := sglNewOrder(column, direction, searchUnclaimedAllowedColumns, false)
 	if err != nil {
 		if builder.pendingError == nil {
 			builder.pendingError = err

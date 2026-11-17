@@ -1,0 +1,4 @@
+{
+  "description": "MariaDB needs the referenced columns after REFERENCES, inline or in a table constraint (error 1005, errno 150), and takes no REFERENCES clause in MODIFY or CHANGE (1064), as MariaDB 12.3 reports them.",
+  "expectedDiagnosticCount": 4
+}

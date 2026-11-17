@@ -27,12 +27,17 @@ type CreateTaskRow struct {
 }
 
 func (queries *Queries) CreateTask(ctx context.Context, title string) (CreateTaskRow, error) {
-	var row CreateTaskRow
-	err := queries.db.QueryRow(ctx, createTaskSQL, title).Scan(&row.ID, &row.Title, &row.Completed, &row.CreatedAt)
+	scanned := &struct {
+		row     CreateTaskRow
+		targets [4]any
+	}{}
+	row := &scanned.row
+	scanned.targets = [4]any{&row.ID, &row.Title, &row.Completed, &row.CreatedAt}
+	err := queries.db.QueryRow(ctx, createTaskSQL, title).Scan(scanned.targets[:]...)
 	if err != nil {
 		return CreateTaskRow{}, err
 	}
-	return row, nil
+	return *row, nil
 }
 
 const listTasksSQL = `SELECT id, title, completed, created_at FROM tasks ORDER BY id;`

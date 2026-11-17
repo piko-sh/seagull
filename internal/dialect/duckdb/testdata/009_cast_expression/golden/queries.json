@@ -22,10 +22,7 @@
           "Category": "integer",
           "EngineName": "int4",
           "Width": 32
-        },
-        "SourceColumn": "value",
-        "SourceQualifier": "data",
-        "SourceTable": "data"
+        }
       }
     ],
     "ReadOnly": true,
@@ -55,10 +52,7 @@
         "SQLType": {
           "Category": "text",
           "EngineName": "varchar"
-        },
-        "SourceColumn": "amount",
-        "SourceQualifier": "data",
-        "SourceTable": "data"
+        }
       }
     ],
     "ReadOnly": true,

@@ -104,7 +104,7 @@ type LogSightingParams struct {
 }
 
 type LogSightingRow struct {
-	ID *int64 `json:"id"`
+	ID Null[int64] `json:"id"`
 }
 
 func (queries *Queries) LogSighting(ctx context.Context, params LogSightingParams) (LogSightingRow, error) {

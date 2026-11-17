@@ -164,6 +164,8 @@ func convertCustomFunction(
 		NullingArgument:        0,
 		IsVariadic:             config.IsVariadic,
 		ReturnTypeFromArgument: 0,
+		NullUnlessLiteral:      0,
+		NullOnNonNumeric:       0,
 		MinArguments:           minimumArguments,
 		Schema:                 "",
 		Language:               "",

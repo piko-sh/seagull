@@ -466,12 +466,12 @@ func TestClauseExpressionsOfNestedQueriesStayOnThem(t *testing.T) {
 func TestImplicitColumnAliases(t *testing.T) {
 	t.Parallel()
 
-	analysis, _ := analyseStatement(t, "SELECT id ident, count(*) total, lower(name) label FROM items")
+	analysis, _ := analyseStatement(t, "SELECT id ident, count(*) total, lower(name) lowered FROM items")
 
 	require.Len(t, analysis.OutputColumns, 3)
 	require.Equal(t, "ident", analysis.OutputColumns[0].Name)
 	require.Equal(t, "total", analysis.OutputColumns[1].Name)
-	require.Equal(t, "label", analysis.OutputColumns[2].Name)
+	require.Equal(t, "lowered", analysis.OutputColumns[2].Name)
 }
 
 func TestNamedArguments(t *testing.T) {
@@ -653,5 +653,18 @@ func TestAWalkStoppedInsideAClauseFailsTheStatement(t *testing.T) {
 			require.ErrorIs(t, err, errWalkStopped)
 			assert.Nil(t, analysis)
 		})
+	}
+}
+
+func TestKeywordsAreRefusedAsBareAliases(t *testing.T) {
+	t.Parallel()
+
+	for _, statement := range []string{"SELECT lower(name) label FROM items", "SELECT 1 name", "SELECT 1 year"} {
+		engine := New()
+		statements, err := engine.ParseStatements(t.Context(), statement)
+		require.NoError(t, err)
+		require.Len(t, statements, 1)
+		_, err = engine.AnalyseQuery(t.Context(), nil, statements[0])
+		require.ErrorContains(t, err, "this engine reserves", statement)
 	}
 }

@@ -5,6 +5,14 @@
   },
   "Schemas": {
     "": {
+      "Sequences": {
+        "invoice_numbers": {
+          "Name": "invoice_numbers",
+          "Origin": {
+            "Filename": "001_schema.up.sql"
+          }
+        }
+      },
       "Tables": {
         "invoices": {
           "Columns": [

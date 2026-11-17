@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 48,
+    "EndColumn": 54,
+    "EndLine": 2,
+    "Filename": "001_schema.up.sql",
+    "Line": 2,
+    "Message": "failed to interpret DDL: syntax error near \"UNIQUE\": SQLite's ALTER TABLE adds only a CHECK constraint",
+    "Severity": "error"
+  }
+]

@@ -213,6 +213,17 @@ func (*parser) isKeywordTerminator(current token, terminators map[string]struct{
 // Returns []ast.ColumnReference which lists the grouped plain columns.
 // Returns *ast.GroupingSets which holds the keys under WITH ROLLUP, or nil without it.
 func (p *parser) parseGroupByClause(outputs []ast.RawOutputColumn) ([]ast.ColumnReference, *ast.GroupingSets) {
+	if p.AtEnd() || p.IsKeyword(keywordHAVING, keywordORDER, keywordLIMIT, keywordWITH, "WINDOW", "UNION", "FOR", "LOCK") {
+		p.recordSyntaxError(p.syntaxErrorAt("expected a GROUP BY key"))
+		return nil, nil
+	}
+	if p.Peek().Kind == tokenLeftParen && p.IsKeyword(keywordCUBE) {
+		p.recordSyntaxError(p.syntaxErrorAt("this engine has no CUBE grouping"))
+		return nil, nil
+	}
+	if p.Peek().Kind == tokenLeftParen && p.IsKeyword(keywordROLLUP) {
+		return p.parseRollupFunction(outputs)
+	}
 	var columns []ast.ColumnReference
 	var keys []ast.Expression
 
@@ -238,6 +249,43 @@ func (p *parser) parseGroupByClause(outputs []ast.RawOutputColumn) ([]ast.Column
 	}
 
 	return columns, nil
+}
+
+// parseRollupFunction parses GROUP BY ROLLUP (keys), MySQL's spelling of WITH ROLLUP,
+// which adds the same subtotal and grand total rows. MariaDB refuses it.
+//
+// Takes outputs ([]ast.RawOutputColumn) which is the select list, whose items a key may
+// name by position.
+//
+// Returns []ast.ColumnReference which lists the grouped plain columns.
+// Returns *ast.GroupingSets which holds the keys, or nil when the engine refuses the
+// form.
+func (p *parser) parseRollupFunction(outputs []ast.RawOutputColumn) ([]ast.ColumnReference, *ast.GroupingSets) {
+	if p.noRollupFunction {
+		p.recordSyntaxError(p.syntaxErrorAt("this engine has no ROLLUP (...) grouping; write GROUP BY keys WITH ROLLUP"))
+		return nil, nil
+	}
+	p.Advance()
+	p.Advance()
+	var columns []ast.ColumnReference
+	var keys []ast.Expression
+	for !p.AtEnd() {
+		key, column, isColumn := p.parseGroupingElement(outputs)
+		keys = append(keys, key)
+		if isColumn {
+			columns = append(columns, column)
+		}
+		if p.Current().Kind != tokenComma {
+			break
+		}
+		p.Advance()
+	}
+	if p.Current().Kind != tokenRightParen {
+		p.recordSyntaxError(p.syntaxErrorAt("expected ')' to close ROLLUP"))
+		return columns, nil
+	}
+	p.Advance()
+	return columns, &ast.GroupingSets{Keys: keys, FillsDefaults: false}
 }
 
 // parseGroupingElement parses one GROUP BY element. An element that is an integer alone
@@ -272,6 +320,15 @@ func (p *parser) parseOrderByList() {
 	p.skipTokensUntilTerminatorSet(orderByTerminators)
 }
 
+// missingPaginationValue reports whether a LIMIT or OFFSET has no value: the statement
+// ends, a parenthesis closes, or a clause starts where the value belongs.
+//
+// Returns bool which is true when the value is missing.
+func (p *parser) missingPaginationValue() bool {
+	return p.AtEnd() || p.Current().Kind == tokenRightParen || p.Current().Kind == tokenComma ||
+		p.IsKeyword("OFFSET", "FETCH", "FOR", "UNION", "INTERSECT", "EXCEPT", "ORDER", "LIMIT", "RETURNING", "WINDOW", "LOCK")
+}
+
 // consumeParameterOrAdvance registers a parameter token or advances past the current
 // token when it is not a parameter.
 //
@@ -283,6 +340,10 @@ func (p *parser) parseOrderByList() {
 // Takes context (sqlmodel.ParameterContext) which annotates the registered parameter when
 // one is consumed.
 func (p *parser) consumeParameterOrAdvance(context sqlmodel.ParameterContext) {
+	if p.missingPaginationValue() {
+		p.recordSyntaxError(p.syntaxErrorAt("expected a row count"))
+		return
+	}
 	if isParameterToken(p.Current().Kind) {
 		parameterToken := p.Current()
 		p.Advance()
@@ -294,6 +355,7 @@ func (p *parser) consumeParameterOrAdvance(context sqlmodel.ParameterContext) {
 
 // parseLimitOffset parses LIMIT and OFFSET clauses in either order.
 func (p *parser) parseLimitOffset() {
+	p.rowLimited = true
 	if p.MatchKeyword(keywordOFFSET) {
 		p.consumeParameterOrAdvance(sqlmodel.ParameterContextOffset)
 		if p.offsetFetch && !p.MatchKeyword("ROWS") {
@@ -376,8 +438,10 @@ func (p *parser) parseCompoundQuery() ast.CompoundOperator {
 func (p *parser) skipForUpdateClause() {
 	if p.MatchKeyword(keywordFOR) {
 		*p.rowLocked = true
-		p.MatchKeyword("UPDATE")
-		p.MatchKeyword("SHARE")
+		if !p.MatchKeyword("UPDATE") && !p.MatchKeyword("SHARE") {
+			p.reportSyntaxError("expected UPDATE or SHARE after FOR")
+			return
+		}
 		if p.MatchKeyword("OF") {
 			p.parseForUpdateTableList()
 		}
@@ -392,9 +456,8 @@ func (p *parser) skipForUpdateClause() {
 
 	if p.MatchKeyword("LOCK") {
 		*p.rowLocked = true
-		if p.MatchKeyword("IN") {
-			p.MatchKeyword("SHARE")
-			p.MatchKeyword("MODE")
+		if !p.MatchKeyword("IN") || !p.MatchKeyword("SHARE") || !p.MatchKeyword("MODE") {
+			p.reportSyntaxError("expected IN SHARE MODE after LOCK")
 		}
 	}
 }

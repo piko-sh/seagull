@@ -1,0 +1,4 @@
+{
+  "description": "Through the native driver, a DateTime64 parameter before 1970 is written as its exact instant when it is a whole second or more before 1970. One less than a second before 1970 is refused with an error, as ClickHouse would read its Unix time, such as -0.000001, as after 1970.",
+  "emitter": "native"
+}

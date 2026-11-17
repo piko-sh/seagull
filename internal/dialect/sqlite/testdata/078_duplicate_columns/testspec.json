@@ -1,0 +1,4 @@
+{
+  "description": "SQLite compares column names without case, so a table declaring a and A declares one column twice, which it refuses.",
+  "expectedDiagnosticCount": 1
+}

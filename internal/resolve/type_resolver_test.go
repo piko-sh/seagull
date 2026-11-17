@@ -210,7 +210,7 @@ func TestTypeResolver_ResolveOutputColumns(t *testing.T) {
 			wantDiagnostics: 0,
 		},
 		{
-			name: "expression column with cast resolves to cast type",
+			name: "expression column with a converting cast resolves to cast type without a source",
 			rawColumns: []ast.RawOutputColumn{
 				{
 					Name: "total_text",
@@ -223,11 +223,9 @@ func TestTypeResolver_ResolveOutputColumns(t *testing.T) {
 			scope: setupTypeResolverScope,
 			wantColumns: []sqlmodel.OutputColumn{
 				{
-					Name:         "total_text",
-					SQLType:      sqlmodel.SQLType{EngineName: "text", Category: sqlmodel.TypeCategoryUnknown},
-					Nullable:     false,
-					SourceTable:  "users",
-					SourceColumn: "id",
+					Name:     "total_text",
+					SQLType:  sqlmodel.SQLType{EngineName: "text", Category: sqlmodel.TypeCategoryUnknown},
+					Nullable: false,
 				},
 			},
 			wantDiagnostics: 0,
@@ -1704,6 +1702,17 @@ func TestDisambiguateParameterNames(t *testing.T) {
 			expected: []string{"id", "id_2", "id_3"},
 		},
 		{
+			name: "suffixes preserve names already declared by other parameters",
+			input: []sqlmodel.QueryParameter{
+				{Number: 1, Name: "id"},
+				{Number: 2, Name: "id"},
+				{Number: 3, Name: "id_2"},
+				{Number: 4, Name: "id"},
+				{Number: 5, Name: "id_3"},
+			},
+			expected: []string{"id", "id_4", "id_2", "id_5", "id_3"},
+		},
+		{
 			name: "interleaved duplicates suffix only the colliders",
 			input: []sqlmodel.QueryParameter{
 				{Number: 1, Name: "id"},
@@ -2718,6 +2727,39 @@ func TestApplyCastColumnSource(t *testing.T) {
 	})
 }
 
+func TestCastPreservesValues(t *testing.T) {
+	t.Parallel()
+	limit := func(value int) *int { return &value }
+	integer := sqlmodel.NewIntegerType("int4", 32, false)
+	wider := sqlmodel.NewIntegerType("int8", 64, false)
+	text := sqlmodel.NewSQLType(sqlmodel.TypeCategoryText, "text")
+	short := text
+	short.Length = limit(3)
+	long := text
+	long.Length = limit(10)
+	timestamp := sqlmodel.NewSQLType(sqlmodel.TypeCategoryTemporal, "timestamp")
+	timestamp.Temporal = sqlmodel.TemporalKindTimestamp
+	date := timestamp
+	date.Temporal = sqlmodel.TemporalKindDate
+	for _, test := range []struct {
+		name           string
+		source, target sqlmodel.SQLType
+		want           bool
+	}{
+		{name: "widening an integer keeps its values", source: integer, target: wider, want: true},
+		{name: "narrowing an integer changes its values", source: wider, target: integer, want: false},
+		{name: "an integer cast to text compares differently", source: integer, target: text, want: false},
+		{name: "unbounded text cast to a bounded varchar truncates", source: text, target: short, want: false},
+		{name: "a longer bound keeps every value", source: short, target: long, want: true},
+		{name: "a timestamp cast to a date drops its time", source: timestamp, target: date, want: false},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, test.want, castPreservesValues(test.source, test.target))
+		})
+	}
+}
+
 func resolverMemberScope() *ScopeChain {
 	return &ScopeChain{
 		Tables: map[string]*ScopedTable{
@@ -3139,4 +3181,18 @@ func TestAColumnOverrideReachesADeclaredParameterInACTEBody(t *testing.T) {
 	require.Len(t, parameters, 1)
 	require.NotNil(t, parameters[0].GoTypeOverride)
 	require.Equal(t, "Addr", parameters[0].GoTypeOverride.Name)
+}
+
+func TestReadsAsComputedTime(t *testing.T) {
+	t.Parallel()
+	timestamp := sqlmodel.NewTemporalType("datetime", sqlmodel.TemporalKindTimestamp, false)
+	date := sqlmodel.NewTemporalType("date", sqlmodel.TemporalKindDate, false)
+	clock := sqlmodel.NewTemporalType("time", sqlmodel.TemporalKindTime, false)
+	column := &ast.ColumnRefExpression{TableAlias: "events", ColumnName: "created_at"}
+	call := &ast.FunctionCallExpression{FunctionName: "max", Arguments: []ast.Expression{column}}
+	assert.True(t, readsAsComputedTime(timestamp, call), "an aggregate's timestamp is computed")
+	assert.True(t, readsAsComputedTime(date, &ast.CastExpression{Inner: column, TypeName: "date"}), "a cast's date is computed")
+	assert.False(t, readsAsComputedTime(timestamp, column), "a column read keeps its declared type")
+	assert.False(t, readsAsComputedTime(clock, call), "a time of day is not converted by the drivers either way")
+	assert.False(t, readsAsComputedTime(sqlmodel.NewSQLType(sqlmodel.TypeCategoryText, "text"), call))
 }

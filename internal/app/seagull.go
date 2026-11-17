@@ -183,7 +183,7 @@ func New(engine dialect.DialectPort, options ...Option) (*Generator, error) {
 	if err != nil {
 		return nil, err
 	}
-	info, err := dialectInfo(logging.ContextWithLogger(context.Background(), settings.logger), engine)
+	info, err := dialectInfo(logging.WithFallbackLogger(context.Background(), settings.logger), engine)
 	if err != nil {
 		return nil, err
 	}
@@ -332,13 +332,13 @@ func (r pipelineRequest) PackageImportPath() string {
 }
 
 // ContextWithLogger returns a copy of ctx that carries logger, so a generation run with
-// that context logs through it. WithLogger sets a logger for every run instead.
+// that context logs through it. It wins over a logger set with WithLogger.
 //
 // Takes logger (*slog.Logger) which receives the log records; nil returns ctx unchanged.
 //
 // Returns context.Context which carries the logger.
 func ContextWithLogger(ctx context.Context, logger *slog.Logger) context.Context {
-	return logging.ContextWithLogger(ctx, logger)
+	return logging.WithLogger(ctx, logger)
 }
 
 // requireDialect reports a missing dialect.

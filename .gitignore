@@ -1,4 +1,5 @@
 /bin/
+/.cache/
 *.test
 coverage.out
 /output

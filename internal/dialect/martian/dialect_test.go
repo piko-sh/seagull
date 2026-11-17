@@ -82,7 +82,7 @@ func capturingContext(t *testing.T) (context.Context, *bytes.Buffer) {
 	t.Helper()
 
 	logs := &bytes.Buffer{}
-	return logging.ContextWithLogger(t.Context(), slog.New(slog.NewJSONHandler(logs, nil))), logs
+	return logging.WithLogger(t.Context(), slog.New(slog.NewJSONHandler(logs, nil))), logs
 }
 
 func logRecords(t *testing.T, logs *bytes.Buffer) []map[string]any {

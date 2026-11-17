@@ -1,0 +1,4 @@
+{
+  "description": "LAG, LEAD, FIRST_VALUE, LAST_VALUE and NTH_VALUE return the type of the column they read, as DuckDB types them, so each of them over a BIGINT column is a nullable BIGINT.",
+  "expectedDiagnosticCount": 0
+}

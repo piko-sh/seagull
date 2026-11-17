@@ -26,12 +26,28 @@ type SeedFile struct {
 	// Filename holds the original base name for error reporting.
 	Filename string
 
-	// Checksum holds the SHA-256 hex digest of Content.
+	// Checksum holds the SHA-256 hex digest of Content with a byte order mark removed and
+	// CRLF line endings written as LF.
 	Checksum string
+
+	// LegacyChecksum holds the SHA-256 hex digest of the content as written, which earlier
+	// releases recorded, when it differs from Checksum because the content has a byte order
+	// mark or CRLF line endings. It is empty otherwise.
+	LegacyChecksum string
 
 	// Content holds the raw SQL bytes of the seed file.
 	Content []byte
 
 	// Version holds the numeric prefix parsed from the filename.
 	Version int64
+}
+
+// MatchesChecksum reports whether a recorded checksum is this file's, as recorded now or
+// by an earlier release that hashed the bytes as written.
+//
+// Takes recorded (string) which is the checksum the history holds.
+//
+// Returns bool which is true when the file is the one recorded.
+func (file *SeedFile) MatchesChecksum(recorded string) bool {
+	return matchesChecksum(recorded, file.Checksum, file.LegacyChecksum)
 }

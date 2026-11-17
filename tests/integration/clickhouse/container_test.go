@@ -33,7 +33,7 @@ var testConnectionString string
 
 func startClickHouseContainer(ctx context.Context) (testcontainers.Container, string, error) {
 	request := testcontainers.ContainerRequest{
-		Image:        "clickhouse/clickhouse-server:25.4-alpine",
+		Image:        "clickhouse/clickhouse-server:26.8.39.19-alpine",
 		ExposedPorts: []string{"9000/tcp", "8123/tcp"},
 		Env: map[string]string{
 			"CLICKHOUSE_DB":                        "default",

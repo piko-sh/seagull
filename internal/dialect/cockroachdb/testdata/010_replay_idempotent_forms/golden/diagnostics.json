@@ -1,0 +1,10 @@
+[
+  {
+    "Code": "Q043",
+    "Column": 1,
+    "Filename": "001_schema.up.sql",
+    "Line": 1,
+    "Message": "migration mixes a non-transactional statement (sgl.migration(no_transaction: true) or an auto-detected statement such as CREATE INDEX CONCURRENTLY) with other statements; the whole migration runs without a transaction and is not atomic, so move the non-transactional statement into its own migration file",
+    "Severity": "warning"
+  }
+]

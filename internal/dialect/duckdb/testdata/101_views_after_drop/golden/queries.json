@@ -1,0 +1,35 @@
+[
+  {
+    "Command": "many",
+    "Filename": "views.sql",
+    "Line": 1,
+    "Name": "ReadView",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "v",
+        "SourceTable": "v"
+      },
+      {
+        "Name": "label",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        },
+        "SourceColumn": "label",
+        "SourceQualifier": "v",
+        "SourceTable": "v"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ReadView, command: many)\nSELECT id, label FROM v;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:label⟩ FROM v;"
+  }
+]

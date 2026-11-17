@@ -1,0 +1,182 @@
+[
+  {
+    "Command": "many",
+    "Filename": "searches.sql",
+    "Line": 1,
+    "Name": "Search1",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "posts",
+        "SourceTable": "posts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Search1, command: many)\nSELECT id FROM posts WHERE MATCH (title) AGAINST (?);",
+    "Template": "SELECT ⟨c0:id⟩ FROM posts WHERE MATCH (title) AGAINST (⟨p0⟩);⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "searches.sql",
+    "Line": 4,
+    "Name": "Search2",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "notes",
+        "SourceTable": "notes"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Search2, command: many)\nSELECT id FROM notes WHERE MATCH (txt) AGAINST (?);",
+    "Template": "SELECT ⟨c0:id⟩ FROM notes WHERE MATCH (txt) AGAINST (⟨p0⟩);⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "searches.sql",
+    "Line": 7,
+    "Name": "Search3",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "posts",
+        "SourceTable": "posts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Search3, command: many)\nSELECT id FROM posts WHERE MATCH (title, body) AGAINST (?);",
+    "Template": "SELECT ⟨c0:id⟩ FROM posts WHERE MATCH (title, body) AGAINST (⟨p0⟩);⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "searches.sql",
+    "Line": 10,
+    "Name": "Search4",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "p",
+        "SourceTable": "posts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Search4, command: many)\nSELECT p.id FROM posts p WHERE MATCH (p.body, p.title) AGAINST (?);",
+    "Template": "SELECT ⟨c0:p.id⟩ FROM posts p WHERE MATCH (p.body, p.title) AGAINST (⟨p0⟩);⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "searches.sql",
+    "Line": 13,
+    "Name": "Search5",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "posts",
+        "SourceTable": "posts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "p1",
+        "Number": 1,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      },
+      {
+        "Context": "function-argument",
+        "Kind": "none",
+        "Name": "p2",
+        "Number": 2,
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "text"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Search5, command: many)\nSELECT id FROM posts WHERE MATCH (body, title, title) AGAINST (?) OR MATCH (id) AGAINST (?);",
+    "Template": "SELECT ⟨c0:id⟩ FROM posts WHERE MATCH (body, title, title) AGAINST (⟨p0⟩) OR MATCH (id) AGAINST (⟨p1⟩);⟨arguments p0 p1⟩"
+  }
+]

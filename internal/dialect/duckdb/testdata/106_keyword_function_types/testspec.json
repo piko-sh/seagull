@@ -1,0 +1,4 @@
+{
+  "description": "DuckDB keyword functions without parentheses and the ones it also takes as calls, typed as DuckDB returns them: CURRENT_TIME and get_current_time() are TIME WITH TIME ZONE, LOCALTIME is TIME and LOCALTIMESTAMP is TIMESTAMP.",
+  "expectedDiagnosticCount": 0
+}

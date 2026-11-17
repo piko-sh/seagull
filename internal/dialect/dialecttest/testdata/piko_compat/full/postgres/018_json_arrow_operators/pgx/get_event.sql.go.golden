@@ -11,16 +11,21 @@ import (
 const getevent = `SELECT id, payload->>'name' AS event_name, payload->'metadata' AS meta FROM events WHERE id = $1;`
 
 type GetEventRow struct {
-	ID        int32       `json:"id"`
-	EventName *string     `json:"event_name"`
-	Meta      dbjson.JSON `json:"meta"`
+	ID        int32        `json:"id"`
+	EventName Null[string] `json:"event_name"`
+	Meta      dbjson.JSON  `json:"meta"`
 }
 
 func (queries *Queries) GetEvent(ctx context.Context, id int32) (GetEventRow, error) {
-	var row GetEventRow
-	err := queries.db.QueryRow(ctx, getevent, id).Scan(&row.ID, &row.EventName, &row.Meta)
+	scanned := &struct {
+		row     GetEventRow
+		targets [3]any
+	}{}
+	row := &scanned.row
+	scanned.targets = [3]any{&row.ID, &row.EventName, &row.Meta}
+	err := queries.db.QueryRow(ctx, getevent, id).Scan(scanned.targets[:]...)
 	if err != nil {
 		return GetEventRow{}, err
 	}
-	return row, nil
+	return *row, nil
 }

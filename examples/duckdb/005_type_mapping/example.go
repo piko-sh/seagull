@@ -32,17 +32,7 @@ import (
 	"seagull.sh/seagull/examples/duckdb/005_type_mapping/internal/store"
 )
 
-// run records a landing of fish and reads it back, printing the Go type sgl chose for
-// each column. DuckDB declares every column's type exactly, and Seagull maps each one:
-//
-//   - SMALLINT, INTEGER and BIGINT give int16, int32 and int64, and the unsigned UTINYINT
-//     gives uint8;
-//   - DOUBLE gives float64, but REAL is DuckDB's 4-byte float, so it gives float32;
-//   - TIMESTAMP and DATE give time.Time, and UUID gives uuid.UUID from
-//     github.com/google/uuid;
-//   - HUGEINT is a 128-bit integer with no Go equivalent, so it gives *big.Int, the type
-//     duckdb-go returns, even when the column is NOT NULL;
-//   - BLOB gives []byte, and a nullable VARCHAR gives *string.
+// run records a fish landing and prints its generated Go field types.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes output (io.Writer) which receives one line per column.
@@ -70,7 +60,7 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 		CatchID:    uuid.MustParse("6f1c2a5e-4d3b-4c2a-9e8f-1a2b3c4d5e6f"),
 		AuctionLot: lot,
 		Tag:        []byte{0x04, 0xa2, 0x19, 0xf3},
-		Notes:      new("landed at Newlyn"),
+		Notes:      store.NullOf("landed at Newlyn"),
 	})
 	if err != nil {
 		return fmt.Errorf("recording a landing: %w", err)
@@ -95,6 +85,6 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 	fmt.Fprintf(output, "auction_lot  %-10T %s\n", landing.AuctionLot, landing.AuctionLot)
 	// %T prints []byte as []uint8, since byte is an alias for uint8.
 	fmt.Fprintf(output, "tag          %-10T % x\n", landing.Tag, landing.Tag)
-	fmt.Fprintf(output, "notes        %-10T %s\n", landing.Notes, *landing.Notes)
+	fmt.Fprintf(output, "notes        %-10T %s\n", landing.Notes, landing.Notes.V)
 	return nil
 }

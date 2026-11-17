@@ -23,16 +23,16 @@ floor(x double) any
 round(x double) any
 round(x double, d int) any
 truncate(x double, d int) any
-sign(x double) int
-sqrt(x double) double
+sign(x double) bigint
+sqrt(x double) double called-on-null
 power(x double, y double) double
 pow(x double, y double) double
 exp(x double) double
-ln(x double) double
-log(x double) double
-log(base double, x double) double
-log2(x double) double
-log10(x double) double
+ln(x double) double called-on-null
+log(x double) double called-on-null
+log(base double, x double) double called-on-null
+log2(x double) double called-on-null
+log10(x double) double called-on-null
 mod(x double, y double) any called-on-null
 pi() double never-null
 rand() double never-null
@@ -72,10 +72,10 @@ trim(string text) text
 ltrim(string text) text
 rtrim(string text) text
 
-lpad(string text, length int, pad text) text
-lpad(string text, length int) text
-rpad(string text, length int, pad text) text
-rpad(string text, length int) text
+lpad(string text, length int, pad text) text called-on-null
+lpad(string text, length int) text called-on-null
+rpad(string text, length int, pad text) text called-on-null
+rpad(string text, length int) text called-on-null
 
 repeat(string text, count int) text
 replace(string text, from_str text, to_str text) text
@@ -96,7 +96,7 @@ find_in_set(string text, string_list text) int
 
 ascii(string text) int
 hex(x any) text
-unhex(string text) blob
+unhex(string text) blob called-on-null
 char(code int) blob never-null variadic=1
 weight_string(string text) blob
 space(n int) text
@@ -130,8 +130,8 @@ aes_encrypt(string text, key text, init_vector text?) varbinary
 aes_decrypt(crypt varbinary, key text, init_vector text?) varbinary called-on-null
 compress(string text) varbinary
 uncompress(string varbinary) blob called-on-null
-uncompressed_length(string varbinary) int
-random_bytes(length int) varbinary
+uncompressed_length(string varbinary) int called-on-null
+random_bytes(length int) varbinary called-on-null
 
 now() datetime never-null
 now(precision int) datetime never-null
@@ -177,7 +177,7 @@ from_days(days int) date
 time_to_sec(time time) bigint
 sec_to_time(seconds bigint) time
 timestamp(expression datetime) datetime
-timestamp(expression datetime, time any) datetime
+timestamp(expression datetime, time any) datetime called-on-null
 
 extract(value any) any
 
@@ -188,8 +188,8 @@ date_format(date datetime, format text) text
 time_format(time time, format text) text
 get_format(kind text, standard text) text
 str_to_date(string text, format text) datetime called-on-null
-from_unixtime(timestamp bigint) datetime
-from_unixtime(timestamp bigint, format text) text
+from_unixtime(timestamp bigint) datetime called-on-null
+from_unixtime(timestamp bigint, format text) text called-on-null
 unix_timestamp() bigint called-on-null
 
 unix_timestamp(date datetime) any
@@ -202,8 +202,8 @@ date_add(date datetime, interval any) any
 date_sub(date datetime, interval any) any
 adddate(date datetime, days any) any
 subdate(date datetime, days any) any
-addtime(date datetime, time any) any
-subtime(date datetime, time any) any
+addtime(date datetime, time any) any called-on-null
+subtime(date datetime, time any) any called-on-null
 period_add(period int, months int) bigint
 period_diff(period1 int, period2 int) bigint
 
@@ -249,8 +249,8 @@ json_objectagg(key text, value any) json called-on-null aggregate
 
 count() bigint never-null aggregate
 count(x any) bigint never-null aggregate variadic=1
-sum(x any) decimal called-on-null aggregate
-avg(x any) double called-on-null aggregate
+sum(x any) any called-on-null aggregate
+avg(x any) any called-on-null aggregate
 min(x any) any called-on-null aggregate
 max(x any) any called-on-null aggregate
 group_concat(expression any) text called-on-null aggregate
@@ -291,14 +291,14 @@ version() text never-null
 database() text never-null
 user() text never-null
 current_user() text never-null
-last_insert_id() bigint called-on-null
+last_insert_id() bigint_unsigned called-on-null
 last_insert_id(value bigint) bigint_unsigned
 uuid() text never-null
 uuid_short() bigint_unsigned never-null
 uuid_to_bin(uuid text, swap_flag any?) varbinary nulling-argument=0
 bin_to_uuid(binary varbinary, swap_flag any?) text nulling-argument=0
 is_uuid(string text) boolean
-connection_id() bigint never-null
+connection_id() bigint_unsigned never-null
 session_user() text never-null
 system_user() text never-null
 schema() text called-on-null
@@ -317,12 +317,12 @@ get_lock(name text, timeout double) int called-on-null
 release_lock(name text) int called-on-null
 is_free_lock(name text) int called-on-null
 is_used_lock(name text) bigint called-on-null
-release_all_locks() bigint never-null
+release_all_locks() bigint_unsigned never-null
 
-inet_aton(expression text) bigint
-inet_ntoa(expression bigint) text
-inet6_aton(address varchar) varbinary
-inet6_ntoa(value varbinary) varchar
+inet_aton(expression text) bigint called-on-null
+inet_ntoa(expression bigint) text called-on-null
+inet6_aton(address varchar) varbinary called-on-null
+inet6_ntoa(value varbinary) varchar called-on-null
 is_ipv4(expression text) bigint
 is_ipv6(expression text) bigint
 is_ipv4_mapped(expression varbinary) bigint

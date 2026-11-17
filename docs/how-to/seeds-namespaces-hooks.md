@@ -42,7 +42,12 @@ if err != nil {
 }
 ```
 
-A successful seed is recorded in its own history, so later calls skip it. A seed and its history normally share a transaction; ClickHouse lacks that guarantee, and schema-changing seeds can break it on engines with implicit DDL commits. Review a failed seed's database effects before retrying.
+A successful seed is recorded in its own history, so later calls skip it. A seed and its
+history normally share a transaction, so a failed seed leaves no changes. ClickHouse
+records each completed statement and resumes a failed seed without repeating it. If
+you edit an interrupted seed, the runner returns `migrate.ErrSeedChangedSinceInterrupted`.
+Restore the file or reseed. On engines whose DDL commits implicitly, a failed seed with
+schema changes can leave partial effects. Review those effects before retrying.
 
 From the CLI, inspect and apply the configured directory with:
 

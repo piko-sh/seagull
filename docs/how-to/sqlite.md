@@ -73,8 +73,8 @@ Run `sgl generate`, apply the migration, and construct `store.New(database)`. Pa
 	fmt.Fprintln(output, `descriptions matching "gull*":`)
 	for _, place := range found {
 		excerpt := ""
-		if place.Excerpt != nil {
-			excerpt = *place.Excerpt
+		if place.Excerpt.Valid {
+			excerpt = place.Excerpt.V
 		}
 		fmt.Fprintf(output, "  %-12s %s\n", place.Name, excerpt)
 	}

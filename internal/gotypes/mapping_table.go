@@ -22,7 +22,20 @@ import (
 	"slices"
 	"strings"
 
+	"seagull.sh/seagull/internal/emit"
+	"seagull.sh/seagull/internal/gogen/goast"
 	"seagull.sh/seagull/internal/sqlmodel"
+)
+
+const (
+	// pointerPrefix starts the name of a Go pointer type.
+	pointerPrefix = "*"
+
+	// slicePrefix starts the name of a Go slice type.
+	slicePrefix = "[]"
+
+	// mapPrefix starts the name of a Go map type.
+	mapPrefix = "map["
 )
 
 // MappingTable maps SQL types to Go types: the configured type overrides first, then the
@@ -41,6 +54,10 @@ type MappingTable struct {
 	// same SQL type. An entry with a SQLName matches the type of that engine name, and one
 	// without matches its whole category.
 	Mappings []Mapping
+
+	// NullValues resolves a nullable value to the generated Null[T] value type rather than
+	// to a pointer, *T.
+	NullValues bool
 }
 
 // Resolve maps a SQL type to the Go type the table assigns it, for a NOT NULL or a
@@ -55,7 +72,11 @@ type MappingTable struct {
 //
 // Returns sqlmodel.GoType which is the Go type.
 func (t *MappingTable) Resolve(sqlType sqlmodel.SQLType, nullable bool) sqlmodel.GoType {
-	return t.resolveDepth(sqlType, nullable, 0)
+	resolved := t.resolveDepth(sqlType, nullable, 0)
+	if nullable && t != nil && t.NullValues && holdsScalar(sqlType.Category) && !t.heldByPointer(sqlType) {
+		return NullValue(resolved)
+	}
+	return resolved
 }
 
 // NamesType reports whether a SQL type uses a generated enum or struct name.
@@ -197,6 +218,18 @@ func (t *MappingTable) candidates(sqlType sqlmodel.SQLType) (exactMatch *Mapping
 	return foldMatch, categoryMatch
 }
 
+// heldByPointer reports whether a type's NOT NULL value is already a pointer, as DuckDB's
+// HUGEINT is a *big.Int, so its nullable value stays the same pointer, nil for NULL,
+// rather than a Null of a value the driver hands over through a pointer.
+//
+// Takes sqlType (sqlmodel.SQLType) which is the SQL type.
+//
+// Returns bool which is true when the NOT NULL Go type is a pointer.
+func (t *MappingTable) heldByPointer(sqlType sqlmodel.SQLType) bool {
+	notNull := t.resolveDepth(sqlType, false, 0)
+	return notNull.Composite == nil && strings.HasPrefix(notNull.Name, pointerPrefix)
+}
+
 // Mapping maps a SQL type to Go types for both nullable and non-nullable contexts.
 type Mapping struct {
 	// NotNull is the Go type to use when the column is NOT NULL.
@@ -225,4 +258,53 @@ type Mapping struct {
 // Returns bool which is true when the mapping applies.
 func (m *Mapping) coversSchema(schema string) bool {
 	return m.SQLSchema == "" || schema == "" || strings.EqualFold(m.SQLSchema, schema)
+}
+
+// holdsScalar reports whether a SQL type category contains one scalar value.
+//
+// Structs, composites, maps, and arrays contain parts. Nullable values of those types
+// stay pointers so drivers can handle their parts. Network addresses also stay pointers
+// because drivers use their own types, such as clickhouse-go's net.IP.
+//
+// Takes category (sqlmodel.SQLTypeCategory) which is the SQL type's category.
+//
+// Returns bool which is true for a scalar category.
+func holdsScalar(category sqlmodel.SQLTypeCategory) bool {
+	switch category {
+	case sqlmodel.TypeCategoryStruct, sqlmodel.TypeCategoryComposite, sqlmodel.TypeCategoryMap, sqlmodel.TypeCategoryArray,
+		sqlmodel.TypeCategoryNetwork:
+		return false
+	default:
+		return true
+	}
+}
+
+// NullValue turns a pointer to a named type, *T, into the generated Null[T] value type,
+// and leaves every other type, such as a slice, a map or a pointer to a struct, as it is.
+//
+// Takes goType (sqlmodel.GoType) which is the nullable Go type.
+//
+// Returns sqlmodel.GoType which is Null[T], or goType unchanged.
+func NullValue(goType sqlmodel.GoType) sqlmodel.GoType {
+	element, pointer := strings.CutPrefix(goType.Name, pointerPrefix)
+	if goType.Composite != nil || !pointer || element == "" || !namesValueType(element) {
+		return goType
+	}
+	inner := goast.WrittenGoType(goType.Package, element)
+	return sqlmodel.NewGoInstance(sqlmodel.GoType{Composite: nil, Package: "", Name: emit.InlineNullTypeName}, inner)
+}
+
+// namesValueType reports whether a Go type name, written after a pointer's star, names a
+// value type rather than another pointer, a slice or a map.
+//
+// Takes name (string) which is the type's name.
+//
+// Returns bool which is true for a value type.
+func namesValueType(name string) bool {
+	for _, prefix := range []string{pointerPrefix, slicePrefix, mapPrefix} {
+		if strings.HasPrefix(name, prefix) {
+			return false
+		}
+	}
+	return true
 }

@@ -1,0 +1,4 @@
+{
+  "description": "PostgreSQL 18 makes NOT NULL a constraint: an unnamed one is boats_column_not_null, a column's CONSTRAINT name NOT NULL keeps its name, and [CONSTRAINT name] NOT NULL column is a table constraint in CREATE TABLE and ALTER TABLE ADD. DROP CONSTRAINT of either name lets the column hold NULL, so name, harbour and berth read as nullable while skipper and crew do not, as PostgreSQL 18.7 shows.",
+  "expectedDiagnosticCount": 0
+}

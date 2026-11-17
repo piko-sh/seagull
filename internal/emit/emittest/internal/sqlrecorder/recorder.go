@@ -30,6 +30,7 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"io"
+	"regexp"
 	"sync"
 )
 
@@ -44,6 +45,9 @@ type Statement struct {
 }
 
 var (
+	// placeholderName matches a named placeholder, {name:Type}, capturing its name.
+	placeholderName = regexp.MustCompile(`\{([A-Za-z_][A-Za-z0-9_]*):`)
+
 	// recordedMutex guards recorded.
 	recordedMutex sync.Mutex
 
@@ -179,8 +183,32 @@ func (statement preparedStatement) Query(arguments []driver.Value) (driver.Rows,
 // Returns driver.Result which reports no change.
 // Returns error which is always nil.
 func (statement preparedStatement) ExecContext(_ context.Context, arguments []driver.NamedValue) (driver.Result, error) {
-	record(statement.query, arguments)
+	record(statement.query, batchRow(statement.query, arguments))
 	return noChange{}, nil
+}
+
+// batchRow names a prepared INSERT's positional arguments from its placeholders.
+//
+// clickhouse-go appends batch arguments by position. Other arguments remain unchanged.
+//
+// Takes query (string) which is the statement's text.
+// Takes arguments ([]driver.NamedValue) which are its arguments.
+//
+// Returns []driver.NamedValue which holds the arguments, named where the batch names
+// them.
+func batchRow(query string, arguments []driver.NamedValue) []driver.NamedValue {
+	matches := placeholderName.FindAllStringSubmatch(query, -1)
+	if len(matches) == 0 || len(matches) != len(arguments) {
+		return arguments
+	}
+	named := make([]driver.NamedValue, len(arguments))
+	for index, argument := range arguments {
+		if argument.Name != "" {
+			return arguments
+		}
+		named[index] = driver.NamedValue{Name: matches[index][1], Ordinal: argument.Ordinal, Value: argument.Value}
+	}
+	return named
 }
 
 // QueryContext records the statement run and answers it with no rows.

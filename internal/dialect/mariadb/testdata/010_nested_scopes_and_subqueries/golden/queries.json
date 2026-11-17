@@ -222,6 +222,9 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Compound": true
+    },
     "SQL": "-- sgl.query(name: DerivedTableInALaterArm, command: many)\nSELECT id, name FROM authors UNION ALL SELECT d.id, d.title FROM (SELECT id, title FROM books) d;",
     "Template": "SELECT id, name FROM authors UNION ALL SELECT d.id, d.title FROM (SELECT id, title FROM books) d;"
   },
@@ -319,6 +322,9 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Compound": true
+    },
     "SQL": "-- sgl.query(name: NullInTheFirstBranch, command: many)\nSELECT NULL AS name UNION ALL SELECT name FROM authors;",
     "Template": "SELECT NULL AS name UNION ALL SELECT name FROM authors;"
   }

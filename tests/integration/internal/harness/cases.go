@@ -288,6 +288,8 @@ func runCase(t *testing.T, suite *Suite, caseDirectory string) {
 // test's deadline, and the function that ends it. That function, deferred, fails the case
 // with the cause when the context ended before the case did.
 //
+// Takes t (*testing.T) which is the case's test.
+//
 // Returns context.Context which bounds the case.
 // Returns func() which reports an early end and releases the context.
 func caseContext(t *testing.T) (context.Context, func()) {

@@ -1,0 +1,4 @@
+{
+  "description": "DuckDB resolves a view's tables by name, so a view whose table was dropped reads the table created again under the name.",
+  "expectedDiagnosticCount": 0
+}

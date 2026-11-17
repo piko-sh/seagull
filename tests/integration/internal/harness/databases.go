@@ -137,8 +137,8 @@ type Databases struct {
 }
 
 // Prepare creates a case's database, applies the case's forward migrations in it, and
-// returns the runner's DATABASE_URL, which names that database. The database is dropped
-// when the case ends.
+// gives back the runner's DATABASE_URL, which names that database. The database is
+// dropped when the case ends.
 //
 // Takes caseDirectory (string) which is the case's directory.
 //

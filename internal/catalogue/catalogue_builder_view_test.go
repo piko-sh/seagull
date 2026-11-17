@@ -19,6 +19,7 @@
 package catalogue
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -54,6 +55,7 @@ func TestEveryTypeNamingAnEnumTakesItsChangedValues(t *testing.T) {
 			t.Parallel()
 
 			catalogue, diagnostics := replayPostgresMigrations(t, setup, testCase.statements)
+			diagnostics = withoutMixedTransaction(diagnostics)
 
 			require.Empty(t, diagnosticMessages(diagnostics))
 			public := catalogue.Schemas["public"]
@@ -95,6 +97,7 @@ func TestRenamingAnEnumValueThatIsMissingOrTakenIsRefused(t *testing.T) {
 			t.Parallel()
 
 			catalogue, diagnostics := replayPostgresMigrations(t, "CREATE TYPE mood AS ENUM ('a', 'b');\n"+testCase.statement)
+			diagnostics = withoutMixedTransaction(diagnostics)
 
 			require.Len(t, diagnostics, 1)
 			require.Equal(t, testCase.wantCode, diagnostics[0].Code)
@@ -258,6 +261,7 @@ func TestCompositeFieldsAndFunctionTypesNamingAnEnumTakeItsValues(t *testing.T) 
 			t.Parallel()
 
 			catalogue, diagnostics := replayPostgresMigrations(t, setup+testCase.statements)
+			diagnostics = withoutMixedTransaction(diagnostics)
 			require.Empty(t, diagnostics)
 
 			schema := catalogue.Schemas["public"]
@@ -274,4 +278,10 @@ func TestCompositeFieldsAndFunctionTypesNamingAnEnumTakeItsValues(t *testing.T) 
 			}
 		})
 	}
+}
+
+func withoutMixedTransaction(diagnostics []diag.SourceError) []diag.SourceError {
+	return slices.DeleteFunc(slices.Clone(diagnostics), func(diagnostic diag.SourceError) bool {
+		return diagnostic.Code == diag.CodeMigrationMixedTransaction
+	})
 }

@@ -39,7 +39,7 @@ A panic in a dialect, or in an `EmitterPort`, `CheckerPort`, `TypeDefaulterPort`
 
 ## Logging
 
-A generator uses the logger supplied by `WithLogger`, then a context logger from `seagull.ContextWithLogger`, then `slog.Default()`. Records about Seagull's own work use two levels below Debug: `slog.Level(-8)` for per-statement tracing and `slog.Level(-6)` for internal detail, such as a run that error diagnostics stopped, which is not logged as a warning because the diagnostics already report it. Warnings, such as a recovered panic, and errors use their usual levels.
+A generator uses a context logger from `seagull.ContextWithLogger`, then the logger supplied by `WithLogger`, then `slog.Default()`. Records about Seagull's own work use two levels below Debug: `slog.Level(-8)` for per-statement tracing and `slog.Level(-6)` for internal detail, such as a run that error diagnostics stopped, which is not logged as a warning because the diagnostics already report it. Warnings, such as a recovered panic, and errors use their usual levels.
 
 ## Stage observation
 
@@ -51,7 +51,7 @@ type ObserverPort interface {
 }
 ```
 
-The returned context carries stage state into nested work. The end callback receives the stage's operational error, which is separate from diagnostics in a completed report. Observer panics and nil end callbacks do not fail the observed run: a panic in `Start` or in the end callback is logged once at warning level, with its stack, through the run's logger (`WithLogger`, then a context logger from `seagull.ContextWithLogger`, then `slog.Default()`), and the stage runs on unobserved.
+The returned context carries stage state into nested work. The end callback receives the stage's operational error, which is separate from diagnostics in a completed report. Observer panics and nil end callbacks do not fail the observed run: a panic in `Start` or in the end callback is logged once at warning level, with its stack, through the run's logger (a context logger from `seagull.ContextWithLogger`, then `WithLogger`, then `slog.Default()`), and the stage runs on unobserved.
 
 `generate` contains catalogue and analysis stages, including individual migrations and queries.
 `generate.plan` covers package naming and emitter checks; `generate.emit` covers each emission attempt.

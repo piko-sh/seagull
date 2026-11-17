@@ -19,6 +19,7 @@ Select the dialect with `dialect: mysql` in `sgl.yaml`, or `dialect_registry.New
 | Generated API | database/sql |
 | Live introspection | No built-in source |
 | Runtime migrations | Non-transactional migrations and implicit DDL commits. Lock keys are scoped to the current schema unless compatibility options change them. |
+| Versions | MySQL 8.4 LTS and 9.7 LTS. MySQL 9 removed `md5`, `sha` and `sha1`, which Seagull still accepts because 8.4 has them. |
 
 [Known limitations](../limitations.md#mysql) records inference gaps and workarounds; the
 [driver matrix](../driver-matrix.md) compares generated APIs.
@@ -36,6 +37,8 @@ The [engine guide](../../how-to/mysql-mariadb.md) and [runnable examples](../../
 - An `ENUM` holds at most 65,535 values and a `SET` at most 64 members, and more is a syntax error ([Q010](../diagnostics.md#q010)). A member written as a hexadecimal or bit literal, such as `0x61`, `X'61'` or `b'1100001'`, is the value it spells, here `a`.
 - Stored functions created in migrations and their read-only detection, with or without `DELIMITER`, which the analyser and the migration runner both honour; see [Migrations and seeds](../migration-runtime.md#statements). A routine's body is kept exactly as the migration writes it, so an `IF ... END IF` or a `CASE ... END` inside it never cuts it short, and a function that writes after such a block changes data.
 - DDL is read whole, and what MySQL refuses is a syntax error ([Q010](../diagnostics.md#q010)): words left after a complete `CREATE`, `DROP`, `ALTER` or `RENAME`, a `CREATE VIEW` without `AS`, a column list missing a comma or its `)`, `DROP INDEX` or a trigger without `ON` and its table, a `FOREIGN KEY` without `REFERENCES` and a table, and an unknown `CREATE DATABASE` or index option. `DROP TABLE a, b` and `DROP VIEW v1, v2` drop every name in the list, `IF EXISTS` applying to each, `DROP TEMPORARY TABLE` is applied, and `ALTER TABLE t ADD (a INT, b INT)`, with or without `COLUMN` and `IF NOT EXISTS`, adds every column it lists. Creating a table under a name a table already holds, or renaming one onto a name in use, is [Q067](../diagnostics.md#q067), and altering a table, or dropping a table, view or function, that does not exist without `IF EXISTS` is [Q068](../diagnostics.md#q068).
+- Renaming a column a check reads, with `RENAME COLUMN` or `CHANGE`, and dropping one a check reads with another column are [Q010](../diagnostics.md#q010), as MySQL refuses them (3959); dropping the only column a check reads drops the check. Declaring a primary key's column `NULL`, in `CREATE TABLE` or `MODIFY`, is Q010 (1171). An index or unique key under a name the table's keys already hold, `PRIMARY` included, is [Q067](../diagnostics.md#q067) (1061), on MariaDB too.
+- A column's `REFERENCES` clause declares a foreign key, as MySQL 9 keeps one, in `CREATE TABLE` and `ADD COLUMN`. Without a column list it references the primary key. The clause ends the column definition, `CONSTRAINT` cannot name it, and `MODIFY` and `CHANGE` take none, so each of those is [Q010](../diagnostics.md#q010). An unnamed foreign key is `t_ibfk_1`, `t_ibfk_2` and so on, after its table, and a rename of the table renames it.
 - A view or `CREATE TABLE ... AS` query with a syntax error fails the statement, and a view may end in `WITH [CASCADED | LOCAL] CHECK OPTION`. A view whose query Seagull does not analyse, a `TABLE` statement or one nested past `max_parse_depth`, is [Q069](../diagnostics.md#q069): it keeps only the column names it declares, without types.
 - `CALL` statements, whose arguments' parameters are typed from the procedure. Statements with nothing to analyse, such as `SET` or `TRUNCATE`, generate with no output.
 - `SHOW WARNINGS` and `SHOW ERRORS` (`Level`, `Code` as an `INT UNSIGNED`, `Message`),
@@ -138,6 +141,15 @@ A placeholder that is the whole search of `MATCH (...) AGAINST (?)` is text, and
 amount of `INTERVAL ? DAY` or another single unit a number. A placeholder in a statement
 Seagull runs without analysis, such as `SET @user_id = ?`, cannot be bound and is
 [Q010](../diagnostics.md#q010).
+
+`MATCH (columns) AGAINST (...)` runs only through a `FULLTEXT` index of exactly the columns
+it names, in any order; without one, MySQL and MariaDB refuse the query with error 1191
+whenever it runs. Seagull records the `FULLTEXT` indexes a migration declares, inline in
+`CREATE TABLE`, with `CREATE FULLTEXT INDEX` or with `ALTER TABLE ... ADD FULLTEXT`, and
+copied by `CREATE TABLE ... LIKE`, and warns with [Q074](../diagnostics.md#q074) about a
+search no index covers, such as one naming columns of two tables (error 1210). A search in
+a nested query is read against that query's tables. A column the search's table lacks, or
+that no table of its query holds, is [Q001](../diagnostics.md#q001) (error 1054).
 
 ## Migrations
 

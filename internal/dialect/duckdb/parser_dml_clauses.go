@@ -498,6 +498,7 @@ func (p *parser) retagLimitOffsetParameters(referenceCountBefore int, context sq
 // parseLimitOffset dispatches over the LIMIT, OFFSET, and FETCH clause shapes accepted by
 // DuckDB.
 func (p *parser) parseLimitOffset() {
+	p.rowLimited = true
 	p.parseLeadingOffset()
 
 	if p.MatchKeyword(keywordLIMIT) {
@@ -543,8 +544,10 @@ func (p *parser) parseFetchClause() {
 	if !p.MatchKeyword(keywordFETCH) {
 		return
 	}
-	p.MatchKeyword(keywordFIRST)
-	p.MatchKeyword("NEXT")
+	if !p.MatchKeyword(keywordFIRST) && !p.MatchKeyword("NEXT") {
+		p.recordSyntaxError(p.syntaxErrorAt("expected FIRST or NEXT after FETCH"))
+		return
+	}
 
 	if isParameterToken(p.Current().Kind) {
 		parameterToken := p.Current()

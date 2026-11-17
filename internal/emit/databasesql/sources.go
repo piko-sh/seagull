@@ -42,7 +42,8 @@ const (
 // sources holds the sources of the helpers the emitter adds to a generated package.
 //
 //go:embed internal/source/driver_values.go internal/source/driver_composites.go
-//go:embed internal/source/prepared.go
+//go:embed internal/source/prepared.go internal/source/duckdb_appending.go
+//go:embed internal/source/clickhouse_batches.go
 var sources embed.FS
 
 // preparedSources caches immutable parsed helper templates for this emitter.
@@ -50,6 +51,9 @@ var preparedSources = helpers.NewSources(sources, "internal/source")
 
 // driverWrappers says which parameter wrappers driver_values.go holds.
 type driverWrappers struct {
+	// unsigned includes exact wide unsigned parameter conversion.
+	unsigned bool
+
 	// values includes the wrapper binding a parameter through its driver.Valuer.
 	values bool
 
@@ -124,7 +128,7 @@ func renderDriverValues(vocabulary helpers.Vocabulary, packageName string, wrapp
 	return renderSource(driverValueHelperFile, vocabulary, &helpers.Data{
 		Flags: map[string]bool{
 			"value": wrappers.values, "text": wrappers.text, "json": wrappers.documents, "binary": wrappers.binary,
-			"decimal": wrappers.decimals,
+			"decimal": wrappers.decimals, "unsigned": wrappers.unsigned,
 		},
 		Values:  nil,
 		Renames: nil,
@@ -164,15 +168,15 @@ func renderDriverComposites(vocabulary helpers.Vocabulary, packageName string, p
 // once and reuses the statements, inside transactions too.
 //
 // Takes vocabulary (helpers.Vocabulary) which names the generated package's identifiers.
-// Takes request (*emit.Request) which holds the package's name, queries and naming plan;
-// the static queries are prepared.
+// Takes request (*emit.Request) which holds the package name, queries and naming plan.
+// Takes cacheUnbound (bool) which permits caching parameterless native statements.
 //
 // Returns sqlmodel.GeneratedFile which is the rendered file.
 // Returns error when the source cannot be rendered.
-func renderPrepared(vocabulary helpers.Vocabulary, request *emit.Request) (sqlmodel.GeneratedFile, error) {
+func renderPrepared(vocabulary helpers.Vocabulary, request *emit.Request, cacheUnbound bool) (sqlmodel.GeneratedFile, error) {
 	return renderSource(preparedFile, vocabulary, &helpers.Data{
 		Flags:   nil,
-		Values:  map[string]any{"staticQueries": helpers.Code{Text: "[]string{" + strings.Join(staticConstants(request), ", ") + "}", Imports: nil}},
+		Values:  map[string]any{"staticQueries": helpers.Code{Text: "[]string{" + strings.Join(staticConstants(request, cacheUnbound), ", ") + "}", Imports: nil}},
 		Renames: nil,
 		Package: request.Package,
 	})
@@ -182,9 +186,10 @@ func renderPrepared(vocabulary helpers.Vocabulary, request *emit.Request) (sqlmo
 // plan when the request has none.
 //
 // Takes request (*emit.Request) which holds the queries and the naming plan.
+// Takes cacheUnbound (bool) which permits parameterless statements in the cache.
 //
 // Returns []string which holds the constants.
-func staticConstants(request *emit.Request) []string {
+func staticConstants(request *emit.Request, cacheUnbound bool) []string {
 	naming := request.Naming
 	if len(naming.Queries) != len(request.Queries) {
 		var style emitkit.NameStyle
@@ -193,7 +198,7 @@ func staticConstants(request *emit.Request) []string {
 	}
 	order := make([]int, 0, len(request.Queries))
 	for index, query := range request.Queries {
-		if isStaticQuery(query) && index < len(naming.Queries) {
+		if isStaticQuery(query) && index < len(naming.Queries) && (cacheUnbound || len(query.Parameters) != 0) {
 			order = append(order, index)
 		}
 	}

@@ -9,16 +9,16 @@ import (
 )
 
 type Landings struct {
-	ID         int64       `json:"id"`
-	Species    string      `json:"species"`
-	Boxes      int16       `json:"boxes"`
-	Fish       int32       `json:"fish"`
-	WeightG    int64       `json:"weight_g"`
-	LengthCm   float64     `json:"length_cm"`
-	OnIce      bool        `json:"on_ice"`
-	LandedAt   time.Time   `json:"landed_at"`
-	Tag        []byte      `json:"tag"`
-	Notes      *string     `json:"notes"`
-	Berth      uint8       `json:"berth"`
-	PricePerKg apd.Decimal `json:"price_per_kg"`
+	ID         int64        `json:"id"`
+	Species    string       `json:"species"`
+	Boxes      int16        `json:"boxes"`
+	Fish       int32        `json:"fish"`
+	WeightG    int64        `json:"weight_g"`
+	LengthCm   float64      `json:"length_cm"`
+	OnIce      bool         `json:"on_ice"`
+	LandedAt   time.Time    `json:"landed_at"`
+	Tag        []byte       `json:"tag"`
+	Notes      Null[string] `json:"notes"`
+	Berth      uint8        `json:"berth"`
+	PricePerKg apd.Decimal  `json:"price_per_kg"`
 }

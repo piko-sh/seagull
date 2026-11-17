@@ -1,0 +1,34 @@
+{
+  "ListBlobs": [
+    {
+      "id": 1,
+      "maybe_missing": 0,
+      "num_count": 0,
+      "tag_count": 0
+    },
+    {
+      "id": 2,
+      "maybe_missing": 1,
+      "num_count": 0,
+      "tag_count": 0
+    },
+    {
+      "id": 3,
+      "maybe_missing": 1,
+      "num_count": 0,
+      "tag_count": 0
+    },
+    {
+      "id": 4,
+      "maybe_missing": 1,
+      "num_count": 0,
+      "tag_count": 0
+    },
+    {
+      "id": 5,
+      "maybe_missing": 1,
+      "num_count": 0,
+      "tag_count": 0
+    }
+  ]
+}

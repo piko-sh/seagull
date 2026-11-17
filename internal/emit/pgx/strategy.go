@@ -46,6 +46,11 @@ var (
 		CountScan:          "",
 		NoRows:             sqlmodel.GoType{Composite: nil, Package: importPgx, Name: "ErrNoRows"},
 		RowsAffectedErrors: false,
+		ScansNarrowNumbers: false,
+		NilSlicesAsNull:    true,
+		NativeValues:       false,
+		RowIsInterface:     true,
+		NullMethods:        renderNullMethods,
 	}
 
 	// contextParameter is the context every DBTX method takes first.
@@ -161,7 +166,7 @@ func (*pgxBatch) CopyStatement(_ *gogen.Query) gogen.CopyStatement {
 // Returns ast.Decl which is the method declaration.
 // Returns error when the query's VALUES row cannot be sent as columns.
 func (b *pgxBatch) CopyFrom(query *gogen.Query) (ast.Decl, error) {
-	method, err := buildCopyFromMethod(query, b.binder)
+	method, err := buildCopyFromMethod(query, b.vocabulary, b.binder)
 	if err != nil {
 		return nil, err
 	}

@@ -1,3 +1,0 @@
-go test fuzz v1
-string("CREATE TABLE users(id ,emAil )")
-string("--sgl.query(00000)\n--sgl.column(\nSELECT*")

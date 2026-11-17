@@ -1,0 +1,16 @@
+{
+  "ListEvents": [
+    {
+      "id": 1,
+      "occurred_at": "1969-12-31T23:59:59Z"
+    },
+    {
+      "id": 2,
+      "occurred_at": "1969-12-31T23:58:59.5Z"
+    }
+  ],
+  "a_microsecond_before": "refused",
+  "a_minute_and_a_half_second_before": "written",
+  "half_a_second_before": "refused",
+  "one_second_before": "written"
+}

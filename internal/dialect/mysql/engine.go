@@ -62,6 +62,10 @@ var (
 		},
 		statementKindDropFunction: func(p *parser, _ *Dialect) (*ast.CatalogueMutation, error) { return p.parseDropFunction() },
 		statementKindRenameTable:  func(p *parser, _ *Dialect) (*ast.CatalogueMutation, error) { return p.parseRenameTable() },
+		statementKindCreateSequence: func(p *parser, _ *Dialect) (*ast.CatalogueMutation, error) {
+			return p.parseCreateSequence()
+		},
+		statementKindDropSequence: func(p *parser, _ *Dialect) (*ast.CatalogueMutation, error) { return p.parseDropSequence() },
 	}
 
 	// runOnRules names the words that open a statement, for finding a migration statement
@@ -71,7 +75,7 @@ var (
 			keywordCREATE: nil,
 			"ALTER":       {keywordTABLE, "VIEW", keywordDATABASE, keywordSCHEMA, keywordFUNCTION, keywordPROCEDURE, "EVENT"},
 			keywordDROP: {keywordTABLE, "VIEW", keywordDATABASE, keywordSCHEMA, keywordFUNCTION, keywordPROCEDURE, "TRIGGER",
-				"EVENT", keywordINDEX},
+				"EVENT", keywordINDEX, keywordSEQUENCE},
 			"RENAME": {keywordTABLE},
 		},
 		Word:  tokenIdentifier,
@@ -136,6 +140,14 @@ type Dialect struct {
 	// not decode, which ApplyDDL and AnalyseQuery return; nil when it was built whole.
 	initErr error
 
+	// aliasKeywords lists the keywords the engine refuses as an output column's alias, built
+	// once from the settings.
+	aliasKeywords dialectkit.AliasKeywords
+
+	// reservedNames lists the keywords the engine refuses as a table's or a column's name,
+	// built once from the settings.
+	reservedNames dialectkit.ReservedNames
+
 	// settings captures dialect-level overrides for this engine instance.
 	settings settings
 }
@@ -150,6 +162,10 @@ func New(options ...Option) *Dialect {
 	configured := settings{}
 	configured.Name = "mysql"
 	configured.UngroupedColumns = dialect.UngroupedColumnsWarned
+	configured.DroppedColumnIndexes = ast.ColumnIndexesTrim
+	configured.DerivedColumnLists = true
+	configured.RollupFunction = true
+	configured.ConstraintNames = dialect.ConstraintNamesMySQL
 	for _, option := range options {
 		option(&configured)
 	}
@@ -170,12 +186,19 @@ func newDialect(configured settings, loadSpec func() (*dialectkit.FunctionSpec, 
 	if err != nil {
 		err = fmt.Errorf("%s: building the dialect: %w", configured.Name, err)
 	}
+	aliasKeywords, reservedNames := mySQLAliasKeywords, mySQLReservedNames
+	if configured.AliasRefusals != "" {
+		aliasKeywords = dialectkit.NewAliasKeywords(configured.AliasRefusals, configured.AliasRefusals+" "+configured.BareAliasRefusals)
+		reservedNames = dialectkit.NewReservedNames(configured.AliasRefusals, configured.AliasRefusals)
+	}
 	return &Dialect{
-		settings:     configured,
-		types:        types,
-		functions:    functions,
-		typeResolver: newTypeResolver(configured.TypeNormaliserHooks, configured.ExtraTypes),
-		initErr:      err,
+		settings:      configured,
+		types:         types,
+		functions:     functions,
+		typeResolver:  newTypeResolver(configured.TypeNormaliserHooks, configured.ExtraTypes),
+		initErr:       err,
+		aliasKeywords: aliasKeywords,
+		reservedNames: reservedNames,
 	}
 }
 
@@ -208,19 +231,27 @@ func (engine *Dialect) Info() dialect.Info {
 			ast.SQLFeatureJSONOp |
 			ast.SQLFeatureScalarSubquery |
 			ast.SQLFeatureBitwiseOp,
-		Returning:              engine.settings.Returning,
-		AsyncMutations:         false,
-		ScalarFunctionsInFrom:  false,
-		UngroupedColumns:       engine.settings.UngroupedColumns,
-		ViewsFollowTheirTables: false,
-		IdentifierQuote:        dialect.IdentifierQuote{Open: "`", Close: "`"},
-		Drivers:                []string{driverMySQL},
-		ToJSON:                 "",
-		TextType:               "char",
-		Filters:                dialect.FilterSyntax{Operators: nil, JSONPathFunctions: jsonPathFunctions, Casts: castForms, CastTypes: castTypes},
-		Lists:                  listSyntax,
-		Pagination:             paginationSyntax,
-		MaxParameters:          maxParameters,
+		Returning:               engine.settings.Returning,
+		AsyncMutations:          false,
+		ScalarFunctionsInFrom:   false,
+		UngroupedColumns:        engine.settings.UngroupedColumns,
+		ViewsFollowTheirTables:  false,
+		ComputedTemporalAsText:  false,
+		ConstantMembershipLists: false,
+		ColumnLists:             dialect.ColumnListSyntax{ShortCTE: false, SurplusCTE: false, ShortDerived: false, NoDerivedLists: !engine.settings.DerivedColumnLists},
+		ViewsOnRename:           dialect.ViewsBreak,
+		ViewsOnDrop:             dialect.ViewsBreak,
+		IdentifierQuote:         dialect.IdentifierQuote{Open: "`", Close: "`"},
+		Drivers:                 []string{driverMySQL},
+		ToJSON:                  "",
+		FloatBits:               dialect.FloatBitsSyntax{Single: "", Double: "", Arrow: ""},
+		TextType:                "char",
+		Filters:                 dialect.FilterSyntax{Operators: nil, JSONPathFunctions: jsonPathFunctions, Casts: castForms, CastTypes: castTypes},
+		Lists:                   listSyntax,
+		Pagination:              paginationSyntax,
+		Ordering:                dialect.OrderingSyntax{NullsFirstAscending: true, NullsFirstDescending: false, NullsByIsNull: true, DistinctNullsDefaultOnly: false},
+		MaxParameters:           maxParameters,
+		ConstraintNames:         engine.settings.ConstraintNames,
 	}
 	return info.Clone()
 }
@@ -534,27 +565,7 @@ func (engine *Dialect) PromoteType(
 		return promoted
 	}
 
-	if across, numeric := dialectkit.PromoteAcrossNumericCategories(left, right); numeric {
-		return across
-	}
-	if left.Category != right.Category {
-		return left
-	}
-
-	switch left.Category {
-	case sqlmodel.TypeCategoryInteger:
-		if promotionRank(right) > promotionRank(left) {
-			return right
-		}
-		return left
-	case sqlmodel.TypeCategoryFloat:
-		if right.Width > left.Width {
-			return right
-		}
-		return left
-	default:
-		return left
-	}
+	return promoteForMySQL(left, right)
 }
 
 // CanImplicitCast reports whether MySQL permits an implicit type conversion.
@@ -639,15 +650,16 @@ func (engine *Dialect) BinaryResult(operator string, left, right sqlmodel.SQLTyp
 	return engine.binaryResult(operator, left, right)
 }
 
-// UnaryResult types NOT and ~.
+// UnaryResult types Boolean, bitwise and integer negation operators.
 //
 // Takes operator (string) which is the operator.
+// Takes operand (sqlmodel.SQLType) which is the operand's type.
 //
 // Returns sqlmodel.SQLType which is the result's type.
 // Returns sqlmodel.FunctionNullableBehaviour which says when the result is NULL.
 // Returns bool which is false for an operator left to the structural default.
-func (engine *Dialect) UnaryResult(operator string, _ sqlmodel.SQLType) (sqlmodel.SQLType, sqlmodel.FunctionNullableBehaviour, bool) {
-	return engine.unaryResult(operator)
+func (engine *Dialect) UnaryResult(operator string, operand sqlmodel.SQLType) (sqlmodel.SQLType, sqlmodel.FunctionNullableBehaviour, bool) {
+	return engine.unaryResult(operator, operand)
 }
 
 // ResolveFunctionCall resolves a function call using MySQL overload rules.
@@ -723,7 +735,14 @@ func (engine *Dialect) newStatementParser(interrupt func() error, parsed *parsed
 	p.jsonValueReturningUnavailable = engine.settings.JSONValueReturningUnavailable
 	p.sequences = engine.settings.Sequences
 	p.offsetFetch = engine.settings.OffsetFetch
+	p.rollupForbidsOrderBy = engine.settings.RollupForbidsOrderBy
+	p.noDerivedColumnLists = !engine.settings.DerivedColumnLists
+	p.noRollupFunction = !engine.settings.RollupFunction
+	p.aliasKeywords = engine.aliasKeywords
+	p.reservedNames = engine.reservedNames
 	p.createOrReplace = engine.settings.CreateOrReplace
+	p.foldNegatedLiterals = engine.settings.FoldNegatedLiterals
+	p.referencesNeedColumns = engine.settings.ConstraintNames == dialect.ConstraintNamesMariaDB
 	return p
 }
 
@@ -754,6 +773,14 @@ func (engine *Dialect) rejectUnavailableSyntax(tokens []token) error {
 // Every option that registers something adds to what earlier options registered, so a
 // flavour's own settings survive a caller's options of the same kind.
 type settings struct {
+	// AliasRefusals lists the keywords the engine refuses as an alias, after AS or not,
+	// replacing MySQL's when set.
+	AliasRefusals string
+
+	// BareAliasRefusals lists the keywords the engine refuses as an alias written straight
+	// after a select item, replacing MySQL's when set.
+	BareAliasRefusals string
+
 	// ExtraTypes holds the extra type definitions, keyed by lower-cased name. Each
 	// WithExtraTypes merges into it, a later entry replacing an earlier one of the same
 	// name.
@@ -818,10 +845,25 @@ type settings struct {
 	// a quoted identifier rather than a string.
 	ANSIQuotes bool
 
+	// FoldNegatedLiterals selects MariaDB's literal and bound constant negation rules.
+	FoldNegatedLiterals bool
+
 	// Sequences records that the engine has sequences: NEXT VALUE FOR and PREVIOUS VALUE
 	// FOR, and the NEXTVAL, LASTVAL and SETVAL functions, whose first argument names a
 	// sequence rather than a column.
 	Sequences bool
+
+	// RollupFunction records that the engine takes GROUP BY ROLLUP (...) as well as WITH
+	// ROLLUP.
+	RollupFunction bool
+
+	// DerivedColumnLists records that the engine takes a column list after a derived table's
+	// alias.
+	DerivedColumnLists bool
+
+	// RollupForbidsOrderBy records that the engine refuses ORDER BY on a query grouped WITH
+	// ROLLUP, as MariaDB does.
+	RollupForbidsOrderBy bool
 
 	// OffsetFetch records that the engine takes the standard row limit, OFFSET n ROWS and
 	// FETCH {FIRST | NEXT} n ROWS {ONLY | WITH TIES}, beside LIMIT.
@@ -830,6 +872,49 @@ type settings struct {
 	// CreateOrReplace records that a CREATE of a table, index, database or trigger may say
 	// OR REPLACE, replacing an object of the same name.
 	CreateOrReplace bool
+
+	// DroppedColumnIndexes selects the index dependency rule for column removal.
+	DroppedColumnIndexes ast.ColumnIndexPolicy
+
+	// ConstraintNames selects how the engine names unnamed constraints and indexes.
+	//
+	// MySQL naming is the default. MariaDB naming retains a column's foreign key but does
+	// not retain its check, while MySQL does the opposite.
+	ConstraintNames dialect.ConstraintNaming
+}
+
+// WithConstraintNames names the constraints and indexes a migration leaves unnamed as a
+// flavour does, such as MariaDB.
+//
+// Takes naming (dialect.ConstraintNaming) which is the flavour's naming.
+//
+// Returns Option which applies the naming.
+func WithConstraintNames(naming dialect.ConstraintNaming) Option {
+	return func(configured *settings) {
+		configured.ConstraintNames = naming
+	}
+}
+
+// WithFoldNegatedLiterals selects MariaDB's constant negation rules.
+//
+// Takes enabled (bool) which enables literal folding and bound constant promotion.
+//
+// Returns Option which configures parser constant typing.
+func WithFoldNegatedLiterals(enabled bool) Option {
+	return func(configured *settings) {
+		configured.FoldNegatedLiterals = enabled
+	}
+}
+
+// WithDroppedColumnIndexes configures index dependencies when a column is removed.
+//
+// Takes policy (ast.ColumnIndexPolicy) which selects the dialect's dependency rule.
+//
+// Returns Option which replaces the default MySQL rule.
+func WithDroppedColumnIndexes(policy ast.ColumnIndexPolicy) Option {
+	return func(configured *settings) {
+		configured.DroppedColumnIndexes = policy
+	}
 }
 
 // lexicalRules returns the engine's lexical rules for its SQL mode: "..." is a string
@@ -1160,6 +1245,58 @@ func WithOffsetFetch(supported bool) Option {
 	}
 }
 
+// WithDerivedColumnLists sets whether the engine takes a column list after a derived
+// table's alias, as in FROM (SELECT ...) AS d (a, b). MySQL does; MariaDB refuses it.
+//
+// Takes supported (bool) which records whether the engine takes the form.
+//
+// Returns Option which applies the capability.
+func WithDerivedColumnLists(supported bool) Option {
+	return func(configured *settings) {
+		configured.DerivedColumnLists = supported
+	}
+}
+
+// WithAliasRefusals sets the keywords the engine refuses, unquoted, as an output column's
+// alias, in place of MySQL's.
+//
+// Takes reserved (string) which lists, separated by spaces, the keywords refused after AS
+// or not.
+// Takes bare (string) which lists the further keywords refused only straight after a
+// select item.
+//
+// Returns Option which applies the lists.
+func WithAliasRefusals(reserved, bare string) Option {
+	return func(configured *settings) {
+		configured.AliasRefusals = reserved
+		configured.BareAliasRefusals = bare
+	}
+}
+
+// WithRollupFunction sets whether the engine takes GROUP BY ROLLUP (keys) as well as
+// GROUP BY keys WITH ROLLUP. MySQL does; MariaDB refuses it.
+//
+// Takes supported (bool) which records whether the engine takes the form.
+//
+// Returns Option which applies the capability.
+func WithRollupFunction(supported bool) Option {
+	return func(configured *settings) {
+		configured.RollupFunction = supported
+	}
+}
+
+// WithRollupOrderBy sets whether the engine takes ORDER BY on a query grouped WITH
+// ROLLUP. MySQL does; MariaDB refuses it.
+//
+// Takes supported (bool) which records whether the engine takes the form.
+//
+// Returns Option which applies the capability.
+func WithRollupOrderBy(supported bool) Option {
+	return func(configured *settings) {
+		configured.RollupForbidsOrderBy = !supported
+	}
+}
+
 // WithCreateOrReplace permits OR REPLACE for tables, indexes, databases and triggers,
 // dropping an existing object before creating its replacement. The MySQL default permits
 // OR REPLACE only for views.
@@ -1294,5 +1431,116 @@ func convertsToString(category sqlmodel.SQLTypeCategory) bool {
 func takesArguments(count int) func(*sqlmodel.Function) bool {
 	return func(overload *sqlmodel.Function) bool {
 		return count >= overload.RequiredArguments() && (overload.IsVariadic || count <= len(overload.Arguments))
+	}
+}
+
+// booleanAsInteger returns a BOOLEAN as the TINYINT MySQL stores it as, so it promotes
+// with integers as the server promotes it, and any other type as it is.
+//
+// Takes sqlType (sqlmodel.SQLType) which is the type.
+//
+// Returns sqlmodel.SQLType which is the type to promote.
+func booleanAsInteger(sqlType sqlmodel.SQLType) sqlmodel.SQLType {
+	if sqlType.Category != sqlmodel.TypeCategoryBoolean {
+		return sqlType
+	}
+	return sqlmodel.NewIntegerType("tinyint", widthTinyint, false)
+}
+
+// mixedCategoryType returns the type MySQL gives a column whose values are of two
+// categories that are not both numbers: a binary string when either is one, the text one
+// when either is text, and a VARCHAR otherwise, as a DATE and an INT meet as text.
+//
+// Takes left (sqlmodel.SQLType) which is the first type.
+// Takes right (sqlmodel.SQLType) which is the second type.
+//
+// Returns sqlmodel.SQLType which is the common type.
+func mixedCategoryType(left, right sqlmodel.SQLType) sqlmodel.SQLType {
+	for _, category := range []sqlmodel.SQLTypeCategory{sqlmodel.TypeCategoryBinary, sqlmodel.TypeCategoryText} {
+		if left.Category == category {
+			return left
+		}
+		if right.Category == category {
+			return right
+		}
+	}
+	return sqlmodel.NewSQLType(sqlmodel.TypeCategoryText, "varchar")
+}
+
+// mixedSignIntegerType returns the type MySQL gives a signed and an unsigned integer
+// together: the narrowest signed integer wider than the unsigned one and as wide as the
+// signed one, or a DECIMAL when the unsigned one is a BIGINT UNSIGNED, which no signed
+// integer holds.
+//
+// Takes left (sqlmodel.SQLType) which is the first integer type.
+// Takes right (sqlmodel.SQLType) which is the second, of the other signedness.
+//
+// Returns sqlmodel.SQLType which is the common type.
+func mixedSignIntegerType(left, right sqlmodel.SQLType) sqlmodel.SQLType {
+	signed, unsigned := left, right
+	if left.Unsigned {
+		signed, unsigned = right, left
+	}
+	for _, candidate := range []struct {
+		name  string
+		width int
+	}{
+		{name: "smallint", width: widthSmallint},
+		{name: "mediumint", width: widthMediumint},
+		{name: "int", width: widthInt},
+		{name: "bigint", width: widthBigint},
+	} {
+		if candidate.width > unsigned.Width && candidate.width >= signed.Width {
+			return sqlmodel.NewIntegerType(candidate.name, candidate.width, false)
+		}
+	}
+	return sqlmodel.NewSQLType(sqlmodel.TypeCategoryDecimal, "decimal")
+}
+
+// promoteForMySQL returns the type MySQL and MariaDB give a column, a CASE or a function
+// such as IF or GREATEST whose values are of two types: the wider number, the integer
+// that holds a signed and an unsigned one, or the string type of a mixed pair.
+//
+// A side of unknown type, such as a bare NULL, takes the other's type, as the servers
+// type SELECT id, score ... UNION ALL SELECT id, NULL ... with score's BIGINT.
+//
+// Takes left (sqlmodel.SQLType) which is the first type.
+// Takes right (sqlmodel.SQLType) which is the second type.
+//
+// Returns sqlmodel.SQLType which is the common type.
+func promoteForMySQL(left, right sqlmodel.SQLType) sqlmodel.SQLType {
+	switch {
+	case left.Category == sqlmodel.TypeCategoryUnknown:
+		return right
+	case right.Category == sqlmodel.TypeCategoryUnknown:
+		return left
+	}
+	if left.Category == sqlmodel.TypeCategoryBoolean && right.Category == sqlmodel.TypeCategoryBoolean {
+		return left
+	}
+	left, right = booleanAsInteger(left), booleanAsInteger(right)
+	if across, numeric := dialectkit.PromoteAcrossNumericCategories(left, right); numeric {
+		return across
+	}
+	if left.Category != right.Category {
+		return mixedCategoryType(left, right)
+	}
+
+	switch left.Category {
+	case sqlmodel.TypeCategoryInteger:
+		if left.Unsigned != right.Unsigned {
+			return mixedSignIntegerType(left, right)
+		}
+		if promotionRank(right) > promotionRank(left) {
+			return right
+		}
+		return left
+	case sqlmodel.TypeCategoryFloat:
+		if right.Width > left.Width {
+			return right
+		}
+		return left
+	default:
+		return left
 	}
 }

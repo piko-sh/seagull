@@ -3,10 +3,10 @@
 package store
 
 type Gulls struct {
-	ID       int64  `json:"id"`
-	Name     string `json:"name"`
-	ParentID *int64 `json:"parent_id"`
-	Beach    string `json:"beach"`
+	ID       int64       `json:"id"`
+	Name     string      `json:"name"`
+	ParentID Null[int64] `json:"parent_id"`
+	Beach    string      `json:"beach"`
 }
 
 type Thefts struct {

@@ -1,0 +1,14 @@
+{
+  "description": "Bindings and runtime filters preserve subnormal floats.",
+  "expectedDiagnostics": [
+    "Q022",
+    "Q022",
+    "Q022",
+    "Q022",
+    "Q022",
+    "Q022",
+    "Q022",
+    "Q022"
+  ],
+  "emitter": "native"
+}

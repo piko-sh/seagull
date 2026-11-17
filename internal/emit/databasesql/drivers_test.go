@@ -19,6 +19,7 @@
 package databasesql_test
 
 import (
+	"regexp"
 	"strings"
 	"testing"
 	"testing/fstest"
@@ -29,6 +30,7 @@ import (
 	"seagull.sh/seagull/internal/diag"
 	"seagull.sh/seagull/internal/dialect"
 	"seagull.sh/seagull/internal/dialect/clickhouse"
+	"seagull.sh/seagull/internal/dialect/cockroachdb"
 	"seagull.sh/seagull/internal/dialect/duckdb"
 	"seagull.sh/seagull/internal/dialect/mysql"
 	"seagull.sh/seagull/internal/dialect/postgres"
@@ -93,7 +95,7 @@ var duckDBListParameters = []struct {
 	{column: "berth", field: "Berth", wrapped: false},
 }
 
-const overriddenSchema = "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT NOT NULL, flag BOOLEAN, rank INTEGER NOT NULL);\n"
+const overriddenSchema = "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT NOT NULL, flag BOOLEAN, ranking INTEGER NOT NULL);\n"
 
 const clickHouseDocumentsSchema = `CREATE TABLE documents (
     id UInt64,
@@ -134,13 +136,27 @@ func TestTheDriverProfileDecidesHowAColumnIsRead(t *testing.T) {
 	source, diagnostics := generateDatabaseSQL(t, postgres.New(), postgresSchema, "-- sgl.query(GetTagged, one)\nSELECT id, tags FROM tagged WHERE id = $1;\n")
 
 	require.Empty(t, diagnostics)
-	require.Contains(t, source, `to_json(tags) AS "tags"`, "pgx's stdlib cannot scan an array into a slice, so it is read as JSON")
-	require.Contains(t, source, "sglScanInto(&row.Tags)")
+	require.NotContains(t, source, "to_json", "pgx's stdlib returns a text array in its text form, which the array scanner reads")
+	require.Contains(t, source, "sglScanArray(&row.Tags)")
+
+	schema := "CREATE TABLE stamped (id BIGINT PRIMARY KEY, stamps TIMESTAMPTZ[] NOT NULL);\n"
+	source, diagnostics = generateDatabaseSQL(t, postgres.New(), schema, "-- sgl.query(GetStamped, one)\nSELECT id, stamps FROM stamped WHERE id = $1;\n")
+
+	require.Empty(t, diagnostics)
+	require.Contains(t, source, `to_json(stamps) AS "stamps"`, "pgx's stdlib cannot scan any other array into a slice, so it is read as JSON")
+	require.Contains(t, source, "sglScanInto(&row.Stamps)")
 }
 
 func generateDatabaseSQLFiles(t *testing.T, engine dialect.DialectPort, schema, queries string) (map[string]string, []diag.SourceError) {
 	t.Helper()
-	generator, err := app.New(engine, app.WithEmitter(databasesql.New()))
+	return generateDatabaseSQLFilesStyled(t, engine, func(*app.Preset) {}, schema, queries)
+}
+
+func generateDatabaseSQLFilesStyled(t *testing.T, engine dialect.DialectPort, style func(*app.Preset), schema, queries string) (map[string]string, []diag.SourceError) {
+	t.Helper()
+	chosen := app.DefaultPreset()
+	style(&chosen)
+	generator, err := app.New(engine, app.WithEmitter(databasesql.New()), app.WithPreset(chosen))
 	require.NoError(t, err)
 	result, err := generator.Generate(t.Context(), app.Input{
 		Package:      "store",
@@ -298,8 +314,8 @@ func TestPgxStdlibBindsAnEnumArrayAsGoStrings(t *testing.T) {
 func TestAnArrayInAnEmbedIsReadAsJSONLikeAnyOtherColumn(t *testing.T) {
 	t.Parallel()
 
-	schema := "CREATE TABLE authors (id BIGINT PRIMARY KEY, name TEXT NOT NULL, tags TEXT[]);\n" +
-		"CREATE TABLE books (id BIGINT PRIMARY KEY, author_id BIGINT NOT NULL REFERENCES authors (id), labels TEXT[] NOT NULL);\n"
+	schema := "CREATE TABLE authors (id BIGINT PRIMARY KEY, name TEXT NOT NULL, tags DATE[]);\n" +
+		"CREATE TABLE books (id BIGINT PRIMARY KEY, author_id BIGINT NOT NULL REFERENCES authors (id), labels DATE[] NOT NULL);\n"
 	testCases := []struct {
 		name    string
 		queries string
@@ -361,12 +377,12 @@ func TestDuckDBBindsAListOfElementsItCannotBuildByTheTypesOfItsElements(t *testi
 		t.Run(parameter.column, func(t *testing.T) {
 			t.Parallel()
 
-			wrapped := "sglDriverInferredList(params." + parameter.field + ")"
+			wrapped := regexp.MustCompile(`sglDriverInferredList\((sglNonNil\()?params\.` + parameter.field + `\)`)
 			if !parameter.wrapped {
-				require.NotContains(t, source, wrapped)
+				require.NotRegexp(t, wrapped, source)
 				return
 			}
-			require.Contains(t, source, wrapped, "the driver builds a list parameter's elements from the parameter's type, "+
+			require.Regexp(t, wrapped, source, "the driver builds a list parameter's elements from the parameter's type, "+
 				"which fails for these, but binds a list a driver.Valuer returns by the types of its elements")
 		})
 	}
@@ -482,27 +498,32 @@ func TestAColumnWhoseGoTypeAnOverrideChoseReadsThroughTheOverrideScanAdapter(t *
 	overrides := []app.TypeOverride{
 		{Column: "notes.body", GoPackage: "encoding/json", GoName: "RawMessage"},
 		{Column: "notes.flag", GoPackage: "example.com/kinds", GoName: "Flag"},
-		{Column: "notes.rank", GoName: "int32"},
+		{Column: "notes.ranking", GoName: "int32"},
 	}
 	testCases := []struct {
 		engine      dialect.DialectPort
 		name        string
 		placeholder string
+		scan        string
 	}{
-		{name: "postgres", engine: postgres.New(), placeholder: "$1"},
-		{name: "mysql", engine: mysql.New(), placeholder: "?"},
-		{name: "sqlite", engine: sqlite.New(), placeholder: "?"},
-		{name: "duckdb", engine: duckdb.New(), placeholder: "$1"},
+		{name: "postgres", engine: postgres.New(), placeholder: "$1",
+			scan: ".Scan(sglScanNumber(&row.ID), sglScanOverride(&row.Body), sglScanOverride(&row.Flag), sglScanNumber(&row.Ranking))"},
+		{name: "mysql", engine: mysql.New(), placeholder: "?",
+			scan: ".Scan(sglScanNumber(&row.ID), sglScanOverride(&row.Body), sglScanOverride(&row.Flag), sglScanNumber(&row.Ranking))"},
+		{name: "sqlite", engine: sqlite.New(), placeholder: "?",
+			scan: ".Scan(&row.ID, sglScanOverride(&row.Body), sglScanOverride(&row.Flag), sglScanNumber(&row.Ranking))"},
+		{name: "duckdb", engine: duckdb.New(), placeholder: "$1",
+			scan: ".Scan(&row.ID, sglScanOverride(&row.Body), sglScanOverride(&row.Flag), &row.Ranking)"},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
 			files := generateOverridden(t, testCase.engine, overriddenSchema,
-				"-- sgl.query(GetNote, one)\nSELECT id, body, flag, rank FROM notes WHERE id = "+testCase.placeholder+";\n", overrides...)
+				"-- sgl.query(GetNote, one)\nSELECT id, body, flag, ranking FROM notes WHERE id = "+testCase.placeholder+";\n", overrides...)
 
-			require.Contains(t, files["queries.sql.go"], ".Scan(&row.ID, sglScanOverride(&row.Body), sglScanOverride(&row.Flag), &row.Rank)",
-				"a column of one of Go's own types is scanned as it is")
+			require.Contains(t, files["queries.sql.go"], testCase.scan,
+				"a column of one of Go's own types is scanned as it is, or through the number scanner where the driver widens it")
 			helper := files["driver_composites.go"]
 			require.Contains(t, helper, "func sglScanOverride[T any](dest *T) sql.Scanner")
 			require.NotContains(t, helper, "func sglScanDriverComposite[", "no column reads the driver's own composites")
@@ -579,20 +600,21 @@ func TestAColumnDatabaseSQLConvertsItselfNeedsNoOverrideScanAdapter(t *testing.T
 	testCases := []struct {
 		name      string
 		overrides []app.TypeOverride
+		scan      string
 	}{
-		{name: "no override", overrides: nil},
+		{name: "no override", overrides: nil, scan: ".Scan(sglScanNumber(&row.ID), &row.Body, sglScanNumber(&row.Ranking))"},
 		{name: "a defined integer type, which database/sql converts an integer into", overrides: []app.TypeOverride{
-			{Column: "notes.rank", GoPackage: "example.com/kinds", GoName: "Rank"},
-		}},
+			{Column: "notes.ranking", GoPackage: "example.com/kinds", GoName: "Rank"},
+		}, scan: ".Scan(sglScanNumber(&row.ID), &row.Body, &row.Ranking)"},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			files := generateOverridden(t, postgres.New(), overriddenSchema, "-- sgl.query(GetNote, one)\nSELECT id, body, rank FROM notes WHERE id = $1;\n",
+			files := generateOverridden(t, postgres.New(), overriddenSchema, "-- sgl.query(GetNote, one)\nSELECT id, body, ranking FROM notes WHERE id = $1;\n",
 				testCase.overrides...)
 
-			require.Contains(t, files["queries.sql.go"], ".Scan(&row.ID, &row.Body, &row.Rank)")
+			require.Contains(t, files["queries.sql.go"], testCase.scan)
 			require.NotContains(t, files, "driver_composites.go")
 		})
 	}
@@ -604,7 +626,7 @@ func TestAnOverriddenParameterBindsAsTheDriverTakesIt(t *testing.T) {
 	overrides := []app.TypeOverride{
 		{Column: "notes.body", GoPackage: "encoding/json", GoName: "RawMessage"},
 		{Column: "notes.flag", GoPackage: "example.com/kinds", GoName: "Flag"},
-		{Column: "notes.rank", GoPackage: "example.com/kinds", GoName: "Rank"},
+		{Column: "notes.ranking", GoPackage: "example.com/kinds", GoName: "Rank"},
 	}
 	testCases := []struct {
 		engine dialect.DialectPort
@@ -612,15 +634,15 @@ func TestAnOverriddenParameterBindsAsTheDriverTakesIt(t *testing.T) {
 		where  string
 		want   string
 	}{
-		{name: "sqlite binds bytes for text as text", engine: sqlite.New(), where: "body = ? AND flag = ? AND rank = ?",
-			want: "findNotesSQL, sglDriverText{value: params.Body}, params.Flag, params.Rank)"},
+		{name: "sqlite binds bytes for text as text", engine: sqlite.New(), where: "body = ? AND flag = ? AND ranking = ?",
+			want: "findNotesSQL, sglDriverText{value: params.Body}, params.Flag, params.Ranking)"},
 		{name: "duckdb binds bytes for text as text and converts a defined type it refuses", engine: duckdb.New(),
-			where: "body = $1 AND flag = $2 AND rank = $3",
-			want:  "findNotesSQL, sglDriverText{value: params.Body}, sglDriverComposite(params.Flag), params.Rank)"},
-		{name: "postgres binds through database/sql as it is", engine: postgres.New(), where: "body = $1 AND flag = $2 AND rank = $3",
-			want: "findNotesSQL, params.Body, params.Flag, params.Rank)"},
-		{name: "mysql binds through database/sql as it is", engine: mysql.New(), where: "body = ? AND flag = ? AND rank = ?",
-			want: "findNotesSQL, params.Body, params.Flag, params.Rank)"},
+			where: "body = $1 AND flag = $2 AND ranking = $3",
+			want:  "findNotesSQL, sglDriverText{value: params.Body}, sglDriverComposite(params.Flag), params.Ranking)"},
+		{name: "postgres binds through database/sql as it is", engine: postgres.New(), where: "body = $1 AND flag = $2 AND ranking = $3",
+			want: "findNotesSQL, params.Body, params.Flag, params.Ranking)"},
+		{name: "mysql binds through database/sql as it is", engine: mysql.New(), where: "body = ? AND flag = ? AND ranking = ?",
+			want: "findNotesSQL, params.Body, params.Flag, params.Ranking)"},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
@@ -697,8 +719,122 @@ func TestAClickHouseRuntimeBuilderBindsANilPointerAsNull(t *testing.T) {
 			"AND owner = {owner:Nullable(UUID)}\n")
 
 	require.Len(t, diagnostics, 1)
+	require.Contains(t, files["queries.sql.go"], "args = append(args, builder.params.Discount)")
+	require.Contains(t, files["queries.sql.go"], "args = append(args, builder.params.Amount)")
+	require.Contains(t, files["queries.sql.go"], "args = append(args, builder.params.Owner)")
+	require.Contains(t, files["sgl_null.go"], "func (n Null[T]) Value() (driver.Value, error)",
+		"a Null parameter writes NULL through its own Value, which needs no wrapper")
+}
+
+func TestAClickHouseRuntimeBuilderWrapsANilPointerWhenPointersAreKept(t *testing.T) {
+	t.Parallel()
+
+	files, diagnostics := generateDatabaseSQLFilesStyled(t, clickhouse.New(), func(chosen *app.Preset) { chosen.NullablePointers = true },
+		"CREATE TABLE prices (id UInt64, amount Decimal(10, 2), discount Nullable(Decimal(10, 2)), owner Nullable(UUID)) "+
+			"ENGINE = MergeTree ORDER BY id;\n",
+		"-- sgl.query(name: BrowsePrices, command: many, dynamic: runtime)\n"+
+			"SELECT id, amount FROM prices WHERE discount >= {discount:Nullable(Decimal(10, 2))} AND amount >= {amount:Decimal(10, 2)} "+
+			"AND owner = {owner:Nullable(UUID)}\n")
+
+	require.Len(t, diagnostics, 1)
 	require.Contains(t, files["queries.sql.go"], "args = append(args, sglClickHouseNullable(builder.params.Discount))")
 	require.Contains(t, files["queries.sql.go"], "args = append(args, builder.params.Amount)")
 	require.Contains(t, files["queries.sql.go"], "args = append(args, sglClickHouseNullable(builder.params.Owner))")
 	require.Contains(t, files["clickhouse_values.go"], "func sglClickHouseNullable(value any) any")
+}
+
+func TestAPostgresSliceListBindsOneArrayParameter(t *testing.T) {
+	t.Parallel()
+
+	schema := "CREATE TYPE mood AS ENUM ('calm', 'stormy');\n" +
+		"CREATE TABLE items (id BIGINT PRIMARY KEY, name TEXT NOT NULL, code CHAR(3), mood mood, done BOOLEAN);\n"
+	source, diagnostics := generateDatabaseSQL(t, postgres.New(), schema,
+		"-- sgl.query(ByIDs, many)\n-- $1 as sgl.param(ids, kind: slice)\nSELECT id FROM items WHERE id IN ($1);\n"+
+			"-- sgl.query(NotNamed, many)\n-- $1 as sgl.param(names, kind: slice)\n-- $2 as sgl.param(flags, kind: slice)\n"+
+			"SELECT id FROM items WHERE name NOT IN ($1) AND done IN ($2);\n"+
+			"-- sgl.query(ByCodes, many)\n-- $1 as sgl.param(codes, kind: slice)\nSELECT id FROM items WHERE code IN ($1);\n"+
+			"-- sgl.query(ByMoods, many)\n-- $1 as sgl.param(moods, kind: slice)\n-- $2 as sgl.param(ids, kind: slice)\n"+
+			"SELECT id FROM items WHERE mood IN ($1) AND id IN ($2);\n")
+
+	require.Empty(t, diagnostics)
+	require.Contains(t, source, "WHERE id = ANY($1);`", "the SQL text is the same for every slice")
+	require.Contains(t, source, "byIDsSQL, sglArrayLiteral(params.IDs))")
+	require.Contains(t, source, "WHERE name <> ALL($1) AND done = ANY($2);`", "NOT IN is <> ALL, which treats NULL elements alike")
+	require.Contains(t, source, "sglArrayLiteral(params.Names), sglArrayLiteral(params.Flags))")
+	require.Contains(t, source, "WHERE code IN ($1);`", "a CHAR list keeps its placeholders")
+	require.Contains(t, source, "sglList(sglListMark{", "a query with a slice of enums keeps its placeholders for every slice")
+	require.NotContains(t, source, "sglArrayLiteral(params.Moods)")
+}
+
+func TestACockroachDBCharListKeepsItsPlaceholders(t *testing.T) {
+	t.Parallel()
+
+	schema := "CREATE TABLE items (id INT8 PRIMARY KEY, code CHAR(3));\n"
+	source, diagnostics := generateDatabaseSQL(t, cockroachdb.New(), schema,
+		"-- sgl.query(ByCodes, many)\n-- $1 as sgl.param(codes, kind: slice)\nSELECT id FROM items WHERE code IN ($1);\n"+
+			"-- sgl.query(ByIDs, many)\n-- $1 as sgl.param(ids, kind: slice)\nSELECT id FROM items WHERE id IN ($1);\n")
+
+	require.Empty(t, diagnostics)
+	require.Contains(t, source, "WHERE code IN ($1);`", "CockroachDB compares CHAR with an array element keeping its trailing spaces")
+	require.Contains(t, source, "WHERE id = ANY($1);`")
+}
+
+func TestADuckDBBatchAppendsThroughTheAppenderWhenItOwnsItsConnection(t *testing.T) {
+	t.Parallel()
+
+	schema := "CREATE SEQUENCE ids;\n" +
+		"CREATE TABLE Events (id BIGINT DEFAULT nextval('ids'), Name VARCHAR NOT NULL, note VARCHAR, score DOUBLE, small TINYINT, tags VARCHAR[] NOT NULL, " +
+		"created TIMESTAMP, code UUID, total DECIMAL(10, 2));\n"
+	source, diagnostics := generateDatabaseSQL(t, duckdb.New(), schema,
+		"-- sgl.query(name: InsertEvents, command: batch)\nINSERT INTO events (name, NOTE, score, small, tags, created) VALUES ($1, $2, $3, $4, $5, $6);\n"+
+			"-- sgl.query(name: CopyEvents, command: copyfrom)\nINSERT INTO events (name) VALUES ($1);\n"+
+			"-- sgl.query(name: InsertCodes, command: batch)\nINSERT INTO events (name, code) VALUES ($1, $2);\n"+
+			"-- sgl.query(name: InsertTotals, command: batch)\nINSERT INTO events (name, total) VALUES ($1, $2);\n"+
+			"-- sgl.query(name: UpsertEvents, command: batch)\nINSERT INTO events (id, name) VALUES ($1, $2) ON CONFLICT DO NOTHING;\n"+
+			"-- sgl.query(name: InsertUpper, command: batch)\nINSERT INTO events (name, note) VALUES (upper($1), $2);\n"+
+			"-- sgl.query(name: InsertTwice, command: batch)\nINSERT INTO events (name, note) VALUES ($1, $1);\n")
+
+	require.Empty(t, diagnostics)
+	method := func(name string) string {
+		start := strings.Index(source, "func (queries *Queries) "+name+"(")
+		require.GreaterOrEqual(t, start, 0, name)
+		end := strings.Index(source[start:], "\n}\n")
+		return source[start : start+end]
+	}
+	require.Contains(t, method("InsertEvents"), "if db, owns := queries.writer.(*sql.DB); owns {")
+	require.Contains(t, method("InsertEvents"),
+		`duckdb.NewAppenderWithColumns(conn, "", "", "Events", []string{"Name", "note", "score", "small", "tags", "created"})`,
+		"the appender matches names by case, so they are spelled as the catalogue spells them")
+	require.Contains(t, method("InsertEvents"), "sglDuckDBAppendRow(appender, checker, item.Name, item.Note, item.Score, item.Small, item.Tags, item.Created)")
+	require.Contains(t, method("InsertEvents"), "for offset := 0;", "a method inside a caller's transaction still sends statements")
+	require.Contains(t, method("CopyEvents"), "sglDuckDBAppend(")
+	for _, name := range []string{"InsertCodes", "InsertTotals", "UpsertEvents", "InsertUpper", "InsertTwice"} {
+		require.NotContains(t, method(name), "sglDuckDBAppend(", name)
+	}
+}
+
+func TestAClickHouseBatchUsesTheDriversBatchInsertWhenItOwnsItsConnection(t *testing.T) {
+	t.Parallel()
+
+	schema := "CREATE TABLE events (id UInt64, name String, note Nullable(String), tags Array(String), attrs Map(String, String), " +
+		"created DateTime64(3), score Float64, address IPv4) ENGINE = MergeTree ORDER BY id;\n"
+	source, diagnostics := generateDatabaseSQL(t, clickhouse.New(), schema,
+		"-- sgl.query(name: InsertEvents, command: batch)\n"+
+			"INSERT INTO events (id, name, note, tags, attrs, created) VALUES ({id:UInt64}, {name:String}, {note:Nullable(String)}, "+
+			"{tags:Array(String)}, {attrs:Map(String,String)}, {created:DateTime64(3)});\n"+
+			"-- sgl.query(name: InsertScores, command: batch)\nINSERT INTO events (id, score) VALUES ({id:UInt64}, {score:Float64});\n"+
+			"-- sgl.query(name: InsertAddresses, command: batch)\nINSERT INTO events (id, address) VALUES ({id:UInt64}, {address:IPv4});\n")
+
+	require.Empty(t, diagnostics)
+	method := func(name string) string {
+		start := strings.Index(source, "func (queries *Queries) "+name+"(")
+		require.GreaterOrEqual(t, start, 0, name)
+		end := strings.Index(source[start:], "\n}\n")
+		return source[start : start+end]
+	}
+	require.Contains(t, method("InsertEvents"), "if db, owns := queries.writer.(*sql.DB); owns {")
+	require.Contains(t, method("InsertEvents"), "sglClickHouseBatches(ctx, db, insertEventsSQL, len(params), 170, func(statement *sql.Stmt, index int) error {")
+	require.Contains(t, method("InsertEvents"), "statement.ExecContext(ctx, item.ID, item.Name, item.Note, item.Tags, item.Attrs, item.Created)")
+	require.NotContains(t, method("InsertScores"), "sglClickHouseBatches(", "a float is bound through a conversion the batch would not make")
+	require.NotContains(t, method("InsertAddresses"), "sglClickHouseBatches(", "an address is appended through a conversion")
 }

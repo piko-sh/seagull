@@ -1,0 +1,32 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 25,
+    "EndColumn": 26,
+    "EndLine": 2,
+    "Filename": "aliases.sql",
+    "Line": 2,
+    "Message": "failed to analyse query \"BareAlias\": syntax error near \"t\": ClickHouse takes an alias after a table named from only with AS",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 25,
+    "EndColumn": 26,
+    "EndLine": 5,
+    "Filename": "aliases.sql",
+    "Line": 5,
+    "Message": "failed to analyse query \"BareAliasBackticked\": syntax error near \"t\": ClickHouse takes an alias after a table named from only with AS",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 38,
+    "EndColumn": 39,
+    "EndLine": 8,
+    "Filename": "aliases.sql",
+    "Line": 8,
+    "Message": "failed to analyse query \"BareAliasJoined\": syntax error near \"t\": ClickHouse takes an alias after a table named from only with AS",
+    "Severity": "error"
+  }
+]

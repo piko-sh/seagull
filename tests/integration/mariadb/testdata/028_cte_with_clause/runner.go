@@ -45,13 +45,13 @@ func main() {
 	queries := db.New(conn)
 
 	entries := []db.InsertCategoryParams{
-		{ID: int32(1), Name: "Root", ParentID: nil},
-		{ID: int32(2), Name: "Electronics", ParentID: new(int32(1))},
-		{ID: int32(3), Name: "Clothing", ParentID: new(int32(1))},
-		{ID: int32(4), Name: "Phones", ParentID: new(int32(2))},
-		{ID: int32(5), Name: "Laptops", ParentID: new(int32(2))},
-		{ID: int32(6), Name: "T-Shirts", ParentID: new(int32(3))},
-		{ID: int32(7), Name: "iPhones", ParentID: new(int32(4))},
+		{ID: int32(1), Name: "Root", ParentID: db.Null[int32]{}},
+		{ID: int32(2), Name: "Electronics", ParentID: db.NullOf(int32(1))},
+		{ID: int32(3), Name: "Clothing", ParentID: db.NullOf(int32(1))},
+		{ID: int32(4), Name: "Phones", ParentID: db.NullOf(int32(2))},
+		{ID: int32(5), Name: "Laptops", ParentID: db.NullOf(int32(2))},
+		{ID: int32(6), Name: "T-Shirts", ParentID: db.NullOf(int32(3))},
+		{ID: int32(7), Name: "iPhones", ParentID: db.NullOf(int32(4))},
 	}
 
 	for index, entry := range entries {

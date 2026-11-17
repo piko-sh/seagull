@@ -71,6 +71,10 @@ type Info struct {
 	// decoding. It is empty when the dialect provides none.
 	ToJSON string
 
+	// FloatBits describes how the dialect rebuilds a floating-point parameter from its exact
+	// bits. The zero value means it needs no such transport.
+	FloatBits FloatBitsSyntax
+
 	// Filters describes what the generated runtime query builder may write into a predicate
 	// it appends: the dialect's extra comparison operators, the functions that read a path
 	// from a JSON column, and the conversions a filtered column may take.
@@ -154,6 +158,40 @@ type Info struct {
 	// star projections reflect new columns and current types. False fixes the columns when
 	// the view is created.
 	ViewsFollowTheirTables bool
+
+	// ComputedTemporalAsText types a date or timestamp a query computes, rather than reads
+	// straight from a column, as the dialect's text type.
+	//
+	// It suits an engine whose drivers convert a value to a time only when the result column
+	// is a table column declared with a temporal type, and otherwise return the value as it
+	// is stored.
+	ComputedTemporalAsText bool
+
+	// ConstantMembershipLists reports an engine that tests a value with IN or NOT IN only
+	// against a list of constants and parameters or a subquery, and rejects a list holding a
+	// value read from the row.
+	ConstantMembershipLists bool
+
+	// ColumnLists describes which CTE and alias column lists of another length than their
+	// relation the engine takes.
+	ColumnLists ColumnListSyntax
+
+	// ViewsOnRename is what renaming a table does to the views that read it. The zero value,
+	// ViewsFollow, keeps them reading the renamed table.
+	ViewsOnRename ViewDependencyRule
+
+	// ViewsOnDrop is what dropping a table does to the views that read it. The zero value
+	// breaks them, as ViewsBreak does.
+	ViewsOnDrop ViewDependencyRule
+
+	// Ordering describes where the dialect sorts NULL and how it writes a NULL placement the
+	// generated runtime query builder asks for.
+	Ordering OrderingSyntax
+
+	// ConstraintNames is how the engine names a constraint or index the migration leaves
+	// unnamed, so a later statement can drop it by that name. The zero value,
+	// ConstraintNamesNone, gives it no name.
+	ConstraintNames ConstraintNaming
 }
 
 const (
@@ -170,6 +208,53 @@ const (
 	// UngroupedColumnsRejected is an engine that rejects the query, so the analyser reports
 	// an error.
 	UngroupedColumnsRejected
+)
+
+// ViewDependencyRule is what renaming or dropping a table does to the views that read it,
+// as Info.ViewsOnRename and Info.ViewsOnDrop declare it.
+type ViewDependencyRule uint8
+
+const (
+	// ViewsFollow is an engine whose views keep reading a renamed table, binding it by
+	// identity as PostgreSQL does or rewriting their definitions as SQLite does. A view
+	// cannot follow a dropped table, so on a drop it is as ViewsBreak.
+	ViewsFollow ViewDependencyRule = iota
+
+	// ViewsRefuse is an engine that refuses to rename or drop a table a view reads, as
+	// CockroachDB refuses both and PostgreSQL refuses a drop without CASCADE.
+	ViewsRefuse
+
+	// ViewsBreak is an engine whose views name the tables they read, so a view reading a
+	// renamed or dropped table fails until a relation of the name exists again, as MySQL,
+	// MariaDB, ClickHouse and DuckDB do, and SQLite does after a drop.
+	ViewsBreak
+)
+
+// ConstraintNaming is how an engine names a constraint or index the migration leaves
+// unnamed, as Info.ConstraintNames declares it.
+type ConstraintNaming uint8
+
+const (
+	// ConstraintNamesNone is an engine whose unnamed constraints have no name a statement
+	// can drop them by, as in SQLite, DuckDB and ClickHouse.
+	ConstraintNamesNone ConstraintNaming = iota
+
+	// ConstraintNamesPostgres names them as PostgreSQL does, such as t_pkey, t_a_key,
+	// t_a_fkey, t_a_check and t_a_idx, cut to 63 bytes and numbered unique in the schema.
+	ConstraintNamesPostgres
+
+	// ConstraintNamesCockroachDB names them as CockroachDB does, such as t_pkey, t_a_key,
+	// t_a_fkey, check_a and t_a_idx, numbered unique in the table.
+	ConstraintNamesCockroachDB
+
+	// ConstraintNamesMySQL names them as MySQL does: a unique key after its first column, a
+	// foreign key t_ibfk_1 and a check t_chk_1, the last two following a table rename.
+	ConstraintNamesMySQL
+
+	// ConstraintNamesMariaDB names them as MariaDB does, as MySQL does except that a check
+	// declared on the table is CONSTRAINT_1, the first number no check of the table has, and
+	// a foreign key is its number alone, such as 1, which a table rename keeps.
+	ConstraintNamesMariaDB
 )
 
 // Clone returns a copy of the Info that shares no slice or map with it, so either can be

@@ -10,7 +10,6 @@
           "Columns": [
             {
               "GeneratedKind": "none",
-              "HasDefault": true,
               "Name": "name",
               "Origin": {
                 "Filename": "001_schema.up.sql",
@@ -49,7 +48,6 @@
           "Columns": [
             {
               "GeneratedKind": "none",
-              "HasDefault": true,
               "Name": "id",
               "Origin": {
                 "Filename": "001_schema.up.sql"

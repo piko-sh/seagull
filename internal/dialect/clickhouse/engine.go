@@ -30,8 +30,19 @@ import (
 	"seagull.sh/seagull/internal/sqlmodel"
 )
 
-// columnsMatcher is the name of the COLUMNS(...) column matcher.
-const columnsMatcher = "columns"
+const (
+	// columnsMatcher is the name of the COLUMNS(...) column matcher.
+	columnsMatcher = "columns"
+
+	// floatBitsSingle holds the bits of a Float32 parameter sent exactly.
+	floatBitsSingle = "UInt32"
+
+	// floatBitsDouble holds the bits of a Float64 parameter sent exactly.
+	floatBitsDouble = "UInt64"
+
+	// lambdaArrow separates a lambda's parameter from its body.
+	lambdaArrow = "->"
+)
 
 var (
 	// ddlParserDispatch maps each statementKind to the parser method that produces its
@@ -275,19 +286,27 @@ func (engine *Dialect) Info() dialect.Info {
 			ast.SQLFeatureBitwiseOp |
 			ast.SQLFeatureLambda |
 			ast.SQLFeatureStructFieldAccess,
-		Returning:              0,
-		AsyncMutations:         true,
-		ScalarFunctionsInFrom:  false,
-		UngroupedColumns:       dialect.UngroupedColumnsRejected,
-		ViewsFollowTheirTables: false,
-		IdentifierQuote:        dialect.IdentifierQuote{Open: "`", Close: "`"},
-		Drivers:                []string{driverClickHouse},
-		ToJSON:                 "",
-		TextType:               "String",
-		Filters:                dialect.FilterSyntax{Operators: filterOperators, JSONPathFunctions: nil, Casts: castForms, CastTypes: castTypes},
-		Lists:                  listSyntax,
-		Pagination:             paginationSyntax,
-		MaxParameters:          maxParameters,
+		Returning:               0,
+		AsyncMutations:          true,
+		ScalarFunctionsInFrom:   false,
+		UngroupedColumns:        dialect.UngroupedColumnsRejected,
+		ViewsFollowTheirTables:  false,
+		ComputedTemporalAsText:  false,
+		ConstantMembershipLists: true,
+		ColumnLists:             dialect.ColumnListSyntax{ShortCTE: false, SurplusCTE: false, ShortDerived: false, NoDerivedLists: false},
+		ViewsOnRename:           dialect.ViewsBreak,
+		ViewsOnDrop:             dialect.ViewsBreak,
+		IdentifierQuote:         dialect.IdentifierQuote{Open: "`", Close: "`"},
+		Drivers:                 []string{driverClickHouse},
+		ToJSON:                  "",
+		FloatBits:               dialect.FloatBitsSyntax{Single: floatBitsSingle, Double: floatBitsDouble, Arrow: lambdaArrow},
+		TextType:                "String",
+		Filters:                 dialect.FilterSyntax{Operators: filterOperators, JSONPathFunctions: nil, Casts: castForms, CastTypes: castTypes},
+		Lists:                   listSyntax,
+		Pagination:              paginationSyntax,
+		Ordering:                dialect.OrderingSyntax{NullsFirstAscending: false, NullsFirstDescending: false, NullsByIsNull: false, DistinctNullsDefaultOnly: false},
+		MaxParameters:           maxParameters,
+		ConstraintNames:         dialect.ConstraintNamesNone,
 	}
 	return info.Clone()
 }
@@ -1183,35 +1202,49 @@ func alterTableAsyncBody(tokens []token, interrupt func() error) (string, ast.Da
 	}
 }
 
-// promoteSameCategoryInteger promotes two integers of the same category.
+// promoteSameCategoryInteger finds ClickHouse's least common integer type.
 //
-// When the operands share a width rank but differ in sign (for example Int32 vs UInt32)
-// the least-common-type is the next wider signed type, because the signed range at the
-// shared width cannot hold the unsigned operand's high-bit values. The 64-bit pair (Int64
-// vs UInt64) is excluded because stock ClickHouse throws rather than promoting to Int128,
-// so the left operand is preserved for that pair. Otherwise the wider rank wins, with
-// ties preserving the left operand. The mixed-sign decision keys off the resolver's
-// integerRank table (bit-width ranks) rather than clickHouseNumericTypeRank so a single
-// helper, nextWiderSignedInteger, owns the widening map; the two rank tables agree on
-// integer widths.
+// Integers with the same signedness use the wider type. Mixed signs use the smallest
+// signed type wider than the unsigned input and at least as wide as the signed input.
+// Int128 or Int256 may be needed. UInt64 with a signed type up to Int64 has no common
+// type, which ClickHouse reads as a Variant or rejects.
 //
-// Takes left (sqlmodel.SQLType) which is the existing operand type.
+// Takes left (sqlmodel.SQLType) which is the existing type.
 // Takes right (sqlmodel.SQLType) which is the candidate type.
 //
-// Returns sqlmodel.SQLType which is the promoted integer type.
+// Returns sqlmodel.SQLType which is the promoted type, or the unknown type when there is
+// no common type.
 func promoteSameCategoryInteger(left, right sqlmodel.SQLType) sqlmodel.SQLType {
-	leftWidth := integerRank(left.EngineName)
-	rightWidth := integerRank(right.EngineName)
-	if leftWidth == rightWidth && leftWidth != 0 &&
-		isUnsignedInteger(left.EngineName) != isUnsignedInteger(right.EngineName) {
-		if widened, found := nextWiderSignedInteger(leftWidth); found {
+	if isUnsignedInteger(left.EngineName) == isUnsignedInteger(right.EngineName) {
+		if clickHouseNumericTypeRank(right.EngineName) > clickHouseNumericTypeRank(left.EngineName) {
+			return right
+		}
+		return left
+	}
+	signed, unsigned := left, right
+	if isUnsignedInteger(left.EngineName) {
+		signed, unsigned = right, left
+	}
+	signedRank, unsignedRank := integerRank(signed.EngineName), integerRank(unsigned.EngineName)
+	rank := max(unsignedRank+1, signedRank, integerRank16Bit)
+	if rank <= integerRank64Bit {
+		if widened, found := signedIntegerOfRank(rank); found {
 			return widened
 		}
 	}
-	if clickHouseNumericTypeRank(right.EngineName) > clickHouseNumericTypeRank(left.EngineName) {
-		return right
+	if signedRank > unsignedRank {
+		return signed
 	}
-	return left
+	return noCommonType()
+}
+
+// noCommonType returns the unknown type for values without a common ClickHouse type.
+//
+// A server may return a Variant holding each value's own type or reject the query.
+//
+// Returns sqlmodel.SQLType which is the unknown type.
+func noCommonType() sqlmodel.SQLType {
+	return sqlmodel.NewSQLType(sqlmodel.TypeCategoryUnknown, "")
 }
 
 // isPromotableNumericCategory reports whether a SQLType category participates in the
@@ -1234,8 +1267,12 @@ func isPromotableNumericCategory(category sqlmodel.SQLTypeCategory) bool {
 }
 
 // crossCategoryNumericPromotion returns ClickHouse's least supertype of two numbers of
-// different categories. An integer and a decimal give the decimal, a Float32 and an
-// integer of at most 16 bits give Float32, and any other pair with a float gives Float64.
+// different categories.
+//
+// An integer and a decimal give the decimal, a Float32 and an integer of at most 16 bits
+// give Float32, a float and an integer of at most 32 bits give Float64, and a float with
+// a 64-bit or wider integer, or with a decimal, has no common type, since no float holds
+// every such value exactly.
 //
 // Takes left (sqlmodel.SQLType) which is the existing type.
 // Takes right (sqlmodel.SQLType) which is the candidate type.
@@ -1252,7 +1289,9 @@ func crossCategoryNumericPromotion(left, right sqlmodel.SQLType) sqlmodel.SQLTyp
 			return left
 		}
 		return right
-	case other.Category == sqlmodel.TypeCategoryInteger && float.Width == widthWord && other.Width <= widthShort:
+	case other.Category != sqlmodel.TypeCategoryInteger || integerRank(other.EngineName) >= integerRank64Bit:
+		return noCommonType()
+	case float.Width == widthWord && integerRank(other.EngineName) <= integerRank16Bit:
 		return float
 	default:
 		return primitiveType(engineNameFloat64)

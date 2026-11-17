@@ -151,8 +151,8 @@ type Config struct {
 	// Clock times each generation for the trace log; nil selects observe.SystemClock().
 	Clock observe.Clock
 
-	// Logger receives the pipeline's log records; nil keeps the logger carried by the
-	// context, or slog.Default().
+	// Logger receives the pipeline's log records when the context carries no logger. Nil
+	// leaves slog.Default() as the fallback.
 	Logger *slog.Logger
 
 	// Observer receives the pipeline's stage spans; nil keeps the observer carried by the
@@ -218,7 +218,7 @@ type Pipeline struct {
 	// clock times each generation; never nil.
 	clock observe.Clock
 
-	// logger, when set, replaces the logger carried by the context.
+	// logger, when set, is used when the context carries no logger.
 	logger *slog.Logger
 
 	// observer, when set, replaces the observer carried by the context.
@@ -288,7 +288,7 @@ func New(config Config) (*Pipeline, error) {
 	if emitter == nil {
 		return nil, fmt.Errorf("an emitter is required: %w", fault.ErrInvalidConfig)
 	}
-	guarded := logging.ContextWithLogger(context.Background(), config.Logger)
+	guarded := logging.WithFallbackLogger(context.Background(), config.Logger)
 	info, err := dialectInfo(guarded, config.Dialect)
 	if err != nil {
 		return nil, err
@@ -429,18 +429,19 @@ func (p *Pipeline) vet(ctx context.Context, request Request) ([]*sqlmodel.Analys
 	return analysed.queries, analysed.collector.collected(), nil
 }
 
-// contextFor attaches the pipeline's logger and observer, when set, to a context.
-//
-// Takes ctx (context.Context) which is the caller's context.
+// contextFor attaches the pipeline's observer, when set, to a context, and the pipeline's
+// logger when the context carries none. The logger is resolved here once, so the code it
+// calls reuses it.
 //
 // Returns context.Context which carries the logger and observer.
 func (p *Pipeline) contextFor(ctx context.Context) context.Context {
 	if p.logger != nil {
-		ctx = logging.ContextWithLogger(ctx, p.logger)
+		ctx = logging.WithFallbackLogger(ctx, p.logger)
 	}
 	if p.observer != nil {
 		ctx = observe.ContextWithObserver(ctx, p.observer)
 	}
+	ctx, _ = logging.From(ctx)
 	return ctx
 }
 
@@ -807,7 +808,7 @@ func (p *Pipeline) generate(ctx context.Context, request Request, details *Detai
 // Returns error when the pipeline cannot complete.
 func (p *Pipeline) runGeneration(ctx context.Context, request Request, details *DetailedGeneration) (Generation, error) {
 	packageName := request.PackageName()
-	logger := logging.LoggerFrom(ctx)
+	ctx, logger := logging.From(ctx)
 	started := p.clock.Now()
 
 	if !preset.IsDeclarableName(packageName) {
@@ -887,6 +888,7 @@ func (p *Pipeline) checkedRequest(
 	facts := info.Facts()
 	emitterSlots, slotsErr := p.emitterSlots(ctx, &facts)
 	mappings := gotypes.NewTypeMapper(p.dialect.BuiltinTypes()).WithSchema(catalogue).BuildMappingTable(p.typeOverrides, emitterSlots, p.settings.Types)
+	mappings.NullValues = !p.settings.Style.NullablePointers && declaresNullType(p.emitter)
 
 	request := &emit.Request{
 		Catalogue:         modelCatalogue(catalogue, p.elementNullability(catalogue)),
@@ -1064,8 +1066,20 @@ func cleanDirectory(role, directory string) (string, error) {
 // Takes packageName (string) which names the generated package.
 // Takes diagnostics (int) which is how many diagnostics the run reported.
 func logStopped(ctx context.Context, packageName string, diagnostics int) {
-	logging.LoggerFrom(ctx).Log(ctx, logging.LevelInternal, "generation stopped by error diagnostics",
+	_, logger := logging.From(ctx)
+	logger.Log(ctx, logging.LevelInternal, "generation stopped by error diagnostics",
 		slog.String(logFieldPackage, packageName),
 		slog.Int("diagnostics", diagnostics),
 	)
+}
+
+// declaresNullType reports whether an emitter takes nullable values as the generated Null
+// type.
+//
+// Takes emitter (emit.EmitterPort) which is the emitter.
+//
+// Returns bool which is true when it implements emit.NullTypePort and says it does.
+func declaresNullType(emitter emit.EmitterPort) bool {
+	port, ok := emitter.(emit.NullTypePort)
+	return ok && port.DeclaresNullType()
 }

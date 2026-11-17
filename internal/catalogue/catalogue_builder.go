@@ -84,10 +84,23 @@ type catalogueBuilder struct {
 	// parent's columns reaches its children.
 	inheritances []inheritance
 
+	// viewReads holds, for each view created from an analysed definition, the keys of the
+	// names of the tables and views it reads, so renaming one reaches the view as the
+	// engine's Info.ViewsOnRename says.
+	viewReads map[*sqlmodel.View]map[string]struct{}
+
 	// followingViews holds, in the order they were created, the views of an engine whose
 	// Info lists ViewsFollowTheirTables, with the definitions their columns are derived from
 	// again after each later change to a table or view.
 	followingViews []followingView
+
+	// implicitIndexes holds, for each table, the names of the indexes MySQL created for its
+	// foreign keys, which a later index on the same leading columns replaces.
+	implicitIndexes map[*sqlmodel.Table][]string
+
+	// declaredNames holds, for each SQLite table, the names its definitions give keys and
+	// column attributes, which decide what DROP CONSTRAINT does with a name.
+	declaredNames map[*sqlmodel.Table]*declaredNames
 
 	// localColumns holds, for each table that inherits columns, the keys of the columns it
 	// declares itself, which a parent's DROP COLUMN leaves in place.
@@ -101,6 +114,9 @@ type catalogueBuilder struct {
 
 	// lexicon is how the dialect writes SQL, read once from its Info.
 	lexicon syntax.Lexicon
+
+	// constraintNames is how the dialect names unnamed constraints, read once from its Info.
+	constraintNames dialect.ConstraintNaming
 }
 
 var (
@@ -211,7 +227,11 @@ func newCatalogueBuilder(engine dialect.DialectPort, prefixes namespace.Set) *ca
 		statement:               statementSite{filename: "", line: 0},
 		searchPaths:             newSearchPaths(searchPath),
 		followingViews:          nil,
+		viewReads:               nil,
 		lexicon:                 syntax.Lexicon{LinePrefix: info.Comments.LinePrefix, Rules: info.Lexical},
+		implicitIndexes:         make(map[*sqlmodel.Table][]string),
+		declaredNames:           make(map[*sqlmodel.Table]*declaredNames),
+		constraintNames:         info.ConstraintNames,
 	}
 }
 
@@ -272,6 +292,7 @@ func (b *catalogueBuilder) ApplyMigration(
 	diagnostics = append(diagnostics, parsed.problems...)
 	diagnostics = append(diagnostics, migrationConsistencyWarnings(directives, filename, b.lexicon.LinePrefix, b.prefixes)...)
 	diagnostics = append(diagnostics, b.transactionWarnings(ctx, parsed, source)...)
+	diagnostics = append(diagnostics, transactionControlErrors(parsed, source)...)
 
 	return diagnostics, nil
 }
@@ -590,9 +611,7 @@ func (b *catalogueBuilder) applyStatement(
 		return
 	}
 
-	mutations := append([]*ast.CatalogueMutation{mutation}, mutation.AdditionalMutations...)
-	mutation.AdditionalMutations = nil
-	for _, next := range mutations {
+	for _, next := range flattenMutations(mutation) {
 		if ctx.Err() != nil {
 			return
 		}
@@ -602,8 +621,10 @@ func (b *catalogueBuilder) applyStatement(
 		next.Origin = origin
 		applyMigrationReadOnlyOverride(next, readOnly)
 		*applied = append(*applied, b.unanalysedParts(next, source)...)
+		*applied = append(*applied, b.mutationNotes(next, source)...)
 
-		if mutationError := b.applyMutation(ctx, next); mutationError != nil {
+		mutationError := b.applyMutation(ctx, next)
+		if mutationError != nil {
 			*applied = append(*applied, diagbuild.Block(
 				source.filename,
 				max(b.statement.line, 1),
@@ -614,7 +635,32 @@ func (b *catalogueBuilder) applyStatement(
 		}
 		*applied = append(*applied, b.statementDiagnostics...)
 		b.statementDiagnostics = nil
+		if mutationError != nil {
+
+			return
+		}
 	}
+}
+
+// flattenMutations lists a mutation and every mutation it carries, depth first in the
+// order they apply, and clears what each carried so none is applied twice. An action such
+// as MySQL's CHANGE COLUMN carries a change that itself carries the checks the new
+// definition declares.
+//
+// Takes mutation (*ast.CatalogueMutation) which is the statement's mutation.
+//
+// Returns []*ast.CatalogueMutation which holds the mutations in order.
+func flattenMutations(mutation *ast.CatalogueMutation) []*ast.CatalogueMutation {
+	if mutation == nil {
+		return nil
+	}
+	carried := mutation.AdditionalMutations
+	mutation.AdditionalMutations = nil
+	flattened := []*ast.CatalogueMutation{mutation}
+	for _, next := range carried {
+		flattened = append(flattened, flattenMutations(next)...)
+	}
+	return flattened
 }
 
 // statementFailure reports a dialect's error on the statement being applied: at the place
@@ -648,14 +694,44 @@ func (b *catalogueBuilder) unanalysedParts(mutation *ast.CatalogueMutation, sour
 	}
 	diagnostics := make([]diag.SourceError, 0, len(mutation.UnanalysedParts))
 	for _, part := range mutation.UnanalysedParts {
-		span := diagbuild.TextSpan{Line: max(b.statement.line, 1), Column: 1, EndLine: 0, EndColumn: 0}
-		if part.Span.Known() && part.Span.Start >= 0 && part.Span.End <= len(source.text) {
-			span = diagbuild.SpanOf(source.text, 1, part.Span.Start, part.Span.End)
-		}
-		diagnostics = append(diagnostics, diagbuild.Located(source.filename, span, diag.CodePartlyAnalysed,
-			diag.SeverityWarning, part.Message, ""))
+		diagnostics = append(diagnostics, b.locatedWarning(source, part.Span, diag.CodePartlyAnalysed, part.Message))
 	}
 	return diagnostics
+}
+
+// mutationNotes reports the notes a dialect attached to a mutation about how the engine
+// runs the statement.
+//
+// Takes mutation (*ast.CatalogueMutation) which holds the notes.
+// Takes source (migrationSource) which locates them.
+//
+// Returns []diag.SourceError which holds one warning per note.
+func (b *catalogueBuilder) mutationNotes(mutation *ast.CatalogueMutation, source migrationSource) []diag.SourceError {
+	if len(mutation.Notes) == 0 {
+		return nil
+	}
+	diagnostics := make([]diag.SourceError, 0, len(mutation.Notes))
+	for _, note := range mutation.Notes {
+		diagnostics = append(diagnostics, b.locatedWarning(source, note.Span, diag.CodeEngineReading, note.Message))
+	}
+	return diagnostics
+}
+
+// locatedWarning builds a warning at the place in the migration a dialect located, or on
+// the statement's line when the place is unknown or falls outside the text.
+//
+// Takes source (migrationSource) which holds the migration's text and filename.
+// Takes location (ast.Span) which is the place the dialect gave.
+// Takes code (string) which is the diagnostic's code.
+// Takes message (string) which is the warning.
+//
+// Returns diag.SourceError which is the warning.
+func (b *catalogueBuilder) locatedWarning(source migrationSource, location ast.Span, code, message string) diag.SourceError {
+	span := diagbuild.TextSpan{Line: max(b.statement.line, 1), Column: 1, EndLine: 0, EndColumn: 0}
+	if location.Known() && location.Start >= 0 && location.End <= len(source.text) {
+		span = diagbuild.SpanOf(source.text, 1, location.Start, location.End)
+	}
+	return diagbuild.Located(source.filename, span, code, diag.SeverityWarning, message, "")
 }
 
 // applyMutation dispatches a catalogue mutation and updates affected partitions and
@@ -670,6 +746,9 @@ func (b *catalogueBuilder) applyMutation(ctx context.Context, mutation *ast.Cata
 		return nil
 	}
 	err := b.dispatchMutation(ctx, mutation)
+	if err == nil && createsRelation(mutation.Kind) {
+		b.restoreBrokenViews()
+	}
 	if mutation.Kind == ast.MutationDropSchema && len(b.partitionParents) > 0 {
 		b.dropOrphanedPartitions()
 	}
@@ -1189,6 +1268,38 @@ func readConfiguredColumnOverrides(overrides []sqlmodel.TypeOverride) []configur
 		configured = append(configured, configuredColumnOverride{reference: reference, override: override})
 	}
 	return configured
+}
+
+// transactionControlErrors reports a migration that writes its own BEGIN, COMMIT or
+// ROLLBACK, which the migration runner refuses because it owns the transaction.
+//
+// Takes parsed (parsedMigration) which holds the migration's tokens and statements.
+// Takes source (migrationSource) which holds the migration's filename.
+//
+// Returns []diag.SourceError which holds one error, or nil when no statement controls a
+// transaction.
+func transactionControlErrors(parsed parsedMigration, source migrationSource) []diag.SourceError {
+	if !statementsRequireNoTransaction(sqllex.ControlsTransaction, parsed.tokens, parsed.statements) {
+		return nil
+	}
+	return []diag.SourceError{diagbuild.Block(
+		source.filename,
+		1,
+		diag.CodeMigrationTransactionControl,
+		diag.SeverityError,
+		"migration writes BEGIN, COMMIT, ROLLBACK or another statement that controls a transaction, which the "+
+			"migration runner owns and refuses. Remove the statement",
+	)}
+}
+
+// createsRelation reports whether a mutation kind creates a table or a view, which may
+// mend a view broken by an earlier rename or drop.
+//
+// Takes kind (ast.MutationKind) which is the mutation's kind.
+//
+// Returns bool which is true for CREATE TABLE and CREATE VIEW.
+func createsRelation(kind ast.MutationKind) bool {
+	return kind == ast.MutationCreateTable || kind == ast.MutationCreateView
 }
 
 // statementsRequireNoTransaction reports whether any statement of a migration cannot run

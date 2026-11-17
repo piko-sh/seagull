@@ -1,0 +1,4 @@
+{
+  "description": "CockroachDB takes empty parentheses after CURRENT_DATE, CURRENT_TIME, CURRENT_TIMESTAMP, LOCALTIME, LOCALTIMESTAMP, CURRENT_USER, SESSION_USER and CURRENT_SCHEMA, which PostgreSQL refuses.",
+  "expectedDiagnosticCount": 0
+}

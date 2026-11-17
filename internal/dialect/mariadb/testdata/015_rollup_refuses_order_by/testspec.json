@@ -1,0 +1,4 @@
+{
+  "description": "MariaDB refuses ORDER BY on a query grouped WITH ROLLUP, so the query is refused rather than generated.",
+  "expectedDiagnosticCount": 1
+}

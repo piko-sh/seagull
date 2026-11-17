@@ -1,0 +1,70 @@
+{
+  "cast_alias_text_comparison": {
+    "error": "sgl: unknown column in runtime query filter"
+  },
+  "dotted_filter": [
+    {
+      "Mixed": "A",
+      "a.b": "q",
+      "id": 2,
+      "select": "x"
+    }
+  ],
+  "dotted_order": [
+    {
+      "Mixed": "C",
+      "a.b": "r",
+      "id": 3,
+      "select": "z"
+    },
+    {
+      "Mixed": "A",
+      "a.b": "q",
+      "id": 2,
+      "select": "x"
+    },
+    {
+      "Mixed": "B",
+      "a.b": "p",
+      "id": 1,
+      "select": "y"
+    }
+  ],
+  "mixed_case_filter": [
+    {
+      "Mixed": "A",
+      "a.b": "q",
+      "id": 2,
+      "select": "x"
+    }
+  ],
+  "mixed_case_order": [
+    {
+      "Mixed": "C",
+      "a.b": "r",
+      "id": 3,
+      "select": "z"
+    },
+    {
+      "Mixed": "B",
+      "a.b": "p",
+      "id": 1,
+      "select": "y"
+    },
+    {
+      "Mixed": "A",
+      "a.b": "q",
+      "id": 2,
+      "select": "x"
+    }
+  ],
+  "reserved_count": 2,
+  "reserved_filter": [
+    {
+      "Mixed": "B",
+      "a.b": "p",
+      "id": 1,
+      "select": "y"
+    }
+  ]
+}

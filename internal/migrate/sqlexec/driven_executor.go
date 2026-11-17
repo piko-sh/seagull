@@ -34,6 +34,9 @@ import (
 )
 
 const (
+	// executingSQLFormat wraps the failure of a migration's SQL.
+	executingSQLFormat = "executing SQL: %w"
+
 	// insertPlaceholderVersion is the 1-based bind-parameter index for the version column.
 	insertPlaceholderVersion = 1
 
@@ -98,6 +101,14 @@ const (
 	// column in the clearDirty UPDATE statement.
 	clearDirtyPlaceholderVersion = 3
 
+	// rollbackPlaceholderDigest is the 1-based bind-parameter index for the statements_hash
+	// column in the UPDATE that marks a rollback in progress.
+	rollbackPlaceholderDigest = 1
+
+	// rollbackPlaceholderVersion is the 1-based bind-parameter index for the version column
+	// in the UPDATE that marks a rollback in progress.
+	rollbackPlaceholderVersion = 2
+
 	// defaultProgressUpdateBatchSize is the number of successful statements an executor
 	// applies between writes to the last_statement column: one, to minimise the completed
 	// work a crash or failed checkpoint can leave unrecorded.
@@ -131,6 +142,10 @@ type Executor struct {
 	// held is the lock the executor holds, or nil; guarded by mutex.
 	held *heldLock
 
+	// pinned is the connection a migration that changes a session setting runs on, from
+	// start to end, or nil; guarded by mutex.
+	pinned *sql.Conn
+
 	// backend holds the dialect-specific SQL and locking behaviour.
 	backend Backend
 
@@ -139,7 +154,7 @@ type Executor struct {
 	// below means use defaultProgressUpdateBatchSize.
 	progressUpdateBatchSize int
 
-	// mutex guards held.
+	// mutex guards held and pinned.
 	mutex sync.Mutex
 }
 
@@ -189,6 +204,7 @@ func newExecutor(database *sql.DB, backend Backend, options ...ExecutorOption) *
 		clock:                   settings.clock,
 		slot:                    newHolderSlot(),
 		held:                    nil,
+		pinned:                  nil,
 		mutex:                   sync.Mutex{},
 	}
 }
@@ -205,18 +221,32 @@ func (executor *Executor) LexicalRules() sqllex.Rules {
 // the columns that record statement progress (splitter_version and statements_hash) to a
 // table an earlier release created without them.
 //
+// A table is created only when a read of it fails, since PostgreSQL, MySQL, MariaDB and
+// ClickHouse refuse CREATE TABLE IF NOT EXISTS to a user without the right to create one
+// even when the table exists, so a user who may only write the tables, running a
+// migration of data, would be refused before it ran.
+//
 // The Migrator calls it while holding the configured lock. Backends without a database
 // lock require external coordination of concurrent runs.
 //
 // Returns error when the table cannot be created or upgraded.
 func (executor *Executor) EnsureMigrationTable(ctx context.Context) error {
 	runner := executor.queryExecutor()
-	createSQL := executor.backend.engine.createHistoryTable(executor.historyTable())
-	if _, createError := runner.ExecContext(ctx, createSQL); createError != nil {
+	history := executor.historyTable()
+	if createError := ensureTable(ctx, runner, history, executor.backend.engine.createHistoryTable(history)); createError != nil {
 		return fmt.Errorf("creating migration table: %w", createError)
 	}
 	if upgradeError := executor.upgradeHistoryTable(ctx, runner); upgradeError != nil {
 		return fmt.Errorf("upgrading migration table: %w", upgradeError)
+	}
+	if upgradeError := upgradeAppliedAt(ctx, runner, executor.backend.engine.appliedAtUpgrade, history); upgradeError != nil {
+		return fmt.Errorf("upgrading migration table: %w", upgradeError)
+	}
+	if create := executor.backend.engine.createProgressTable; create != nil && executor.backend.engine.appendOnlyHistory {
+		progress := executor.progressTable()
+		if createError := ensureTable(ctx, runner, progress, create(progress)); createError != nil {
+			return fmt.Errorf("creating migration progress table: %w", createError)
+		}
 	}
 	return nil
 }
@@ -312,20 +342,79 @@ func (executor *Executor) ExecuteMigration(
 	if splitError != nil {
 		return fmt.Errorf("splitting migration %d statements: %w", migration.Version, splitError)
 	}
+	if index, controls := executor.backend.engine.controlsTransaction(statements); controls {
+		return fmt.Errorf("migration %d (%s), statement %d: %w", migration.Version, migration.Name, index+1, migrate.ErrTransactionControl)
+	}
 	digest, resumeError := resumeDigest(migration, statements)
 	if resumeError != nil {
 		return resumeError
 	}
-	run := migrationRun{start: start, digest: digest, statements: statements, record: migration}
+	run := migrationRun{
+		start:      start,
+		session:    executor.backend.engine.sessionStatements(statements),
+		skip:       nil,
+		digest:     digest,
+		statements: statements,
+		record:     migration,
+	}
+	if len(run.session) > 0 {
+		release, pinError := executor.pinSession(ctx)
+		if pinError != nil {
+			return pinError
+		}
+		defer release()
+	}
 
+	return executor.executeRun(ctx, run, direction, useTransaction)
+}
+
+// executeRun runs a prepared migration inside a transaction when it can, and outside one
+// otherwise, then runs the engine's schema checkpoint once it has succeeded.
+//
+// Takes run (migrationRun) which is the migration and its statements.
+// Takes direction (migrate.MigrationDirection) which says whether it is an up or a down
+// migration.
+// Takes useTransaction (bool) which is false when the migration asks to run without a
+// transaction.
+//
+// Returns error when the migration's SQL or history update fails.
+func (executor *Executor) executeRun(
+	ctx context.Context,
+	run migrationRun,
+	direction migrate.MigrationDirection,
+	useTransaction bool,
+) error {
 	inTransaction, checkError := executor.runsInTransaction(ctx, run, useTransaction)
 	if checkError != nil {
-		return fmt.Errorf("checking whether migration %d can run in a transaction: %w", migration.Version, checkError)
+		return fmt.Errorf("checking whether migration %d can run in a transaction: %w", run.record.Version, checkError)
 	}
+	var executionError error
 	if inTransaction {
-		return executor.executeInTransaction(ctx, run, direction)
+		executionError = executor.executeInTransaction(ctx, run, direction)
+	} else {
+		executionError = executor.executeWithoutTransaction(ctx, run, direction)
 	}
-	return executor.executeWithoutTransaction(ctx, run, direction)
+	if executionError == nil {
+		executor.checkpointSchema(ctx, executor.queryExecutor())
+	}
+	return executionError
+}
+
+// checkpointSchema runs the engine's schema checkpoint after a schema change when
+// available.
+//
+// A checkpoint failure is logged because the schema change has already committed.
+//
+// Takes runner (queryRunner) which is the connection the migrations run on.
+func (executor *Executor) checkpointSchema(ctx context.Context, runner queryRunner) {
+	ctx, logger := logging.From(ctx)
+	statement := executor.backend.engine.schemaCheckpoint
+	if statement == "" {
+		return
+	}
+	if _, err := runner.ExecContext(ctx, statement); err != nil {
+		logger.WarnContext(ctx, "best-effort schema checkpoint failed", logging.ErrAttr(err))
+	}
 }
 
 // runsInTransaction reports whether a migration runs inside one transaction with its
@@ -413,6 +502,9 @@ func (executor *Executor) pinRun(ctx context.Context, handle lockHandle) (*heldL
 func (executor *Executor) queryExecutor() queryRunner {
 	executor.mutex.Lock()
 	defer executor.mutex.Unlock()
+	if executor.pinned != nil {
+		return executor.pinned
+	}
 	if executor.held == nil {
 		return executor.database
 	}
@@ -448,6 +540,17 @@ func (executor *Executor) historyTable() string {
 	executor.mutex.Lock()
 	defer executor.mutex.Unlock()
 	return qualifiedTable(executor.backend.engine, executor.held, executor.backend.historyTable())
+}
+
+// progressTable names the migration progress table as the run names its tables.
+//
+// Returns string which is the table name.
+//
+// Concurrency: reads the held run under the executor mutex.
+func (executor *Executor) progressTable() string {
+	executor.mutex.Lock()
+	defer executor.mutex.Unlock()
+	return qualifiedTable(executor.backend.engine, executor.held, executor.backend.Names().MigrationProgress())
 }
 
 // appliedVersionsSQL renders the SELECT AppliedVersions reads the history with.
@@ -487,14 +590,23 @@ func (executor *Executor) executeInTransaction(
 	run migrationRun,
 	direction migrate.MigrationDirection,
 ) (err error) {
+	before, after, settingsError := settingsAroundTransaction(&run)
+	if settingsError != nil {
+		return settingsError
+	}
+	if executionError := executor.execIndexed(ctx, executor.queryExecutor(), run, before); executionError != nil {
+		return fmt.Errorf(executingSQLFormat, executionError)
+	}
 	transaction, beginError := executor.queryExecutor().BeginTx(ctx, nil)
 	if beginError != nil {
 		return fmt.Errorf("beginning transaction: %w", beginError)
 	}
 	defer rollbackUnlessDone(transaction, "migration transaction", &err)
 
-	if executionError := executor.execStatements(ctx, transaction, run); executionError != nil {
-		return fmt.Errorf("executing SQL: %w", executionError)
+	inside := run
+	inside.skip = run.session
+	if executionError := executor.execStatements(ctx, transaction, inside); executionError != nil {
+		return fmt.Errorf(executingSQLFormat, executionError)
 	}
 
 	durationMs := executor.clock.Now().Sub(run.start).Milliseconds()
@@ -509,6 +621,9 @@ func (executor *Executor) executeInTransaction(
 		return fmt.Errorf("committing transaction: %w", commitError)
 	}
 
+	if executionError := executor.execIndexed(ctx, executor.queryExecutor(), run, after); executionError != nil {
+		return fmt.Errorf("executing SQL after the transaction: %w", executionError)
+	}
 	return nil
 }
 
@@ -661,35 +776,117 @@ func (executor *Executor) runMigrationStatement(
 // executeAppendOnlyUp handles non-transactional up migrations for backends with
 // append-only history, such as ClickHouse.
 //
-// It executes every statement and then records a single completed history row (dirty =
-// false). It skips dirty pre-recording, per-statement progress and resume machinery. A
-// migration that fails part-way leaves no history row and is re-run from the start on the
-// next invocation. Statements must be safe to repeat, or their partial effects must be
-// resolved before retrying.
+// It records no dirty row. Where the engine has a progress table, each completed
+// statement appends a progress row, so a migration that stops part-way resumes after its
+// last completed statement on the next invocation, and is refused with a
+// *migrate.ResumeMismatchError when its file changed meanwhile. On success it appends a
+// progress row of -1, so a later run of the same version starts from the beginning, and
+// then records a single completed history row. The statement running when the run stopped
+// is not recorded and runs again.
 //
 // Takes run (migrationRun) which is the migration and its statements.
 //
-// Returns error when the migration SQL or history insert fails.
+// Returns error when the migration changed since it stopped, or its SQL, progress or
+// history insert fails.
 func (executor *Executor) executeAppendOnlyUp(ctx context.Context, run migrationRun) error {
-	if executionError := executor.execStatements(ctx, executor.queryExecutor(), run); executionError != nil {
-		return fmt.Errorf("executing SQL: %w", executionError)
+	runner := executor.queryExecutor()
+	if executor.backend.engine.createProgressTable == nil {
+		if executionError := executor.execStatements(ctx, runner, run); executionError != nil {
+			return fmt.Errorf(executingSQLFormat, executionError)
+		}
+	} else if executionError := executor.execStatementsResumably(ctx, runner, run); executionError != nil {
+		return executionError
 	}
 
 	durationMs := executor.clock.Now().Sub(run.start).Milliseconds()
 	return executor.recordCompletedMigration(ctx, run.record, run.start, durationMs)
 }
 
-// executeWithoutTransactionDown handles non-transactional down migrations. Down
-// migrations do not use dirty state tracking since they delete the history record on
-// success.
+// execStatementsResumably runs a migration's statements after the last one an earlier,
+// interrupted run recorded, appending a progress row after each, and a row of -1 once all
+// have run.
+//
+// Takes runner (execContextRunner) which executes the SQL.
+// Takes run (migrationRun) which is the migration and its statements.
+//
+// Returns error when the migration changed since it stopped, or a statement or progress
+// row fails.
+func (executor *Executor) execStatementsResumably(ctx context.Context, runner execContextRunner, run migrationRun) error {
+	resumeAfter, err := executor.migrationProgress(ctx, run)
+	if err != nil {
+		return err
+	}
+	progressSQL := executor.backend.engine.progressInsertSQL(executor.progressTable())
+	record := func(index int) error {
+		if _, err := runner.ExecContext(ctx, progressSQL, run.record.Version, run.record.Checksum, index); err != nil {
+			return fmt.Errorf("recording migration %d progress: %w", run.record.Version, err)
+		}
+		return nil
+	}
+	for index := resumeAfter + 1; index < len(run.statements); index++ {
+		if cancelError := contextStopped(ctx); cancelError != nil {
+			return fmt.Errorf("executing SQL: migration %d cancelled before statement %d: %w", run.record.Version, index+1, cancelError)
+		}
+		if _, executionError := runner.ExecContext(ctx, run.statements[index]); executionError != nil {
+			return fmt.Errorf("executing SQL: statement %d/%d of migration %d: %w", index+1, len(run.statements), run.record.Version, executionError)
+		}
+		if err := record(index); err != nil {
+			return err
+		}
+	}
+	return record(-1)
+}
+
+// migrationProgress reads the last statement a migration completed in an earlier run that
+// stopped part-way.
+//
+// Takes run (migrationRun) which is the migration and its statements.
+//
+// Returns int which is the zero-based index of the last completed statement, or -1 when
+// no earlier run completed one or the last run finished.
+// Returns error when the progress cannot be read or the migration changed since it
+// stopped.
+func (executor *Executor) migrationProgress(ctx context.Context, run migrationRun) (int, error) {
+	query := executor.backend.engine.progressReadSQL(executor.progressTable())
+	var checksum string
+	var last int
+	switch err := executor.queryExecutor().QueryRowContext(ctx, query, run.record.Version).Scan(&checksum, &last); {
+	case errors.Is(err, sql.ErrNoRows):
+		return -1, nil
+	case err != nil:
+		return 0, fmt.Errorf("reading migration %d progress: %w", run.record.Version, err)
+	case last < 0:
+		return -1, nil
+	case checksum != run.record.Checksum || last >= len(run.statements):
+		return 0, &migrate.ResumeMismatchError{
+			Name: run.record.Name, Version: run.record.Version, LastStatement: last,
+			RecordedSplitterVersion: splitterVersion, SplitterVersion: splitterVersion, StatementCount: len(run.statements),
+		}
+	default:
+		return last, nil
+	}
+}
+
+// executeWithoutTransactionDown handles non-transactional down migrations.
+//
+// Before the first statement runs, the migration's history row is marked dirty with the
+// InterruptedRollback digest, so a rollback that stops part-way leaves the row dirty. The
+// half-dropped migration then blocks Up, Down and Validate until it is repaired, rather
+// than being taken for applied. The row is deleted on success. An append-only history
+// records no dirty state, so it is not marked.
 //
 // Takes run (migrationRun) which is the down migration and its statements.
 //
 // Returns error when the migration SQL or history update fails, joined with the failure
 // to roll the history transaction back when that fails too.
 func (executor *Executor) executeWithoutTransactionDown(ctx context.Context, run migrationRun) (err error) {
+	if !executor.backend.engine.appendOnlyHistory {
+		if markError := executor.markRollingBack(ctx, run.record.Version); markError != nil {
+			return markError
+		}
+	}
 	if executionError := executor.execStatements(ctx, executor.queryExecutor(), run); executionError != nil {
-		return fmt.Errorf("executing SQL: %w", executionError)
+		return fmt.Errorf(executingSQLFormat, executionError)
 	}
 
 	durationMs := executor.clock.Now().Sub(run.start).Milliseconds()
@@ -851,11 +1048,11 @@ func (executor *Executor) flushProgressCheckpoint(
 	lastStatement int,
 	digest statementDigest,
 ) bool {
+	ctx, logger := logging.From(ctx)
 	flushError := executor.updateStatementProgress(ctx, version, lastStatement, digest)
 	if flushError == nil {
 		return true
 	}
-	logger := logging.LoggerFrom(ctx)
 	logger.WarnContext(ctx, "best-effort statement progress update failed",
 		logging.ErrAttr(flushError),
 		slog.Int64("version", version),
@@ -901,9 +1098,48 @@ func (executor *Executor) historyRecordExists(ctx context.Context, version int64
 // failed.
 func (*Executor) execStatements(ctx context.Context, runner execContextRunner, run migrationRun) error {
 	for index := max(run.record.SkipUpTo+1, 0); index < len(run.statements); index++ {
+		if run.skip[index] {
+			continue
+		}
 		if cancelError := contextStopped(ctx); cancelError != nil {
 			return fmt.Errorf("migration %d cancelled before statement %d: %w", run.record.Version, index+1, cancelError)
 		}
+		if _, executionError := runner.ExecContext(ctx, run.statements[index]); executionError != nil {
+			return fmt.Errorf("statement %d/%d of migration %d: %w", index+1, len(run.statements), run.record.Version, executionError)
+		}
+	}
+	return nil
+}
+
+// markRollingBack marks a migration's history row dirty with the InterruptedRollback
+// digest before its down migration runs outside a transaction.
+//
+// Takes version (int64) which identifies the migration record.
+//
+// Returns error when the UPDATE statement fails.
+func (executor *Executor) markRollingBack(ctx context.Context, version int64) error {
+	placeholder := executor.backend.placeholder
+	updateSQL := fmt.Sprintf(
+		"UPDATE %s SET dirty = TRUE, last_statement = -1, statements_hash = %s WHERE version = %s",
+		executor.historyTable(),
+		placeholder(rollbackPlaceholderDigest),
+		placeholder(rollbackPlaceholderVersion),
+	)
+	if _, updateError := executor.queryExecutor().ExecContext(ctx, updateSQL, migrate.InterruptedRollback, version); updateError != nil {
+		return fmt.Errorf("marking the rollback of migration %d: %w", version, updateError)
+	}
+	return nil
+}
+
+// execIndexed executes the statements of a migration at the given indexes, in order.
+//
+// Takes runner (execContextRunner) which executes the SQL.
+// Takes run (migrationRun) which is the migration and its statements.
+// Takes indexes ([]int) which are the statements to run.
+//
+// Returns error when a statement fails, naming it as execStatements does.
+func (*Executor) execIndexed(ctx context.Context, runner execContextRunner, run migrationRun, indexes []int) error {
+	for _, index := range indexes {
 		if _, executionError := runner.ExecContext(ctx, run.statements[index]); executionError != nil {
 			return fmt.Errorf("statement %d/%d of migration %d: %w", index+1, len(run.statements), run.record.Version, executionError)
 		}
@@ -1131,4 +1367,40 @@ func contextStopped(ctx context.Context) error {
 		return fmt.Errorf("%w: %w", err, cause)
 	}
 	return err
+}
+
+// ensureTable creates a table unless a read of it succeeds.
+//
+// Takes runner (queryRunner) which is the connection the migrations run on.
+// Takes table (string) which is the table's name as the run writes it.
+// Takes createSQL (string) which creates the table if it does not exist.
+//
+// Returns error when the table can be neither read nor created, naming both failures.
+func ensureTable(ctx context.Context, runner queryRunner, table, createSQL string) error {
+	readError := readTable(ctx, runner, table)
+	if readError == nil {
+		return nil
+	}
+	if _, createError := runner.ExecContext(ctx, createSQL); createError != nil {
+		return errors.Join(createError, fmt.Errorf("reading %s first: %w", table, readError))
+	}
+	return nil
+}
+
+// readTable checks whether a table can be read without fetching rows.
+//
+// PostgreSQL, CockroachDB, MySQL, MariaDB and ClickHouse refuse CREATE TABLE IF NOT
+// EXISTS to a user without the right to create a table even when it exists, so a table
+// the runtime needs is created only when this read fails.
+//
+// Takes runner (queryRunner) which is the connection to read on.
+// Takes table (string) which is the table's name as the run writes it.
+//
+// Returns error when the table cannot be read.
+func readTable(ctx context.Context, runner queryRunner, table string) error {
+	rows, queryError := runner.QueryContext(ctx, "SELECT 1 FROM "+table+" WHERE 1 = 0")
+	if queryError != nil {
+		return queryError
+	}
+	return errors.Join(rows.Close(), rows.Err())
 }

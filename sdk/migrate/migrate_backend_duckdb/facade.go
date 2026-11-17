@@ -30,7 +30,7 @@ import (
 // serialises its own lock holders.
 //
 // Takes options (...migrate.BackendOption) which set the namespace and history table;
-// only [migrate.LockNone] is supported.
+// [migrate.LockLease] is the default, and [migrate.LockNone] is also supported.
 //
 // Returns migrate.Backend which is ready for [migrate.NewMigrator], [migrate.NewSeeder]
 // or [migrate.NewExecutor].

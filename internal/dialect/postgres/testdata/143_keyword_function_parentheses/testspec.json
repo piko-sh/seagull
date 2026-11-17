@@ -1,0 +1,9 @@
+{
+  "description": "PostgreSQL refuses empty parentheses after CURRENT_DATE, CURRENT_TIME and the other keyword functions except CURRENT_SCHEMA, and an argument after any but the time functions' precision, each a syntax error.",
+  "expectedDiagnosticCount": 3,
+  "diagnostics": [
+    {"severity": "error", "code": "Q010", "messageContains": "CURRENT_DATE takes no parentheses"},
+    {"severity": "error", "code": "Q010", "messageContains": "CURRENT_USER takes no parentheses"},
+    {"severity": "error", "code": "Q010", "messageContains": "CURRENT_DATE takes no arguments"}
+  ]
+}

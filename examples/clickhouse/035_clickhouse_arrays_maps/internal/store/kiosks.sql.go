@@ -106,7 +106,7 @@ VALUES (
     {p_till:IPv4},
     {p_prices:Map(String, UInt32)},
     {p_tags:Array(String)},
-    ({p_lat:Float64}, {p_lon:Float64})
+    (CAST(arrayMap(sgl_float0 -> reinterpretAsFloat64(sgl_float0), CAST(concat('[', {p_lat:String}, ']') AS Array(UInt64)))[1] AS Float64), CAST(arrayMap(sgl_float0 -> reinterpretAsFloat64(sgl_float0), CAST(concat('[', {p_lon:String}, ']') AS Array(UInt64)))[1] AS Float64))
 );`
 
 type OpenKioskParams struct {
@@ -121,6 +121,6 @@ type OpenKioskParams struct {
 }
 
 func (queries *Queries) OpenKiosk(ctx context.Context, params OpenKioskParams) error {
-	_, err := queries.writer.ExecContext(ctx, openKioskSQL, clickhouse.Named("p_id", sglClickHouseShapedValue(params.ID, sglClickHouseShapes[0])), clickhouse.Named("p_name", sglClickHouseShapedValue(params.Name, sglClickHouseShapes[1])), clickhouse.Named("p_town", sglClickHouseShapedValue(params.Town, sglClickHouseShapes[1])), clickhouse.Named("p_till", sglClickHouseShapedValue(params.Till, sglClickHouseShapes[2])), clickhouse.Named("p_prices", sglClickHouseShapedValue(params.Prices, sglClickHouseShapes[3])), clickhouse.Named("p_tags", sglClickHouseShapedValue(params.Tags, sglClickHouseShapes[4])), clickhouse.Named("p_lat", sglClickHouseShapedValue(params.Lat, sglClickHouseShapes[0])), clickhouse.Named("p_lon", sglClickHouseShapedValue(params.Lon, sglClickHouseShapes[0])))
+	_, err := queries.writer.ExecContext(ctx, openKioskSQL, clickhouse.Named("p_id", sglClickHouseShapedValue(params.ID, sglClickHouseShapes[0])), clickhouse.Named("p_name", sglClickHouseShapedValue(params.Name, sglClickHouseShapes[1])), clickhouse.Named("p_town", sglClickHouseShapedValue(params.Town, sglClickHouseShapes[1])), clickhouse.Named("p_till", sglClickHouseShapedValue(params.Till, sglClickHouseShapes[2])), clickhouse.Named("p_prices", sglClickHouseShapedValue(params.Prices, sglClickHouseShapes[3])), clickhouse.Named("p_tags", sglClickHouseShapedValue(params.Tags, sglClickHouseShapes[4])), clickhouse.Named("p_lat", sglClickHouseFloatValue(params.Lat, "f", true)), clickhouse.Named("p_lon", sglClickHouseFloatValue(params.Lon, "f", true)))
 	return err
 }

@@ -28,9 +28,9 @@ type ListOrdersOrders struct {
 }
 
 type ListOrdersOrderLines struct {
-	ID       *int64  `json:"id"`
-	Dish     *string `json:"dish"`
-	Quantity *int64  `json:"quantity"`
+	ID       Null[int64]  `json:"id"`
+	Dish     Null[string] `json:"dish"`
+	Quantity Null[int64]  `json:"quantity"`
 }
 
 type ListOrdersRow struct {
@@ -49,21 +49,21 @@ func (queries *Queries) ListOrders(ctx context.Context) ([]ListOrdersRow, error)
 	for rows.Next() {
 		var ordersID int64
 		var ordersCustomer string
-		var orderLinesID *int64
-		var orderLinesDish *string
-		var orderLinesQuantity *int64
+		var orderLinesID Null[int64]
+		var orderLinesDish Null[string]
+		var orderLinesQuantity Null[int64]
 		if err := rows.Scan(&ordersID, &ordersCustomer, &orderLinesID, &orderLinesDish, &orderLinesQuantity); err != nil {
 			return nil, err
 		}
 		if entry, exists := groupIndex[ordersID]; exists {
-			if orderLinesID != nil {
+			if orderLinesID.Valid {
 				results[entry].OrderLines = append(results[entry].OrderLines, ListOrdersOrderLines{ID: orderLinesID, Dish: orderLinesDish, Quantity: orderLinesQuantity})
 			}
 		} else {
 			entry := len(results)
 			groupIndex[ordersID] = entry
 			results = append(results, ListOrdersRow{Orders: ListOrdersOrders{ID: ordersID, Customer: ordersCustomer}})
-			if orderLinesID != nil {
+			if orderLinesID.Valid {
 				results[entry].OrderLines = append(results[entry].OrderLines, ListOrdersOrderLines{ID: orderLinesID, Dish: orderLinesDish, Quantity: orderLinesQuantity})
 			}
 		}

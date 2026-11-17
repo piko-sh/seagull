@@ -54,6 +54,7 @@ func (provider *Source) listViews(ctx context.Context, catalogue *sqlmodel.Catal
 			Schema:     schema.Name,
 			Definition: definition.String,
 			Columns:    nil,
+			Broken:     "",
 			Comment:    "",
 			Origin:     sqlmodel.MigrationOrigin{},
 		}
@@ -161,11 +162,12 @@ func (provider *Source) schemaIndexes(ctx context.Context, catalogue *sqlmodel.C
 		last := len(table.Indexes) - 1
 		if last < 0 || table.Indexes[last].Name != name {
 			table.Indexes = append(table.Indexes, sqlmodel.Index{
-				Name:      name,
-				IsUnique:  unique,
-				IsPrimary: primary,
-				Columns:   nil,
-				Origin:    sqlmodel.MigrationOrigin{},
+				Name:       name,
+				IsUnique:   unique,
+				IsPrimary:  primary,
+				IsFullText: false,
+				Columns:    nil,
+				Origin:     sqlmodel.MigrationOrigin{},
 			})
 			last++
 		}

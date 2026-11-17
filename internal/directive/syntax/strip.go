@@ -66,12 +66,8 @@ func IsDirectiveText(body string, prefixes namespace.Set) bool {
 	if text == "" || strings.IndexByte(lineSpace, text[0]) >= 0 {
 		return false
 	}
-	for _, accepted := range prefixes.Accepted() {
-		if strings.Contains(text, " as "+accepted+".") {
-			return true
-		}
-	}
-	return false
+	_, parameter := canonicalParameter(text, prefixes)
+	return parameter
 }
 
 // directiveLines returns the lines of the directive comments to strip: each directive

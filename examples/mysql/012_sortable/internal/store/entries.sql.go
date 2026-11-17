@@ -42,8 +42,20 @@ type ListEntriesRow struct {
 func (queries *Queries) ListEntries(ctx context.Context, params ListEntriesParams) ([]ListEntriesRow, error) {
 	query := listEntriesSQL
 	switch string(params.OrderBy) {
-	case "boat", "crew", "finish_seconds":
-		query = query + (" ORDER BY " + string(params.OrderBy))
+	case "boat":
+		query = query + " ORDER BY `boat`"
+		switch params.OrderByDirection {
+		case OrderAsc, OrderDesc:
+			query = query + (" " + string(params.OrderByDirection))
+		}
+	case "crew":
+		query = query + " ORDER BY `crew`"
+		switch params.OrderByDirection {
+		case OrderAsc, OrderDesc:
+			query = query + (" " + string(params.OrderByDirection))
+		}
+	case "finish_seconds":
+		query = query + " ORDER BY `finish_seconds`"
 		switch params.OrderByDirection {
 		case OrderAsc, OrderDesc:
 			query = query + (" " + string(params.OrderByDirection))
@@ -57,7 +69,7 @@ func (queries *Queries) ListEntries(ctx context.Context, params ListEntriesParam
 	var results []ListEntriesRow
 	if rows.Next() {
 		var row ListEntriesRow
-		scanArgs := []any{&row.ID, &row.Boat, &row.Crew, &row.FinishSeconds}
+		scanArgs := []any{&row.ID, &row.Boat, sglScanNumber(&row.Crew), sglScanNumber(&row.FinishSeconds)}
 		for more := true; more; more = rows.Next() {
 			row = ListEntriesRow{}
 			if err := rows.Scan(scanArgs...); err != nil {

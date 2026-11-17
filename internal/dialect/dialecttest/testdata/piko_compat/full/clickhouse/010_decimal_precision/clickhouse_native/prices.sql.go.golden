@@ -19,10 +19,15 @@ type GetPriceRow struct {
 }
 
 func (queries *Queries) GetPrice(ctx context.Context, id uint64) (GetPriceRow, error) {
-	var row GetPriceRow
-	err := queries.db.QueryRow(ctx, getprice, clickhouse.Named("p_id", pikoClickHouseShapedValue(id, pikoClickHouseShapes[0]))).Scan(&row.ID, &row.Amount, &row.Fee, &row.MicroAmount)
+	scanned := &struct {
+		row     GetPriceRow
+		targets [4]any
+	}{}
+	row := &scanned.row
+	scanned.targets = [4]any{&row.ID, &row.Amount, &row.Fee, &row.MicroAmount}
+	err := queries.db.QueryRow(ctx, getprice, clickhouse.Named("p_id", pikoClickHouseShapedValue(id, pikoClickHouseShapes[0]))).Scan(scanned.targets[:]...)
 	if err != nil {
 		return GetPriceRow{}, err
 	}
-	return row, nil
+	return *row, nil
 }

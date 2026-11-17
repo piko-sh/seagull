@@ -39,10 +39,7 @@
           "Category": "text",
           "EngineName": "char",
           "Length": 20
-        },
-        "SourceColumn": "label",
-        "SourceQualifier": "prices",
-        "SourceTable": "prices"
+        }
       },
       {
         "Name": "listed_precisely",

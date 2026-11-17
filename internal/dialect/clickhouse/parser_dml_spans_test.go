@@ -320,7 +320,7 @@ func TestClauseExpressions(t *testing.T) {
 		},
 		{
 			name:     "a WITH expression alias is a value, not a column",
-			sql:      "WITH now() - 7 AS bound, '2019-08-01' AS day SELECT id FROM items WHERE created > bound AND day < created",
+			sql:      "WITH now() - {days:UInt32} AS bound, {day:String} AS day SELECT id FROM items WHERE created > bound AND day < created",
 			expected: []string{"WHERE: column created > *ast.UnknownExpression AND *ast.UnknownExpression < column created"},
 		},
 		{
@@ -342,7 +342,7 @@ func TestClauseExpressions(t *testing.T) {
 func TestClauseExpressionsOfNestedQueriesStayOnThem(t *testing.T) {
 	t.Parallel()
 
-	sql := "WITH 5 AS limit_value, recent AS (SELECT a.id FROM items a JOIN tags b ON b.id = a.id WHERE a.id > limit_value) " +
+	sql := "WITH {limit:UInt32} AS limit_value, recent AS (SELECT a.id FROM items a JOIN tags b ON b.id = a.id WHERE a.id > limit_value) " +
 		"SELECT r.id FROM recent r UNION ALL SELECT id FROM items WHERE id IN (SELECT id FROM tags WHERE n > limit_value) ORDER BY id"
 	analysis, _ := analyseStatement(t, sql)
 

@@ -4,8 +4,12 @@ package store
 
 import (
 	"context"
+	"database/sql"
+	"database/sql/driver"
 	"strconv"
 	"strings"
+
+	"github.com/duckdb/duckdb-go/v2"
 )
 
 const recordReadingsSQL = `INSERT INTO readings (station, minute, height_cm, note) VALUES ($1, $2, $3, $4);`
@@ -14,12 +18,26 @@ type RecordReadingsParams struct {
 	Station  string
 	Minute   int32
 	HeightCm int32
-	Note     *string
+	Note     Null[string]
 }
 
 func (queries *Queries) RecordReadings(ctx context.Context, params []RecordReadingsParams) error {
 	if len(params) == 0 {
 		return nil
+	}
+	if db, owns := queries.writer.(*sql.DB); owns {
+		appended, _, err := sglDuckDBAppend(ctx, db, len(params), 16383, func(conn driver.Conn) (sglDuckDBAppender, error) {
+			return duckdb.NewAppenderWithColumns(conn, "", "", "readings", []string{"station", "minute", "height_cm", "note"})
+		}, func(appender sglDuckDBAppender, checker driver.NamedValueChecker, index int) error {
+			item := &params[index]
+			return sglDuckDBAppendRow(appender, checker, item.Station, item.Minute, item.HeightCm, item.Note)
+		})
+		if err != nil {
+			return err
+		}
+		if appended {
+			return nil
+		}
 	}
 	for offset := 0; offset < len(params); offset += 16383 {
 		end := min(offset+16383, len(params))

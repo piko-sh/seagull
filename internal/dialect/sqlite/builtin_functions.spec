@@ -32,20 +32,20 @@ substr(str text, start integer, length integer) text
 substring(str text, start integer) text
 substring(str text, start integer, length integer) text
 hex(x any) text
-unhex(x text) blob
+unhex(x text) blob called-on-null
 instr(str text, substr text) integer
-unicode(x text) integer
+unicode(x text) integer called-on-null
 unistr(x text) text
 unistr_quote(x text) text
 zeroblob(n integer) blob
 round(x real) real
 round(x real, y integer) real
-sign(x any) integer
+sign(x any) integer non-numeric-nulls=0
 typeof(x any) text never-null
 quote(x any) text never-null
 char(code integer) text never-null variadic=0
-printf(format text, value any) text never-null variadic=1
-format(format text, value any) text never-null variadic=1
+printf(format text, value any) text nulling-argument=0 variadic=1 empty-text-nulls=0
+format(format text, value any) text nulling-argument=0 variadic=1 empty-text-nulls=0
 random() bigint never-null
 changes() bigint never-null
 last_insert_rowid() bigint never-null
@@ -60,33 +60,33 @@ likelihood(x any, probability real) any called-on-null
 likely(x any) any called-on-null
 unlikely(x any) any called-on-null
 
-acos(x real) real
-asin(x real) real
+acos(x real) real called-on-null
+asin(x real) real called-on-null
 atan(x real) real
 atan2(y real, x real) real
 cos(x real) real
 sin(x real) real
 tan(x real) real
-ceil(x any) any
-ceiling(x any) any
-floor(x any) any
-trunc(x any) any
-sqrt(x real) real
+ceil(x any) any non-numeric-nulls=0
+ceiling(x any) any non-numeric-nulls=0
+floor(x any) any non-numeric-nulls=0
+trunc(x any) any non-numeric-nulls=0
+sqrt(x real) real called-on-null
 exp(x real) real
-ln(x real) real
-log2(x real) real
-log10(x real) real
-pow(x real, y real) real
-power(x real, y real) real
-mod(x any, y any) real
+ln(x real) real called-on-null
+log2(x real) real called-on-null
+log10(x real) real called-on-null
+pow(x real, y real) real called-on-null
+power(x real, y real) real called-on-null
+mod(x any, y any) real called-on-null
 degrees(x real) real
 radians(x real) real
-log(x real) real
-log(base real, x real) real
+log(x real) real called-on-null
+log(base real, x real) real called-on-null
 pi() real never-null
-acosh(x real) real
+acosh(x real) real called-on-null
 asinh(x real) real
-atanh(x real) real
+atanh(x real) real called-on-null
 cosh(x real) real
 sinh(x real) real
 tanh(x real) real

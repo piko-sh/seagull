@@ -96,6 +96,19 @@
               ],
               "ForeignTable": "customers",
               "Kind": "foreign-key",
+              "Name": "orders_ibfk_1",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              }
+            }
+          ],
+          "Indexes": [
+            {
+              "Columns": [
+                "customer_id"
+              ],
+              "Name": "customer_id",
               "Origin": {
                 "Filename": "001_schema.up.sql",
                 "Statement": 1

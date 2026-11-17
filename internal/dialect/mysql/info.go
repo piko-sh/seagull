@@ -81,9 +81,11 @@ var (
 	// where an offset needs a limit before it, so a lone offset follows the largest limit
 	// MySQL accepts.
 	paginationSyntax = dialect.PaginationSyntax{
-		Limit:          dialect.Affix{Before: "LIMIT ", After: ""},
-		Offset:         dialect.Affix{Before: "OFFSET ", After: ""},
-		UnboundedLimit: "18446744073709551615",
-		OffsetFirst:    false,
+		Limit:                   dialect.Affix{Before: "LIMIT ", After: ""},
+		Offset:                  dialect.Affix{Before: "OFFSET ", After: ""},
+		UnboundedLimit:          "18446744073709551615",
+		OffsetFirst:             false,
+		CompoundBindsLastBranch: false,
+		DerivedOrderLimit:       "18446744073709551615",
 	}
 )

@@ -48,10 +48,7 @@
         "SQLType": {
           "Category": "decimal",
           "EngineName": "numeric"
-        },
-        "SourceColumn": "placed_at",
-        "SourceQualifier": "orders",
-        "SourceTable": "orders"
+        }
       }
     ],
     "Parameters": [

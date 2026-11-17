@@ -524,7 +524,7 @@ func TestCockroachDBReadsInlineIndexAndFamilyElementsAsNoColumns(t *testing.T) {
 		},
 		{
 			name:            "columns named index and family",
-			sql:             `CREATE TABLE t (id INT PRIMARY KEY, "index" INT, family STRING)`,
+			sql:             `CREATE TABLE t (id INT PRIMARY KEY, "index" INT, "family" STRING)`,
 			expectedColumns: []string{"id", "index", "family"},
 		},
 	}

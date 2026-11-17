@@ -1,0 +1,26 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 1,
+    "Filename": "001_schema.up.sql",
+    "Line": 2,
+    "Message": "column id of table boats is in a primary key, so its NOT NULL constraint boats_id_not_null cannot be dropped",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 1,
+    "Filename": "001_schema.up.sql",
+    "Line": 3,
+    "Message": "column id of table boats is in a primary key, so it cannot drop NOT NULL",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 1,
+    "Filename": "001_schema.up.sql",
+    "Line": 4,
+    "Message": "column name of table boats has the NOT NULL constraint boats_name_not_null, so name_given cannot be added",
+    "Severity": "error"
+  }
+]

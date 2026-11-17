@@ -1,0 +1,22 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 42,
+    "EndColumn": 43,
+    "EndLine": 5,
+    "Filename": "grouping.sql",
+    "Line": 5,
+    "Message": "failed to analyse query \"WithRollup\": syntax error near \"k\": expected a single expression for each GROUP BY key; this engine has no WITH ROLLUP, ROLLUP, CUBE or GROUPING SETS grouping",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 42,
+    "EndColumn": 50,
+    "EndLine": 8,
+    "Filename": "grouping.sql",
+    "Line": 8,
+    "Message": "failed to analyse query \"Sets\": syntax error near \"GROUPING\": expected a single expression for each GROUP BY key; this engine has no WITH ROLLUP, ROLLUP, CUBE or GROUPING SETS grouping",
+    "Severity": "error"
+  }
+]

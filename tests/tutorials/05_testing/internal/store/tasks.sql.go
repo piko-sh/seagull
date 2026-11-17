@@ -18,7 +18,7 @@ func (queries *Queries) AddProject(ctx context.Context, name string) error {
 const assignProjectSQL = `UPDATE tasks SET project_id = ?1 WHERE id = ?2;`
 
 type AssignProjectParams struct {
-	ProjectID *int64
+	ProjectID Null[int64]
 	ID        int64
 }
 
@@ -47,9 +47,9 @@ func (queries *Queries) CreateTask(ctx context.Context, title string) (CreateTas
 const findTaskSQL = `SELECT id, title, notes FROM tasks WHERE id = ?1;`
 
 type FindTaskRow struct {
-	ID    int64   `json:"id"`
-	Title string  `json:"title"`
-	Notes *string `json:"notes"`
+	ID    int64        `json:"id"`
+	Title string       `json:"title"`
+	Notes Null[string] `json:"notes"`
 }
 
 func (queries *Queries) FindTask(ctx context.Context, id int64) (FindTaskRow, bool, error) {
@@ -107,8 +107,8 @@ type SearchTasksParams struct {
 }
 
 type SearchTasksProjects struct {
-	ID   *int64  `json:"id"`
-	Name *string `json:"name"`
+	ID   Null[int64]  `json:"id"`
+	Name Null[string] `json:"name"`
 }
 
 type SearchTasksRow struct {
@@ -147,7 +147,7 @@ func (queries *Queries) SearchTasks(ctx context.Context, params SearchTasksParam
 			if err := rows.Scan(scanArgs...); err != nil {
 				return nil, err
 			}
-			if embedRows.Projects.ID != nil {
+			if embedRows.Projects.ID.Valid {
 				row.Projects = &SearchTasksProjects{ID: embedRows.Projects.ID, Name: embedRows.Projects.Name}
 			}
 			results = append(results, row)
@@ -162,7 +162,7 @@ func (queries *Queries) SearchTasks(ctx context.Context, params SearchTasksParam
 const setNotesSQL = `UPDATE tasks SET notes = ?1 WHERE id = ?2;`
 
 type SetNotesParams struct {
-	Notes *string
+	Notes Null[string]
 	ID    int64
 }
 

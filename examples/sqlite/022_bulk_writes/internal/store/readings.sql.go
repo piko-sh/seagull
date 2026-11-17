@@ -14,7 +14,7 @@ type RecordReadingsParams struct {
 	Station  string
 	Minute   int64
 	HeightCm int64
-	Note     *string
+	Note     Null[string]
 }
 
 func (queries *Queries) RecordReadings(ctx context.Context, params []RecordReadingsParams) error {

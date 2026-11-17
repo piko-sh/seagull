@@ -19,7 +19,6 @@
 package source
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
@@ -82,7 +81,7 @@ var (
 //	n          a number or a boolean, written bare
 //	d          a date: the calendar date of a time.Time in its own location
 //	t, t0..t9  a date and time: a time.Time as Unix seconds, with that many fraction digits
-//	a          any: whatever the Go value is, a number bare, a slice an array, other text quoted
+//	a          any: numbers bare, slices as arrays, other values as quoted text
 //	[s]        an array whose elements have shape s
 //	{k:v}      a map whose keys have shape k and values shape v
 //	(s,'n'=s)  a tuple of the shapes listed, each optionally named as a quoted string
@@ -130,7 +129,7 @@ type sglClickHouseEncodedDocument struct {
 //
 //sgl:when json
 func (document sglClickHouseEncodedDocument) String() (string, error) {
-	encoded, err := json.Marshal(document.value)
+	encoded, err := sglJSONMarshal(document.value)
 	if err != nil {
 		return "", err
 	}
@@ -180,6 +179,25 @@ func sglClickHouseShapedValue(value any, shape sglClickHouseShape) string {
 	text, err := sglClickHouseWhole(reflect.ValueOf(value), shape)
 	if err != nil {
 		return sglClickHouseRefusalCleaner.Replace(err.Error()) + "\t"
+	}
+	return text
+}
+
+// sglClickHouseFloatValue writes exact float bits for native reconstruction.
+//
+// Takes value (any) which holds a scalar or composite parameter.
+// Takes shape (string) which describes floating-point leaves as f or F.
+// Takes named (bool) which selects the escaped format of a String query parameter.
+//
+// Returns any which preserves NULL or carries the exact encoded value.
+func sglClickHouseFloatValue(value any, shape string, named bool) any {
+	current, err := sglClickHouseFollow(reflect.ValueOf(value), 0)
+	if err == nil && !current.IsValid() {
+		return "NULL"
+	}
+	text := sglClickHouseValue(value, shape)
+	if named {
+		return sglClickHouseTextEscaper.Replace(text)
 	}
 	return text
 }
@@ -285,7 +303,7 @@ func sglClickHouseAppendElement(text []byte, value reflect.Value, shape sglClick
 	if err != nil {
 		return nil, err
 	}
-	if shape.kind == 'n' {
+	if shape.kind == 'n' || shape.kind == 'f' || shape.kind == 'F' {
 		return append(text, scalar...), nil
 	}
 	text = append(text, '\'')
@@ -331,17 +349,43 @@ func sglClickHouseAppendNumber(text []byte, value reflect.Value) []byte {
 // Returns reflect.Value which is the underlying value, or an invalid value for nil.
 // Returns error when following pointers exceeds the nesting limit.
 func sglClickHouseFollow(value reflect.Value, depth int) (reflect.Value, error) {
-	for value.IsValid() && (value.Kind() == reflect.Pointer || value.Kind() == reflect.Interface) {
-		if value.IsNil() {
-			return reflect.Value{}, nil
+	for value.IsValid() {
+		switch {
+		case value.Kind() == reflect.Pointer || value.Kind() == reflect.Interface:
+			if value.IsNil() {
+				return reflect.Value{}, nil
+			}
+			value = value.Elem()
+		case sglClickHouseHoldsNull(value):
+			if !value.FieldByName("Valid").Bool() {
+				return reflect.Value{}, nil
+			}
+			value = value.Field(0)
+		default:
+			return value, nil
 		}
 		depth++
 		if depth > sglClickHouseMaxDepth {
 			return reflect.Value{}, fmt.Errorf("%w: it nests more than %d levels deep or refers to itself", errSglClickHouseValue, sglClickHouseMaxDepth)
 		}
-		value = value.Elem()
 	}
 	return value, nil
+}
+
+// sglClickHouseHoldsNull reports whether a value is the generated Null type, whose V
+// field holds the value and whose Valid field is false for NULL, or database/sql's
+// sql.Null, whose value field is V.
+//
+// Takes value (reflect.Value) which is the reflected value.
+//
+// Returns bool which is true for a Null.
+func sglClickHouseHoldsNull(value reflect.Value) bool {
+	if value.Kind() != reflect.Struct || value.NumField() != 2 || !strings.HasPrefix(value.Type().Name(), "Null[") {
+		return false
+	}
+	valid := value.Type().Field(1)
+	held := value.Type().Field(0).Name
+	return held == "V" && valid.Name == "Valid" && valid.Type.Kind() == reflect.Bool
 }
 
 // sglClickHouseResolve chooses the shape of a value written with the a shape from the Go
@@ -568,7 +612,10 @@ func sglClickHouseTupleElements(value reflect.Value, shape sglClickHouseShape) (
 // Returns string which is the encoded parameter text.
 // Returns error when the value cannot be encoded for its SQL type.
 func sglClickHouseScalar(value reflect.Value, shape sglClickHouseShape) (string, error) {
-	if shape.kind == '4' || shape.kind == '6' {
+	switch shape.kind {
+	case 'f', 'F':
+		return sglClickHouseFloatBits(value, shape.kind == 'F')
+	case '4', '6':
 		address, isAddress, failure := sglClickHouseAddress(value, shape.kind)
 		if failure != "" {
 			return "", fmt.Errorf("%w: %s", errSglClickHouseValue, failure)
@@ -658,13 +705,21 @@ func sglClickHouseMoment(value reflect.Value) (time.Time, bool) {
 // Takes shape (sglClickHouseShape) which describes the SQL type and its nested elements.
 //
 // Returns string which is the date, timestamp or RFC 3339 text required by the shape.
-// Returns error when the shape requires a time.Time to be written as a number.
+// Returns error when the shape requires a time.Time to be written as a number, or when a
+// timestamp lies less than a second before 1970. ClickHouse reads the Unix time of such a
+// moment, such as -0.000001, as the same span after 1970. No other spelling of the moment
+// is free of the column's time zone.
 func sglClickHouseTime(moment time.Time, shape sglClickHouseShape) (string, error) {
 	switch shape.kind {
 	case 'd':
 		return moment.Format("2006-01-02"), nil
 	case 't':
-		return sglClickHouseEpoch(moment, shape.digits), nil
+		epoch := sglClickHouseEpoch(moment, shape.digits)
+		if strings.HasPrefix(epoch, "-0.") {
+			return "", fmt.Errorf("%w: %s is less than a second before 1970, and ClickHouse reads the Unix time %s as after 1970, so it cannot be sent faithfully",
+				errSglClickHouseValue, moment.UTC().Format(time.RFC3339Nano), epoch)
+		}
+		return epoch, nil
 	case 'q':
 		return moment.Format(time.RFC3339Nano), nil
 	default:
@@ -913,7 +968,7 @@ func sglClickHouseReadShape(text string, depth int) (sglClickHouseShape, string,
 	}
 	shape.kind, text = text[0], text[1:]
 	switch shape.kind {
-	case 'q', 'n', 'd', 'a', '4', '6':
+	case 'q', 'n', 'd', 'a', '4', '6', 'f', 'F':
 		return shape, text, nil
 	case 't':
 		shape.digits = 0
@@ -1019,4 +1074,47 @@ func sglClickHouseReadName(text string) (name string, rest string, err error) {
 		break
 	}
 	return "", "", fmt.Errorf("%w: a tuple field's name is not closed by '=", errSglClickHouseShape)
+}
+
+// sglClickHouseNumberText returns numeric text before bit-preserving encoding.
+//
+// Takes value (reflect.Value) which holds a floating-point argument or override.
+//
+// Returns string which is parsed as a Go floating-point value.
+// Returns error when the value has no text form.
+func sglClickHouseNumberText(value reflect.Value) (string, error) {
+	if sglClickHouseIsNumber(value) {
+		return sglClickHouseNumber(value), nil
+	}
+	return sglClickHouseText(value)
+}
+
+// sglClickHouseFloatBits encodes the bits of a floating-point argument.
+//
+// Takes value (reflect.Value) which holds a numeric argument or override.
+// Takes narrow (bool) which selects Float32 rather than Float64.
+//
+// Returns string which is the unsigned integer representation.
+// Returns error when the override does not describe a floating-point value.
+func sglClickHouseFloatBits(value reflect.Value, narrow bool) (string, error) {
+	const floatBits = 64
+	const decimalBase = 10
+	var number float64
+	if value.Kind() == reflect.Float32 || value.Kind() == reflect.Float64 {
+		number = value.Float()
+	} else {
+		text, err := sglClickHouseNumberText(value)
+		if err != nil {
+			return "", err
+		}
+		parsed, err := strconv.ParseFloat(text, floatBits)
+		if err != nil {
+			return "", fmt.Errorf("%w: %w", errSglClickHouseValue, err)
+		}
+		number = parsed
+	}
+	if narrow {
+		return strconv.FormatUint(uint64(math.Float32bits(float32(number))), decimalBase), nil
+	}
+	return strconv.FormatUint(math.Float64bits(number), decimalBase), nil
 }

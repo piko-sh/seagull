@@ -16,7 +16,8 @@ CREATE TABLE later_pairs (left_id INT, right_id INT, note TEXT);
 ALTER TABLE later_pairs ADD PRIMARY KEY (left_id);
 
 CREATE TABLE old_name (id INT PRIMARY KEY, label TEXT);
-CREATE VIEW old_view AS SELECT id, label FROM old_name;
+CREATE TABLE view_source (id INT PRIMARY KEY, label TEXT);
+CREATE VIEW old_view AS SELECT id, label FROM view_source;
 RENAME TABLE old_name TO new_name, old_view TO new_view;
 CREATE TABLE moving (id INT PRIMARY KEY);
 RENAME TABLE moving TO archive.moved;

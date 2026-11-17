@@ -19,7 +19,9 @@
 package dialecttest
 
 import (
+	"cmp"
 	"context"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -33,8 +35,10 @@ import (
 	"time"
 
 	"seagull.sh/seagull/internal/app"
+	"seagull.sh/seagull/internal/diag"
 	"seagull.sh/seagull/internal/dialect"
 	"seagull.sh/seagull/internal/fault"
+	"seagull.sh/seagull/internal/sqlmodel"
 )
 
 const (
@@ -49,8 +53,9 @@ const (
 	// failure rather than stalling.
 	fuzzInputDeadline = 10 * time.Second
 
-	// fuzzWatchdogDeadline is how long one input may take before the run is crashed: long
-	// enough after fuzzInputDeadline that only a loop that never reads its context meets it.
+	// fuzzWatchdogDeadline is how long one input may take before the run is crashed. It is
+	// long enough after fuzzInputDeadline that only a loop that never reads its context
+	// meets it.
 	fuzzWatchdogDeadline = 2 * fuzzInputDeadline
 
 	// fuzzMaxInputBytes bounds the combined size of one fuzz input, so the fuzzer spends its
@@ -60,9 +65,11 @@ const (
 
 // FuzzGenerate fuzzes generation using a migration file and a query file.
 //
-// Golden cases provide the seed corpus. Each run checks that generation finishes within
-// the deadline and produces valid errors and diagnostic locations without panicking. A
-// nil newDialect stops the test before any input runs.
+// Golden cases provide the seed corpus, with the seeds admitted from external test suites
+// under the module's testdata/external for the dialect, as addExternalSeeds reads them.
+// Each run checks that generation finishes within the deadline and produces valid errors
+// and diagnostic locations without panicking. A nil newDialect stops the test before any
+// input runs.
 //
 // Takes f (*testing.F) which is the fuzz test.
 // Takes newDialect (func() dialect.DialectPort) which returns a fresh dialect per input.
@@ -80,6 +87,11 @@ func FuzzGenerate(f *testing.F, newDialect func() dialect.DialectPort, directori
 	if seeds == 0 {
 		f.Fatalf("no seeds found in %v", directories)
 	}
+	info := newDialect().Info()
+	addBindingSeeds(f, &info)
+	addExternalSeeds(f, info.Name)
+	f.Add("CREATE TABLE items (d BIGINT);", "-- sgl.query(InsertLiteral, batch)\nINSERT INTO items (d) VALUES (1);")
+	f.Add("CREATE TABLE items (d BIGINT);", "-- sgl.query(CopyLiteral, copyfrom)\nINSERT INTO items (d) VALUES (1);")
 
 	f.Fuzz(func(t *testing.T, migration, query string) {
 		if len(migration)+len(query) > fuzzMaxInputBytes {
@@ -117,7 +129,7 @@ func addGoldenSeeds(f *testing.F, directory string) int {
 	return seeds
 }
 
-// sqlFiles reads the matching files of one directory, in name order; a missing directory
+// sqlFiles reads the matching files of one directory, in name order. A missing directory
 // holds none.
 //
 // Takes f (*testing.F) which registers fuzz inputs and reports setup failures.
@@ -172,10 +184,11 @@ func isSQLFile(name string) bool {
 	return strings.HasSuffix(name, ".sql")
 }
 
-// checkGenerateInvariants generates one fuzz input and checks the invariants every input
-// must keep. The input's context passes its deadline after fuzzInputDeadline, which fails
-// the input; a watchdog crashes the run after fuzzWatchdogDeadline, for a generator that
-// never reads its context.
+// checkGenerateInvariants checks deadlines, diagnostics and query bindings.
+//
+// The context expires after fuzzInputDeadline. If generation ignores cancellation, a
+// watchdog crashes the worker and identifies the input by its test name and source
+// hashes.
 //
 // Takes t (*testing.T) which reports test failures.
 // Takes engine (dialect.DialectPort) which is a fresh dialect.
@@ -187,7 +200,8 @@ func checkGenerateInvariants(t *testing.T, engine dialect.DialectPort, migration
 	t.Helper()
 
 	watchdog := time.AfterFunc(fuzzWatchdogDeadline, func() {
-		panic(fmt.Sprintf("Generate ran for longer than %s on one input and never stopped at its context's deadline", fuzzWatchdogDeadline))
+		panic(fmt.Sprintf("Generate ignored its deadline for %s on %s, migration SHA-256 %x, query SHA-256 %x",
+			fuzzWatchdogDeadline, t.Name(), sha256.Sum256([]byte(migration)), sha256.Sum256([]byte(query))))
 	})
 	defer watchdog.Stop()
 
@@ -208,7 +222,7 @@ func checkGenerateInvariants(t *testing.T, engine dialect.DialectPort, migration
 // Takes query (string) which is the query file's content.
 // Takes deadline (time.Duration) which is how long the input may take.
 //
-// Returns []string which describes each diagnostic placed before the first line.
+// Returns []string which describes invalid diagnostics, panics and broken bindings.
 // Returns error which wraps errFuzzInputDeadline when the input ran past its deadline, or
 // errUnexpectedGenerateError when generation failed with neither a limit nor malformed
 // SQL.
@@ -220,7 +234,7 @@ func generateInvariantProblems(ctx context.Context, engine dialect.DialectPort, 
 	if err != nil {
 		return nil, fmt.Errorf("creating the generator: %w", err)
 	}
-	result, err := generator.Generate(ctx, app.Input{
+	details, err := generator.GenerateDetailed(ctx, app.Input{
 		Package:     packageName,
 		PackagePath: "",
 		Migrations: fstest.MapFS{
@@ -240,12 +254,86 @@ func generateInvariantProblems(ctx context.Context, engine dialect.DialectPort, 
 		}
 		return nil, nil
 	}
+	problems := diagnosticLocationProblems(details.Result.Diagnostics, map[string]string{
+		path.Join(migrationDirectory, fuzzMigrationFile): migration,
+		path.Join(queryDirectory, fuzzQueryFile):         query,
+	})
+	problems = append(problems, invariantDiagnosticProblems(details.Result.Diagnostics)...)
+	info := engine.Info()
+	return append(problems, passingTemplateProblems(&info, "fuzz", details.Report)...), nil
+}
+
+// invariantDiagnosticProblems describes recovered panics and unlocated diagnostics.
+//
+// Takes diagnostics ([]diag.SourceError) which came from generation.
+//
+// Returns []string which describes each broken invariant.
+func invariantDiagnosticProblems(diagnostics []diag.SourceError) []string {
 	var problems []string
-	for _, diagnostic := range result.Diagnostics {
+	for _, diagnostic := range diagnostics {
+		if diagnostic.Code == diag.CodeRecoveredPanic {
+			problems = append(problems, "generation recovered a panic: "+diagnostic.Message)
+		}
 		if diagnostic.Line < 1 {
 			problems = append(problems, fmt.Sprintf("every diagnostic must sit on a line numbered from 1, got %s at line %d: %s",
 				diagnostic.Code, diagnostic.Line, diagnostic.Message))
 		}
 	}
-	return problems, nil
+	return problems
+}
+
+// passingTemplateProblems checks the template of every query without an error.
+//
+// Takes info (*dialect.Info) which describes the dialect.
+// Takes caseName (string) which names the input in messages.
+// Takes report (*app.Report) which holds the queries and diagnostics.
+//
+// Returns []string which describes each template problem.
+func passingTemplateProblems(info *dialect.Info, caseName string, report *app.Report) []string {
+	failed := failedFuzzQueries(report)
+	var problems []string
+	for _, analysed := range report.Queries {
+		if len(analysed.Template.Segments) > 0 && !failed[analysed] {
+			problems = append(problems, templateProblems(info, caseName, analysed)...)
+		}
+	}
+	return problems
+}
+
+// failedFuzzQueries finds the queries that hold an error diagnostic.
+//
+// A query owns the lines from its own start up to the next query in the same file. The
+// starts are sorted once per file, so each diagnostic costs one binary search.
+//
+// Takes report (*app.Report) which holds the queries and diagnostics.
+//
+// Returns map[*sqlmodel.AnalysedQuery]bool which holds every failed query.
+func failedFuzzQueries(report *app.Report) map[*sqlmodel.AnalysedQuery]bool {
+	byFile := make(map[string][]*sqlmodel.AnalysedQuery)
+	for _, query := range report.Queries {
+		byFile[query.Filename] = append(byFile[query.Filename], query)
+	}
+	for _, queries := range byFile {
+		slices.SortStableFunc(queries, func(left, right *sqlmodel.AnalysedQuery) int { return cmp.Compare(left.Line, right.Line) })
+	}
+	failed := make(map[*sqlmodel.AnalysedQuery]bool)
+	for _, diagnostic := range report.Diagnostics {
+		if diagnostic.Severity != diag.SeverityError {
+			continue
+		}
+		queries := byFile[diagnostic.Filename]
+		following, _ := slices.BinarySearchFunc(queries, diagnostic.Line, func(query *sqlmodel.AnalysedQuery, line int) int {
+			return cmp.Compare(query.Line, line+1)
+		})
+		if following == 0 {
+			continue
+		}
+		owner := queries[following-1]
+		for _, query := range queries[:following] {
+			if query.Line == owner.Line {
+				failed[query] = true
+			}
+		}
+	}
+	return failed
 }

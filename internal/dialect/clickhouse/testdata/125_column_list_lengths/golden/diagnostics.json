@@ -1,0 +1,22 @@
+[
+  {
+    "Code": "Q020",
+    "Column": 1,
+    "EndColumn": 29,
+    "EndLine": 10,
+    "Filename": "lists.sql",
+    "Line": 9,
+    "Message": "CTE \"named\" has 2 columns but its column list names 1; this engine needs a name for every column",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q020",
+    "Column": 1,
+    "EndColumn": 77,
+    "EndLine": 13,
+    "Filename": "lists.sql",
+    "Line": 13,
+    "Message": "derived table \"named\" has 2 columns but its column list names 1; this engine needs a name for every column",
+    "Severity": "error"
+  }
+]

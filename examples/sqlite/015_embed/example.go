@@ -27,15 +27,7 @@ import (
 	"seagull.sh/seagull/examples/sqlite/015_embed/internal/store"
 )
 
-// run adds a small fleet and reads it back with joined tables as nested structs.
-// sgl.embed(table) gathers the columns the query selects from that table into a field
-// named after the table, here Harbours and Skippers, with its own struct type named after
-// the query and the table, such as GetBoatHarbours.
-//
-// GetBoat uses an INNER JOIN, so every boat has a harbour and Harbours is a value.
-// ListCrews uses a LEFT JOIN, so a boat may have no skipper: Skippers is a pointer that
-// is nil when the joined row is missing, and its fields are pointers too, as each column
-// of a LEFT JOIN can be NULL.
+// run adds boats and reads joined rows as nested structs.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes output (io.Writer) which receives the boat and the crew list.
@@ -51,8 +43,8 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 		return fmt.Errorf("adding a skipper: %w", err)
 	}
 	boats := []store.AddBoatParams{
-		{Name: "Kittiwake", HarbourID: 1, SkipperID: new(int64(1))},
-		{Name: "Salty Chip", HarbourID: 1, SkipperID: nil},
+		{Name: "Kittiwake", HarbourID: 1, SkipperID: store.NullOf(int64(1))},
+		{Name: "Salty Chip", HarbourID: 1, SkipperID: store.Null[int64]{}},
 	}
 	for _, boat := range boats {
 		if err := queries.AddBoat(ctx, boat); err != nil {
@@ -75,7 +67,7 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 			fmt.Fprintf(output, "%s has no skipper\n", crew.Name)
 			continue
 		}
-		fmt.Fprintf(output, "%s is skippered by %s, licence %s\n", crew.Name, *crew.Skippers.Name, *crew.Skippers.Licence)
+		fmt.Fprintf(output, "%s is skippered by %s, licence %s\n", crew.Name, crew.Skippers.Name.V, crew.Skippers.Licence.V)
 	}
 	return nil
 }

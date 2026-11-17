@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q005",
+    "Column": 8,
+    "EndColumn": 13,
+    "EndLine": 2,
+    "Filename": "calls.sql",
+    "Line": 2,
+    "Message": "function \"scale\" is not unique for an argument of unknown type: several overloads fit it equally, so the engine refuses the call; cast the argument to the type of the overload meant",
+    "Severity": "warning"
+  }
+]

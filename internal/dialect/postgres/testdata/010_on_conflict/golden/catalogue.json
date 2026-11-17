@@ -46,6 +46,18 @@
               }
             }
           ],
+          "Constraints": [
+            {
+              "Columns": [
+                "key"
+              ],
+              "Kind": "primary-key",
+              "Name": "settings_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            }
+          ],
           "Name": "settings",
           "Origin": {
             "Filename": "001_schema.up.sql"

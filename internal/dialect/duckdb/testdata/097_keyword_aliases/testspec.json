@@ -1,0 +1,4 @@
+{
+  "description": "DuckDB refuses any keyword, such as NAME or LABEL, as an alias written straight after a select item, and takes them after AS.",
+  "expectedDiagnosticCount": 2
+}

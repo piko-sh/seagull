@@ -29,8 +29,8 @@
       {
         "Name": "event_year",
         "SQLType": {
-          "Category": "float",
-          "EngineName": "float8",
+          "Category": "integer",
+          "EngineName": "int8",
           "Width": 64
         }
       }

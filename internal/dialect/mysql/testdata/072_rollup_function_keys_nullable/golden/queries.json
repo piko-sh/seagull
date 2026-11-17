@@ -1,0 +1,64 @@
+[
+  {
+    "Command": "many",
+    "Filename": "grouping.sql",
+    "Line": 1,
+    "Name": "Rollup",
+    "OutputColumns": [
+      {
+        "Name": "k",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "k",
+        "SourceQualifier": "rt",
+        "SourceTable": "rt"
+      },
+      {
+        "Name": "n",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Rollup, command: many)\nSELECT k, count(*) AS n FROM rt GROUP BY ROLLUP (k);",
+    "Template": "SELECT ⟨c0:k⟩, ⟨c1 aliased:count(*)⟩ AS n FROM rt GROUP BY ROLLUP (k);"
+  },
+  {
+    "Command": "many",
+    "Filename": "grouping.sql",
+    "Line": 4,
+    "Name": "WithRollup",
+    "OutputColumns": [
+      {
+        "Name": "k",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int",
+          "Width": 32
+        },
+        "SourceColumn": "k",
+        "SourceQualifier": "rt",
+        "SourceTable": "rt"
+      },
+      {
+        "Name": "n",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "bigint",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: WithRollup, command: many)\nSELECT k, count(*) AS n FROM rt GROUP BY k WITH ROLLUP;",
+    "Template": "SELECT ⟨c0:k⟩, ⟨c1 aliased:count(*)⟩ AS n FROM rt GROUP BY k WITH ROLLUP;"
+  }
+]

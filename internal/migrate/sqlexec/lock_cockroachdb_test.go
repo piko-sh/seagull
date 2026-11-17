@@ -187,7 +187,8 @@ func TestCockroachDBTableLockLocksTheRowByIDInADurableTransaction(t *testing.T) 
 
 			statements := store.recorded()
 			require.Len(t, statements, 6)
-			require.Contains(t, statements[0], "CREATE TABLE IF NOT EXISTS "+testCase.table)
+			require.Equal(t, "SELECT 1 FROM "+testCase.table+" WHERE 1 = 0", statements[0],
+				"a lock table the session can read is not created again, as a user who may not create one is refused even IF NOT EXISTS")
 			require.Equal(t, "INSERT INTO "+testCase.table+" (lock_id) VALUES (1) ON CONFLICT DO NOTHING", statements[1])
 			require.Equal(t, "SELECT '"+testCase.table+"'::REGCLASS::OID::INT8", statements[2], "the table must be resolved outside the lock transaction")
 			require.Equal(t, "in transaction: SET LOCAL enable_durable_locking_for_serializable = true", statements[3])

@@ -92,8 +92,8 @@ func main() {
 	for _, row := range rows {
 		out = append(out, firstLast{
 			SensorID:   row.SensorID,
-			FirstValue: asFloat64(row.FirstValue),
-			LastValue:  asFloat64(row.LastValue),
+			FirstValue: asFloat64(row.FirstValue.Ptr()),
+			LastValue:  asFloat64(row.LastValue.Ptr()),
 		})
 	}
 

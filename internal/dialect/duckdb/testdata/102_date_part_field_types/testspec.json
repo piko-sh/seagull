@@ -1,0 +1,1 @@
+{"description": "date_part, datepart and EXTRACT return a BIGINT for every field but a constant epoch or julian, which give a DOUBLE; a field the query computes gives a BIGINT, and span_hours is nullable because span is."}

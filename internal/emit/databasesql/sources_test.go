@@ -58,7 +58,7 @@ func TestPreparedListsTheStaticQueriesInThePlansOrder(t *testing.T) {
 		{SQLConstant: "listUsersSQL"}, {SQLConstant: "getUserSQL"}, {SQLConstant: "insertUsersSQL"}, {SQLConstant: "listAuditsSQL"},
 	}
 
-	file, err := renderPrepared(gogen.NewVocabulary(request), request)
+	file, err := renderPrepared(gogen.NewVocabulary(request), request, true)
 	require.NoError(t, err)
 
 	require.Contains(t, string(file.Content), "staticQueries := []string{listAuditsSQL, getUserSQL, listUsersSQL}",
@@ -70,7 +70,7 @@ func TestPreparedPlansTheNamesOfARequestWithoutAPlan(t *testing.T) {
 
 	request := testRequest("db", []*sqlmodel.AnalysedQuery{{Name: "GetUser", Filename: "users.sql", Command: sqlmodel.QueryCommandOne}}, nil)
 
-	constants := staticConstants(request)
+	constants := staticConstants(request, true)
 
 	require.Len(t, constants, 1)
 	require.NotEmpty(t, constants[0])
@@ -120,7 +120,7 @@ func TestEmitPreparedLeavesOutBatchAndCopyFromQueries(t *testing.T) {
 		{Name: "CopyEvents", Command: sqlmodel.QueryCommandCopyFrom, SQL: "INSERT INTO events (name) VALUES (?1)"},
 	}
 
-	file, err := renderPrepared(gogen.NewVocabulary(testRequest("db", nil, nil)), preparedRequest("db", queries))
+	file, err := renderPrepared(gogen.NewVocabulary(testRequest("db", nil, nil)), preparedRequest("db", queries), true)
 	require.NoError(t, err)
 
 	source := string(file.Content)
@@ -146,7 +146,7 @@ func TestEmitPreparedExcludesCopyFromQueries(t *testing.T) {
 		},
 	}
 
-	file, err := renderPrepared(gogen.NewVocabulary(testRequest("mydb", nil, nil)), preparedRequest("mydb", queries))
+	file, err := renderPrepared(gogen.NewVocabulary(testRequest("mydb", nil, nil)), preparedRequest("mydb", queries), true)
 	require.NoError(t, err)
 
 	source := string(file.Content)
@@ -204,10 +204,29 @@ func TestEmitPreparedWrapsTransactions(t *testing.T) {
 
 	require.Contains(t, prepared, "func (prepared *PreparedDBTX) WrapDBTX(inner any) any {")
 	require.Contains(t, prepared, "transaction, ok := inner.(*sql.Tx)")
-	require.Contains(t, prepared, "return &preparedTx{source: prepared, transaction: transaction}")
+	require.Contains(t, prepared, "return &preparedTx{source: prepared, transaction: transaction, statements: nil, mu: sync.Mutex{}}")
+	require.Contains(t, prepared, "fresh := bound.transaction.StmtContext(ctx, cached)", "each statement is bound to the transaction once")
 	for _, method := range []string{"ExecContext", "QueryContext", "QueryRowContext"} {
 		require.Contains(t, prepared, "func (bound *preparedTx) "+method+"(ctx context.Context, query string, arguments ...any)")
-		require.Contains(t, prepared, "return bound.transaction.StmtContext(ctx, statement)."+method+"(ctx, arguments...)")
+		require.Contains(t, prepared, "return bound.transaction.StmtContext(ctx, cached)."+method+"(ctx, arguments...)")
 		require.Contains(t, prepared, "return bound.transaction."+method+"(ctx, query, arguments...)")
+	}
+}
+
+func TestPreparedCacheHonoursNativeParameterlessStatementSafety(t *testing.T) {
+	queries := []*sqlmodel.AnalysedQuery{
+		{Name: "Unbound", Filename: "queries.sql", Command: sqlmodel.QueryCommandMany},
+		{Name: "Bound", Filename: "queries.sql", Command: sqlmodel.QueryCommandMany, Parameters: []sqlmodel.QueryParameter{{Name: "id"}}},
+	}
+	request := testRequest("db", queries, nil)
+	request.Naming.Queries = []emit.QueryNaming{{SQLConstant: "unboundSQL"}, {SQLConstant: "boundSQL"}}
+	for _, module := range []string{driverDuckDB, driverPgx, driverMySQL, driverModernc, driverMattn} {
+		profile := driverProfiles[module]
+		got := staticConstants(request, profile.cachesUnboundStatements)
+		if module == driverDuckDB {
+			require.Equal(t, []string{"boundSQL"}, got)
+		} else {
+			require.Equal(t, []string{"boundSQL", "unboundSQL"}, got)
+		}
 	}
 }

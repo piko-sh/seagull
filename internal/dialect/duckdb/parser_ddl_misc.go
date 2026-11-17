@@ -20,6 +20,7 @@ package duckdb
 
 import (
 	"seagull.sh/seagull/internal/dialect/ast"
+	"seagull.sh/seagull/internal/dialect/dialectkit"
 )
 
 // matchIfNotExists consumes an IF NOT EXISTS clause when present.
@@ -204,13 +205,13 @@ func (p *parser) parseCreateIndex() (*ast.CatalogueMutation, error) {
 		return nil, err
 	}
 
-	p.MatchKeyword(keywordUNIQUE)
+	unique := p.MatchKeyword(keywordUNIQUE)
 
 	if _, err := p.ExpectKeyword("INDEX"); err != nil {
 		return nil, err
 	}
 
-	p.matchIfNotExists()
+	ifNotExists := p.matchIfNotExists()
 
 	indexName := ""
 	if !p.IsKeyword(keywordON) {
@@ -234,11 +235,18 @@ func (p *parser) parseCreateIndex() (*ast.CatalogueMutation, error) {
 		p.Advance()
 	}
 
+	start := p.Position
+	if err := p.skipParenthesised(); err != nil {
+		return nil, err
+	}
+	columns := dialectkit.IndexColumnNames(p.Tokens[start+1:p.Position-1], tokenIdentifier, tokenComma)
+
 	return ast.NewCatalogueMutation(
 		ast.MutationCreateIndex,
 		schema,
 		tableName,
-		ast.WithNewName(indexName),
+		ast.WithIndexDefinition(indexName, columns, unique),
+		ast.WithIfNotExists(ifNotExists),
 	), nil
 }
 

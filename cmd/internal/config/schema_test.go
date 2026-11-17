@@ -46,7 +46,7 @@ func TestJSONSchemaFollowsValidation(t *testing.T) {
 	}{
 		{name: "data_access lists the accepted values", property: objectAt(t, functions, "data_access"), key: "enum", want: []any{"read_only", "modifies_data"}},
 		{name: "nullable lists the accepted values", property: objectAt(t, functions, "nullable"), key: "enum", want: []any{"null_on_null", "never_null", "called_on_null"}},
-		{name: "lock lists the accepted values", property: objectAt(t, objectAt(t, objectAt(t, databases, "migrate"), "properties"), "lock"), key: "enum", want: []any{"advisory", "table", "none"}},
+		{name: "lock lists the accepted values", property: objectAt(t, objectAt(t, objectAt(t, databases, "migrate"), "properties"), "lock"), key: "enum", want: []any{"advisory", "table", "lease", "none"}},
 		{name: "case lists the accepted values", property: objectAt(t, objectAt(t, objectAt(t, goProperties, "json_tags"), "properties"), "case"), key: "enum", want: []any{"snake", "camel", "pascal"}},
 		{name: "dialect examples are the built-in dialects", property: objectAt(t, databases, "dialect"), key: "examples", want: anySlice(dialect_registry.Names())},
 		{name: "max_parse_depth has the parser's ceiling", property: objectAt(t, limits, "max_parse_depth"), key: "maximum", want: float64(dialect_registry.MaxParseDepthCeiling)},

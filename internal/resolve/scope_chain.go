@@ -435,6 +435,9 @@ func (s *ScopeChain) ResolveColumn(
 	var err error
 	if tableAlias != "" {
 		column, table, err = s.resolveQualifiedColumn(tableAlias, columnName, 0)
+		if named := s.aliasedTableNamed(tableAlias); err != nil && named != nil {
+			column, table, err = s.resolveColumnInTable(named, columnName, tableAlias)
+		}
 	} else {
 		column, table, err = s.resolveUnqualifiedColumn(columnName, 0)
 	}
@@ -698,6 +701,48 @@ func (s *ScopeChain) fromPosition(key string) int {
 	return len(s.fromOrder)
 }
 
+// keywordValue reports whether a reference names a bare keyword that reads its own value,
+// such as DuckDB's CURRENT_DATE, rather than a column.
+//
+// Takes tableAlias (string) which is the reference's qualifier, empty for a bare name.
+// Takes columnName (string) which is the name.
+//
+// Returns bool which is true for such a keyword.
+func (s *ScopeChain) keywordValue(tableAlias, columnName string) bool {
+	if tableAlias != "" || s.rules.KeywordValues == nil {
+		return false
+	}
+	_, isKeyword := s.rules.KeywordValues(columnName)
+	return isKeyword
+}
+
+// aliasedTableNamed finds, where the dialect lets a table's own name qualify its columns,
+// a table an alias renames whose own name a qualifier gives, from the innermost visible
+// scope outward, when no relation in any of them takes that name as its alias.
+//
+// Takes name (string) which is the qualifier.
+//
+// Returns *ScopedTable which is the table, or nil when the dialect has no such rule, a
+// relation takes the name, or no aliased table has it.
+func (s *ScopeChain) aliasedTableNamed(name string) *ScopedTable {
+	if !s.rules.TableNameQualifiers {
+		return nil
+	}
+	for scope, depth := s, 0; scope != nil && depth < maxScopeChainDepth; scope, depth = scope.visibleParent(), depth+1 {
+		if _, exists := scope.Table(name); exists {
+			return nil
+		}
+	}
+	for scope, depth := s, 0; scope != nil && depth < maxScopeChainDepth; scope, depth = scope.visibleParent(), depth+1 {
+		for _, table := range scope.orderedTables() {
+			if !s.rules.Identifiers.Equal(table.Alias, table.Name) && s.rules.Identifiers.Equal(table.Name, name) {
+				return table
+			}
+		}
+	}
+	return nil
+}
+
 // registrationRank returns where a relation comes among relations at the same FROM
 // position: its place in the registration order, or a place after every registered
 // relation for one filed in Tables directly.
@@ -832,6 +877,12 @@ func (s *ScopeChain) resolveUnqualifiedColumn(
 
 	if column, table := s.resolveFromCTEs(columnName); column != nil {
 		return column, table, nil
+	}
+
+	if s.rules.KeywordValues != nil {
+		if sqlType, isKeyword := s.rules.KeywordValues(columnName); isKeyword {
+			return &ast.ScopedColumn{Name: columnName, SQLType: sqlType, Nullable: false}, nil, nil
+		}
 	}
 
 	if parent := s.visibleParent(); parent != nil {

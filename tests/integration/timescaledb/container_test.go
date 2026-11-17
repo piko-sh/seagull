@@ -33,7 +33,7 @@ var testConnectionString string
 
 func startTimescaleDBContainer(ctx context.Context) (testcontainers.Container, string, error) {
 	request := testcontainers.ContainerRequest{
-		Image:        "timescale/timescaledb-ha:pg17",
+		Image:        "timescale/timescaledb-ha:pg18.6-ts2.32.0",
 		ExposedPorts: []string{"5432/tcp"},
 		Env: map[string]string{
 			"POSTGRES_PASSWORD":         "test",

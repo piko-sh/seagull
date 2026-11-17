@@ -7,7 +7,7 @@ import "context"
 const claimSQL = `UPDATE lost_property SET claimed = true, owner_phone = $1 WHERE id = $2;`
 
 type ClaimParams struct {
-	OwnerPhone *string
+	OwnerPhone Null[string]
 	ID         int64
 }
 
@@ -76,7 +76,7 @@ func (builder *SearchUnclaimedBuilder) Where(column string, operator string, val
 }
 
 func (builder *SearchUnclaimedBuilder) OrderBy(column string, direction string) *SearchUnclaimedBuilder {
-	order, err := sglNewOrder(column, direction, searchUnclaimedAllowedColumns)
+	order, err := sglNewOrder(column, direction, searchUnclaimedAllowedColumns, false)
 	if err != nil {
 		if builder.pendingError == nil {
 			builder.pendingError = err
@@ -104,6 +104,7 @@ func (builder *SearchUnclaimedBuilder) buildQuery() (string, []any, error) {
 	args := make([]any, 0, sglFilterCount(builder.predicates)+sglPaginationCount(builder.limit, builder.offset))
 	filter, args := sglFilterInto(builder.predicates, 1, args)
 	pagination, args := sglPaginationInto(builder.limit, builder.offset, 1+sglFilterCount(builder.predicates), args)
+	args = sglBinaryArguments(sglUnsignedArguments(args))
 	if err := sglCheckBinds(len(args)); err != nil {
 		return "", nil, err
 	}
@@ -157,6 +158,7 @@ func (builder *SearchUnclaimedBuilder) buildCountQuery() (string, []any, error) 
 	}
 	args := make([]any, 0, sglFilterCount(builder.predicates))
 	filter, args := sglFilterInto(builder.predicates, 1, args)
+	args = sglBinaryArguments(sglUnsignedArguments(args))
 	if err := sglCheckBinds(len(args)); err != nil {
 		return "", nil, err
 	}

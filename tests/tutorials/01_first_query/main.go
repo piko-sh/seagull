@@ -31,15 +31,24 @@ import (
 	"seagull.sh/seagull/tests/tutorials/internal/support"
 )
 
+// migrations embeds the tutorial migration files.
+//
 //go:embed db/migrations
 var migrations embed.FS
 
+// main runs the tutorial and reports failures.
 func main() {
 	if err := support.Main(migrations, run); err != nil {
 		log.Fatal(err)
 	}
 }
 
+// run creates a task and prints its ID and title.
+//
+// Takes db (*sql.DB) which is the migrated tutorial database.
+// Takes out (io.Writer) which receives the task.
+//
+// Returns error when the query fails.
 func run(ctx context.Context, db *sql.DB, out io.Writer) error {
 	queries := store.New(db)
 	task, err := queries.CreateTask(ctx, "Feed the seagulls")

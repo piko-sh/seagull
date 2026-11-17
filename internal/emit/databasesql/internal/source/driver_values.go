@@ -21,9 +21,21 @@ package source
 import (
 	"database/sql/driver"
 	"encoding"
-	"encoding/json"
+	"errors"
 	"reflect"
+	"strconv"
+	"strings"
 )
+
+// sglBinaryPointerBound prevents cyclic runtime arguments from hanging conversion.
+//
+//sgl:when binary
+const sglBinaryPointerBound = 32
+
+// sglUnsignedDecimalBase preserves the exact native decimal spelling.
+//
+//sgl:when unsigned
+const sglUnsignedDecimalBase = 10
 
 // sglDriverValue hands database/sql a parameter through its driver.Valuer, for a driver
 // that would otherwise bind the parameter's own type as it is.
@@ -103,6 +115,9 @@ func (wrapped sglDriverBinary) Value() (driver.Value, error) {
 	if err != nil {
 		return wrapped.value, nil
 	}
+	if bytes, ok := converted.([]byte); ok && bytes == nil {
+		return nil, nil
+	}
 	return converted, nil
 }
 
@@ -139,7 +154,7 @@ func (wrapped sglDriverJSON) Value() (driver.Value, error) {
 	if valuer, values := wrapped.value.(driver.Valuer); values {
 		return valuer.Value()
 	}
-	encoded, err := json.Marshal(wrapped.value)
+	encoded, err := sglJSONMarshal(wrapped.value)
 	if err != nil {
 		return nil, err
 	}
@@ -174,4 +189,157 @@ func (wrapped sglDriverDecimalValue) Value() (driver.Value, error) {
 		return valuer.Value()
 	}
 	return driver.DefaultParameterConverter.ConvertValue(wrapped.value)
+}
+
+// sglDriverUnsigned preserves unsigned scalars through database/sql conversion.
+//
+//sgl:when unsigned
+type sglDriverUnsigned struct {
+	// value retains a scalar, an optional value or a nullable pointer.
+	value any
+}
+
+// Value returns exact decimal text for an unsigned scalar.
+//
+// Returns driver.Value which preserves NULL and all unsigned bits.
+// Returns error when an override cannot convert itself to a driver value, or the value is
+// held through a cyclic or very long chain of pointers.
+//
+//sgl:when unsigned
+func (wrapped sglDriverUnsigned) Value() (driver.Value, error) {
+	value, held := sglUnsignedScalar(sglDriverNullValue(reflect.ValueOf(wrapped.value)))
+	if !held {
+		return nil, errors.New("unsigned parameter is held through too many pointers")
+	}
+	if !value.IsValid() {
+		return nil, nil
+	}
+	if valuer, ok := reflect.TypeAssert[driver.Valuer](value); ok {
+		return valuer.Value()
+	}
+	if value.Kind() >= reflect.Uint && value.Kind() <= reflect.Uintptr {
+		return strconv.FormatUint(value.Uint(), sglUnsignedDecimalBase), nil
+	}
+	return driver.DefaultParameterConverter.ConvertValue(value.Interface())
+}
+
+// sglDriverNullValue unwraps a generated Null value or leaves another value unchanged.
+//
+// An invalid Null returns an invalid reflect.Value.
+//
+// Takes value (reflect.Value) which is the reflected parameter.
+//
+// Returns reflect.Value which is the held value, invalid for NULL, or value itself.
+//
+//sgl:when unsigned
+func sglDriverNullValue(value reflect.Value) reflect.Value {
+	const nullFields = 2
+	if value.Kind() != reflect.Struct || value.NumField() != nullFields || !strings.HasPrefix(value.Type().Name(), "Null[") {
+		return value
+	}
+	held := value.Type().Field(0)
+	valid := value.Type().Field(1)
+	heldNamed := held.Name == "V"
+	validNamed := valid.Name == "Valid" && valid.Type.Kind() == reflect.Bool
+	if !heldNamed || !validNamed {
+		return value
+	}
+	if !value.Field(1).Bool() {
+		return reflect.Value{}
+	}
+	return value.Field(0)
+}
+
+// sglUnsignedArguments wraps the unsigned scalars among a runtime builder's arguments,
+// leaving the driver's own values as they are.
+//
+// Takes values ([]any) which holds the assembled arguments in binding order.
+//
+// Returns []any which is values, with its unsigned scalars wrapped.
+//
+//sgl:when unsigned
+func sglUnsignedArguments(values []any) []any {
+	for index, value := range values {
+		reached, held := sglUnsignedScalar(reflect.ValueOf(value))
+		if !held || !reached.IsValid() {
+			continue
+		}
+		if _, valuer := reflect.TypeAssert[driver.Valuer](reached); valuer {
+			continue
+		}
+		if reached.Kind() >= reflect.Uint && reached.Kind() <= reflect.Uintptr {
+			values[index] = sglDriverUnsigned{value: value}
+		}
+	}
+	return values
+}
+
+// sglUnsignedScalar follows the pointers and interfaces around a value. It stops at a nil
+// one, at a driver.Valuer, or at the value they hold.
+//
+// Takes value (reflect.Value) which is the reflected argument.
+//
+// Returns reflect.Value which is the value reached, invalid for a nil pointer or
+// interface.
+// Returns bool which is false when the chain is cyclic or too long to follow.
+//
+//sgl:when unsigned
+func sglUnsignedScalar(value reflect.Value) (reflect.Value, bool) {
+
+	const pointerBound = 32
+	for range pointerBound {
+		if !value.IsValid() {
+			return value, true
+		}
+		indirect := value.Kind() == reflect.Pointer || value.Kind() == reflect.Interface
+		if indirect && value.IsNil() {
+			return reflect.Value{}, true
+		}
+		if _, ok := reflect.TypeAssert[driver.Valuer](value); ok || !indirect {
+			return value, true
+		}
+		value = value.Elem()
+	}
+	return reflect.Value{}, false
+}
+
+// sglBinaryArguments preserves nil byte slices in runtime bindings.
+//
+// Takes values ([]any) which contains assembled runtime arguments.
+//
+// Returns []any which retains empty byte slices and custom valuers.
+//
+//sgl:when binary
+func sglBinaryArguments(values []any) []any {
+	for index, value := range values {
+		if sglNilBinary(value) {
+			values[index] = nil
+		}
+	}
+	return values
+}
+
+// sglNilBinary recognises nil byte slices through bounded pointer chains.
+//
+// Takes value (any) which may contain a binary value or a custom valuer.
+//
+// Returns bool which selects only nil byte slices without custom conversion.
+//
+//sgl:when binary
+func sglNilBinary(value any) bool {
+	reflected := reflect.ValueOf(value)
+	for depth := 0; reflected.IsValid() && depth < sglBinaryPointerBound; depth++ {
+		if _, ok := reflect.TypeAssert[driver.Valuer](reflected); ok {
+			return false
+		}
+		switch reflected.Kind() {
+		case reflect.Pointer, reflect.Interface:
+			reflected = reflected.Elem()
+		case reflect.Slice:
+			return reflected.Type().Elem().Kind() == reflect.Uint8 && reflected.IsNil()
+		default:
+			return false
+		}
+	}
+	return false
 }

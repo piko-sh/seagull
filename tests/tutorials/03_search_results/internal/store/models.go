@@ -8,9 +8,9 @@ type Projects struct {
 }
 
 type Tasks struct {
-	ID        int64   `json:"id"`
-	Title     string  `json:"title"`
-	Completed int64   `json:"completed"`
-	Notes     *string `json:"notes"`
-	ProjectID *int64  `json:"project_id"`
+	ID        int64        `json:"id"`
+	Title     string       `json:"title"`
+	Completed int64        `json:"completed"`
+	Notes     Null[string] `json:"notes"`
+	ProjectID Null[int64]  `json:"project_id"`
 }

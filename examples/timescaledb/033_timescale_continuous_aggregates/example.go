@@ -59,15 +59,7 @@ var readings = []reading{
 	{buoy: "Stepper Point", minutes: 210, temperature: 14.0},
 }
 
-// run records the buoys' readings, refreshes the hourly_readings continuous aggregate,
-// and reads it back by the hour and rolled up over the whole night.
-//
-// Migration 0002 defines hourly_readings with CREATE MATERIALIZED VIEW ... WITH
-// (timescaledb.continuous). TimescaleDB fills a new continuous aggregate as it creates
-// it, which it refuses to do inside a transaction block, so the migration starts with
-// sgl.migration(no_transaction: true) and runs outside one. Ending the view with WITH NO
-// DATA would let it run in a transaction instead. Seagull reads the view's SELECT, so its
-// columns arrive typed: bucket as time.Time, samples as int64.
+// run refreshes and reads an hourly continuous aggregate.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes output (io.Writer) which receives the summaries.
@@ -125,7 +117,7 @@ func record(ctx context.Context, queries *store.Queries, database *sql.DB) error
 // block: the call in RunInTx fails, and the one on the pool, outside any transaction,
 // succeeds. Its window is NULL to NULL, everything, written into the SQL. Parameters
 // would work too: Seagull names a CALL's parameters after the procedure's arguments and
-// types these as *time.Time, so a nil bound leaves that end open.
+// types these as Null[time.Time], so a NULL bound leaves that end open.
 //
 // Takes queries (*store.Queries) which runs the refresh.
 // Takes database (*sql.DB) which begins the transaction.
@@ -169,10 +161,11 @@ func printHourly(ctx context.Context, queries *store.Queries, output io.Writer) 
 	return nil
 }
 
-// printOverall prints each buoy's statistics for the whole night, combined from the
-// hourly summaries with rollup. A stats_agg summary keeps enough to combine exactly, so
-// the rolled-up mean is the mean of every reading; averaging the hourly means instead
-// weights a quiet hour the same as a busy one, and gives a different answer.
+// printOverall prints each buoy's statistics from rolled-up hourly summaries.
+//
+// A stats_agg summary preserves enough data to combine hourly summaries exactly. The
+// rolled-up mean covers every reading. Averaging hourly means instead gives a quiet hour
+// the same weight as a busy one and can produce a different result.
 //
 // Takes queries (*store.Queries) which runs the query.
 // Takes output (io.Writer) which receives the statistics.
@@ -186,8 +179,8 @@ func printOverall(ctx context.Context, queries *store.Queries, output io.Writer)
 	fmt.Fprintln(output, "the whole night, rolled up from the hourly summaries:")
 	for _, buoy := range buoys {
 		samples := int64(0)
-		if buoy.Samples != nil {
-			samples = *buoy.Samples
+		if buoy.Samples.Valid {
+			samples = buoy.Samples.V
 		}
 		fmt.Fprintf(output, "  %-13s  readings %d  mean %s  stddev %s  mean of hourly means %s\n",
 			buoy.Buoy, samples, celsius(buoy.Mean), celsius(buoy.Spread), celsius(buoy.MeanOfHourlyMeans))
@@ -197,12 +190,12 @@ func printOverall(ctx context.Context, queries *store.Queries, output io.Writer)
 
 // celsius formats a temperature that may be NULL.
 //
-// Takes value (*float64) which is the temperature, or nil.
+// Takes value (store.Null[float64]) which is the temperature, or NULL.
 //
-// Returns string which is the temperature to two decimal places, or a dash for nil.
-func celsius(value *float64) string {
-	if value == nil {
+// Returns string which is the temperature to two decimal places, or a dash for NULL.
+func celsius(value store.Null[float64]) string {
+	if !value.Valid {
 		return "-"
 	}
-	return fmt.Sprintf("%.2f", *value)
+	return fmt.Sprintf("%.2f", value.V)
 }

@@ -64,6 +64,8 @@ var (
 	_ emit.TypeDefaulterPort = (*Emitter)(nil)
 
 	_ emit.CheckerPort = (*Emitter)(nil)
+
+	_ emit.NullTypePort = (*Emitter)(nil)
 )
 
 // New creates a new ClickHouse native code emitter.
@@ -95,7 +97,7 @@ func (emitter *Emitter) Emit(ctx context.Context, request *emit.Request) ([]sqlm
 		return nil, fmt.Errorf("emitting queries for %s: %w", request.Package, err)
 	}
 	copied := *request
-	copied.Queries = chvalues.ArrayLists(request.Queries)
+	copied.Queries = chvalues.NativeFloatParameters(chvalues.ArrayLists(request.Queries), chvalues.NewFloatTransport(&request.Dialect, request.Style.HelperPrefix))
 	return generate.Package(ctx, &copied, newNativeDriver(&copied).driver())
 }
 
@@ -153,6 +155,14 @@ func (*Emitter) DefaultTypes(_ *dialect.Facts) sqlmodel.TypeSlots {
 		Struct:       sqlmodel.TypeSlot{},
 		Enum:         sqlmodel.TypeSlot{},
 	}
+}
+
+// DeclaresNullType reports that the emitter declares the generated Null type and reads
+// and binds nullable values as it.
+//
+// Returns bool which is always true.
+func (*Emitter) DeclaresNullType() bool {
+	return true
 }
 
 // commandProblems returns the problems the native driver has with a query's command.

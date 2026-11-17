@@ -3,11 +3,11 @@
 package store
 
 type LostProperty struct {
-	ID         uint64  `json:"id"`
-	Item       string  `json:"item"`
-	Colour     string  `json:"colour"`
-	FoundAt    string  `json:"found_at"`
-	DaysHeld   uint32  `json:"days_held"`
-	Claimed    bool    `json:"claimed"`
-	OwnerPhone *string `json:"owner_phone"`
+	ID         uint64       `json:"id"`
+	Item       string       `json:"item"`
+	Colour     string       `json:"colour"`
+	FoundAt    string       `json:"found_at"`
+	DaysHeld   uint32       `json:"days_held"`
+	Claimed    bool         `json:"claimed"`
+	OwnerPhone Null[string] `json:"owner_phone"`
 }

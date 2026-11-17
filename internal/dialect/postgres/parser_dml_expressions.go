@@ -39,6 +39,19 @@ var (
 		"CURRENT_SCHEMA": {},
 	}
 
+	// precisionKeywordFunctions names the keyword functions that take a precision in
+	// parentheses, such as CURRENT_TIMESTAMP(3).
+	precisionKeywordFunctions = map[string]struct{}{
+		"CURRENT_TIMESTAMP": {}, "CURRENT_TIME": {}, "LOCALTIME": {}, "LOCALTIMESTAMP": {},
+	}
+
+	// emptyCallKeywordFunctions names the keyword functions CockroachDB also takes with
+	// empty parentheses. PostgreSQL takes only CURRENT_SCHEMA().
+	emptyCallKeywordFunctions = map[string]struct{}{
+		"CURRENT_TIMESTAMP": {}, "CURRENT_DATE": {}, "CURRENT_TIME": {}, "CURRENT_USER": {},
+		"SESSION_USER": {}, "LOCALTIME": {}, "LOCALTIMESTAMP": {}, "CURRENT_SCHEMA": {},
+	}
+
 	// intervalFieldKeywords lists the field keywords that may follow an INTERVAL literal's
 	// value.
 	intervalFieldKeywords = map[string]struct{}{
@@ -716,6 +729,7 @@ func (p *parser) parseIdentifierRootedExpression() ast.Expression {
 	if _, isImplicit := implicitFunctionIdentifiers[upper]; isImplicit {
 		p.Advance()
 		if p.Current().Kind == tokenLeftParen {
+			p.checkKeywordCallParentheses(upper)
 			_ = p.requireSkipParenthesised()
 		}
 		return &ast.FunctionCallExpression{
@@ -728,6 +742,25 @@ func (p *parser) parseIdentifierRootedExpression() ast.Expression {
 	}
 
 	return p.parseColumnOrFunctionReference()
+}
+
+// checkKeywordCallParentheses refuses parentheses after a keyword function that the
+// engine does not take them after. A precision is taken by the time functions, and empty
+// parentheses by CURRENT_SCHEMA, or on CockroachDB by most of them.
+//
+// Takes upper (string) which is the keyword. The cursor is on its '('.
+func (p *parser) checkKeywordCallParentheses(upper string) {
+	if p.Peek().Kind == tokenRightParen {
+		_, emptyCall := emptyCallKeywordFunctions[upper]
+		if upper == "CURRENT_SCHEMA" || (emptyCall && p.emptyKeywordCalls) {
+			return
+		}
+		_ = p.recordSyntaxError(dialectkit.NewParseError(p.Current(), upper+" takes no parentheses"))
+		return
+	}
+	if _, precision := precisionKeywordFunctions[upper]; !precision {
+		_ = p.recordSyntaxError(dialectkit.NewParseError(p.Current(), upper+" takes no arguments"))
+	}
 }
 
 // identifierExpressionHandler returns the parsing closure for a recognised identifier
@@ -973,6 +1006,17 @@ func (p *parser) matchNormalisationTest() bool {
 	return p.MatchKeyword("NORMALIZED")
 }
 
+// missingInList reports whether IN has nothing after it to test against: the statement
+// ends, a parenthesis closes, a comma follows, or a clause or connective starts.
+//
+// Returns bool which is true when the list is missing.
+func (p *parser) missingInList() bool {
+	if p.AtEnd() || p.Current().Kind == tokenRightParen || p.Current().Kind == tokenComma {
+		return true
+	}
+	return p.IsKeyword("FROM", "WHERE", "GROUP", "HAVING", "ORDER", "LIMIT", "AND", "OR", "THEN")
+}
+
 // parseInListSuffix parses an IN clause containing either a subquery or an explicit list
 // of values and tags any contained parameters with the inferred column reference.
 //
@@ -981,6 +1025,10 @@ func (p *parser) matchNormalisationTest() bool {
 // Returns ast.Expression which is the IN-list expression.
 func (p *parser) parseInListSuffix(left ast.Expression) ast.Expression {
 	p.Advance()
+	if p.missingInList() {
+		_ = p.syntaxError("expected a list or a subquery after IN")
+		return &ast.InListExpression{Inner: left, Values: nil}
+	}
 
 	if p.isSubqueryStart() {
 		innerAnalysis, analyseError := p.analyseSubqueryBody()

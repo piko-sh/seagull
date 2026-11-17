@@ -1,0 +1,2 @@
+CREATE TABLE fuzz_floats (value DOUBLE PRECISION NOT NULL);
+CREATE TABLE fuzz_nullable (value DOUBLE PRECISION);

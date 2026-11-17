@@ -35,7 +35,35 @@ import (
 //
 // Increment it when statement boundaries can change so interrupted migrations cannot
 // resume under incompatible rules.
-const splitterVersion = 1
+const splitterVersion = 2
+
+const (
+	// historyColumnWait bounds how long a history upgrade waits for a column another run is
+	// adding to become readable.
+	historyColumnWait = 30 * time.Second
+
+	// historyColumnPollMinimum is the first wait between probes for such a column.
+	historyColumnPollMinimum = 25 * time.Millisecond
+
+	// historyColumnPollMaximum caps the growing wait between probes.
+	historyColumnPollMaximum = 500 * time.Millisecond
+
+	// progressRowPlaceholderVersion is the 1-based bind-parameter index of a progress row's
+	// version.
+	progressRowPlaceholderVersion = 1
+
+	// progressRowPlaceholderChecksum is the 1-based bind-parameter index of a progress row's
+	// checksum.
+	progressRowPlaceholderChecksum = 2
+
+	// progressRowPlaceholderStatement is the 1-based bind-parameter index of a progress
+	// row's last_statement.
+	progressRowPlaceholderStatement = 3
+
+	// progressFinished is the last_statement a progress row records once its migration or
+	// seed has run every statement, so a later run starts from the beginning.
+	progressFinished = -1
+)
 
 // statementDigest accumulates the SHA-256 digest of a migration's leading statements.
 // Each statement contributes its length as an eight-byte big-endian integer followed by
@@ -45,11 +73,29 @@ type statementDigest struct {
 	hash hash.Hash
 }
 
-// newStatementDigest returns the digest of no statements.
-//
-// Returns statementDigest which is ready to add statements to.
-func newStatementDigest() statementDigest {
-	return statementDigest{hash: sha256.New()}
+// migrationRun is one execution of a migration: its record, its statements as the backend
+// splits them now, and when it began.
+type migrationRun struct {
+	// start is when the execution began.
+	start time.Time
+
+	// session marks, by index, the statements that change a session setting the engine
+	// ignores inside a transaction. It is nil when there are none.
+	session map[int]bool
+
+	// skip marks, by index, the statements execStatements passes over, such as the session
+	// statements a transactional migration runs around its transaction. Nil skips none.
+	skip map[int]bool
+
+	// digest holds the digest of the statements the run has completed, including any an
+	// interrupted run completed before it.
+	digest statementDigest
+
+	// statements holds the migration's statements in order.
+	statements []string
+
+	// record is the migration as the Migrator passed it.
+	record migrate.MigrationRecord
 }
 
 // add appends one statement to the digest.
@@ -69,48 +115,85 @@ func (digest statementDigest) sum() string {
 	return hex.EncodeToString(digest.hash.Sum(nil))
 }
 
-// migrationRun is one execution of a migration: its record, its statements as the backend
-// splits them now, and when it began.
-type migrationRun struct {
-	// start is when the execution began.
-	start time.Time
-
-	// digest holds the digest of the statements the run has completed, including any an
-	// interrupted run completed before it.
-	digest statementDigest
-
-	// statements holds the migration's statements in order.
-	statements []string
-
-	// record is the migration as the Migrator passed it.
-	record migrate.MigrationRecord
+// progressInsertSQL renders the INSERT that appends a row to a progress table, the
+// migration one or the seed one, given its version, checksum and last statement.
+//
+// Takes table (string) which is the progress table as the run names it.
+//
+// Returns string which is the statement.
+func (e *engine) progressInsertSQL(table string) string {
+	return fmt.Sprintf("INSERT INTO %s (version, checksum, last_statement) VALUES (%s, %s, %s)", table,
+		e.placeholder(progressRowPlaceholderVersion), e.placeholder(progressRowPlaceholderChecksum), e.placeholder(progressRowPlaceholderStatement))
 }
 
-// upgradeHistoryTable adds each of historyColumnAdditions that the history table lacks.
-// It runs under the migration lock, after the table is created, so a table created by an
-// earlier release gains the columns before anything writes to them.
+// progressReadSQL renders the SELECT that reads a version's latest progress row.
+//
+// Takes table (string) which is the progress table as the run names it.
+//
+// Returns string which is the statement, which takes the version.
+func (e *engine) progressReadSQL(table string) string {
+	return fmt.Sprintf("SELECT checksum, last_statement FROM %s%s WHERE version = %s", table,
+		e.historyReadModifier, e.placeholder(progressRowPlaceholderVersion))
+}
+
+// upgradeHistoryTable adds each of historyColumnAdditions that the history table lacks,
+// then runs the engine's schema checkpoint if it added any. It runs under the migration
+// lock, after the table is created, so a table created by an earlier release gains the
+// columns before anything writes to them.
 //
 // A column is probed with a SELECT that reads it and no rows, which fails when the column
-// does not exist; no engine's error text is interpreted. When adding a column fails, the
-// probe runs again, so a column another process added in the meantime is not an error.
+// does not exist. No engine's error text is interpreted. When adding a column fails, the
+// probe runs again for a while, so a column another process added in the meantime is not
+// an error.
 //
 // Takes runner (queryRunner) which is the connection the migrations run on.
 //
 // Returns error when a missing column cannot be added.
 func (executor *Executor) upgradeHistoryTable(ctx context.Context, runner queryRunner) error {
 	table := executor.historyTable()
+	added := false
 	for _, column := range historyColumnAdditions {
 		if historyHasColumn(ctx, runner, table, column) {
 			continue
 		}
 		if _, addError := runner.ExecContext(ctx, executor.backend.engine.addHistoryColumn(table, column)); addError != nil {
-			if historyHasColumn(ctx, runner, table, column) {
+			if awaitHistoryColumn(ctx, runner, table, column) {
 				continue
 			}
 			return fmt.Errorf("adding column %s to %s: %w", column, table, addError)
 		}
+		added = true
+	}
+	if added {
+		executor.checkpointSchema(ctx, runner)
 	}
 	return nil
+}
+
+// awaitHistoryColumn waits briefly for a history column to become readable.
+//
+// Another run may be adding the column. On CockroachDB, a schema change outlives its
+// session. A column added by a killed run refuses a second add as existing until the
+// change completes and the column can be read.
+//
+// Takes runner (queryRunner) which is the connection the migrations run on.
+// Takes table (string) which is the history table.
+// Takes column (string) which is the column.
+//
+// Returns bool which is true once the column can be read, and false when it still cannot
+// after historyColumnWait or when ctx ends.
+func awaitHistoryColumn(ctx context.Context, runner queryRunner, table, column string) bool {
+	deadline := time.Now().Add(historyColumnWait)
+	wait := historyColumnPollMinimum
+	for {
+		if historyHasColumn(ctx, runner, table, column) {
+			return true
+		}
+		if time.Now().After(deadline) || !waitFor(ctx, wait) {
+			return false
+		}
+		wait = min(wait*2, historyColumnPollMaximum)
+	}
 }
 
 // resumeDigest checks that a retried migration can resume where its interrupted run
@@ -166,4 +249,11 @@ func historyHasColumn(ctx context.Context, runner queryRunner, table, column str
 	}
 	closeError := rows.Close()
 	return closeError == nil && rows.Err() == nil
+}
+
+// newStatementDigest returns the digest of no statements.
+//
+// Returns statementDigest which is ready to add statements to.
+func newStatementDigest() statementDigest {
+	return statementDigest{hash: sha256.New()}
 }

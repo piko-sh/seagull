@@ -456,6 +456,7 @@ func (p *parser) parseOrderByIfPresent() {
 	p.requireKeywordOrRecord(keywordBY)
 	listStart := p.Position
 	p.parseOrderByList()
+	p.checkSortList(listStart, p.Position)
 	p.recordOrderBy(listStart, p.Position)
 	p.recordSpan(dialectkit.SpanOrderBy, start, p.Position)
 }
@@ -475,6 +476,7 @@ func (p *parser) parseLimitOffsetIfPresent() {
 // Takes analysis (*ast.RawQueryAnalysis) which receives parameter references and raw
 // derived tables collected during parsing.
 func (p *parser) finaliseAnalysis(analysis *ast.RawQueryAnalysis) {
+	analysis.RowLimited = analysis.RowLimited || p.rowLimited
 	analysis.ParameterReferences = p.parameterReferences
 	analysis.RawDerivedTables = p.rawDerivedTables
 	analysis.PredicateSubqueries = p.predicateSubqueries

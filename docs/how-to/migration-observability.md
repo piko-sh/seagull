@@ -48,7 +48,7 @@ Supply an `ObserverPort` from `seagull.sh/seagull/sdk/observe` and a `*slog.Logg
 	}
 ```
 
-Without explicit options, the runner uses the observer and logger carried by the context, or `slog.Default()` for logging. Keep connection credentials out of operational records.
+A logger carried by the context wins over `WithLogger`, and without either the runner logs through `slog.Default()`. Without `WithObserver`, the runner uses the observer carried by the context. Keep connection credentials out of operational records.
 
 Warning records mark what an operator should look at, among them `recovered a panic` from a hook or a custom backend's callback, `best-effort statement progress update failed` when a resume checkpoint could not be written, and `applied_at could not be read, so the zero time is reported in its place`, logged once per read of the history with the `table`, the number of `rows` affected and the `first_version` among them. A failed transaction rollback is not logged: it is joined to the error the call returns.
 

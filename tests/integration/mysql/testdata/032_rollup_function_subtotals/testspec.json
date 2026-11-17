@@ -1,0 +1,3 @@
+{
+  "description": "GROUP BY ROLLUP (keys), MySQL's spelling of WITH ROLLUP, makes its keys nullable, so the grand total row, whose key is NULL, scans."
+}

@@ -14,11 +14,11 @@ FROM boats
 ORDER BY id;`
 
 type BoatSummariesRow struct {
-	Name      string   `json:"name"`
-	Skipper   *string  `json:"skipper"`
-	CrewSize  int64    `json:"crew_size"`
-	Months    []string `json:"months"`
-	AugustFee *int32   `json:"august_fee"`
+	Name      string       `json:"name"`
+	Skipper   Null[string] `json:"skipper"`
+	CrewSize  int64        `json:"crew_size"`
+	Months    []string     `json:"months"`
+	AugustFee Null[int32]  `json:"august_fee"`
 }
 
 func (queries *Queries) BoatSummaries(ctx context.Context) ([]BoatSummariesRow, error) {
@@ -114,6 +114,6 @@ type MoorBoatParams struct {
 }
 
 func (queries *Queries) MoorBoat(ctx context.Context, params MoorBoatParams) error {
-	_, err := queries.writer.ExecContext(ctx, moorBoatSQL, params.Name, sglDriverComposite(params.Berth), params.Crew, sglDriverComposite(params.Route), sglDriverComposite(params.Fees))
+	_, err := queries.writer.ExecContext(ctx, moorBoatSQL, params.Name, sglDriverComposite(params.Berth), sglNonNil(params.Crew), sglDriverComposite(sglNonNil(params.Route)), sglDriverComposite(params.Fees))
 	return err
 }

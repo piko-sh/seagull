@@ -10,16 +10,16 @@ import (
 const getarticle = `SELECT id, title, status, tags, created_at FROM articles WHERE id = ?;`
 
 type GetArticleRow struct {
-	ID        int32     `json:"id"`
-	Title     string    `json:"title"`
-	Status    string    `json:"status"`
-	Tags      *string   `json:"tags"`
-	CreatedAt time.Time `json:"created_at"`
+	ID        int32        `json:"id"`
+	Title     string       `json:"title"`
+	Status    string       `json:"status"`
+	Tags      Null[string] `json:"tags"`
+	CreatedAt time.Time    `json:"created_at"`
 }
 
 func (queries *Queries) GetArticle(ctx context.Context, id int32) (GetArticleRow, error) {
 	var row GetArticleRow
-	err := queries.reader.QueryRowContext(ctx, getarticle, id).Scan(&row.ID, &row.Title, &row.Status, &row.Tags, &row.CreatedAt)
+	err := queries.reader.QueryRowContext(ctx, getarticle, id).Scan(pikoScanNumber(&row.ID), &row.Title, &row.Status, &row.Tags, &row.CreatedAt)
 	if err != nil {
 		return GetArticleRow{}, err
 	}

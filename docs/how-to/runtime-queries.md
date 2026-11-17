@@ -46,7 +46,9 @@ The builder joins added filters to the SQL's own `WHERE` inside parentheses, so 
 
 Check the terminal operation's error. An unsupported column, operator or direction is recorded by the builder and returned when `All`, `One` or `Count` runs; the first invalid input wins, and `One` and `Count` then return the zero row or 0 with it. A column expression holding a backslash or a NUL is always refused, so a key cannot escape its quotes. Values stay bound parameters.
 
-`Limit` and `Offset` are available only when the query writes no pagination of its own. Do not use a `kind: slice` SQL parameter in a runtime query (Q018); pass a slice value to an `IN` filter instead. The [runtime builder reference](../reference/runtime-builder.md) lists the available methods, operators and errors.
+A query with its own `LIMIT`, `OFFSET`, `FETCH` or `DISTINCT ON` picks rows before the builder filters or pages them. Write a limit you want callers to control with the builder's `Limit` and `Offset` methods. See [queries that pick their own rows](../reference/runtime-builder.md#a-query-that-picks-its-own-rows).
+
+Do not use a `kind: slice` SQL parameter in a runtime query (Q018); pass a slice value to an `IN` filter instead. The [runtime builder reference](../reference/runtime-builder.md) lists the available methods, operators and errors.
 
 The [working example](../../examples/sqlite/014_runtime_builder) includes connection setup and tests. From the repository root, run:
 

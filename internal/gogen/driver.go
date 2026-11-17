@@ -24,6 +24,7 @@ import (
 	"seagull.sh/seagull/internal/emit"
 	"seagull.sh/seagull/internal/emit/emitkit"
 	"seagull.sh/seagull/internal/gogen/goast"
+	"seagull.sh/seagull/internal/gogen/helpers"
 	"seagull.sh/seagull/internal/sqlmodel"
 )
 
@@ -71,6 +72,11 @@ type Connection struct {
 	// or nil when Exec returns only an error.
 	ExecResult *sqlmodel.GoType
 
+	// NullMethods renders a file of the driver's own methods on the generated Null type,
+	// such as the scanner interfaces pgx reads a value through without database/sql's
+	// conversion, for a package that uses the type. It is nil for a driver with none.
+	NullMethods func(packageName string, vocabulary helpers.Vocabulary) (sqlmodel.GeneratedFile, error)
+
 	// Query is the method that runs a query returning rows, such as QueryContext.
 	Query string
 
@@ -97,6 +103,25 @@ type Connection struct {
 	// RowsAffectedErrors reports that ExecResult's RowsAffected returns an error as well as
 	// the count.
 	RowsAffectedErrors bool
+
+	// ScansNarrowNumbers reads a column into an int, a narrower integer or a float32 through
+	// the generated number scanner, which database/sql would otherwise fill from the
+	// driver's int64 or float64 through text, allocating for every value.
+	ScansNarrowNumbers bool
+
+	// NilSlicesAsNull reports a driver that sends a nil slice, a []byte included, as NULL,
+	// so a value written into a column refusing NULL is bound through sglNonNil.
+	NilSlicesAsNull bool
+
+	// NativeValues makes the generated Null type write its value as it is, for a native
+	// driver that converts a value to its column's type, rather than as database/sql writes
+	// it.
+	NativeValues bool
+
+	// RowIsInterface reports a driver whose QueryRow returns an interface, whose Scan the
+	// compiler cannot see into, so a one-row method's row and scan destinations always move
+	// to the heap and are allocated together as one block.
+	RowIsInterface bool
 }
 
 // Query supplies a driver builder with analysed SQL, planned names, type mappings and
@@ -126,6 +151,15 @@ type Query struct {
 	// builder's Count terminal starts from. It is nil for any query that is not a runtime
 	// builder or whose rows cannot be counted.
 	Count *emitkit.Rendered
+
+	// Filtered is the query's FilteredTemplate written with Renderer. It is the text of the
+	// constant a runtime builder starts from once Where added a condition, and is nil for
+	// any query without one.
+	Filtered *emitkit.Rendered
+
+	// FilteredCount is the query's FilteredCountTemplate written as Count is. It is nil when
+	// Count or Filtered is.
+	FilteredCount *emitkit.Rendered
 
 	// Rendered is the query's Template written with Renderer: the text of its SQL constant,
 	// the arguments the driver binds in binding order, and the marks at which the generated
@@ -160,6 +194,35 @@ type PositionalBinder interface {
 	BindPositional(access ast.Expr, parameter *sqlmodel.QueryParameter) ast.Expr
 }
 
+// RuntimeFloatBinder selects exact floating-point binding for runtime filters.
+type RuntimeFloatBinder interface {
+	// CastRuntimeFloats reports whether runtime filter floats require text and a cast.
+	//
+	// Returns bool which enables exact floating-point binding.
+	CastRuntimeFloats() bool
+}
+
+// ElementBinder adapts each scalar in an expanded slice parameter.
+type ElementBinder interface {
+	// BindElement converts one value without wrapping the containing slice.
+	//
+	// Takes access (ast.Expr) which reads the current slice element.
+	// Takes parameter (*sqlmodel.QueryParameter) which retains its SQL element type.
+	//
+	// Returns ast.Expr which binds the element through the native driver.
+	BindElement(access ast.Expr, parameter *sqlmodel.QueryParameter) ast.Expr
+}
+
+// RuntimeArgumentBinder adapts values assembled by a runtime query builder.
+type RuntimeArgumentBinder interface {
+	// BindRuntimeArguments converts only values requiring a native driver adapter.
+	//
+	// Takes access (ast.Expr) which reads the complete argument slice.
+	//
+	// Returns ast.Expr which preserves argument order and unrelated representations.
+	BindRuntimeArguments(access ast.Expr) ast.Expr
+}
+
 // ColumnReader is an optional interface a driver implements to say how the generated code
 // reads an output column of a SQL type its driver cannot scan as it is. A driver without
 // it reads every column as the driver returns it.
@@ -170,6 +233,39 @@ type ColumnReader interface {
 	//
 	// Returns ColumnReading which says how the column is read.
 	ColumnReading(sqlType sqlmodel.SQLType) ColumnReading
+}
+
+// ArrayTextReader is an optional interface a ColumnReader implements when its driver
+// returns some arrays it reads as ColumnReadAsJSON in PostgreSQL's array text form.
+//
+// The generated code reads that form without the dialect's to-JSON function when the
+// column's Go type is a slice of a string, an integer, a float or a bool, or of pointers
+// to one.
+type ArrayTextReader interface {
+	// ReadsArrayText reports whether the driver returns a column of a SQL type as the text
+	// form of a one-dimensional array of scalars that the array scanner reads.
+	//
+	// Takes sqlType (sqlmodel.SQLType) which is the column's SQL type.
+	//
+	// Returns bool which is true when the column may be read from its text form.
+	ReadsArrayText(sqlType sqlmodel.SQLType) bool
+}
+
+// ArrayListBinder is an optional interface a ParameterBinder implements when its driver
+// binds a slice parameter's IN or NOT IN list as one parameter holding the text form of a
+// one-dimensional array, inside the dialect's array membership or exclusion form, rather
+// than one placeholder per element.
+//
+// The generated code writes the text with sglArrayLiteral, so the SQL text stays the same
+// whatever the slice holds.
+type ArrayListBinder interface {
+	// BindsListAsArrayText reports whether a slice parameter whose elements have a SQL type
+	// is bound as an array's text form, testing each row as its expanded list would.
+	//
+	// Takes sqlType (sqlmodel.SQLType) which is the SQL type of the slice's elements.
+	//
+	// Returns bool which is true when the list is bound as an array's text form.
+	BindsListAsArrayText(sqlType sqlmodel.SQLType) bool
 }
 
 // ColumnConverter is an optional interface a ColumnReader implements when it reads some

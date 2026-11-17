@@ -85,6 +85,9 @@ func (p *parser) parseCreateTable(engine typeNormaliser) (*ast.CatalogueMutation
 	if err != nil {
 		return nil, err
 	}
+	if word := p.Tokens[p.Position-1].Keyword(tokenIdentifier); p.reservedNames.RefusesTable(word) {
+		return nil, dialectkit.NewParseError(p.Tokens[p.Position-1], dialectkit.ReservedNameMessage(word, "table"))
+	}
 
 	create, createError := p.parseCreateTableDefinition(engine, schema, tableName)
 	if create != nil {
@@ -248,6 +251,11 @@ func (p *parser) requireElementSeparator() error {
 // column.
 // Returns error when the column name cannot be parsed.
 func (p *parser) parseDuckDBColumnDefinition(engine typeNormaliser) (sqlmodel.Column, bool, error) {
+	if word := p.Current().Keyword(tokenIdentifier); p.reservedNames.RefusesColumnDefinition(word, p.Peek().Kind == tokenLeftParen) {
+		err := p.syntaxErrorAt(dialectkit.ReservedNameMessage(word, "column"))
+		p.recordSyntaxError(err)
+		return sqlmodel.Column{}, false, err
+	}
 	name, err := p.parseIdentifierOrKeyword()
 	if err != nil {
 		p.recordSyntaxError(err)
@@ -674,7 +682,7 @@ func (p *parser) isDuckDBColumnConstraintKeyword() bool {
 // constraint declaration.
 //
 // Returns bool which is true for CONSTRAINT, PRIMARY KEY, UNIQUE (with open paren),
-// CHECK, or FOREIGN.
+// CHECK, or FOREIGN KEY.
 func (p *parser) isDuckDBTableConstraint() bool {
 	if p.IsKeyword(keywordCONSTRAINT) {
 		return true
@@ -692,11 +700,7 @@ func (p *parser) isDuckDBTableConstraint() bool {
 		return true
 	}
 
-	if p.IsKeyword("FOREIGN") {
-		return true
-	}
-
-	return false
+	return p.IsKeyword("FOREIGN") && p.Peek().IsKeyword(tokenIdentifier, keywordKEY)
 }
 
 // parseDuckDBTableConstraint parses one table-level constraint and returns either its
@@ -1177,6 +1181,7 @@ func (p *parser) parseAlterTableDrop(schema, tableName string) (*ast.CatalogueMu
 		schema,
 		tableName,
 		ast.WithColumnName(columnName),
+		ast.WithDroppedColumnIndexes(ast.ColumnIndexesRestrict),
 	)
 	mutation.IfColumnExists = ifColumnExists
 	return mutation, nil
@@ -1191,7 +1196,7 @@ func (p *parser) parseAlterTableDrop(schema, tableName string) (*ast.CatalogueMu
 // Takes tableName (string) which is the target table's name.
 //
 // Returns *ast.CatalogueMutation which records the column being altered, with its
-// nullability or type change when the action makes one.
+// nullability, default or type change.
 // Returns error when the column name or the action is malformed.
 func (p *parser) parseAlterTableAlterColumn(engine typeNormaliser, schema, tableName string) (*ast.CatalogueMutation, error) {
 	p.MatchKeyword(keywordCOLUMN)
@@ -1207,20 +1212,13 @@ func (p *parser) parseAlterTableAlterColumn(engine typeNormaliser, schema, table
 		if err != nil {
 			return nil, err
 		}
-		if option != nil {
-			options = append(options, option)
-		}
+		options = append(options, option)
 	case p.MatchKeyword(keywordDROP):
-		if p.MatchKeyword(keywordNOT) {
-			if err := p.expectKeywords(keywordNULL); err != nil {
-				p.recordSyntaxError(err)
-				return nil, err
-			}
-			options = append(options, ast.WithColumnNullability(true))
-		} else if err := p.expectKeywords(keywordDEFAULT); err != nil {
-			p.recordSyntaxError(err)
+		option, err := p.parseAlterColumnDrop()
+		if err != nil {
 			return nil, err
 		}
+		options = append(options, option)
 	case p.MatchKeyword(keywordTYPE):
 		sqlType, arrayDimensions := p.parseColumnType(engine)
 		p.skipAlterColumnUsing()
@@ -1236,8 +1234,8 @@ func (p *parser) parseAlterTableAlterColumn(engine typeNormaliser, schema, table
 //
 // Takes engine (typeNormaliser) which resolves the type a DATA TYPE action names.
 //
-// Returns ast.CatalogueMutationOption which records a nullability or type change, or nil
-// for an action that makes neither.
+// Returns ast.CatalogueMutationOption which records the nullability, default or type
+// change.
 // Returns error when the action is malformed.
 func (p *parser) parseAlterColumnSet(engine typeNormaliser) (ast.CatalogueMutationOption, error) {
 	switch {
@@ -1248,7 +1246,7 @@ func (p *parser) parseAlterColumnSet(engine typeNormaliser) (ast.CatalogueMutati
 		}
 		return ast.WithColumnNullability(false), nil
 	case p.MatchKeyword(keywordDEFAULT):
-		return nil, p.skipDuckDBDefaultValue()
+		return ast.WithColumnDefault(true), p.skipDuckDBDefaultValue()
 	case p.MatchKeyword("DATA"):
 		if err := p.expectKeywords(keywordTYPE); err != nil {
 			p.recordSyntaxError(err)
@@ -1260,6 +1258,26 @@ func (p *parser) parseAlterColumnSet(engine typeNormaliser) (ast.CatalogueMutati
 	default:
 		return nil, p.syntaxErrorAt("expected NOT NULL, DEFAULT or DATA TYPE after SET")
 	}
+}
+
+// parseAlterColumnDrop parses the NOT NULL or DEFAULT that follows DROP in an ALTER
+// COLUMN action.
+//
+// Returns ast.CatalogueMutationOption which records the nullability or default change.
+// Returns error when the action is malformed.
+func (p *parser) parseAlterColumnDrop() (ast.CatalogueMutationOption, error) {
+	if p.MatchKeyword(keywordNOT) {
+		if err := p.expectKeywords(keywordNULL); err != nil {
+			p.recordSyntaxError(err)
+			return nil, err
+		}
+		return ast.WithColumnNullability(true), nil
+	}
+	if err := p.expectKeywords(keywordDEFAULT); err != nil {
+		p.recordSyntaxError(err)
+		return nil, err
+	}
+	return ast.WithColumnDefault(false), nil
 }
 
 // skipAlterColumnUsing consumes the USING expression that converts a column's values to

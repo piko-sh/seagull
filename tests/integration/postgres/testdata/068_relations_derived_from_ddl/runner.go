@@ -69,13 +69,13 @@ func main() {
 	value, note := int32(7), "first"
 	output := results{}
 	output.record("add_2026", func() (any, error) {
-		return "added", queries.AddReading(ctx, db.AddReadingParams{ID: 10, TakenOn: day(2026, 3, 1), Value: &value, Note: &note})
+		return "added", queries.AddReading(ctx, db.AddReadingParams{ID: 10, TakenOn: day(2026, 3, 1), Value: db.NullOf(value), Note: db.NullOf(note)})
 	})
 	output.record("add_2027", func() (any, error) {
-		return "added", queries.AddReading(ctx, db.AddReadingParams{ID: 20, TakenOn: day(2027, 3, 1), Value: nil, Note: nil})
+		return "added", queries.AddReading(ctx, db.AddReadingParams{ID: 20, TakenOn: day(2027, 3, 1), Value: db.Null[int32]{}, Note: db.Null[string]{}})
 	})
 	output.record("add_2028", func() (any, error) {
-		return "added", queries.AddReading(ctx, db.AddReadingParams{ID: 30, TakenOn: day(2028, 3, 1), Value: &value, Note: &note})
+		return "added", queries.AddReading(ctx, db.AddReadingParams{ID: 30, TakenOn: day(2028, 3, 1), Value: db.NullOf(value), Note: db.NullOf(note)})
 	})
 	output.record("readings_2026", func() (any, error) { return queries.ListReadings2026(ctx) })
 	output.record("low_readings", func() (any, error) { return queries.ListLowReadings(ctx) })

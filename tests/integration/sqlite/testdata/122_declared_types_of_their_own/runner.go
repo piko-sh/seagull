@@ -80,8 +80,8 @@ func main() {
 	label := "42 labels"
 	output.record("add_thing", func() (any, error) {
 		return "added", queries.AddThing(ctx, db.AddThingParams{
-			ID: 1, ExternalID: external, OtherID: &other, StartsAt: &startsAt, Zoned: &zoned, Span: &span,
-			Raw: []byte{0x00, 0xff, 0x10}, Price: *price, Label: &label,
+			ID: 1, ExternalID: external, OtherID: db.NullOf(other), StartsAt: db.NullOf(startsAt), Zoned: db.NullOf(zoned), Span: db.NullOf(span),
+			Raw: []byte{0x00, 0xff, 0x10}, Price: *price, Label: db.NullOf(label),
 		})
 	})
 	output.record("thing_by_uuid", func() (any, error) {

@@ -29,3 +29,19 @@ import (
 func FuzzGenerate(f *testing.F) {
 	dialecttest.FuzzGenerate(f, func() dialect.DialectPort { return clickhouse.New() }, "testdata")
 }
+
+func FuzzStructuredQuery(f *testing.F) {
+	dialecttest.FuzzStructuredQuery(f, func() dialect.DialectPort { return clickhouse.New() })
+}
+
+func FuzzGenerateFiles(f *testing.F) {
+	dialecttest.FuzzGenerateFiles(f, func() dialect.DialectPort { return clickhouse.New() }, "testdata")
+}
+
+func FuzzLexicalProfile(f *testing.F) {
+	dialecttest.FuzzLexicalProfile(f, func() dialect.DialectPort { return clickhouse.New() }, "testdata")
+}
+
+func TestFuzzCorpusAudit(t *testing.T) {
+	dialecttest.AuditFuzzCorpus(t, func() dialect.DialectPort { return clickhouse.New() }, "testdata")
+}

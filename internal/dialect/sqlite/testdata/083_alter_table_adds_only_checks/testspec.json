@@ -1,0 +1,7 @@
+{
+  "description": "SQLite's ALTER TABLE adds a CHECK constraint and no other kind: ADD CONSTRAINT u UNIQUE (x) is a syntax error, not a column named CONSTRAINT.",
+  "expectedDiagnosticCount": 1,
+  "diagnostics": [
+    {"severity": "error", "code": "Q010", "messageContains": "SQLite's ALTER TABLE adds only a CHECK constraint"}
+  ]
+}

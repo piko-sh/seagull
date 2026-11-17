@@ -46,22 +46,7 @@ type delivery struct {
 	Address string `json:"address"`
 }
 
-// run places three chip shop orders and reads them back. A JSON column becomes the
-// generated store.JSON type, which holds the raw document as bytes: encode a value into
-// it with json.Marshal and decode it with json.Unmarshal. A nil store.JSON is SQL NULL.
-//
-// In MariaDB, JSON is another name for LONGTEXT with a JSON_VALID check. An invalid
-// document is refused, and a valid one is kept as the text it was written as, so it comes
-// back byte for byte: here, in the field order and compact form json.Marshal gave it.
-//
-// MariaDB has no -> or ->> operators, and sgl vet reports Q010 for them, naming the
-// function to use instead. OrdersWithFish calls those functions. JSON_EXTRACT returns a
-// JSON fragment, so Extras is store.JSON again, written in MariaDB's own style with a
-// space after each comma. JSON_UNQUOTE(JSON_EXTRACT(...)) returns SQL text, so Address is
-// *string, NULL when the delivery column or its address is missing. The fish parameter is
-// compared with that text, so it is inferred as a string, and its binding line only gives
-// it a name in place of p1. JSON_VALUE(basket, '$.fish') is a shorter spelling for a
-// single value.
+// run places chip shop orders and reads their JSON data.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes output (io.Writer) which receives the decoded orders and the search.
@@ -115,8 +100,8 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 	fmt.Fprintln(output, "\ncod orders:")
 	for _, order := range cod {
 		address := "collecting"
-		if order.Address != nil {
-			address = "to " + *order.Address
+		if order.Address.Valid {
+			address = "to " + order.Address.V
 		}
 		fmt.Fprintf(output, "  order %d  %-9s extras %-30s %s\n", order.ID, order.Customer, order.Extras, address)
 	}

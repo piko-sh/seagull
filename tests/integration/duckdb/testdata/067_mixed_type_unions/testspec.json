@@ -1,0 +1,3 @@
+{
+  "description": "A UNION of a UINTEGER and an INTEGER, a UBIGINT and a BIGINT, and an INTEGER and a VARCHAR reads every row: the first pair as a BIGINT, the second as a HUGEINT and the third as text, as DuckDB types them."
+}

@@ -37,17 +37,16 @@ const (
 // loggerContextKey keys the logger a host attaches to a context.
 type loggerContextKey struct{}
 
-// ContextWithLogger returns a copy of ctx carrying logger.
+// WithLogger returns a copy of ctx carrying logger.
 //
-// Seagull resolves the logger per call rather than capturing one at construction, so a
-// host can scope a logger to a single generation or migration run. Passing a nil logger
-// returns ctx unchanged, except that a nil context becomes context.Background().
+// Passing a nil logger returns ctx unchanged, except that a nil context becomes
+// context.Background().
 //
 // Takes logger (*slog.Logger) which Seagull should use for work performed under the
 // returned context.
 //
 // Returns context.Context which carries the logger.
-func ContextWithLogger(ctx context.Context, logger *slog.Logger) context.Context {
+func WithLogger(ctx context.Context, logger *slog.Logger) context.Context {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -59,15 +58,48 @@ func ContextWithLogger(ctx context.Context, logger *slog.Logger) context.Context
 	return context.WithValue(ctx, loggerContextKey{}, logger)
 }
 
-// LoggerFrom returns the logger attached to ctx, falling back to the process default.
+// WithFallbackLogger returns ctx carrying logger only when ctx carries no logger yet. A
+// logger the caller bound into ctx wins over the fallback, so a host's per-run logger
+// overrides one configured for every run.
 //
-// Resolution happens at the call site rather than at construction so that a host calling
-// slog.SetDefault() after Seagull starts is still honoured.
+// Takes logger (*slog.Logger) which is used when ctx carries none. Nil returns ctx
+// unchanged.
 //
+// Returns context.Context which carries a logger when either ctx or logger had one.
+func WithFallbackLogger(ctx context.Context, logger *slog.Logger) context.Context {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	if logger == nil {
+		return ctx
+	}
+	if bound, _ := boundLogger(ctx); bound != nil {
+		return ctx
+	}
+	return context.WithValue(ctx, loggerContextKey{}, logger)
+}
+
+// From returns the logger attached to ctx, together with a context that carries it.
+//
+// When ctx carries no logger, the process default is bound into the returned context, so
+// every call further down the same chain resolves to one logger without looking the
+// default up again. A context whose Value panics also gets the default bound, which
+// shields later lookups from the panic.
+//
+// Returns context.Context which carries the resolved logger and is never nil.
 // Returns *slog.Logger which is never nil.
-func LoggerFrom(ctx context.Context) *slog.Logger {
-	logger, _ := loggerOf(ctx)
-	return logger
+func From(ctx context.Context) (context.Context, *slog.Logger) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	if logger, _ := boundLogger(ctx); logger != nil {
+		return ctx, logger
+	}
+
+	logger := slog.Default()
+
+	return context.WithValue(ctx, loggerContextKey{}, logger), logger
 }
 
 // ErrAttr builds the structured attribute Seagull uses to report an error.
@@ -83,23 +115,22 @@ func ErrAttr(err error) slog.Attr {
 	return slog.String("error", err.Error())
 }
 
-// loggerOf returns the logger attached to ctx, falling back to the process default, and
-// whether ctx could be read. A nil context, or one whose Value panics, as a faulty host
-// context can, reads as unreadable and yields the process default.
+// boundLogger returns the logger attached to ctx, or nil when there is none. A nil
+// context, or one whose Value panics as a faulty host context can, reads as unreadable.
 //
-// Returns logger (*slog.Logger) which is never nil.
+// Returns logger (*slog.Logger) which is nil when ctx carries none or cannot be read.
 // Returns readable (bool) which is false when ctx is nil or its Value panicked.
-func loggerOf(ctx context.Context) (logger *slog.Logger, readable bool) {
+func boundLogger(ctx context.Context) (logger *slog.Logger, readable bool) {
 	if ctx == nil {
-		return slog.Default(), false
+		return nil, false
 	}
 	defer func() {
 		if recover() != nil {
-			logger, readable = slog.Default(), false
+			logger, readable = nil, false
 		}
 	}()
-	if attached, ok := ctx.Value(loggerContextKey{}).(*slog.Logger); ok && attached != nil {
+	if attached, ok := ctx.Value(loggerContextKey{}).(*slog.Logger); ok {
 		return attached, true
 	}
-	return slog.Default(), true
+	return nil, true
 }

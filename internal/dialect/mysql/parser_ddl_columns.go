@@ -21,8 +21,11 @@ package mysql
 import (
 	"encoding/hex"
 	"fmt"
+	"slices"
 	"strings"
 
+	"seagull.sh/seagull/internal/dialect"
+	"seagull.sh/seagull/internal/dialect/ast"
 	"seagull.sh/seagull/internal/dialect/dialectkit"
 	"seagull.sh/seagull/internal/sqlmodel"
 )
@@ -30,6 +33,10 @@ import (
 const (
 	// maxEnumValues is the most values an ENUM holds, as MySQL and MariaDB allow.
 	maxEnumValues = 65_535
+
+	// columnConstraintNameLookahead is the offset from CONSTRAINT of the word after its
+	// name.
+	columnConstraintNameLookahead = 2
 
 	// maxSetMembers is the most members a SET holds, as MySQL and MariaDB allow.
 	maxSetMembers = 64
@@ -44,7 +51,7 @@ var (
 	columnAttributeKeywords = map[string]struct{}{
 		keywordPRIMARY: {}, keywordKEY: {}, keywordNOT: {}, keywordNULL: {}, keywordUNIQUE: {},
 		keywordCHECK: {}, keywordDEFAULT: {}, keywordCOLLATE: {},
-		keywordCHARSET: {}, "REFERENCES": {}, "GENERATED": {}, keywordAS: {}, keywordCONSTRAINT: {},
+		keywordCHARSET: {}, keywordREFERENCES: {}, "GENERATED": {}, keywordAS: {}, keywordCONSTRAINT: {},
 		keywordAUTO: {}, keywordCOMMENT: {}, keywordON: {}, "VISIBLE": {}, "INVISIBLE": {},
 		"COLUMN_FORMAT": {}, "STORAGE": {}, "SRID": {}, "ENGINE_ATTRIBUTE": {},
 		"SECONDARY_ENGINE_ATTRIBUTE": {}, keywordUNSIGNED: {}, "SIGNED": {},
@@ -93,11 +100,15 @@ type typeAttributes struct {
 // column attributes that follow.
 //
 // Takes engine (*Dialect) which supplies type normalisation for the column's SQL type.
+// Takes changesColumn (bool) which is true for the definition MODIFY or CHANGE gives.
 //
 // Returns sqlmodel.Column which describes the parsed column.
 // Returns bool which is true when the column carries an inline PRIMARY KEY.
 // Returns error when the column name, type, or an attribute fails to parse.
-func (p *parser) parseMySQLColumnDefinition(engine *Dialect) (sqlmodel.Column, bool, error) {
+func (p *parser) parseMySQLColumnDefinition(engine *Dialect, changesColumn bool) (sqlmodel.Column, bool, error) {
+	if word := p.Current().Keyword(tokenIdentifier); p.reservedNames.RefusesColumnDefinition(word, p.Peek().Kind == tokenLeftParen) {
+		return sqlmodel.Column{}, false, p.syntaxErrorAt(dialectkit.ReservedNameMessage(word, "column"))
+	}
 	name, nameError := p.parseIdentifierOrKeyword()
 	if nameError != nil {
 		return sqlmodel.Column{}, false, fmt.Errorf("parsing column name: %w", nameError)
@@ -115,12 +126,70 @@ func (p *parser) parseMySQLColumnDefinition(engine *Dialect) (sqlmodel.Column, b
 		column.HasDefault = true
 	}
 
-	isPrimaryKey, err := p.parseMySQLColumnConstraints(&column)
+	keys := columnKeys{name: "", constraints: nil, mariaDB: engine.settings.ConstraintNames == dialect.ConstraintNamesMariaDB,
+		named: false, changesColumn: changesColumn}
+	isPrimaryKey, err := p.parseMySQLColumnConstraints(&column, &keys)
 	if err != nil {
 		return sqlmodel.Column{}, false, err
 	}
+	p.columnConstraints = append(p.columnConstraints, keys.constraints...)
 
 	return column, isPrimaryKey, nil
+}
+
+// columnKeys holds the unique, check and foreign key constraints a column definition
+// declares.
+type columnKeys struct {
+	// name is the name a CONSTRAINT clause gives the constraint that follows it.
+	name string
+
+	// constraints holds the constraints in the order the column declares them.
+	constraints []sqlmodel.Constraint
+
+	// mariaDB names a check after its column and holds the column definition to MariaDB's
+	// order of attributes.
+	mariaDB bool
+
+	// named records that a CONSTRAINT clause has been read and its constraint not yet.
+	named bool
+
+	// changesColumn records a definition MODIFY or CHANGE gives, which takes no REFERENCES
+	// clause.
+	changesColumn bool
+}
+
+// add records a constraint the column declares, under the name a CONSTRAINT clause gave
+// it.
+//
+// Takes constraint (sqlmodel.Constraint) which is the constraint.
+func (keys *columnKeys) add(constraint sqlmodel.Constraint) {
+	constraint.Name = keys.name
+	keys.name = ""
+	keys.named = false
+	keys.constraints = append(keys.constraints, constraint)
+}
+
+// takeColumnConstraints returns the constraints the column definitions read so far
+// declare, and forgets them.
+//
+// Returns []sqlmodel.Constraint which holds them in order.
+func (p *parser) takeColumnConstraints() []sqlmodel.Constraint {
+	constraints := p.columnConstraints
+	p.columnConstraints = nil
+	return constraints
+}
+
+// attachColumnConstraints adds the constraints the column definitions of an ALTER TABLE
+// action declare to the action, as a constraint addition applied after it.
+//
+// Takes mutation (*ast.CatalogueMutation) which is the action.
+// Takes schema (string) which is the schema name of the target table.
+// Takes tableName (string) which is the target table name.
+func (p *parser) attachColumnConstraints(mutation *ast.CatalogueMutation, schema, tableName string) {
+	if constraints := p.takeColumnConstraints(); len(constraints) > 0 {
+		mutation.AdditionalMutations = append(mutation.AdditionalMutations,
+			ast.NewCatalogueMutation(ast.MutationAlterTableAddConstraint, schema, tableName, ast.WithConstraints(constraints)))
+	}
 }
 
 // parseColumnType parses the data type of a column definition: the type name, including
@@ -135,7 +204,7 @@ func (p *parser) parseMySQLColumnDefinition(engine *Dialect) (sqlmodel.Column, b
 // or collation names nothing.
 func (p *parser) parseColumnType(engine *Dialect) (sqlmodel.SQLType, error) {
 	if p.Current().Kind != tokenIdentifier || p.IsKeyword(keywordPRIMARY, keywordNOT, keywordNULL, keywordUNIQUE,
-		keywordCHECK, keywordDEFAULT, keywordCOLLATE, "REFERENCES", "GENERATED", keywordCONSTRAINT, keywordAUTO) {
+		keywordCHECK, keywordDEFAULT, keywordCOLLATE, keywordREFERENCES, "GENERATED", keywordCONSTRAINT, keywordAUTO) {
 		return sqlmodel.NewSQLType(sqlmodel.TypeCategoryText, "text"), nil
 	}
 
@@ -471,14 +540,18 @@ func (p *parser) isColumnAttributeStart() bool {
 // of becoming the name of a phantom column.
 //
 // Takes column (*sqlmodel.Column) which receives the parsed constraint flags.
+// Takes keys (*columnKeys) which receives the unique, check and foreign key constraints.
 //
 // Returns bool which is true when the column carries an inline PRIMARY KEY.
 // Returns error when an attribute clause is malformed.
-func (p *parser) parseMySQLColumnConstraints(column *sqlmodel.Column) (bool, error) {
+func (p *parser) parseMySQLColumnConstraints(column *sqlmodel.Column, keys *columnKeys) (bool, error) {
 	isPrimaryKey := false
 
 	for !p.AtEnd() && p.Current().Kind != tokenComma && p.Current().Kind != tokenRightParen {
-		primary, handled, err := p.parseOneMySQLColumnConstraint(column)
+		if err := p.checkAttributeOrder(keys); err != nil {
+			return false, err
+		}
+		primary, handled, err := p.parseOneMySQLColumnConstraint(column, keys)
 		if err != nil {
 			return false, err
 		}
@@ -493,20 +566,59 @@ func (p *parser) parseMySQLColumnConstraints(column *sqlmodel.Column) (bool, err
 	return isPrimaryKey, nil
 }
 
+// checkAttributeOrder rejects a column attribute in an invalid position.
+//
+// Both engines end a column definition at its REFERENCES clause. MariaDB also ends it
+// with its CHECK, then REFERENCES, and takes a CONSTRAINT name only before REFERENCES.
+// FIRST and AFTER place the column and may follow either.
+//
+// Takes keys (*columnKeys) which says whether the engine is MariaDB and which constraints
+// the column has declared so far.
+//
+// Returns error when the attribute at the cursor is out of the engine's order.
+func (p *parser) checkAttributeOrder(keys *columnKeys) error {
+	if p.IsKeyword("FIRST", "AFTER") {
+		return nil
+	}
+	if !keys.mariaDB {
+		if count := len(keys.constraints); count > 0 && keys.constraints[count-1].Kind == sqlmodel.ConstraintForeignKey {
+			return p.syntaxErrorAt("MySQL ends a column definition at its REFERENCES clause")
+		}
+		return nil
+	}
+	count := len(keys.constraints)
+	declared := func(kind sqlmodel.ConstraintKind) bool { return count > 0 && keys.constraints[count-1].Kind == kind }
+	switch {
+	case p.IsKeyword(keywordCONSTRAINT):
+		next := p.Peek()
+		if next.Kind == tokenIdentifier && !next.IsKeyword(tokenIdentifier, keywordREFERENCES) {
+			next = p.PeekAt(columnConstraintNameLookahead)
+		}
+		if !next.IsKeyword(tokenIdentifier, keywordREFERENCES) {
+			return p.syntaxErrorAt("MariaDB names only a REFERENCES clause in a column definition")
+		}
+	case declared(sqlmodel.ConstraintForeignKey):
+		return p.syntaxErrorAt("MariaDB ends a column definition at its REFERENCES clause")
+	case declared(sqlmodel.ConstraintCheck) && !p.IsKeyword(keywordREFERENCES):
+		return p.syntaxErrorAt("MariaDB takes only a REFERENCES clause after a column's CHECK")
+	}
+	return nil
+}
+
 // parseOneMySQLColumnConstraint parses a single column attribute that sets the column's
 // nullability, default or key.
 //
 // Takes column (*sqlmodel.Column) which receives the parsed constraint flags.
+// Takes keys (*columnKeys) which receives a unique, check or foreign key constraint.
 //
 // Returns isPrimary (bool) reporting whether the clause set PRIMARY KEY.
 // Returns handled (bool) reporting whether an attribute was consumed.
 // Returns err (error) which is non-nil when the clause is malformed.
-func (p *parser) parseOneMySQLColumnConstraint(column *sqlmodel.Column) (isPrimary bool, handled bool, err error) {
+func (p *parser) parseOneMySQLColumnConstraint(column *sqlmodel.Column, keys *columnKeys) (isPrimary bool, handled bool, err error) {
 	switch {
 	case p.MatchKeyword(keywordPRIMARY), p.MatchKeyword(keywordKEY):
 		p.MatchKeyword(keywordKEY)
 		column.Nullable = false
-		column.HasDefault = true
 		return true, true, nil
 	case p.MatchKeyword(keywordNOT):
 		if _, err := p.ExpectKeyword(keywordNULL); err != nil {
@@ -516,6 +628,9 @@ func (p *parser) parseOneMySQLColumnConstraint(column *sqlmodel.Column) (isPrima
 		return false, true, nil
 	case p.MatchKeyword(keywordNULL):
 		column.Nullable = true
+		if !keys.mariaDB {
+			p.explicitNull = append(p.explicitNull, column.Name)
+		}
 		return false, true, nil
 	case p.MatchKeyword(keywordDEFAULT):
 		column.HasDefault = true
@@ -534,10 +649,13 @@ func (p *parser) parseOneMySQLColumnConstraint(column *sqlmodel.Column) (isPrima
 		return false, true, nil
 	case p.MatchKeyword(keywordUNIQUE):
 		p.MatchKeyword(keywordKEY)
+		keys.add(sqlmodel.Constraint{Name: "", Kind: sqlmodel.ConstraintUnique, Columns: []string{column.Name}, ForeignTable: "",
+			ForeignColumns: nil, Origin: sqlmodel.MigrationOrigin{}})
+		keys.constraints[len(keys.constraints)-1].Name = p.nameKey("", []string{column.Name})
 		return false, true, nil
 	}
 
-	handled, err = p.parseMySQLSecondaryConstraint(column)
+	handled, err = p.parseMySQLSecondaryConstraint(column, keys)
 	return false, handled, err
 }
 
@@ -548,15 +666,36 @@ func (p *parser) parseOneMySQLColumnConstraint(column *sqlmodel.Column) (isPrima
 //
 // Takes column (*sqlmodel.Column) which receives any generated-column flags discovered in
 // the clause.
+// Takes keys (*columnKeys) which receives a check or foreign key constraint.
 //
 // Returns bool which reports whether a secondary clause was consumed.
 // Returns error when the clause is malformed.
-func (p *parser) parseMySQLSecondaryConstraint(column *sqlmodel.Column) (bool, error) {
+func (p *parser) parseMySQLSecondaryConstraint(column *sqlmodel.Column, keys *columnKeys) (bool, error) {
 	switch {
 	case p.MatchKeyword(keywordCHECK):
-		return true, p.parseCheckBody()
-	case p.MatchKeyword("REFERENCES"):
-		return true, p.skipMySQLInlineForeignKey()
+		keys.add(sqlmodel.Constraint{Name: "", Kind: sqlmodel.ConstraintCheck, Columns: []string{column.Name}, ForeignTable: "",
+			ForeignColumns: nil, Origin: sqlmodel.MigrationOrigin{}})
+		if keys.mariaDB {
+			keys.constraints[len(keys.constraints)-1].Name = column.Name
+			_, err := p.parseCheckBody()
+			return true, err
+		}
+		named, err := p.parseCheckBody()
+		check := &keys.constraints[len(keys.constraints)-1]
+		check.Columns = distinctFold(append(check.Columns, named...))
+		return true, err
+	case p.IsKeyword(keywordREFERENCES):
+		if keys.changesColumn {
+			return true, p.syntaxErrorAt("MODIFY and CHANGE take no REFERENCES clause; add the foreign key with ADD FOREIGN KEY")
+		}
+		if keys.named && !keys.mariaDB {
+			return true, p.syntaxErrorAt("MySQL names no REFERENCES clause in a column definition; name the foreign key " +
+				"in a table constraint")
+		}
+		foreignTable, foreignColumns, err := p.parseMySQLForeignKeyReference()
+		keys.add(sqlmodel.Constraint{Name: "", Kind: sqlmodel.ConstraintForeignKey, Columns: []string{column.Name},
+			ForeignTable: foreignTable, ForeignColumns: foreignColumns, Origin: sqlmodel.MigrationOrigin{}})
+		return true, err
 	case p.MatchKeyword("GENERATED"):
 		if _, err := p.ExpectKeyword("ALWAYS"); err != nil {
 			return false, err
@@ -576,8 +715,9 @@ func (p *parser) parseMySQLSecondaryConstraint(column *sqlmodel.Column) (bool, e
 	case p.isCharacterSetStart(), p.IsKeyword(keywordCOLLATE):
 		return true, p.parseCharacterSetOrCollation()
 	case p.MatchKeyword(keywordCONSTRAINT):
-		if !p.IsKeyword(keywordCHECK) && p.Current().Kind == tokenIdentifier {
-			p.Advance()
+		keys.named = true
+		if !p.IsKeyword(keywordCHECK) && p.Current().Kind == tokenIdentifier && !p.IsKeyword(keywordREFERENCES) {
+			keys.name = p.Advance().Value
 		}
 		return true, nil
 	}
@@ -649,19 +789,42 @@ func (p *parser) expectStringLiteral(description string) error {
 // parseCheckBody consumes the parenthesised condition of a CHECK constraint and an
 // optional [NOT] ENFORCED.
 //
+// Returns []string which lists columns named by the condition.
 // Returns error when the condition is missing or unbalanced.
-func (p *parser) parseCheckBody() error {
+func (p *parser) parseCheckBody() ([]string, error) {
 	if p.Current().Kind != tokenLeftParen {
-		return p.syntaxErrorAt("expected '(' after CHECK")
+		return nil, p.syntaxErrorAt("expected '(' after CHECK")
 	}
+	start := p.Position
 	if err := p.skipParenthesised(); err != nil {
-		return err
+		return nil, err
+	}
+	var named []string
+	for index := start + 1; index < p.Position-1; index++ {
+		if p.Tokens[index].Kind == tokenIdentifier && p.Tokens[index+1].Kind != tokenLeftParen {
+			named = append(named, p.Tokens[index].Value)
+		}
 	}
 	if p.IsKeyword(keywordNOT) && p.Peek().IsKeyword(tokenIdentifier, "ENFORCED") {
 		p.Advance()
 	}
 	p.MatchKeyword("ENFORCED")
-	return nil
+	return named, nil
+}
+
+// distinctFold returns names without repeats, compared without case, in first-seen order.
+//
+// Takes names ([]string) which are the names.
+//
+// Returns []string which holds each name once.
+func distinctFold(names []string) []string {
+	var kept []string
+	for _, name := range names {
+		if !slices.ContainsFunc(kept, func(seen string) bool { return strings.EqualFold(seen, name) }) {
+			kept = append(kept, name)
+		}
+	}
+	return kept
 }
 
 // parseMySQLGeneratedClause parses the AS (expression) [VIRTUAL | STORED | PERSISTENT]
@@ -703,35 +866,6 @@ func (p *parser) parseOnUpdateClause() error {
 	}
 	p.Advance()
 	return p.skipParenthesisedIfPresent()
-}
-
-// skipMySQLInlineForeignKey consumes an inline column REFERENCES clause.
-//
-// Returns error when the referenced name or column list is malformed.
-func (p *parser) skipMySQLInlineForeignKey() error {
-	if p.Current().Kind == tokenIdentifier && !p.isMySQLForeignKeyActionBoundary() {
-		if _, _, err := p.parseSchemaQualifiedName(); err != nil {
-			return err
-		}
-	}
-	if err := p.skipParenthesisedIfPresent(); err != nil {
-		return err
-	}
-	p.skipForeignKeyActions()
-	return nil
-}
-
-// isMySQLForeignKeyActionBoundary reports whether the current token marks the start (or
-// just-past-end) of a foreign-key action / constraint clause. Used by
-// skipMySQLInlineForeignKey to recognise the boundary between the REFERENCES
-// <table>(cols) prefix and the subsequent ON / MATCH / CONSTRAINT-bearing tokens.
-//
-// Returns bool which is true when the current keyword is a recognised action-clause
-// boundary.
-func (p *parser) isMySQLForeignKeyActionBoundary() bool {
-	return p.IsKeyword(keywordON, "MATCH", keywordCONSTRAINT,
-		keywordPRIMARY, keywordUNIQUE, keywordKEY, keywordINDEX,
-		keywordCHECK, keywordFOREIGN)
 }
 
 // skipForeignKeyActions consumes the trailing MATCH clause and the ON DELETE and ON
@@ -849,4 +983,31 @@ func bitLiteralBytes(digits string) (string, bool) {
 		}
 	}
 	return string(decoded), true
+}
+
+// nullKeyColumn finds a primary key column a definition declared NULL in words, which
+// MySQL refuses with error 1171, and forgets the columns so declared.
+//
+// Takes primaryKey ([]string) which are the primary key's columns.
+//
+// Returns string which is the column, or empty when there is none.
+func (p *parser) nullKeyColumn(primaryKey []string) string {
+	declared := p.explicitNull
+	p.explicitNull = nil
+	for _, column := range primaryKey {
+		if slices.ContainsFunc(declared, func(name string) bool { return strings.EqualFold(name, column) }) {
+			return column
+		}
+	}
+	return ""
+}
+
+// takeExplicitNull reports whether the definition just read declared its column NULL in
+// words, and forgets it.
+//
+// Returns bool which is true when it did.
+func (p *parser) takeExplicitNull() bool {
+	declared := len(p.explicitNull) > 0
+	p.explicitNull = nil
+	return declared
 }

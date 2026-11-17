@@ -416,7 +416,7 @@ func (p *typeNameParser) parseTime64Type() (typeParseResult, error) {
 //
 // Returns the parsed type and any error from the primitive lookup.
 func (p *typeNameParser) dispatchScalarType(identifier string) (typeParseResult, error) {
-	return p.parsePrimitiveByName(identifier)
+	return p.parseScalarAlias(identifier)
 }
 
 // parseObjectType handles the legacy ClickHouse Object('json') declaration that predates
@@ -1275,6 +1275,11 @@ func primitiveTypes() map[string]sqlmodel.SQLType {
 	registerPrimitiveNumericTypes(types)
 	registerPrimitiveScalarTypes(types)
 	registerPrimitiveSpecialisedTypes(types)
+	for alias, canonical := range clickHouseTypeAliases {
+		if native, found := types[strings.ToLower(canonical)]; found {
+			types[alias] = native
+		}
+	}
 	return types
 }
 

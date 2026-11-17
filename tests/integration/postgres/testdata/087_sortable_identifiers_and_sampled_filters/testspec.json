@@ -1,0 +1,3 @@
+{
+  "description": "Sortable mixed-case and reserved columns order by those columns, and runtime filters apply after a TABLESAMPLE clause."
+}

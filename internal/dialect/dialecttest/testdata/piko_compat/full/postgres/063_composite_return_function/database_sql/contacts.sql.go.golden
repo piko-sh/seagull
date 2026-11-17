@@ -7,9 +7,9 @@ import "context"
 const getcontactaddresses = `SELECT a.street, a.city, a.postcode FROM expand_addresses($1::integer) AS a;`
 
 type GetContactAddressesRow struct {
-	Street   *string `json:"street"`
-	City     *string `json:"city"`
-	Postcode *string `json:"postcode"`
+	Street   Null[string] `json:"street"`
+	City     Null[string] `json:"city"`
+	Postcode Null[string] `json:"postcode"`
 }
 
 func (queries *Queries) GetContactAddresses(ctx context.Context, p1 int32) ([]GetContactAddressesRow, error) {
@@ -19,12 +19,16 @@ func (queries *Queries) GetContactAddresses(ctx context.Context, p1 int32) ([]Ge
 	}
 	defer rows.Close()
 	var results []GetContactAddressesRow
-	for rows.Next() {
+	if rows.Next() {
 		var row GetContactAddressesRow
-		if err := rows.Scan(&row.Street, &row.City, &row.Postcode); err != nil {
-			return nil, err
+		scanArgs := []any{&row.Street, &row.City, &row.Postcode}
+		for more := true; more; more = rows.Next() {
+			row = GetContactAddressesRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

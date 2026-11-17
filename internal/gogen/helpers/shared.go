@@ -28,6 +28,12 @@ import (
 	"seagull.sh/seagull/internal/sqlmodel"
 )
 
+// helperElementSeparator separates generated composite elements.
+const helperElementSeparator = ", "
+
+// helperCompositeClose closes a generated composite literal.
+const helperCompositeClose = "}"
+
 const (
 	// bindLimitsFile is the generated file holding the bind limit.
 	bindLimitsFile = "bind_limits.go"
@@ -61,13 +67,43 @@ const (
 	// jsonFileSuffix completes the name of the inline JSON helper file after the helper
 	// prefix.
 	jsonFileSuffix = "_json.go"
+
+	// scanNumbersFile is the generated file holding the scanner that reads a narrow number
+	// without database/sql's conversion through text.
+	scanNumbersFile = "scan_numbers.go"
+
+	// scanArraysFile is the generated file holding the scanner that reads an array's text
+	// form into a slice.
+	scanArraysFile = "scan_arrays.go"
+
+	// arrayLiteralsFile is the generated file holding the writer of a slice as an array's
+	// text form.
+	arrayLiteralsFile = "array_literals.go"
+
+	// requiredSlicesFile is the generated file holding the binder of a slice written into a
+	// column that refuses NULL.
+	requiredSlicesFile = "required_slices.go"
+
+	// nullSource is the source of the generated Null type.
+	nullSource = "null.go"
+
+	// nullFileSuffix completes the name of the Null helper file after the helper prefix.
+	nullFileSuffix = "_null.go"
+
+	// jsonCodecSource is the source of the JSON codec setting and the wrappers that use it.
+	jsonCodecSource = "json_codec.go"
+
+	// jsonCodecFileSuffix completes the name of the JSON codec file after the helper prefix.
+	jsonCodecFileSuffix = "_json_codec.go"
 )
 
 // sources holds the shared helpers' sources.
 //
 //go:embed source/bind_limits.go source/slice_helpers.go source/runtime_helpers.go
 //go:embed source/json.go source/query_names.go source/sortable.go
-//go:embed source/convert_strings.go source/error_wrapping.go
+//go:embed source/convert_strings.go source/error_wrapping.go source/null.go
+//go:embed source/scan_numbers.go source/json_codec.go source/scan_arrays.go
+//go:embed source/array_literals.go source/required_slices.go
 var sources embed.FS
 
 // preparedSources caches immutable parsed helper templates for this emitter.
@@ -108,6 +144,12 @@ type RuntimeSyntax struct {
 
 	// CastTypes lists the types a column may be converted to, as the dialect spells them.
 	CastTypes []string
+
+	// CastFloats reconstructs runtime floats from exact integer bits.
+	CastFloats bool
+
+	// Ordering is where the dialect sorts NULL and how it writes a NULL placement.
+	Ordering dialect.OrderingSyntax
 }
 
 // QueryName is one entry of the query-names lookup naming a constant's whole SQL.
@@ -149,8 +191,8 @@ type StringConversions struct {
 	Dereferences bool
 }
 
-// BindLimits renders bind_limits.go: the most parameters one statement binds and the
-// error returned past it, which the slice expander and the runtime builder share.
+// BindLimits renders bind_limits.go. It holds the most parameters one statement binds and
+// the error returned past it, which the slice expander and the runtime builder share.
 //
 // Takes packageName (string) which is the generated package's name.
 // Takes vocabulary (Vocabulary) which names the generated package's identifiers.
@@ -167,8 +209,8 @@ func BindLimits(packageName string, vocabulary Vocabulary, maxBindVariables int)
 	})
 }
 
-// ErrorWrapping renders error_wrapping.go: the helpers that label an error a generated
-// method returns with the method's name, keeping the error beneath for errors.Is.
+// ErrorWrapping renders error_wrapping.go. Its helpers label an error a generated method
+// returns with the method's name, keeping the error beneath for errors.Is.
 //
 // Takes packageName (string) which is the generated package's name.
 // Takes vocabulary (Vocabulary) which names the generated package's identifiers.
@@ -179,10 +221,10 @@ func ErrorWrapping(packageName string, vocabulary Vocabulary) (sqlmodel.Generate
 	return renderEmbedded(ErrorWrappingFile, vocabulary, &Data{Flags: nil, Values: nil, Renames: nil, Package: packageName})
 }
 
-// SliceHelpers renders slice_helpers.go: the function that writes a slice parameter's
-// list into a query at the offsets the generator marked, one placeholder per element in a
-// form, or the dialect's empty test for an empty slice. The rendered function writes a
-// placeholder's suffix only for a form that has one.
+// SliceHelpers renders slice_helpers.go for expanding slice parameters.
+//
+// The generated helper inserts one placeholder per element at marked offsets, or the
+// dialect's empty test for an empty slice. It writes a placeholder suffix when needed.
 //
 // Takes packageName (string) which is the generated package's name.
 // Takes vocabulary (Vocabulary) which names the generated package's identifiers.
@@ -205,7 +247,7 @@ func SliceHelpers(packageName string, vocabulary Vocabulary, form dialect.Placeh
 	})
 }
 
-// RuntimeHelpers renders runtime_helpers.go: the allow-lists, validators and the
+// RuntimeHelpers renders runtime_helpers.go. It holds the allow-lists, validators and the
 // predicate, ordering and pagination writers every runtime builder of a package shares.
 //
 // Takes packageName (string) which is the generated package's name.
@@ -224,26 +266,31 @@ func RuntimeHelpers(packageName string, vocabulary Vocabulary, syntax *RuntimeSy
 	return renderEmbedded(runtimeHelpersFile, vocabulary, &Data{
 		Flags: nil,
 		Values: map[string]any{
-			"prefix":           syntax.Form.Prefix,
-			"suffix":           syntax.Form.Suffix,
-			"numbered":         syntax.Form.Kind == dialect.PlaceholderNumbered,
-			"offsetFirst":      syntax.Pagination.OffsetFirst,
-			"jsonPathOpenings": syntax.JSONPathOpenings,
-			"rootOperators":    syntax.RootOperators,
-			"emptyMembership":  syntax.Lists.EmptyMembership,
-			"emptyExclusion":   syntax.Lists.EmptyExclusion,
-			"limitBefore":      syntax.Pagination.Limit.Before,
-			"limitAfter":       syntax.Pagination.Limit.After,
-			"offsetBefore":     syntax.Pagination.Offset.Before,
-			"offsetAfter":      syntax.Pagination.Offset.After,
-			"unboundedLimit":   syntax.Pagination.UnboundedLimit,
-			"operators":        allowList(syntax.Operators),
-			"columnExpression": syntax.ColumnExpression,
-			"castPatterns":     regexpList(syntax.CastPatterns),
-			"castBefore":       before,
-			"castMiddle":       middle,
-			"castAfter":        after,
-			"castTypes":        syntax.CastTypes,
+			"castFloats":               syntax.CastFloats,
+			"prefix":                   syntax.Form.Prefix,
+			"suffix":                   syntax.Form.Suffix,
+			"numbered":                 syntax.Form.Kind == dialect.PlaceholderNumbered,
+			"offsetFirst":              syntax.Pagination.OffsetFirst,
+			"nullsFirstAscending":      syntax.Ordering.NullsFirstAscending,
+			"nullsFirstDescending":     syntax.Ordering.NullsFirstDescending,
+			"nullsByIsNull":            syntax.Ordering.NullsByIsNull,
+			"distinctNullsDefaultOnly": syntax.Ordering.DistinctNullsDefaultOnly,
+			"jsonPathOpenings":         syntax.JSONPathOpenings,
+			"rootOperators":            syntax.RootOperators,
+			"emptyMembership":          syntax.Lists.EmptyMembership,
+			"emptyExclusion":           syntax.Lists.EmptyExclusion,
+			"limitBefore":              syntax.Pagination.Limit.Before,
+			"limitAfter":               syntax.Pagination.Limit.After,
+			"offsetBefore":             syntax.Pagination.Offset.Before,
+			"offsetAfter":              syntax.Pagination.Offset.After,
+			"unboundedLimit":           syntax.Pagination.UnboundedLimit,
+			"operators":                allowList(syntax.Operators),
+			"columnExpression":         syntax.ColumnExpression,
+			"castPatterns":             regexpList(syntax.CastPatterns),
+			"castBefore":               before,
+			"castMiddle":               middle,
+			"castAfter":                after,
+			"castTypes":                syntax.CastTypes,
 		},
 		Renames: nil,
 		Package: packageName,
@@ -251,8 +298,8 @@ func RuntimeHelpers(packageName string, vocabulary Vocabulary, syntax *RuntimeSy
 }
 
 // InlineJSON renders the inline JSON helper file, named after the helper prefix, such as
-// sgl_json.go: the JSON type a JSON value maps to when its slot keeps its default, and
-// the scan adapter that decodes a JSON column into a typed destination.
+// sgl_json.go. It holds the JSON type a JSON value maps to when its slot keeps its
+// default, and the scan adapter that decodes a JSON column into a typed destination.
 //
 // Takes packageName (string) which is the generated package's name.
 // Takes vocabulary (Vocabulary) which names the generated package's identifiers.
@@ -270,9 +317,115 @@ func InlineJSON(packageName string, vocabulary Vocabulary, scanInto, jsonType bo
 	})
 }
 
+// ScanNumbers renders the file holding the narrow-number scanner.
+//
+// Takes packageName (string) which is the generated package's name.
+// Takes vocabulary (Vocabulary) which names the generated package's identifiers.
+//
+// Returns sqlmodel.GeneratedFile which is the rendered file.
+// Returns error when the source cannot be rendered.
+func ScanNumbers(packageName string, vocabulary Vocabulary) (sqlmodel.GeneratedFile, error) {
+	return renderEmbedded(scanNumbersFile, vocabulary, &Data{Flags: nil, Values: nil, Renames: nil, Package: packageName})
+}
+
+// ScanArrays renders the file holding the array scanner.
+//
+// Takes packageName (string) which is the generated package's name.
+// Takes vocabulary (Vocabulary) which names the generated package's identifiers.
+//
+// Returns sqlmodel.GeneratedFile which is the rendered file.
+// Returns error when the source cannot be rendered.
+func ScanArrays(packageName string, vocabulary Vocabulary) (sqlmodel.GeneratedFile, error) {
+	return renderEmbedded(scanArraysFile, vocabulary, &Data{Flags: nil, Values: nil, Renames: nil, Package: packageName})
+}
+
+// ArrayLiterals renders the file holding the writer of a slice as an array's text form.
+//
+// Takes packageName (string) which is the generated package's name.
+// Takes vocabulary (Vocabulary) which names the generated package's identifiers.
+//
+// Returns sqlmodel.GeneratedFile which is the rendered file.
+// Returns error when the source cannot be rendered.
+func ArrayLiterals(packageName string, vocabulary Vocabulary) (sqlmodel.GeneratedFile, error) {
+	return renderEmbedded(arrayLiteralsFile, vocabulary, &Data{Flags: nil, Values: nil, Renames: nil, Package: packageName})
+}
+
+// RequiredSlices renders the file holding the binder of a slice written into a column
+// that refuses NULL.
+//
+// Takes packageName (string) which is the generated package's name.
+// Takes vocabulary (Vocabulary) which names the generated package's identifiers.
+//
+// Returns sqlmodel.GeneratedFile which is the rendered file.
+// Returns error when the source cannot be rendered.
+func RequiredSlices(packageName string, vocabulary Vocabulary) (sqlmodel.GeneratedFile, error) {
+	return renderEmbedded(requiredSlicesFile, vocabulary, &Data{Flags: nil, Values: nil, Renames: nil, Package: packageName})
+}
+
+// InlineNull renders the file declaring the generated Null type.
+//
+// Takes packageName (string) which is the generated package's name.
+// Takes vocabulary (Vocabulary) which names the generated package's identifiers.
+// Takes rawValue (bool) which makes Value return the value as it is, for a native driver,
+// rather than as database/sql writes it.
+//
+// Returns sqlmodel.GeneratedFile which is the rendered file.
+// Returns error when the source cannot be rendered.
+func InlineNull(packageName string, vocabulary Vocabulary, rawValue bool) (sqlmodel.GeneratedFile, error) {
+	return preparedSources.File(vocabulary.Helper(nullFileSuffix), nullSource, vocabulary, &Data{
+		Flags:   nil,
+		Values:  map[string]any{"rawValue": rawValue},
+		Renames: nil,
+		Package: packageName,
+	})
+}
+
+// JSONCodec renders the JSON codec file, named after the helper prefix, such as
+// sgl_json_codec.go. It holds the JSONCodec interface, SetJSONCodec, which installs one,
+// and the wrappers the other helpers encode and decode JSON through.
+//
+// Takes packageName (string) which is the generated package's name.
+// Takes vocabulary (Vocabulary) which names the generated package's identifiers.
+// Takes decoded ([]Code) which holds the Go types the package decodes JSON columns into,
+// each with the imports it needs, which SetJSONCodec pretouches.
+//
+// Returns sqlmodel.GeneratedFile which is the rendered file.
+// Returns error when the source cannot be rendered.
+func JSONCodec(packageName string, vocabulary Vocabulary, decoded []Code) (sqlmodel.GeneratedFile, error) {
+	var builder strings.Builder
+	var imports []string
+	builder.WriteString("[]reflect.Type{")
+	for index, decodedType := range decoded {
+		if index > 0 {
+			builder.WriteString(helperElementSeparator)
+		}
+		builder.WriteString("reflect.TypeFor[" + decodedType.Text + "]()")
+		imports = append(imports, decodedType.Imports...)
+	}
+	builder.WriteString(helperCompositeClose)
+	return preparedSources.File(vocabulary.Helper(jsonCodecFileSuffix), jsonCodecSource, vocabulary, &Data{
+		Flags:   nil,
+		Values:  map[string]any{"jsonTypes": Code{Text: builder.String(), Imports: imports}},
+		Renames: nil,
+		Package: packageName,
+	})
+}
+
+// AssumedPackageName returns the qualifier a rendered helper file writes for an import it
+// adds, as settleImports assumes it. It is the import path's last element, or the one
+// before a major version element, without a go- prefix and cut at the first character an
+// identifier cannot hold.
+//
+// Takes importPath (string) which is the import path.
+//
+// Returns string which is the qualifier.
+func AssumedPackageName(importPath string) string {
+	return assumedPackageName(importPath)
+}
+
 // QueryNames renders exact and prefix SQL lookups for telemetry query names.
 //
-// Prefixes are checked longest first; packages without edited SQL use exact lookup alone.
+// Prefixes are checked longest first. Packages without edited SQL use exact lookup alone.
 //
 // Takes packageName (string) which is the generated package's name.
 // Takes vocabulary (Vocabulary) which names the generated package's identifiers.
@@ -299,9 +452,9 @@ func QueryNames(packageName string, vocabulary Vocabulary, file, function string
 		Flags: map[string]bool{"prefixed": len(prefixes) > 0},
 		Values: map[string]any{
 			"prefixed":    len(prefixes) > 0,
-			"names":       Code{Text: "map[string]string{" + strings.Join(pairs, ", ") + "}", Imports: nil},
-			"prefixes":    Code{Text: "[]string{" + strings.Join(prefixTexts, ", ") + "}", Imports: nil},
-			"prefixNames": Code{Text: "[]string{" + strings.Join(names, ", ") + "}", Imports: nil},
+			"names":       Code{Text: "map[string]string{" + strings.Join(pairs, helperElementSeparator) + helperCompositeClose, Imports: nil},
+			"prefixes":    Code{Text: "[]string{" + strings.Join(prefixTexts, helperElementSeparator) + helperCompositeClose, Imports: nil},
+			"prefixNames": Code{Text: "[]string{" + strings.Join(names, helperElementSeparator) + helperCompositeClose, Imports: nil},
 		},
 		Renames: map[string]string{queryNamesFunction: function},
 		Package: packageName,
@@ -330,8 +483,8 @@ func ConvertStrings(packageName string, vocabulary Vocabulary, conversions Strin
 	})
 }
 
-// Sortable renders sortable.go: the OrderDirection type and its OrderAsc and OrderDesc
-// values, which every sortable query of a package shares.
+// Sortable renders sortable.go. It holds the OrderDirection type and its OrderAsc and
+// OrderDesc values, which every sortable query of a package shares.
 //
 // Takes packageName (string) which is the generated package's name.
 // Takes vocabulary (Vocabulary) which names the generated package's identifiers.
@@ -366,16 +519,16 @@ func regexpList(patterns []string) Code {
 	builder.WriteString("[]*regexp.Regexp{")
 	for index, pattern := range patterns {
 		if index > 0 {
-			builder.WriteString(", ")
+			builder.WriteString(helperElementSeparator)
 		}
 		builder.WriteString("regexp.MustCompile(" + goLiteral(pattern) + ")")
 	}
-	builder.WriteString("}")
+	builder.WriteString(helperCompositeClose)
 	return Code{Text: builder.String(), Imports: nil}
 }
 
-// goLiteral writes a string as a Go literal: raw when it can be, so a regular expression
-// reads as written, and quoted otherwise.
+// goLiteral writes a string as a Go literal. It is raw when it can be, so a regular
+// expression reads as written, and quoted otherwise.
 //
 // Takes text (string) which is the string.
 //
@@ -398,6 +551,6 @@ func allowList(entries []string) Code {
 	for _, entry := range entries {
 		builder.WriteString(strconv.Quote(entry) + ": true,\n")
 	}
-	builder.WriteString("}")
+	builder.WriteString(helperCompositeClose)
 	return Code{Text: builder.String(), Imports: nil}
 }

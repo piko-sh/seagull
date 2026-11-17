@@ -43,7 +43,11 @@ func (p *parser) analyseViewBody(columnNames []string) (*ast.RawQueryAnalysis, *
 	}
 
 	if len(columnNames) > 0 && !slices.ContainsFunc(viewAnalysis.OutputColumns, dialectkit.IsStarColumn) {
-		dialectkit.OverlayViewColumnNames(viewAnalysis, columnNames, dialectkit.UndeclaredColumnsDropped)
+		if overlayErr := dialectkit.OverlayViewColumnNames(viewAnalysis, columnNames, dialectkit.UndeclaredColumnsKept); overlayErr != nil {
+			err := p.syntaxErrorAt(overlayErr.Error())
+			p.recordSyntaxError(err)
+			return nil, nil, err
+		}
 	}
 
 	return viewAnalysis, nil, nil

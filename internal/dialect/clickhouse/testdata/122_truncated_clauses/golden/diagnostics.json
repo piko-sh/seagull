@@ -1,0 +1,42 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 26,
+    "EndColumn": 27,
+    "EndLine": 2,
+    "Filename": "truncated.sql",
+    "Line": 2,
+    "Message": "failed to analyse query \"OrderByJunk\": syntax error near \"k\": expected each ORDER BY key to be one expression",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 22,
+    "EndColumn": 22,
+    "EndLine": 5,
+    "Filename": "truncated.sql",
+    "Line": 5,
+    "Message": "failed to analyse query \"EmptyLimit\": syntax error at end of input: expected a row count",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 31,
+    "EndColumn": 31,
+    "EndLine": 8,
+    "Filename": "truncated.sql",
+    "Line": 8,
+    "Message": "failed to analyse query \"EmptyOffset\": syntax error at end of input: expected a row count",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 36,
+    "EndColumn": 36,
+    "EndLine": 11,
+    "Filename": "truncated.sql",
+    "Line": 11,
+    "Message": "failed to analyse query \"DanglingAnd\": syntax error at end of input: the condition is incomplete",
+    "Severity": "error"
+  }
+]

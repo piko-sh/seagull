@@ -48,7 +48,7 @@ type Option func(*settings)
 
 // settings holds the configuration Options set.
 type settings struct {
-	// logger, when set, replaces the logger carried by each call's context.
+	// logger, when set, is used by calls whose context carries no logger.
 	logger *slog.Logger
 
 	// observer, when set, replaces the observer carried by each call's context.
@@ -190,16 +190,19 @@ func (configured *settings) validateHooks() error {
 	return nil
 }
 
-// contextFor attaches the configured logger and observer, when set, to a context.
+// contextFor attaches the configured observer, when set, to a context, and the configured
+// logger when the context carries none. The logger is resolved here once, so the code it
+// calls reuses it.
 //
 // Returns context.Context which carries the logger and observer.
 func (configured *settings) contextFor(ctx context.Context) context.Context {
 	if configured.logger != nil {
-		ctx = logging.ContextWithLogger(ctx, configured.logger)
+		ctx = logging.WithFallbackLogger(ctx, configured.logger)
 	}
 	if configured.observer != nil {
 		ctx = observe.ContextWithObserver(ctx, configured.observer)
 	}
+	ctx, _ = logging.From(ctx)
 	return ctx
 }
 
@@ -272,8 +275,9 @@ func WithDirectivePrefixes(canonical string, aliases ...string) Option {
 	}
 }
 
-// WithLogger sets the logger every call logs through. Without it a call logs through the
-// logger carried by its context, or slog.Default().
+// WithLogger sets the logger a call logs through when its context carries none. A logger
+// bound into the call's context wins, and without either a call logs through
+// slog.Default().
 //
 // Takes logger (*slog.Logger) which receives the log records; nil keeps the default.
 //

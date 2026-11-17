@@ -78,10 +78,10 @@ func main() {
 	micro := "2024-03-01 12:30:00.123456"
 	day := "2024-03-01"
 	output.record("add_event", func() (any, error) {
-		return "added", queries.AddEvent(ctx, db.AddEventParams{ID: 1, Happened: happened, Precise: "2024-03-01 12:30:00.123", Micro: &micro, Day: &day})
+		return "added", queries.AddEvent(ctx, db.AddEventParams{ID: 1, Happened: happened, Precise: "2024-03-01 12:30:00.123", Micro: db.NullOf(micro), Day: db.NullOf(day)})
 	})
 	output.record("add_event_without_options", func() (any, error) {
-		return "added", queries.AddEvent(ctx, db.AddEventParams{ID: 2, Happened: happened, Precise: "2024-03-02 08:00:00.000", Micro: nil, Day: nil})
+		return "added", queries.AddEvent(ctx, db.AddEventParams{ID: 2, Happened: happened, Precise: "2024-03-02 08:00:00.000", Micro: db.Null[string]{}, Day: db.Null[string]{}})
 	})
 	output.record("event", func() (any, error) {
 		event, err := queries.GetEvent(ctx, 1)
@@ -98,8 +98,8 @@ func main() {
 			return nil, err
 		}
 		return map[string]any{
-			"precise_year": casts.PreciseYear.String(), "day_year": text(casts.DayYear), "happened_year": casts.HappenedYear.String(),
-			"fraction": casts.Fraction.String(), "micro_year": text(casts.MicroYear),
+			"precise_year": casts.PreciseYear.String(), "day_year": text(casts.DayYear.Ptr()), "happened_year": casts.HappenedYear.String(),
+			"fraction": casts.Fraction.String(), "micro_year": text(casts.MicroYear.Ptr()),
 		}, nil
 	})
 	output.record("casts_without_options", func() (any, error) {
@@ -107,7 +107,7 @@ func main() {
 		if err != nil {
 			return nil, err
 		}
-		return map[string]any{"day_year": text(casts.DayYear), "micro_year": text(casts.MicroYear)}, nil
+		return map[string]any{"day_year": text(casts.DayYear.Ptr()), "micro_year": text(casts.MicroYear.Ptr())}, nil
 	})
 	output.record("stored_classes", func() (any, error) {
 		row := conn.QueryRowContext(ctx, "SELECT typeof(happened) || ',' || typeof(precise) || ',' || typeof(micro) || ',' || typeof(day) FROM events WHERE id = 1")

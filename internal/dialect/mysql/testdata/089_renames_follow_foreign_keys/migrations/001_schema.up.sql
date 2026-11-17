@@ -1,0 +1,4 @@
+CREATE TABLE owners (code BIGINT NOT NULL, PRIMARY KEY (code));
+CREATE TABLE pets (id BIGINT NOT NULL PRIMARY KEY, owner BIGINT, CONSTRAINT pets_owner FOREIGN KEY (owner) REFERENCES owners (code));
+ALTER TABLE owners RENAME COLUMN code TO owner_id;
+ALTER TABLE owners RENAME TO keepers;

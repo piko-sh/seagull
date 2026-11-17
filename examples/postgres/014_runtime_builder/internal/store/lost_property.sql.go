@@ -7,7 +7,7 @@ import "context"
 const claimSQL = `UPDATE lost_property SET claimed = true, owner_phone = $1 WHERE id = $2;`
 
 type ClaimParams struct {
-	OwnerPhone *string
+	OwnerPhone Null[string]
 	ID         int64
 }
 
@@ -76,7 +76,7 @@ func (builder *SearchUnclaimedBuilder) Where(column string, operator string, val
 }
 
 func (builder *SearchUnclaimedBuilder) OrderBy(column string, direction string) *SearchUnclaimedBuilder {
-	order, err := sglNewOrder(column, direction, searchUnclaimedAllowedColumns)
+	order, err := sglNewOrder(column, direction, searchUnclaimedAllowedColumns, false)
 	if err != nil {
 		if builder.pendingError == nil {
 			builder.pendingError = err

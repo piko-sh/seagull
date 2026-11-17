@@ -15,21 +15,21 @@ FROM landings
 WHERE id = $1;`
 
 type GetLandingRow struct {
-	ID         int64     `json:"id"`
-	Species    string    `json:"species"`
-	Quay       uint8     `json:"quay"`
-	Boxes      int16     `json:"boxes"`
-	Fish       int32     `json:"fish"`
-	WeightG    int64     `json:"weight_g"`
-	LengthCm   float64   `json:"length_cm"`
-	WaterTemp  float32   `json:"water_temp"`
-	OnIce      bool      `json:"on_ice"`
-	LandedAt   time.Time `json:"landed_at"`
-	LandedOn   time.Time `json:"landed_on"`
-	CatchID    uuid.UUID `json:"catch_id"`
-	AuctionLot *big.Int  `json:"auction_lot"`
-	Tag        []byte    `json:"tag"`
-	Notes      *string   `json:"notes"`
+	ID         int64        `json:"id"`
+	Species    string       `json:"species"`
+	Quay       uint8        `json:"quay"`
+	Boxes      int16        `json:"boxes"`
+	Fish       int32        `json:"fish"`
+	WeightG    int64        `json:"weight_g"`
+	LengthCm   float64      `json:"length_cm"`
+	WaterTemp  float32      `json:"water_temp"`
+	OnIce      bool         `json:"on_ice"`
+	LandedAt   time.Time    `json:"landed_at"`
+	LandedOn   time.Time    `json:"landed_on"`
+	CatchID    uuid.UUID    `json:"catch_id"`
+	AuctionLot *big.Int     `json:"auction_lot"`
+	Tag        []byte       `json:"tag"`
+	Notes      Null[string] `json:"notes"`
 }
 
 func (queries *Queries) GetLanding(ctx context.Context, id int64) (GetLandingRow, error) {
@@ -59,7 +59,7 @@ type RecordLandingParams struct {
 	CatchID    uuid.UUID
 	AuctionLot *big.Int
 	Tag        []byte
-	Notes      *string
+	Notes      Null[string]
 }
 
 type RecordLandingRow struct {
@@ -68,7 +68,7 @@ type RecordLandingRow struct {
 
 func (queries *Queries) RecordLanding(ctx context.Context, params RecordLandingParams) (RecordLandingRow, error) {
 	var row RecordLandingRow
-	err := queries.writer.QueryRowContext(ctx, recordLandingSQL, params.Species, params.Quay, params.Boxes, params.Fish, params.WeightG, params.LengthCm, params.WaterTemp, params.OnIce, params.LandedAt, params.LandedOn, params.CatchID, params.AuctionLot, params.Tag, params.Notes).Scan(&row.ID)
+	err := queries.writer.QueryRowContext(ctx, recordLandingSQL, params.Species, params.Quay, params.Boxes, params.Fish, params.WeightG, params.LengthCm, params.WaterTemp, params.OnIce, params.LandedAt, params.LandedOn, params.CatchID, params.AuctionLot, sglNonNil(params.Tag), params.Notes).Scan(&row.ID)
 	if err != nil {
 		return RecordLandingRow{}, err
 	}

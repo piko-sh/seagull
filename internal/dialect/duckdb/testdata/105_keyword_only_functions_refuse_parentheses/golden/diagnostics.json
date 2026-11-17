@@ -1,0 +1,42 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 20,
+    "EndColumn": 21,
+    "EndLine": 2,
+    "Filename": "clock.sql",
+    "Line": 2,
+    "Message": "failed to analyse query \"TimeCall\": syntax error near \"(\": DuckDB writes CURRENT_TIME without parentheses",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 25,
+    "EndColumn": 26,
+    "EndLine": 5,
+    "Filename": "clock.sql",
+    "Line": 5,
+    "Message": "failed to analyse query \"TimestampCall\": syntax error near \"(\": DuckDB writes CURRENT_TIMESTAMP without parentheses",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 17,
+    "EndColumn": 18,
+    "EndLine": 8,
+    "Filename": "clock.sql",
+    "Line": 8,
+    "Message": "failed to analyse query \"LocalTimeCall\": syntax error near \"(\": DuckDB writes LOCALTIME without parentheses",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 22,
+    "EndColumn": 23,
+    "EndLine": 11,
+    "Filename": "clock.sql",
+    "Line": 11,
+    "Message": "failed to analyse query \"LocalTimestampCall\": syntax error near \"(\": DuckDB writes LOCALTIMESTAMP without parentheses",
+    "Severity": "error"
+  }
+]

@@ -62,15 +62,15 @@ func main() {
 	queries := db.New(conn)
 	output := results{}
 	output.record("add_owned", func() (any, error) {
-		return "added", queries.AddToken(ctx, db.AddTokenParams{ID: 1, Owner: &owner, Label: "owned"})
+		return "added", queries.AddToken(ctx, db.AddTokenParams{ID: 1, Owner: db.NullOf(owner), Label: "owned"})
 	})
 	output.record("add_unowned", func() (any, error) {
-		return "added", queries.AddToken(ctx, db.AddTokenParams{ID: 2, Owner: nil, Label: "unowned"})
+		return "added", queries.AddToken(ctx, db.AddTokenParams{ID: 2, Owner: db.Null[uuid.UUID]{}, Label: "unowned"})
 	})
 	output.record("search_any_owner", func() (any, error) { return queries.SearchTokens(ctx, db.SearchTokensParams{Owner: nil}) })
 	output.record("search_owner", func() (any, error) { return queries.SearchTokens(ctx, db.SearchTokensParams{Owner: &owner}) })
-	output.record("of_no_owner", func() (any, error) { return queries.TokensOf(nil).Count(ctx) })
-	output.record("of_owner", func() (any, error) { return queries.TokensOf(&owner).All(ctx) })
+	output.record("of_no_owner", func() (any, error) { return queries.TokensOf(db.Null[uuid.UUID]{}).Count(ctx) })
+	output.record("of_owner", func() (any, error) { return queries.TokensOf(db.NullOf(owner)).All(ctx) })
 	output.record("tokens", func() (any, error) { return queries.ListTokens(ctx) })
 
 	encoder := json.NewEncoder(os.Stdout)

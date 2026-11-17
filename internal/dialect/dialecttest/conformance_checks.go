@@ -31,6 +31,9 @@ import (
 	"seagull.sh/seagull/internal/sqlmodel"
 )
 
+// conformanceItemsMigration names the shared items migration.
+const conformanceItemsMigration = "001_items.up.sql"
+
 const (
 	// quotedTableName is the table name QuotedMigration must create.
 	quotedTableName = "weird name"
@@ -108,7 +111,7 @@ func checkBeginAlias(ctx context.Context, _ checkEnvironment, fixture *Fixture) 
 // Returns checkOutcome which holds any problem found.
 func checkParameterTracking(ctx context.Context, _ checkEnvironment, fixture *Fixture) checkOutcome {
 	emitter, _, err := runGenerate(ctx, fixture.NewDialect(),
-		map[string]string{"001_items.up.sql": fixture.BaseMigration},
+		map[string]string{conformanceItemsMigration: fixture.BaseMigration},
 		map[string]string{"get_item.sql": fixture.ParamQuery})
 	if err != nil {
 		return failed(generationFailedFormat, err)
@@ -154,7 +157,7 @@ func checkCommentStripping(ctx context.Context, _ checkEnvironment, fixture *Fix
 		fixture.BaseMigration + "\n" +
 		"-- trailing comment\n"
 	emitter, _, err := runGenerate(ctx, fixture.NewDialect(),
-		map[string]string{"001_items.up.sql": migration}, nil)
+		map[string]string{conformanceItemsMigration: migration}, nil)
 	if err != nil {
 		return failed("generation should succeed despite surrounding comments: %v", err)
 	}
@@ -174,7 +177,7 @@ func checkUnterminatedBlockComment(ctx context.Context, _ checkEnvironment, fixt
 	engine := fixture.NewDialect()
 	query := directiveLine(engine, "Broken", "one") + "SELECT id FROM items /* unterminated"
 	_, result, err := runGenerate(ctx, engine,
-		map[string]string{"001_items.up.sql": fixture.BaseMigration},
+		map[string]string{conformanceItemsMigration: fixture.BaseMigration},
 		map[string]string{"broken.sql": query})
 	if err != nil {
 		return failed(generationFatalFormat, err)
@@ -270,7 +273,7 @@ func checkPlaceholders(ctx context.Context, _ checkEnvironment, fixture *Fixture
 		return notApplicable("the fixture sets no PlaceholderQuery")
 	}
 	emitter, result, err := runGenerate(ctx, fixture.NewDialect(),
-		map[string]string{"001_items.up.sql": fixture.BaseMigration},
+		map[string]string{conformanceItemsMigration: fixture.BaseMigration},
 		map[string]string{"placeholders.sql": fixture.PlaceholderQuery})
 	if err != nil {
 		return failed(generationFailedFormat, err)
@@ -295,7 +298,7 @@ func checkPlaceholders(ctx context.Context, _ checkEnvironment, fixture *Fixture
 func checkTrailingTokens(ctx context.Context, _ checkEnvironment, fixture *Fixture) checkOutcome {
 	query := strings.TrimSuffix(strings.TrimSpace(fixture.ParamQuery), ";") + trailingTokens + ";"
 	_, result, err := runGenerate(ctx, fixture.NewDialect(),
-		map[string]string{"001_items.up.sql": fixture.BaseMigration},
+		map[string]string{conformanceItemsMigration: fixture.BaseMigration},
 		map[string]string{"trailing.sql": query})
 	if err != nil {
 		return failed(generationFatalFormat, err)
@@ -315,7 +318,7 @@ func checkTrailingTokens(ctx context.Context, _ checkEnvironment, fixture *Fixtu
 // Returns checkOutcome which holds any problem found.
 func checkByteOrderMarkMigration(ctx context.Context, _ checkEnvironment, fixture *Fixture) checkOutcome {
 	emitter, result, err := runGenerate(ctx, fixture.NewDialect(),
-		map[string]string{"001_items.up.sql": byteOrderMark + fixture.BaseMigration}, nil)
+		map[string]string{conformanceItemsMigration: byteOrderMark + fixture.BaseMigration}, nil)
 	if err != nil {
 		return failed(generationFailedFormat, err)
 	}
@@ -336,7 +339,7 @@ func checkByteOrderMarkMigration(ctx context.Context, _ checkEnvironment, fixtur
 // Returns checkOutcome which holds any problem found.
 func checkByteOrderMarkQuery(ctx context.Context, _ checkEnvironment, fixture *Fixture) checkOutcome {
 	emitter, result, err := runGenerate(ctx, fixture.NewDialect(),
-		map[string]string{"001_items.up.sql": fixture.BaseMigration},
+		map[string]string{conformanceItemsMigration: fixture.BaseMigration},
 		map[string]string{"get_item.sql": byteOrderMark + fixture.ParamQuery})
 	if err != nil {
 		return failed(generationFailedFormat, err)

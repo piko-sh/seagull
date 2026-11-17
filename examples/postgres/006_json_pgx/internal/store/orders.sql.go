@@ -18,12 +18,17 @@ type GetOrderRow struct {
 }
 
 func (queries *Queries) GetOrder(ctx context.Context, id int64) (GetOrderRow, error) {
-	var row GetOrderRow
-	err := queries.db.QueryRow(ctx, getOrderSQL, id).Scan(&row.ID, &row.Customer, &row.Basket, &row.Delivery)
+	scanned := &struct {
+		row     GetOrderRow
+		targets [4]any
+	}{}
+	row := &scanned.row
+	scanned.targets = [4]any{&row.ID, &row.Customer, &row.Basket, &row.Delivery}
+	err := queries.db.QueryRow(ctx, getOrderSQL, id).Scan(scanned.targets[:]...)
 	if err != nil {
 		return GetOrderRow{}, err
 	}
-	return row, nil
+	return *row, nil
 }
 
 const ordersContainingSQL = `SELECT id, customer
@@ -70,10 +75,10 @@ WHERE basket ->> 'fish' = $1
 ORDER BY id;`
 
 type OrdersWithFishRow struct {
-	ID       int64   `json:"id"`
-	Customer string  `json:"customer"`
-	Extras   JSON    `json:"extras"`
-	Address  *string `json:"address"`
+	ID       int64        `json:"id"`
+	Customer string       `json:"customer"`
+	Extras   JSON         `json:"extras"`
+	Address  Null[string] `json:"address"`
 }
 
 func (queries *Queries) OrdersWithFish(ctx context.Context, fish string) ([]OrdersWithFishRow, error) {

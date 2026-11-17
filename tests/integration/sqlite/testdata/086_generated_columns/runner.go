@@ -89,7 +89,7 @@ func main() {
 	}
 
 	minTotal := int64(50)
-	byMinTotal, err := queries.ListByMinTotal(ctx, &minTotal)
+	byMinTotal, err := queries.ListByMinTotal(ctx, db.NullOf(minTotal))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "ListByMinTotal:", err)
 		os.Exit(1)

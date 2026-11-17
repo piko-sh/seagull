@@ -884,6 +884,10 @@ func TestFlatSetOperationChainsParseIteratively(t *testing.T) {
 		{name: "UNION ALL", operator: " UNION ALL ", want: ast.CompoundUnionAll},
 		{name: "UNION", operator: " UNION ", want: ast.CompoundUnion},
 		{name: "INTERSECT", operator: " INTERSECT ", want: ast.CompoundIntersect},
+		{name: "INTERSECT DISTINCT", operator: " INTERSECT DISTINCT ", want: ast.CompoundIntersect},
+		{name: "INTERSECT ALL", operator: " INTERSECT ALL ", want: ast.CompoundIntersect},
+		{name: "EXCEPT DISTINCT", operator: " EXCEPT DISTINCT ", want: ast.CompoundExcept},
+		{name: "EXCEPT ALL", operator: " EXCEPT ALL ", want: ast.CompoundExcept},
 		{name: "EXCEPT", operator: " EXCEPT ", want: ast.CompoundExcept},
 	}
 	const arms = 10_000

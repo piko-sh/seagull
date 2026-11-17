@@ -86,9 +86,9 @@ type TypeResolver struct {
 	// resolution reports and clears them.
 	notices []*Error
 
-	// depthLimits holds, one of each, the depth limits the walks that report nothing as they
-	// go, the silent scope builder and the data-access walk, reached while the current query
-	// was resolved; TakeDepthLimits reports and clears them.
+	// depthLimits holds distinct depth warnings from silent resolution walks.
+	//
+	// TakeDepthLimits reports and clears them after the query is resolved.
 	depthLimits []*Error
 
 	// parameterComparisons maps the number of each parameter of the query being resolved
@@ -159,6 +159,18 @@ type TypeResolver struct {
 	// Info.
 	expressions ast.ExpressionFeature
 
+	// computedTemporalAsText types a computed date or timestamp as text, read once from the
+	// dialect's Info.
+	computedTemporalAsText bool
+
+	// constantMembership refuses an IN list holding a value read from the row, read once
+	// from the dialect's Info.
+	constantMembership bool
+
+	// columnLists says which column lists of another length than their relation the engine
+	// takes, read once from the dialect's Info.
+	columnLists dialect.ColumnListSyntax
+
 	// ungroupedColumns is how the engine treats a column read outside every aggregate of a
 	// query that aggregates without GROUP BY, read once from the dialect's Info.
 	ungroupedColumns dialect.UngroupedColumnRule
@@ -188,32 +200,35 @@ func NewTypeResolver(
 ) *TypeResolver {
 	info := engine.Info()
 	return &TypeResolver{
-		catalogue:            catalogue,
-		functionResolver:     functionResolver,
-		engine:               engine,
-		operatorFeatures:     info.OperatorFeatures,
-		core:                 engine.CoreTypes(),
-		scopeRules:           ScopeRulesFor(engine),
-		expressions:          info.Expressions,
-		argumentNames:        nil,
-		clauseExpressions:    nil,
-		assigned:             assignedParameters{embedded: nil, partial: nil, calls: nil, operands: nil},
-		parameterComparisons: nil,
-		comparedParameters:   nil,
-		parameterColumns:     nil,
-		comparedColumns:      nil,
-		parameterPatterns:    nil,
-		comparedPatterns:     nil,
-		parameterNames:       nil,
-		comparedNames:        nil,
-		notices:              nil,
-		depthLimits:          nil,
-		lambdaParameters:     nil,
-		offeredElements:      nil,
-		typedArguments:       nil,
-		resolvedCalls:        nil,
-		ungroupedColumns:     info.UngroupedColumns,
-		expressionDepth:      0,
+		catalogue:              catalogue,
+		functionResolver:       functionResolver,
+		engine:                 engine,
+		operatorFeatures:       info.OperatorFeatures,
+		core:                   engine.CoreTypes(),
+		scopeRules:             ScopeRulesFor(engine),
+		expressions:            info.Expressions,
+		argumentNames:          nil,
+		clauseExpressions:      nil,
+		assigned:               assignedParameters{embedded: nil, partial: nil, calls: nil, operands: nil},
+		parameterComparisons:   nil,
+		comparedParameters:     nil,
+		parameterColumns:       nil,
+		comparedColumns:        nil,
+		parameterPatterns:      nil,
+		comparedPatterns:       nil,
+		parameterNames:         nil,
+		comparedNames:          nil,
+		notices:                nil,
+		depthLimits:            nil,
+		lambdaParameters:       nil,
+		offeredElements:        nil,
+		typedArguments:         nil,
+		resolvedCalls:          nil,
+		ungroupedColumns:       info.UngroupedColumns,
+		computedTemporalAsText: info.ComputedTemporalAsText,
+		constantMembership:     info.ConstantMembershipLists,
+		columnLists:            info.ColumnLists,
+		expressionDepth:        0,
 	}
 }
 
@@ -323,6 +338,11 @@ func (r *TypeResolver) ResolveParameters(
 
 	parameters := collectParameters(parameterTypes)
 	disambiguateParameterNames(parameters)
+	for index := range parameters {
+		if parameters[index].Placeholder == parameters[index].Name {
+			parameters[index].Placeholder = ""
+		}
+	}
 	return parameters, diagnostics
 }
 
@@ -441,10 +461,17 @@ func (*TypeResolver) resolveColumnRefOutput(
 	sourceTable := ""
 	sourceSchema := ""
 	sourceQualifier := ""
+	sourceColumn := column.Name
+	if table == nil && scope.keywordValue(raw.TableAlias, raw.ColumnName) {
+		sourceColumn = ""
+	}
 	if table != nil {
 		sourceTable = table.Name
 		sourceSchema = table.Schema
 		sourceQualifier = table.Alias
+		if scope.isArrayJoinElement(table.Alias, column.Name) {
+			sourceQualifier = ""
+		}
 	}
 
 	return []sqlmodel.OutputColumn{{
@@ -453,7 +480,7 @@ func (*TypeResolver) resolveColumnRefOutput(
 		Nullable:        column.Nullable,
 		SourceTable:     sourceTable,
 		SourceSchema:    sourceSchema,
-		SourceColumn:    column.Name,
+		SourceColumn:    sourceColumn,
 		SourceQualifier: sourceQualifier,
 		GoTypeOverride:  nil,
 		StructTags:      nil,
@@ -504,6 +531,9 @@ func (r *TypeResolver) resolveExpressionOutput(
 		outputName = "?column?"
 	}
 
+	if r.computedTemporalAsText && readsAsComputedTime(sqlType, raw.Expression) {
+		sqlType = r.core.Text
+	}
 	output := NewOutputColumn(outputName, sqlType, nullable)
 	castLimited := applyCastColumnSource(&output, raw.Expression, scope)
 	if nameLimited || castLimited {
@@ -663,6 +693,9 @@ func (r *TypeResolver) upsertParameterType(
 	directiveNameMap map[string]*directive.ParameterDirective,
 ) {
 	if existing, exists := parameterTypes[raw.Number]; exists {
+		if raw.Name != "" {
+			existing.Placeholder = raw.Name
+		}
 		r.mergeExistingParameterType(existing, sqlType, nullable, raw.CastType != nil)
 
 		if raw.Context == sqlmodel.ParameterContextLimit || raw.Context == sqlmodel.ParameterContextOffset {
@@ -675,7 +708,7 @@ func (r *TypeResolver) upsertParameterType(
 	parameterTypes[raw.Number] = &sqlmodel.QueryParameter{
 		Number:          raw.Number,
 		Name:            r.parameterName(raw, directiveNumberMap, directiveNameMap),
-		Placeholder:     "",
+		Placeholder:     raw.Name,
 		SQLType:         sqlType,
 		Nullable:        nullable,
 		Context:         raw.Context,
@@ -1180,83 +1213,6 @@ func directiveParameter(
 	return parameter, true
 }
 
-// applyCastColumnSource records the underlying source column of an output expression that
-// is a column reference wrapped in nothing but CASTs, so a cast-only projection such as
-// page_id::content.uuid_v4 keeps the source metadata a bare column reference would carry.
-//
-// Cast-only projections retain their source for the dynamic runtime builder's allow-list
-// and for column overrides and array wrapping. The expression resolver still determines
-// the cast result's type and nullability. Other expression shapes, such as a function
-// call, arithmetic or COALESCE, are left without a source.
-//
-// Takes output (*sqlmodel.OutputColumn) which receives the resolved source metadata.
-// Takes expression (ast.Expression) which is the output column's expression.
-// Takes scope (*ScopeChain) which resolves the underlying column.
-//
-// Returns bool which is true when the chain of casts ran past the depth limit, so the
-// column behind it was not found.
-func applyCastColumnSource(
-	output *sqlmodel.OutputColumn,
-	expression ast.Expression,
-	scope *ScopeChain,
-) bool {
-	reference, limited := unwrapCasts(expression)
-	if reference == nil {
-		return limited
-	}
-	column, table, resolveError := scope.ResolveColumn(reference.TableAlias, reference.ColumnName)
-	if resolveError != nil || column == nil {
-		return false
-	}
-	output.SourceColumn = column.Name
-	if table != nil {
-		output.SourceTable = table.Name
-		output.SourceSchema = table.Schema
-		output.SourceQualifier = table.Alias
-	}
-	return false
-}
-
-// unwrapCastToColumnRef peels any chain of CAST expressions and returns the column
-// reference they wrap, or nil when the expression is not a column reference behind zero
-// or more casts.
-//
-// Takes expression (ast.Expression) which is the expression to peel.
-//
-// Returns *ast.ColumnRefExpression which is the wrapped column reference, or nil when the
-// expression is not a column behind zero or more casts.
-func unwrapCastToColumnRef(expression ast.Expression) *ast.ColumnRefExpression {
-	reference, _ := unwrapCasts(expression)
-	return reference
-}
-
-// unwrapCasts peels a chain of CAST expressions as unwrapCastToColumnRef does, and says
-// when the chain ran past the depth limit.
-//
-// Takes expression (ast.Expression) which is the expression to peel.
-//
-// Returns *ast.ColumnRefExpression which is the wrapped column reference, or nil.
-// Returns bool which is true when the chain is longer than MaxExpressionResolveDepth, so
-// it was not followed to its end.
-func unwrapCasts(expression ast.Expression) (*ast.ColumnRefExpression, bool) {
-	for range MaxExpressionResolveDepth {
-		switch typed := expression.(type) {
-		case *ast.ColumnRefExpression:
-			return typed, false
-		case *ast.CastExpression:
-			if typed == nil {
-				return nil, false
-			}
-			expression = typed.Inner
-		default:
-			return nil, false
-		}
-	}
-	_, stillCast := expression.(*ast.CastExpression)
-	_, column := expression.(*ast.ColumnRefExpression)
-	return nil, stillCast || column
-}
-
 // inferExpressionName produces a reasonable column name for an unaliased SELECT
 // expression.
 //
@@ -1444,16 +1400,15 @@ func positionalName(number int) string {
 	return fmt.Sprintf("p%d", number)
 }
 
-// disambiguateParameterNames suffixes duplicate parameter names with a 1-based ordinal so
-// each name is unique within the query.
+// disambiguateParameterNames gives each query parameter a unique display name.
 //
 // A name the query, a directive or a signature gives keeps its bare form ahead of a
-// positional pN fallback that happens to spell the same; otherwise the first occurrence
-// keeps its bare name and later ones get suffixes (`_2`, `_3`, ...) in declaration order,
-// so suffixes are stable across runs.
+// positional pN fallback with the same spelling. Otherwise the first occurrence keeps its
+// bare name. Later occurrences receive stable suffixes in declaration order, skipping
+// names already declared by other parameters.
 //
 // Takes parameters ([]sqlmodel.QueryParameter) which holds the parameters to disambiguate
-// in place; the caller must pass them in ordinal (Number-ascending) order.
+// in place. The caller must pass them in ascending Number order.
 func disambiguateParameterNames(parameters []sqlmodel.QueryParameter) {
 	if len(parameters) < 2 {
 		return
@@ -1486,7 +1441,13 @@ func disambiguateParameterNames(parameters []sqlmodel.QueryParameter) {
 		if seen[name] == 1 {
 			continue
 		}
-		parameters[index].Name = fmt.Sprintf("%s_%d", name, seen[name])
+		candidate := fmt.Sprintf("%s_%d", name, seen[name])
+		for counts[candidate] > 0 {
+			seen[name]++
+			candidate = fmt.Sprintf("%s_%d", name, seen[name])
+		}
+		parameters[index].Name = candidate
+		counts[candidate] = 1
 	}
 }
 

@@ -20,7 +20,7 @@ func (queries *Queries) FilterColours(ctx context.Context, colour []string) ([]F
 	var results []FilterColoursRow
 	if rows.Next() {
 		var row FilterColoursRow
-		scanArgs := []any{&row.ID, &row.Name}
+		scanArgs := []any{pikoScanNumber(&row.ID), &row.Name}
 		for more := true; more; more = rows.Next() {
 			row = FilterColoursRow{}
 			if err := rows.Scan(scanArgs...); err != nil {

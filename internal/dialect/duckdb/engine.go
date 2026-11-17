@@ -544,11 +544,17 @@ func (engine *Dialect) PromoteType(
 		return across
 	}
 	if left.Category != right.Category {
+		if right.Category == sqlmodel.TypeCategoryText {
+			return right
+		}
 		return left
 	}
 
 	switch left.Category {
 	case sqlmodel.TypeCategoryInteger:
+		if left.Unsigned != right.Unsigned {
+			return mixedSignIntegerType(left, right)
+		}
 		if promotionRank(right) > promotionRank(left) {
 			return right
 		}
@@ -884,6 +890,18 @@ var (
 		statementKindDelete: dialectkit.ChangingRows(ast.DataChangeDelete, (*parser).analyseDelete),
 		statementKindValues: (*parser).analyseSelect,
 	}
+
+	// signedIntegerLadder lists DuckDB's signed integer types from narrowest to widest, the
+	// types a signed and an unsigned integer can meet in.
+	signedIntegerLadder = []struct {
+		name  string
+		width int
+	}{
+		{name: "int2", width: widthSmallint},
+		{name: "int4", width: widthInteger},
+		{name: "int8", width: widthBigint},
+		{name: "hugeint", width: widthHugeint},
+	}
 )
 
 // WithName sets the name the dialect reports in Info, for a flavour built on this
@@ -1181,19 +1199,27 @@ func describe(name string) dialect.Info {
 			ast.SQLFeatureLambda |
 			ast.SQLFeatureStructFieldAccess |
 			ast.SQLFeatureStructConstruction,
-		Returning:              ast.DataChangeInsert | ast.DataChangeUpdate | ast.DataChangeDelete,
-		AsyncMutations:         false,
-		ScalarFunctionsInFrom:  false,
-		UngroupedColumns:       dialect.UngroupedColumnsRejected,
-		ViewsFollowTheirTables: true,
-		IdentifierQuote:        dialect.IdentifierQuote{Open: `"`, Close: `"`},
-		Drivers:                []string{driverDuckDB},
-		ToJSON:                 "to_json",
-		TextType:               "VARCHAR",
-		Filters:                dialect.FilterSyntax{Operators: filterOperators, JSONPathFunctions: jsonPathFunctions, Casts: castForms, CastTypes: castTypes},
-		Lists:                  listSyntax,
-		Pagination:             paginationSyntax,
-		MaxParameters:          maxParameters,
+		Returning:               ast.DataChangeInsert | ast.DataChangeUpdate | ast.DataChangeDelete,
+		AsyncMutations:          false,
+		ScalarFunctionsInFrom:   false,
+		UngroupedColumns:        dialect.UngroupedColumnsRejected,
+		ViewsFollowTheirTables:  true,
+		ComputedTemporalAsText:  false,
+		ConstantMembershipLists: false,
+		ColumnLists:             dialect.ColumnListSyntax{ShortCTE: true, SurplusCTE: true, ShortDerived: true, NoDerivedLists: false},
+		ViewsOnRename:           dialect.ViewsBreak,
+		ViewsOnDrop:             dialect.ViewsBreak,
+		IdentifierQuote:         dialect.IdentifierQuote{Open: `"`, Close: `"`},
+		Drivers:                 []string{driverDuckDB},
+		ToJSON:                  "to_json",
+		FloatBits:               dialect.FloatBitsSyntax{Single: "", Double: "", Arrow: ""},
+		TextType:                "VARCHAR",
+		Filters:                 dialect.FilterSyntax{Operators: filterOperators, JSONPathFunctions: jsonPathFunctions, Casts: castForms, CastTypes: castTypes},
+		Lists:                   listSyntax,
+		Pagination:              paginationSyntax,
+		Ordering:                dialect.OrderingSyntax{NullsFirstAscending: false, NullsFirstDescending: false, NullsByIsNull: false, DistinctNullsDefaultOnly: false},
+		MaxParameters:           maxParameters,
+		ConstraintNames:         dialect.ConstraintNamesNone,
 	}
 	return info.Clone()
 }
@@ -1282,4 +1308,25 @@ func withConflictActionRecorded(analysis *ast.RawQueryAnalysis) *ast.RawQueryAna
 		analysis.ConflictAction = ast.ConflictActionNone
 	}
 	return analysis
+}
+
+// mixedSignIntegerType returns the type DuckDB gives a signed and an unsigned integer
+// together. This is the narrowest signed integer wider than the unsigned one and as wide
+// as the signed one, or a DOUBLE when the unsigned one is a UHUGEINT.
+//
+// Takes left (sqlmodel.SQLType) which is the first integer type.
+// Takes right (sqlmodel.SQLType) which is the second, of the other signedness.
+//
+// Returns sqlmodel.SQLType which is the common type.
+func mixedSignIntegerType(left, right sqlmodel.SQLType) sqlmodel.SQLType {
+	signed, unsigned := left, right
+	if left.Unsigned {
+		signed, unsigned = right, left
+	}
+	for _, candidate := range signedIntegerLadder {
+		if candidate.width > unsigned.Width && candidate.width >= signed.Width {
+			return sqlmodel.NewIntegerType(candidate.name, candidate.width, false)
+		}
+	}
+	return sqlmodel.NewFloatType("float8", widthDouble)
 }

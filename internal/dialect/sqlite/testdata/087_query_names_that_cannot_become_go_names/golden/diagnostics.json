@@ -1,0 +1,82 @@
+[
+  {
+    "Code": "Q028",
+    "Column": 14,
+    "EndColumn": 15,
+    "EndLine": 1,
+    "Filename": "digit_name.sql",
+    "Line": 1,
+    "Message": "invalid value for keyword argument \"name\": expected a name that starts with a letter and holds only letters, digits and underscores, such as GetUser",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q028",
+    "Column": 14,
+    "EndColumn": 22,
+    "EndLine": 1,
+    "Filename": "dotted_name.sql",
+    "Line": 1,
+    "Message": "invalid value for keyword argument \"name\": expected a name that starts with a letter and holds only letters, digits and underscores, such as GetUser",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q028",
+    "Column": 14,
+    "EndColumn": 15,
+    "EndLine": 1,
+    "Filename": "name_and_statement.sql",
+    "Line": 1,
+    "Message": "invalid value for keyword argument \"name\": expected a name that starts with a letter and holds only letters, digits and underscores, such as GetUser",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 1,
+    "EndColumn": 5,
+    "EndLine": 2,
+    "Filename": "name_and_statement.sql",
+    "Line": 2,
+    "Message": "failed to analyse query \"0\": syntax error near \"0000\": expected a statement SQLite runs",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q028",
+    "Column": 14,
+    "EndColumn": 19,
+    "EndLine": 1,
+    "Filename": "name_without_command.sql",
+    "Line": 1,
+    "Message": "invalid value for keyword argument \"name\": expected a name that starts with a letter and holds only letters, digits and underscores, such as GetUser",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q031",
+    "Column": 19,
+    "EndColumn": 20,
+    "EndLine": 1,
+    "Filename": "name_without_command.sql",
+    "Line": 1,
+    "Message": "missing required command on sgl.query",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q032",
+    "Column": 15,
+    "EndColumn": 15,
+    "EndLine": 2,
+    "Filename": "name_without_command.sql",
+    "Line": 2,
+    "Message": "unclosed sgl.column; expected matching ')'",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q031",
+    "Column": 14,
+    "EndColumn": 15,
+    "EndLine": 2,
+    "Filename": "name_without_command.sql",
+    "Line": 2,
+    "Message": "missing required name on sgl.column",
+    "Severity": "error"
+  }
+]

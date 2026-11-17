@@ -1,0 +1,4 @@
+{
+  "description": "SQLite refuses a CTE column list naming fewer or more columns than the CTE returns.",
+  "expectedDiagnosticCount": 2
+}

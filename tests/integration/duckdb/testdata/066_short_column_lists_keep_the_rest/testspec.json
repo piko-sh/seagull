@@ -1,0 +1,3 @@
+{
+  "description": "A view, CTE or derived table column list naming fewer columns than its query renames the leading columns and keeps the rest, so reading every column scans each one the engine returns."
+}

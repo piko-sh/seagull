@@ -1436,6 +1436,7 @@ func TestTokeniserSpansMatchSharedScanner(t *testing.T) {
 	samples := []string{
 		"SELECT 'a\\'b', 'c''d', X'0F', b'10', `q``x`, \"r\"\"s\" # c\nFROM t -- d\n/* e */;",
 		"SELECT ?, ?1, :name, @var, @@session.sql_mode, 1--1;",
+		"SELECT @price$usd, @price.usd, @'price usd', @\"price usd\", @`price usd`, @'quo''te', @'semi;colon';",
 	}
 	for index, sample := range samples {
 		files = append(files, lexdiff.File{Path: "sample " + string(rune('a'+index)), Content: sample})
@@ -1466,6 +1467,14 @@ func spanTokens(source string, tokens []token) []dialecttest.Token {
 			continue
 		}
 		result = append(result, dialecttest.Token{Position: current.Start, Class: spanClass(source, current)})
+		if current.Kind == tokenUserVariable && len(current.Raw) > 1 {
+			switch current.Raw[1] {
+			case '`':
+				result = append(result, dialecttest.Token{Position: current.Start + 1, Class: dialecttest.TokenQuotedIdentifier})
+			case '\'', '"':
+				result = append(result, dialecttest.Token{Position: current.Start + 1, Class: dialecttest.TokenString})
+			}
+		}
 	}
 	return result
 }
@@ -1505,4 +1514,35 @@ func insideAny(ranges [][2]int, offset int) bool {
 		}
 	}
 	return false
+}
+
+func TestTokeniserPreservesUserVariableNames(t *testing.T) {
+	for _, variable := range []string{"@price$usd", "@price$", "@$price", "@price.usd", "@42", "@'price usd'", "@\"price usd\"", "@`price usd`", "@'quo''te'", "@'semi;colon'", "@`quo``te`", "@'quote\\'name'", "@\"quote\\\"name\""} {
+		t.Run(variable, func(t *testing.T) {
+			tokens, err := tokenise(variable)
+			require.NoError(t, err)
+			require.Len(t, tokens, 2)
+			require.Equal(t, tokenUserVariable, tokens[0].Kind)
+			require.Equal(t, variable, tokens[0].Value)
+			require.Equal(t, variable, tokens[0].Raw)
+			require.Equal(t, 0, tokens[0].Start)
+			require.Equal(t, len(variable), tokens[0].End)
+		})
+	}
+}
+
+func TestTokeniserRejectsUnterminatedUserVariableNames(t *testing.T) {
+	for _, variable := range []string{"@'open", "@\"open", "@`open"} {
+		t.Run(variable, func(t *testing.T) {
+			requireTokeniseError(t, variable, "unterminated")
+		})
+	}
+}
+
+func TestTokeniserPreservesANSIQuotedUserVariableNames(t *testing.T) {
+	for _, variable := range []string{`@"price usd"`, `@"quo""te"`, `@"price\"`} {
+		t.Run(variable, func(t *testing.T) {
+			requireTokensFrom(t, tokeniseANSIQuotes, variable, []token{{Kind: tokenUserVariable, Value: variable}})
+		})
+	}
 }

@@ -144,6 +144,7 @@ func DefaultSettings() Settings {
 			Interface:            emit.Interface{Enabled: false, Name: DefaultInterfaceName},
 			JSONTags:             emit.JSONTags{Case: emit.JSONCaseAsWritten, Omit: false, OmitEmpty: false},
 			EmptySlices:          false,
+			NullablePointers:     false,
 			DocComments:          false,
 			ReuseModels:          false,
 			ModernIdioms:         true,

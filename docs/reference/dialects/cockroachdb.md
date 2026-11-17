@@ -77,7 +77,11 @@ The [engine guide](../../how-to/cockroachdb.md) and [runnable examples](../../..
   CockroachDB's `INT` is.
 - `INDEX`, `UNIQUE INDEX`, `INVERTED INDEX`, `VECTOR INDEX` and `FAMILY` elements inside
   `CREATE TABLE` declare an index or a column family, not a column; a `UNIQUE INDEX`
-  also makes its columns unique. A primary key or unique constraint may be hash-sharded
+  also makes its columns unique. CockroachDB 26.4 lists every unique index as a unique
+  constraint, so `ALTER TABLE ... DROP CONSTRAINT` of its name drops it. Its `NOT NULL`
+  constraints are listed too, but cannot be named, added or dropped as constraints:
+  `ADD CONSTRAINT name NOT NULL column` is [Q010](../diagnostics.md#q010), and dropping a
+  primary key column's `NOT NULL` is refused. A primary key or unique constraint may be hash-sharded
   (`PRIMARY KEY (ts, id) USING HASH`) and store columns (`STORING (...)`). A hash-sharded primary key gets the hidden
   column CockroachDB adds to hold each row's shard, such as `crdb_internal_ts_id_shard_16`
   (the bucket count of `WITH (bucket_count = n)`, 16 by default): it leads the primary key,
@@ -117,7 +121,10 @@ PostgreSQL style `$1`, `$2`, .... CockroachDB types a parameter from what its pl
 so an argument of `concat` is text and an `OFFSET` value an integer, as PostgreSQL's are
 not; only a parameter met first as the operand of `IS NULL`, which no place types, is
 warned of as one the server cannot type ([Q063](../diagnostics.md#q063)). `@name` is a syntax error and `?` the
-jsonb key test, as on PostgreSQL, so each is warned of as no parameter.
+jsonb key test, as on PostgreSQL, so each is warned of as no parameter. A placeholder passed
+to a function whose fitting overloads disagree on its type, such as `abs($1)`, is refused
+by CockroachDB, which does not prefer one as PostgreSQL does, so Seagull warns of the call
+([Q005](../diagnostics.md#q005)); a cast such as `abs($1::INT8)` chooses the overload.
 
 ## Migrations
 

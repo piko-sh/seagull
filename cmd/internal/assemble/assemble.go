@@ -379,6 +379,7 @@ func presetFor(configuration *config.Config, database *config.Database) (seagull
 	chosen.NonNullElements = database.Go.Types.NonNullElements
 	chosen.KeepStars = database.Go.KeepStars
 	chosen.EmptySlices = database.Go.EmptySlices
+	chosen.NullablePointers = database.Go.NullablePointers
 	chosen.DocComments = database.Go.DocComments
 	chosen.ReuseModels = database.Go.ReuseModels
 	chosen.WrapErrors = database.Go.WrapErrors

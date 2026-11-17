@@ -1,0 +1,52 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 90,
+    "EndColumn": 93,
+    "EndLine": 2,
+    "Filename": "001_schema.up.sql",
+    "Line": 2,
+    "Message": "failed to interpret DDL: syntax error near \"NOT\": MySQL ends a column definition at its REFERENCES clause",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 87,
+    "EndColumn": 92,
+    "EndLine": 3,
+    "Filename": "001_schema.up.sql",
+    "Line": 3,
+    "Message": "failed to interpret DDL: syntax error near \"CHECK\": MySQL ends a column definition at its REFERENCES clause",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 87,
+    "EndColumn": 97,
+    "EndLine": 4,
+    "Filename": "001_schema.up.sql",
+    "Line": 4,
+    "Message": "failed to interpret DDL: syntax error near \"REFERENCES\": MySQL names no REFERENCES clause in a column definition; name the foreign key in a table constraint",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 38,
+    "EndColumn": 48,
+    "EndLine": 6,
+    "Filename": "001_schema.up.sql",
+    "Line": 6,
+    "Message": "failed to interpret DDL: syntax error near \"REFERENCES\": MODIFY and CHANGE take no REFERENCES clause; add the foreign key with ADD FOREIGN KEY",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 43,
+    "EndColumn": 53,
+    "EndLine": 7,
+    "Filename": "001_schema.up.sql",
+    "Line": 7,
+    "Message": "failed to interpret DDL: syntax error near \"REFERENCES\": MODIFY and CHANGE take no REFERENCES clause; add the foreign key with ADD FOREIGN KEY",
+    "Severity": "error"
+  }
+]

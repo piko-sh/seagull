@@ -106,7 +106,7 @@ func TestErrorWrappingNamesItsHelpersAfterTheVocabularyAndTypeChecks(t *testing.
 }
 
 func martianSyntax(form dialect.PlaceholderSigil) RuntimeSyntax {
-	return RuntimeSyntax{
+	return RuntimeSyntax{CastFloats: false,
 		ColumnExpression: `^(?i:x)$`,
 		Lists:            dialect.ListSyntax{EmptyMembership: "IN (NONE)", EmptyExclusion: "NOT IN (NONE)"},
 		Pagination: dialect.PaginationSyntax{
@@ -264,6 +264,9 @@ func TestSharedHelpersCompileTogetherInEveryForm(t *testing.T) {
 					return RuntimeHelpers("generated", acme, new(martianSyntax(form)))
 				},
 				func() (sqlmodel.GeneratedFile, error) { return InlineJSON("generated", acme, true, true) },
+				func() (sqlmodel.GeneratedFile, error) {
+					return JSONCodec("generated", acme, []Code{{Text: "[]time.Time", Imports: []string{"time"}}, {Text: "JSON", Imports: nil}})
+				},
 				func() (sqlmodel.GeneratedFile, error) { return Sortable("generated", acme) },
 				func() (sqlmodel.GeneratedFile, error) {
 					return ConvertStrings("generated", acme, StringConversions{Slices: true, Pointers: true, Maps: true})
@@ -279,6 +282,25 @@ func TestSharedHelpersCompileTogetherInEveryForm(t *testing.T) {
 			requireTypeChecks(t, files)
 		})
 	}
+}
+
+func TestJSONCodecListsTheDecodedTypesWithTheirImports(t *testing.T) {
+	t.Parallel()
+
+	file, err := JSONCodec("generated", acme, []Code{{Text: "[]time.Time", Imports: []string{"time"}}, {Text: "[]*string", Imports: nil}})
+	require.NoError(t, err)
+
+	require.Equal(t, "acme_json_codec.go", file.Name)
+	content := string(file.Content)
+	require.Contains(t, content, "var acmeJSONDecodedTypes = []reflect.Type{reflect.TypeFor[[]time.Time](), reflect.TypeFor[[]*string]()}")
+	require.Contains(t, content, "\t\"time\"\n")
+	require.Contains(t, content, "func SetJSONCodec(codec JSONCodec) {")
+	require.Contains(t, content, "func acmeJSONUnmarshal(data []byte, value any) error {")
+
+	empty, err := JSONCodec("generated", acme, nil)
+	require.NoError(t, err)
+	require.Contains(t, string(empty.Content), "var acmeJSONDecodedTypes = []reflect.Type{}")
+	require.NotContains(t, string(empty.Content), "\"time\"")
 }
 
 func TestQueryNamesNameTheLookupAsConfigured(t *testing.T) {

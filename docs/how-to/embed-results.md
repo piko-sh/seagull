@@ -46,7 +46,7 @@ Generate the package with `sgl generate` and construct `store.New(database)`. An
 	fmt.Fprintf(output, "%s is moored at %s, %s\n", boat.Name, boat.Harbours.Name, boat.Harbours.County)
 ```
 
-For the outer-joined skipper, check the nested pointer before accessing its fields:
+For the outer-joined skipper, check the nested pointer before accessing its fields. The fields are `Null` values because the join may find no skipper:
 
 ```go
 	crews, err := queries.ListCrews(ctx)
@@ -58,7 +58,7 @@ For the outer-joined skipper, check the nested pointer before accessing its fiel
 			fmt.Fprintf(output, "%s has no skipper\n", crew.Name)
 			continue
 		}
-		fmt.Fprintf(output, "%s is skippered by %s, licence %s\n", crew.Name, *crew.Skippers.Name, *crew.Skippers.Licence)
+		fmt.Fprintf(output, "%s is skippered by %s, licence %s\n", crew.Name, crew.Skippers.Name.V, crew.Skippers.Licence.V)
 	}
 ```
 
@@ -83,6 +83,6 @@ Salty Chip has no skipper
 
 ## Include an identifying column
 
-The nullable side of the join determines whether an embed is a pointer, including on a self-join. A missing outer-joined object is nil. Select a non-null identifying column, such as the joined table’s primary key, so an existing object whose other fields are NULL can still be distinguished from an absent object.
+The nullable side of the join determines whether an embed is a pointer, including on a self-join. A missing outer-joined object is nil. Select a non-null identifying column, such as the joined table’s primary key, to distinguish an existing object whose other fields are NULL from an absent object.
 
 See the [directives reference](../reference/directives.md) for the complete contract. The [example browser](https://seagull.sh/examples/) exposes other engine variants; use their actual SQL rather than changing only the dialect name.

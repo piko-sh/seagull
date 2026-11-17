@@ -74,6 +74,9 @@
           ],
           "Indexes": [
             {
+              "Columns": [
+                "customer_id"
+              ],
               "Name": "idx_orders_customer",
               "Origin": {
                 "Filename": "001_schema.up.sql",
@@ -81,6 +84,9 @@
               }
             },
             {
+              "Columns": [
+                "status"
+              ],
               "Name": "idx_orders_status",
               "Origin": {
                 "Filename": "001_schema.up.sql",

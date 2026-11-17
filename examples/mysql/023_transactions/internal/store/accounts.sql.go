@@ -36,7 +36,7 @@ func (queries *Queries) ListAccounts(ctx context.Context) ([]ListAccountsRow, er
 	var results []ListAccountsRow
 	if rows.Next() {
 		var row ListAccountsRow
-		scanArgs := []any{&row.ID, &row.Owner, &row.Balance}
+		scanArgs := []any{&row.ID, &row.Owner, sglScanNumber(&row.Balance)}
 		for more := true; more; more = rows.Next() {
 			row = ListAccountsRow{}
 			if err := rows.Scan(scanArgs...); err != nil {

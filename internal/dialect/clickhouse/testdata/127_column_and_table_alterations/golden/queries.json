@@ -1,0 +1,67 @@
+[
+  {
+    "Command": "many",
+    "Filename": "pets.sql",
+    "Line": 1,
+    "Name": "Pets",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "pets",
+        "SourceTable": "pets"
+      },
+      {
+        "Name": "tag",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "tag",
+        "SourceQualifier": "pets",
+        "SourceTable": "pets"
+      },
+      {
+        "Name": "age",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "age",
+        "SourceQualifier": "pets",
+        "SourceTable": "pets"
+      },
+      {
+        "Name": "weight",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "Float64",
+          "Width": 64
+        },
+        "SourceColumn": "weight",
+        "SourceQualifier": "pets",
+        "SourceTable": "pets"
+      },
+      {
+        "Name": "height",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "height",
+        "SourceQualifier": "pets",
+        "SourceTable": "pets"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Pets, command: many)\nSELECT * FROM pets;",
+    "Template": "SELECT ⟨star 0=pets.id 1=pets.tag 2=pets.age 3=pets.weight 4=pets.height:*⟩ FROM pets;"
+  }
+]

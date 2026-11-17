@@ -186,6 +186,14 @@ type Dialect struct {
 	// not decode, which ApplyDDL and AnalyseQuery return; nil when it was built whole.
 	initErr error
 
+	// reservedNames lists the keywords the engine refuses as a table's or a column's name,
+	// built once from the settings so each statement's parser shares it.
+	reservedNames dialectkit.ReservedNames
+
+	// aliasKeywords lists the keywords the engine refuses as an output column's alias, built
+	// once from the settings so each statement's parser shares it.
+	aliasKeywords dialectkit.AliasKeywords
+
 	// info is the description Info hands out copies of, built once from the settings so the
 	// parser can read it without copying it for every statement.
 	info dialect.Info
@@ -205,6 +213,8 @@ func New(options ...Option) *Dialect {
 	configured := settings{}
 	configured.Name = "postgres"
 	configured.LexicalRules = lexical.Rules()
+	configured.ConstraintNames = dialect.ConstraintNamesPostgres
+	configured.Ordering = dialect.OrderingSyntax{NullsFirstAscending: false, NullsFirstDescending: true, NullsByIsNull: false, DistinctNullsDefaultOnly: false}
 	for _, option := range options {
 		option(&configured)
 	}
@@ -242,7 +252,15 @@ func newDialect(configured *settings, loadSpecification func() (*dialectkit.Func
 		accessors:         accessors,
 		withheldFunctions: withheld,
 		initErr:           err,
+		reservedNames:     postgresReservedNames,
+		aliasKeywords:     postgresAliasKeywords,
 		info:              dialect.Info{},
+	}
+	if configured.ReservedColumns != "" || configured.ReservedTables != "" {
+		engine.reservedNames = dialectkit.NewReservedNames(configured.ReservedColumns, configured.ReservedTables)
+	}
+	if configured.BareAliasRefusals != "" {
+		engine.aliasKeywords = dialectkit.NewAliasKeywords("", configured.BareAliasRefusals)
 	}
 	engine.info = engine.describe()
 	return engine
@@ -589,14 +607,25 @@ func (*Dialect) CoerceArgument(argument dialect.CallArgument, _ sqlmodel.SQLType
 	}
 }
 
-// UntypedArgumentType chooses float8, PostgreSQL's preferred numeric type, for a
+// UntypedArgumentType chooses the type PostgreSQL gives an argument of unknown type among
+// the types the fitting overloads declare at its position. A string type wins when any
+// overload takes one, and otherwise float8, the preferred numeric type, wins for a
 // placeholder such as abs($1) whose overloads all take numbers.
 //
 // Takes candidates ([]sqlmodel.SQLType) which holds the overloads' declared types.
 //
-// Returns sqlmodel.SQLType which is double precision.
-// Returns bool which is false unless every candidate is a number and one is float8.
-func (*Dialect) UntypedArgumentType(candidates []sqlmodel.SQLType) (sqlmodel.SQLType, bool) {
+// Returns sqlmodel.SQLType which is the chosen type.
+// Returns bool which is false when PostgreSQL would find the call ambiguous: numbers none
+// of which is float8, or types of different categories none of which is a string. It is
+// always false when parameters are typed from their context, as CockroachDB refuses a
+// placeholder whose overloads disagree on its type rather than preferring one.
+func (engine *Dialect) UntypedArgumentType(candidates []sqlmodel.SQLType) (sqlmodel.SQLType, bool) {
+	if engine.settings.ParametersTypedFromContext {
+		return sqlmodel.SQLType{}, false
+	}
+	if chosen, found := preferredStringCandidate(candidates); found {
+		return chosen, true
+	}
 	preferred := -1
 	for index := range candidates {
 		if !dialectkit.IsNumericCategory(candidates[index]) {
@@ -741,19 +770,27 @@ func (engine *Dialect) describe() dialect.Info {
 			ast.SQLFeatureJSONOp |
 			ast.SQLFeatureBitwiseOp |
 			ast.SQLFeatureStructFieldAccess,
-		Returning:              ast.DataChangeInsert | ast.DataChangeUpdate | ast.DataChangeDelete,
-		AsyncMutations:         false,
-		ScalarFunctionsInFrom:  true,
-		UngroupedColumns:       dialect.UngroupedColumnsRejected,
-		ViewsFollowTheirTables: false,
-		IdentifierQuote:        dialect.IdentifierQuote{Open: `"`, Close: `"`},
-		Drivers:                []string{driverPgx},
-		ToJSON:                 "to_json",
-		TextType:               "text",
-		Filters:                dialect.FilterSyntax{Operators: filterOperators, JSONPathFunctions: nil, Casts: castForms, CastTypes: castTypes},
-		Lists:                  listSyntax,
-		Pagination:             paginationSyntax,
-		MaxParameters:          maxParameters,
+		Returning:               ast.DataChangeInsert | ast.DataChangeUpdate | ast.DataChangeDelete,
+		AsyncMutations:          false,
+		ScalarFunctionsInFrom:   true,
+		UngroupedColumns:        dialect.UngroupedColumnsRejected,
+		ViewsFollowTheirTables:  false,
+		ComputedTemporalAsText:  false,
+		ConstantMembershipLists: false,
+		ColumnLists:             dialect.ColumnListSyntax{ShortCTE: !engine.settings.StrictColumnLists, SurplusCTE: false, ShortDerived: true, NoDerivedLists: false},
+		ViewsOnRename:           engine.settings.ViewsOnRename,
+		ViewsOnDrop:             dialect.ViewsRefuse,
+		IdentifierQuote:         dialect.IdentifierQuote{Open: `"`, Close: `"`},
+		Drivers:                 []string{driverPgx},
+		ToJSON:                  "to_json",
+		FloatBits:               dialect.FloatBitsSyntax{Single: "", Double: "", Arrow: ""},
+		TextType:                "text",
+		Filters:                 dialect.FilterSyntax{Operators: filterOperators, JSONPathFunctions: nil, Casts: castForms, CastTypes: castTypes},
+		Lists:                   listSyntax,
+		Pagination:              paginationSyntax,
+		Ordering:                engine.settings.Ordering,
+		ConstraintNames:         engine.settings.ConstraintNames,
+		MaxParameters:           maxParameters,
 	}
 	return info.Clone()
 }
@@ -854,6 +891,15 @@ func (engine *Dialect) newStatementParser(interrupt func() error, parsed *parsed
 	statementParser.insertKeywords = engine.settings.InsertKeywords
 	statementParser.aliasNamesSingleColumnFunctions = engine.settings.AliasNamesSingleColumnFunctions
 	statementParser.indexOptions = engine.settings.InlineIndexElements
+	statementParser.tableScopedIndexNames = engine.settings.TableScopedIndexNames
+	statementParser.expressionIndexElements = engine.settings.ConstraintNames == dialect.ConstraintNamesCockroachDB
+	statementParser.namedNotNull = engine.settings.ConstraintNames == dialect.ConstraintNamesPostgres
+	statementParser.strictColumnLists = engine.settings.StrictColumnLists
+	statementParser.noGroupingModifiers = engine.settings.NoGroupingModifiers
+	statementParser.emptyKeywordCalls = engine.settings.EmptyKeywordCalls
+	statementParser.distinctOnColumnsOnly = engine.settings.DistinctOnColumnsOnly
+	statementParser.reservedNames = engine.reservedNames
+	statementParser.aliasKeywords = engine.aliasKeywords
 	statementParser.computedColumnShorthand = engine.settings.ComputedColumnShorthand
 	statementParser.notVisibleColumns = engine.settings.NotVisibleColumns
 	statementParser.asOfSystemTime = engine.settings.AsOfSystemTime
@@ -932,6 +978,18 @@ func (engine *Dialect) dispatchDDL(
 // Every option that registers something adds to what earlier options registered, so a
 // flavour's own settings survive a caller's options of the same kind.
 type settings struct {
+	// ReservedColumns lists the keywords the engine refuses as a column's name in a
+	// definition, replacing PostgreSQL's when set.
+	ReservedColumns string
+
+	// ReservedTables lists the keywords the engine refuses as a table's name in a
+	// definition, replacing PostgreSQL's when set.
+	ReservedTables string
+
+	// BareAliasRefusals lists the keywords the engine refuses as an alias written straight
+	// after a select item, replacing PostgreSQL's when set.
+	BareAliasRefusals string
+
 	// ExtraTypes holds the extra type definitions, keyed by lower-cased name. Each
 	// WithExtraTypes merges into it, a later entry replacing an earlier one of the same
 	// name.
@@ -1018,6 +1076,35 @@ type settings struct {
 	// and STORING options of a primary key or unique constraint. It is set by
 	// WithInlineIndexElements.
 	InlineIndexElements bool
+
+	// TableScopedIndexNames permits table-qualified drops and names local to each owner.
+	TableScopedIndexNames bool
+
+	// ViewsOnRename is what renaming a table does to the views that read it.
+	ViewsOnRename dialect.ViewDependencyRule
+
+	// ConstraintNames is how the engine names an unnamed constraint or index. It is
+	// PostgreSQL's unless WithConstraintNames sets it.
+	ConstraintNames dialect.ConstraintNaming
+
+	// DistinctOnColumnsOnly matches DISTINCT ON keys to ORDER BY keys only when both are
+	// column references.
+	DistinctOnColumnsOnly bool
+
+	// Ordering is where the engine sorts NULL and how it writes a placement. It is set by
+	// WithOrdering, and PostgreSQL's when not.
+	Ordering dialect.OrderingSyntax
+
+	// NoGroupingModifiers refuses ROLLUP, CUBE and GROUPING SETS in GROUP BY.
+	NoGroupingModifiers bool
+
+	// EmptyKeywordCalls takes keyword functions such as CURRENT_DATE() written with empty
+	// parentheses, which PostgreSQL refuses.
+	EmptyKeywordCalls bool
+
+	// StrictColumnLists refuses a CTE or view column list that names fewer columns than the
+	// CTE's or view's query returns.
+	StrictColumnLists bool
 
 	// ComputedColumnShorthand reads AS (expression) STORED or VIRTUAL after a column's type
 	// as a computed column. It is set by WithComputedColumnShorthand.
@@ -1271,6 +1358,121 @@ func WithDecimalIntegerDivision() Option {
 func WithInlineIndexElements() Option {
 	return func(configured *settings) {
 		configured.InlineIndexElements = true
+	}
+}
+
+// WithReservedNames sets the keywords the engine refuses, unquoted, as a column's and a
+// table's name in a definition, in place of PostgreSQL's.
+//
+// Takes columns (string) which lists, separated by spaces, the keywords refused as a
+// column's name.
+// Takes tables (string) which lists the keywords refused as a table's name.
+//
+// Returns Option which applies the lists.
+func WithReservedNames(columns, tables string) Option {
+	return func(configured *settings) {
+		configured.ReservedColumns = columns
+		configured.ReservedTables = tables
+	}
+}
+
+// WithBareAliasRefusals sets the keywords the engine refuses, unquoted, as an alias
+// written straight after a select item, in place of PostgreSQL's.
+//
+// Takes words (string) which lists the keywords, separated by spaces.
+//
+// Returns Option which applies the list.
+func WithBareAliasRefusals(words string) Option {
+	return func(configured *settings) {
+		configured.BareAliasRefusals = words
+	}
+}
+
+// WithConstraintNames names the constraints and indexes a migration leaves unnamed as a
+// flavour does, such as CockroachDB, where PostgreSQL's naming does not apply.
+//
+// Takes naming (dialect.ConstraintNaming) which is the flavour's naming.
+//
+// Returns Option which applies the naming.
+func WithConstraintNames(naming dialect.ConstraintNaming) Option {
+	return func(configured *settings) {
+		configured.ConstraintNames = naming
+	}
+}
+
+// WithViewsRefusingRename refuses to rename a table a view reads, as CockroachDB does,
+// where PostgreSQL keeps the view reading the renamed table.
+//
+// Returns Option which applies the rule.
+func WithViewsRefusingRename() Option {
+	return func(configured *settings) {
+		configured.ViewsOnRename = dialect.ViewsRefuse
+	}
+}
+
+// WithOrdering sets where the engine sorts NULL and how it writes a NULL placement, for a
+// flavour that sorts NULL as the smallest value, as CockroachDB does, where PostgreSQL
+// sorts it as the largest.
+//
+// Takes ordering (dialect.OrderingSyntax) which describes the engine's NULL ordering.
+//
+// Returns Option which applies it.
+func WithOrdering(ordering dialect.OrderingSyntax) Option {
+	return func(configured *settings) {
+		configured.Ordering = ordering
+	}
+}
+
+// WithDistinctOnColumnsOnly matches a DISTINCT ON key to an ORDER BY key only when both
+// are column references, as CockroachDB does, so an expression key with an ORDER BY is
+// refused. PostgreSQL matches expressions too.
+//
+// Returns Option which applies the rule.
+func WithDistinctOnColumnsOnly() Option {
+	return func(configured *settings) {
+		configured.DistinctOnColumnsOnly = true
+	}
+}
+
+// WithEmptyKeywordCalls takes CURRENT_DATE(), CURRENT_TIME(), CURRENT_TIMESTAMP(),
+// LOCALTIME(), LOCALTIMESTAMP(), CURRENT_USER() and SESSION_USER(), which CockroachDB
+// reads as calls. PostgreSQL refuses each with a syntax error.
+//
+// Returns Option which applies the rule.
+func WithEmptyKeywordCalls() Option {
+	return func(configured *settings) {
+		configured.EmptyKeywordCalls = true
+	}
+}
+
+// WithoutGroupingModifiers refuses ROLLUP (...), CUBE (...) and GROUPING SETS (...) in
+// GROUP BY, which CockroachDB does not implement.
+//
+// Returns Option which applies the rule.
+func WithoutGroupingModifiers() Option {
+	return func(configured *settings) {
+		configured.NoGroupingModifiers = true
+	}
+}
+
+// WithStrictColumnLists refuses a CTE or view column list naming fewer columns than the
+// CTE's or view's query returns, as CockroachDB does, where PostgreSQL renames only the
+// leading columns. A table or derived table alias list may still name fewer, on both
+// engines.
+//
+// Returns Option which applies the rule.
+func WithStrictColumnLists() Option {
+	return func(configured *settings) {
+		configured.StrictColumnLists = true
+	}
+}
+
+// WithTableScopedIndexNames enables index names local to each owning table.
+//
+// Returns Option which also permits table-qualified index drops.
+func WithTableScopedIndexNames() Option {
+	return func(configured *settings) {
+		configured.TableScopedIndexNames = true
 	}
 }
 
@@ -1656,4 +1858,31 @@ func resolveCompositeColumns(
 		}
 	}
 	return columns
+}
+
+// preferredStringCandidate picks the string type PostgreSQL gives an argument of unknown
+// type when an overload takes a string. It picks text, the preferred string type, when an
+// overload takes it, and otherwise the first string type.
+//
+// Takes candidates ([]sqlmodel.SQLType) which holds the overloads' declared types.
+//
+// Returns sqlmodel.SQLType which is the chosen string type.
+// Returns bool which is false when no overload takes a string.
+func preferredStringCandidate(candidates []sqlmodel.SQLType) (sqlmodel.SQLType, bool) {
+	first := -1
+	for index := range candidates {
+		if candidates[index].Category != sqlmodel.TypeCategoryText {
+			continue
+		}
+		if strings.EqualFold(candidates[index].EngineName, typeText.EngineName) {
+			return candidates[index], true
+		}
+		if first < 0 {
+			first = index
+		}
+	}
+	if first < 0 {
+		return sqlmodel.SQLType{}, false
+	}
+	return candidates[first], true
 }

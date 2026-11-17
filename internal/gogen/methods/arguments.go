@@ -21,6 +21,7 @@ package methods
 import (
 	"go/ast"
 	"go/token"
+	"slices"
 
 	"piko.sh/goastutil"
 
@@ -141,6 +142,7 @@ func (arguments *Arguments) Append(emission *gogen.Emission, from, to int) []ast
 		}
 		element := emission.Driver.Enums.BoundElement(goastutil.CachedIdent(identElement),
 			&arguments.Query.Analysed.Parameters[argument.Parameter], arguments.Query.Types, emission.Vocabulary)
+		element = emission.BindElement(element, &arguments.Query.Analysed.Parameters[argument.Parameter])
 		statements = append(statements, &ast.RangeStmt{
 			Key:   goastutil.CachedIdent(goast.IdentBlank),
 			Value: goastutil.CachedIdent(identElement),
@@ -197,12 +199,33 @@ func (arguments *Arguments) ListEdits(emission *gogen.Emission) []ast.Expr {
 // Returns ast.Expr which binds the argument.
 func (arguments *Arguments) bound(emission *gogen.Emission, index int) ast.Expr {
 	parameter := &arguments.Query.Analysed.Parameters[arguments.Rendered.Arguments[index].Parameter]
-	access := emission.Driver.Enums.Bound(arguments.Access(arguments.Rendered.Arguments[index].Parameter),
-		arguments.Query.Analysed, parameter, arguments.Query.Types, emission.Vocabulary)
+	if arguments.bindsArrayText(emission, arguments.Rendered.Arguments[index].Parameter) {
+		literal := goastutil.CachedIdent(emission.Vocabulary.Helper(gogen.SuffixArrayLiteral))
+		return goastutil.CallExpr(literal, arguments.Access(arguments.Rendered.Arguments[index].Parameter))
+	}
+	value := NonNilAccess(&emission.Driver.Connection, emission.Vocabulary, arguments.Query, parameter, arguments.Access(arguments.Rendered.Arguments[index].Parameter))
+	access := emission.Driver.Enums.Bound(value, arguments.Query.Analysed, parameter, arguments.Query.Types, emission.Vocabulary)
 	if !emission.InExecutionForm(arguments.Query) {
 		return emission.BindPositional(access, parameter)
 	}
 	return emission.Bind(access, parameter, arguments.Query.Imports)
+}
+
+// bindsArrayText reports whether a parameter is a slice whose list the query binds as one
+// parameter holding an array's text form. This happens when the query writes its lists as
+// arrays though the driver would expand them into placeholders of its own.
+//
+// Takes emission (*gogen.Emission) which holds the driver's list mode.
+// Takes parameter (int) which is the index into the query's parameters.
+//
+// Returns bool which is true when the parameter is bound through sglArrayLiteral.
+func (arguments *Arguments) bindsArrayText(emission *gogen.Emission, parameter int) bool {
+	if arguments.Query.Renderer == nil || arguments.Query.Renderer.ListMode != emitkit.ListArray || emission.Driver.Lists != emitkit.ListExpand {
+		return false
+	}
+	return slices.ContainsFunc(arguments.Rendered.Marks.Lists, func(mark emitkit.ListMark) bool {
+		return mark.Parameter == parameter
+	})
 }
 
 // firstNumber returns the expression of the first number a list's placeholders take: its
@@ -272,14 +295,11 @@ func MethodArguments(query *gogen.Query) *Arguments {
 
 // PrepareCall returns how a method runs its query from SQL it holds in source.
 //
-// The values are bound in the order Rendered.Arguments lists them, each through the
-// driver's binder. A query whose slices are expanded at run time first checks the number
-// of values against the bind limit, leaving through guard when it is exceeded, then
-// writes each slice's list into the SQL at the offset rendering marked, numbered from the
-// slice's canonical number onwards, and gathers every value into args, flattening each
-// slice where its list binds. A driver binding a slice as an array gets it with an empty
-// slice for nil when the query excludes it, so NOT IN an empty slice holds for every row
-// whether the slice is nil or empty.
+// Arguments bind in Rendered.Arguments order through the driver's binder. For expanded
+// slices, the bind limit is checked before SQL is rewritten and arguments are gathered.
+// When the driver binds a NOT IN slice as an array, nil becomes empty and matches every
+// row. A nil slice written to a NOT NULL binary or array column becomes an empty slice
+// when the driver would otherwise send NULL.
 //
 // Takes emission (*gogen.Emission) which is the package's generation.
 // Takes query (*gogen.Query) which is the query.
@@ -449,4 +469,41 @@ func normaliseExcludedArrays(query *gogen.Query) []ast.Stmt {
 		))
 	}
 	return statements
+}
+
+// NonNilAccess returns an expression that binds a parameter's value.
+//
+// A slice, including []byte, written to a NOT NULL column passes through sglNonNil
+// because the driver sends nil slices as NULL. Other values pass through unchanged.
+//
+// Takes connection (*gogen.Connection) which says whether the driver sends a nil slice as
+// NULL. One that does not keeps every value as it is.
+// Takes vocabulary (gogen.Vocabulary) which names the helper.
+// Takes query (*gogen.Query) which is the query.
+// Takes analysed (*sqlmodel.QueryParameter) which is one of the query's parameters.
+// Takes access (ast.Expr) which reads the value.
+//
+// Returns ast.Expr which binds the value.
+func NonNilAccess(connection *gogen.Connection, vocabulary gogen.Vocabulary, query *gogen.Query, analysed *sqlmodel.QueryParameter, access ast.Expr) ast.Expr {
+	if !connection.NilSlicesAsNull || !assignsRequiredValue(analysed) {
+		return access
+	}
+	if sliceType, isSlice := ParameterType(query, analysed).(*ast.ArrayType); !isSlice || sliceType.Len != nil {
+		return access
+	}
+	return goastutil.CallExpr(goastutil.CachedIdent(vocabulary.Helper(gogen.SuffixNonNil)), access)
+}
+
+// assignsRequiredValue reports whether a parameter is a single value the query writes
+// into a column, as given, with no NULL it may stand for. A list, an optional value, a
+// nullable one and a type a go_type override names are not.
+//
+// Takes analysed (*sqlmodel.QueryParameter) which is the parameter.
+//
+// Returns bool which is true for such a parameter.
+func assignsRequiredValue(analysed *sqlmodel.QueryParameter) bool {
+	if analysed.Nullable || analysed.IsSlice || analysed.IsOptional || analysed.GoTypeOverride != nil {
+		return false
+	}
+	return analysed.Context == sqlmodel.ParameterContextAssignment
 }

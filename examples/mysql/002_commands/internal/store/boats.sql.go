@@ -18,7 +18,7 @@ type GetBoatRow struct {
 
 func (queries *Queries) GetBoat(ctx context.Context, id int64) (GetBoatRow, error) {
 	var row GetBoatRow
-	err := queries.reader.QueryRowContext(ctx, getBoatSQL, id).Scan(&row.ID, &row.Name, &row.Berth, &row.AtSea)
+	err := queries.reader.QueryRowContext(ctx, getBoatSQL, id).Scan(&row.ID, &row.Name, sglScanNumber(&row.Berth), &row.AtSea)
 	if err != nil {
 		return GetBoatRow{}, err
 	}
@@ -43,7 +43,7 @@ func (queries *Queries) ListBoats(ctx context.Context) ([]ListBoatsRow, error) {
 	var results []ListBoatsRow
 	if rows.Next() {
 		var row ListBoatsRow
-		scanArgs := []any{&row.ID, &row.Name, &row.Berth, &row.AtSea}
+		scanArgs := []any{&row.ID, &row.Name, sglScanNumber(&row.Berth), &row.AtSea}
 		for more := true; more; more = rows.Next() {
 			row = ListBoatsRow{}
 			if err := rows.Scan(scanArgs...); err != nil {

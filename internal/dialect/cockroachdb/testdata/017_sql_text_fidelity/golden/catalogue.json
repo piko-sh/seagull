@@ -34,6 +34,18 @@
               }
             }
           ],
+          "Constraints": [
+            {
+              "Columns": [
+                "id"
+              ],
+              "Kind": "primary-key",
+              "Name": "customers_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            }
+          ],
           "Name": "customers",
           "Origin": {
             "Filename": "001_schema.up.sql"
@@ -151,6 +163,34 @@
                 "EngineName": "timestamptz",
                 "Temporal": "timestamp",
                 "TimeZone": true
+              }
+            }
+          ],
+          "Constraints": [
+            {
+              "Columns": [
+                "id"
+              ],
+              "Kind": "primary-key",
+              "Name": "quotes_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              }
+            },
+            {
+              "Columns": [
+                "customer_id"
+              ],
+              "ForeignColumns": [
+                "id"
+              ],
+              "ForeignTable": "customers",
+              "Kind": "foreign-key",
+              "Name": "quotes_customer_id_fkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
               }
             }
           ],

@@ -8,4 +8,7 @@ ItemsInSection: section menu.Section, status menu.Status
   fish      cod
   fish      haddock (sold out)
 section drinks is valid: false
-refused section drinks: Conversion Error: Could not convert string 'drinks' to UINT8
+refused section drinks: Conversion Error: Could not convert string 'drinks' to ENUM('fish', 'sides', 'puddings')
+
+LINE 1: INSERT INTO menu_items (name, section) VALUES ($1, $2);
+                                                           ^^

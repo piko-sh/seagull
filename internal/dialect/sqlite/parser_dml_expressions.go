@@ -538,6 +538,7 @@ func (p *parser) parseComparisonExpression() ast.Expression {
 	}
 
 	if notNegated {
+		p.recordSyntaxError(dialectkit.NewParseError(p.Current(), "expected IN, LIKE, GLOB, BETWEEN or NULL after NOT"))
 		return &ast.UnaryOpExpression{Operator: keywordNOT, Operand: left}
 	}
 
@@ -562,10 +563,15 @@ func (p *parser) parsePostfixComparisonSuffix(left ast.Expression) ast.Expressio
 		return p.parseBetweenSuffix(left)
 	}
 	for _, keyword := range []string{"LIKE", "GLOB", "REGEXP", "MATCH"} {
+		operator := p.Current()
 		if p.MatchKeyword(keyword) {
 			right := p.parseBitwiseExpression()
 			if keyword == "LIKE" && p.MatchKeyword("ESCAPE") {
 				p.parseBitwiseExpression()
+			}
+			if keyword == "MATCH" && len(p.fullTextSources) == 0 {
+				p.warn(operator, "SQLite runs MATCH only against a full-text table, and fails it on an ordinary table "+
+					"unless the application registers a match function")
 			}
 			return &ast.ComparisonExpression{Operator: keyword, Left: left, Right: right, Quantifier: ""}
 		}
@@ -680,45 +686,6 @@ func (p *parser) parseIsNullSuffix(left ast.Expression) ast.Expression {
 	return &ast.ComparisonExpression{Operator: operator, Left: left, Right: right, Quantifier: ""}
 }
 
-// parseInListSuffix parses the IN (...) suffix and tags any parameters inside it with the
-// IN-list context.
-//
-// Takes left (ast.Expression) which holds the inner expression.
-//
-// Returns ast.Expression which is the parsed InList expression.
-func (p *parser) parseInListSuffix(left ast.Expression) ast.Expression {
-	p.Advance()
-	if p.isSubqueryStart() {
-		innerAnalysis, ok := p.analyseSubqueryBody()
-		if !ok {
-			return &ast.InListExpression{Inner: left, Values: nil}
-		}
-		return &ast.InListExpression{
-			Inner:  left,
-			Values: []ast.Expression{&ast.ScalarSubqueryExpression{InnerQuery: innerAnalysis}},
-		}
-	}
-	parameterCountBefore := p.parameterCount
-	referenceCountBefore := len(p.parameterReferences)
-	values := p.parseParenthesisedExpressionList()
-
-	var columnReference *ast.ColumnReference
-	if columnExpression, ok := left.(*ast.ColumnRefExpression); ok {
-		columnReference = &ast.ColumnReference{
-			TableAlias: columnExpression.TableAlias,
-			ColumnName: columnExpression.ColumnName,
-		}
-	}
-	for reference := range p.newParameterReferences(referenceCountBefore, parameterCountBefore) {
-		reference.Context = sqlmodel.ParameterContextInList
-		if columnReference != nil {
-			reference.ColumnReference = columnReference
-		}
-	}
-
-	return &ast.InListExpression{Inner: left, Values: values}
-}
-
 // parseBetweenSuffix parses a BETWEEN low AND high suffix and tags parameters inside it
 // with the BETWEEN context.
 //
@@ -795,9 +762,11 @@ func (p *parser) parseUnaryExpression() ast.Expression {
 // Returns ast.Expression which is the original expression.
 func (p *parser) parseCollateSuffix(expression ast.Expression) ast.Expression {
 	if p.MatchKeyword(keywordCOLLATE) {
-		if p.Current().Kind == tokenIdentifier {
-			p.Advance()
+		if p.Current().Kind != tokenIdentifier {
+			p.recordSyntaxError(dialectkit.NewParseError(p.Current(), "expected a collation after COLLATE"))
+			return expression
 		}
+		p.Advance()
 	}
 	return expression
 }
@@ -807,6 +776,10 @@ func (p *parser) parseCollateSuffix(expression ast.Expression) ast.Expression {
 //
 // Returns ast.Expression which is the parsed atom.
 func (p *parser) parsePrimaryExpression() ast.Expression {
+	if p.AtEnd() {
+		p.recordSyntaxError(dialectkit.NewParseError(p.Current(), "expected an expression"))
+		return &ast.UnknownExpression{}
+	}
 	current := p.Current()
 
 	switch current.Kind {

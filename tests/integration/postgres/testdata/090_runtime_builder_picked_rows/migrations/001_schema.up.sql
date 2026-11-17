@@ -1,0 +1,5 @@
+CREATE TABLE items (
+    id INTEGER PRIMARY KEY,
+    grp INTEGER NOT NULL,
+    score INTEGER NOT NULL
+);

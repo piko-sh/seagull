@@ -99,6 +99,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        2
+      ]
+    },
     "SQL": "-- sgl.query(name: UpcomingAppointments, command: many)\nSELECT id, title, scheduled_at, duration_minutes\nFROM appointments\nWHERE scheduled_at \u003e NOW()\nORDER BY scheduled_at;",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1:title⟩, ⟨c2:scheduled_at⟩, ⟨c3:duration_minutes⟩\\nFROM appointments\\nWHERE scheduled_at \u003e NOW()\\nORDER BY scheduled_at;"
   }

@@ -95,8 +95,14 @@ if params.PageSize > 100 {
 }
 query := searchPostsSQL[:46]
 switch string(params.Sort) {
-case "created_at", "title":
-	query = query + (" ORDER BY " + string(params.Sort))
+case "created_at":
+	query = query + " ORDER BY \"created_at\""
+	switch params.SortDirection {
+	case OrderAsc, OrderDesc:
+		query = query + (" " + string(params.SortDirection))
+	}
+case "title":
+	query = query + " ORDER BY \"title\""
 	switch params.SortDirection {
 	case OrderAsc, OrderDesc:
 		query = query + (" " + string(params.SortDirection))

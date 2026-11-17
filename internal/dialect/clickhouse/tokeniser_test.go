@@ -60,6 +60,19 @@ func TestTokeniser_Identifiers(t *testing.T) {
 	assert.Equal(t, "col2", tokens[3].Value)
 }
 
+func TestTokeniserPreservesDollarIdentifiers(t *testing.T) {
+	t.Parallel()
+	for _, name := range []string{"price$usd", "price$", "price$$usd", "price$1"} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			tokens := tokenise_t(t, name)
+			require.Len(t, tokens, 2)
+			require.Equal(t, tokenIdentifier, tokens[0].Kind)
+			require.Equal(t, name, tokens[0].Value)
+		})
+	}
+}
+
 func TestTokeniser_DoubleQuotedIdentifier(t *testing.T) {
 	t.Parallel()
 

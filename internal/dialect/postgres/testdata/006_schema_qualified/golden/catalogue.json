@@ -49,6 +49,30 @@
               }
             }
           ],
+          "Constraints": [
+            {
+              "Columns": [
+                "id"
+              ],
+              "Kind": "primary-key",
+              "Name": "accounts_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              }
+            },
+            {
+              "Columns": [
+                "username"
+              ],
+              "Kind": "unique",
+              "Name": "accounts_username_key",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              }
+            }
+          ],
           "Name": "accounts",
           "Origin": {
             "Filename": "001_schema.up.sql",

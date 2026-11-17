@@ -169,10 +169,11 @@ func (b *builder) uniqueInStar(columns []int, column int) bool {
 	return true
 }
 
-// clauseNodes makes, for a dynamic or runtime builder query that reads rows, the nodes of
-// the clauses it edits: the WHERE condition, unless the statement is compound, the ORDER
-// BY and the pagination, each covering the clause when it is written and marking the
-// place it goes otherwise.
+// clauseNodes builds the clauses a query builder can edit.
+//
+// The nodes cover ordering, pagination, and sometimes filtering. Filtering is omitted for
+// compound statements and conditions applied to result rows. Each node contains its
+// clause or marks where a new clause belongs.
 //
 // Returns []*node which holds the nodes.
 func (b *builder) clauseNodes() []*node {
@@ -182,7 +183,7 @@ func (b *builder) clauseNodes() []*node {
 		return nil
 	}
 	nodes := make([]*node, 0, clauseCount)
-	if filter := b.filterNode(compound); filter != nil {
+	if filter := b.filterNode(compound); filter != nil && !b.filtersResult() {
 		nodes = append(nodes, filter)
 	}
 	return append(nodes,

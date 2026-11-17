@@ -1,0 +1,290 @@
+[
+  {
+    "Command": "many",
+    "Filename": "shifts.sql",
+    "Line": 1,
+    "Name": "ShiftColumns",
+    "OutputColumns": [
+      {
+        "Name": "current_role",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "current_role",
+        "SourceQualifier": "shifts",
+        "SourceTable": "shifts"
+      },
+      {
+        "Name": "localtime",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "localtime",
+        "SourceQualifier": "shifts",
+        "SourceTable": "shifts"
+      },
+      {
+        "Name": "user",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "user",
+        "SourceQualifier": "shifts",
+        "SourceTable": "shifts"
+      },
+      {
+        "Name": "current_date",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "current_date",
+        "SourceQualifier": "shifts",
+        "SourceTable": "shifts"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ShiftColumns, command: many)\nSELECT current_role, localtime, user, current_date FROM shifts;",
+    "Template": "SELECT ⟨c0:current_role⟩, ⟨c1:localtime⟩, ⟨c2:user⟩, ⟨c3:current_date⟩ FROM shifts;"
+  },
+  {
+    "Command": "one",
+    "Filename": "shifts.sql",
+    "Line": 4,
+    "Name": "KeywordValues",
+    "OutputColumns": [
+      {
+        "Name": "today",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        }
+      },
+      {
+        "Name": "who",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "account",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      },
+      {
+        "Name": "stamp",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "timestamptz",
+          "Temporal": "timestamp",
+          "TimeZone": true
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: KeywordValues, command: one)\nSELECT current_date AS today, user AS who, current_user AS account, current_timestamp AS stamp;",
+    "Template": "SELECT ⟨c0 aliased:current_date⟩ AS today, ⟨c1 aliased:user⟩ AS who, ⟨c2 aliased:current_user⟩ AS account, ⟨c3 aliased:current_timestamp⟩ AS stamp;"
+  },
+  {
+    "Command": "many",
+    "Filename": "shifts.sql",
+    "Line": 7,
+    "Name": "ColumnsOfOwnQueryOnly",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "shifts",
+        "SourceTable": "shifts"
+      },
+      {
+        "Name": "today",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ColumnsOfOwnQueryOnly, command: many)\nSELECT id, (SELECT current_date) AS today FROM shifts;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:(SELECT current_date)⟩ AS today FROM shifts;"
+  },
+  {
+    "Command": "many",
+    "Filename": "shifts.sql",
+    "Line": 10,
+    "Name": "QualifiedColumns",
+    "OutputColumns": [
+      {
+        "Name": "current_date",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "current_date",
+        "SourceQualifier": "shifts",
+        "SourceTable": "shifts"
+      },
+      {
+        "Name": "user",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "user",
+        "SourceQualifier": "other",
+        "SourceTable": "shifts"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: QualifiedColumns, command: many)\nSELECT shifts.current_date, other.user FROM shifts JOIN shifts AS other ON other.id = shifts.id;",
+    "Template": "SELECT ⟨c0:shifts.current_date⟩, ⟨c1:other.user⟩ FROM shifts JOIN shifts AS other ON other.id = shifts.id;"
+  },
+  {
+    "Command": "many",
+    "Filename": "shifts.sql",
+    "Line": 13,
+    "Name": "ViewColumns",
+    "OutputColumns": [
+      {
+        "Name": "current_date",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "current_date",
+        "SourceQualifier": "shift_days",
+        "SourceTable": "shift_days"
+      },
+      {
+        "Name": "role_number",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "role_number",
+        "SourceQualifier": "shift_days",
+        "SourceTable": "shift_days"
+      },
+      {
+        "Name": "today",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        },
+        "SourceColumn": "today",
+        "SourceQualifier": "crew_days",
+        "SourceTable": "crew_days"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ViewColumns, command: many)\nSELECT shift_days.current_date, shift_days.role_number, crew_days.today FROM shift_days, crew_days;",
+    "Template": "SELECT ⟨c0:shift_days.current_date⟩, ⟨c1:shift_days.role_number⟩, ⟨c2:crew_days.today⟩ FROM shift_days, crew_days;"
+  },
+  {
+    "Command": "many",
+    "Filename": "shifts.sql",
+    "Line": 16,
+    "Name": "ColumnInCondition",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "shifts",
+        "SourceTable": "shifts"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "current_date",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ColumnInCondition, command: many)\nSELECT id FROM shifts WHERE current_date = $1;",
+    "Template": "SELECT ⟨c0:id⟩ FROM shifts WHERE current_date = ⟨p0⟩;⟨arguments p0⟩"
+  },
+  {
+    "Command": "many",
+    "Filename": "shifts.sql",
+    "Line": 19,
+    "Name": "ValuesBesideOtherTable",
+    "OutputColumns": [
+      {
+        "Name": "today",
+        "SQLType": {
+          "Category": "temporal",
+          "EngineName": "date",
+          "Temporal": "date"
+        }
+      },
+      {
+        "Name": "who",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "varchar"
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ValuesBesideOtherTable, command: many)\nSELECT current_date AS today, user AS who FROM crew;",
+    "Template": "SELECT ⟨c0 aliased:current_date⟩ AS today, ⟨c1 aliased:user⟩ AS who FROM crew;"
+  },
+  {
+    "Command": "many",
+    "Filename": "shifts.sql",
+    "Line": 22,
+    "Name": "UserAsAlias",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "user",
+        "SourceTable": "crew"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: UserAsAlias, command: many)\nSELECT user.id FROM crew AS user;",
+    "Template": "SELECT ⟨c0:user.id⟩ FROM crew AS user;"
+  }
+]

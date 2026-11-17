@@ -56,7 +56,7 @@ func main() {
 		os.Exit(1)
 	}
 	singleBatch := []db.InsertItemsBatchParams{
-		{ID: int32(1), Name: "Solo", Category: "misc", Price: int32(999), Description: nil},
+		{ID: int32(1), Name: "Solo", Category: "misc", Price: int32(999), Description: db.Null[string]{}},
 	}
 	err = queries.InsertItemsBatch(ctx, singleBatch)
 	if err != nil {
@@ -75,9 +75,9 @@ func main() {
 		os.Exit(1)
 	}
 	smallBatch := []db.InsertItemsBatchParams{
-		{ID: int32(1), Name: "Apple", Category: "fruit", Price: int32(100), Description: new("A crisp fruit")},
-		{ID: int32(2), Name: "Banana", Category: "fruit", Price: int32(50), Description: nil},
-		{ID: int32(3), Name: "Carrot", Category: "veg", Price: int32(75), Description: new("An orange root")},
+		{ID: int32(1), Name: "Apple", Category: "fruit", Price: int32(100), Description: db.NullOf("A crisp fruit")},
+		{ID: int32(2), Name: "Banana", Category: "fruit", Price: int32(50), Description: db.Null[string]{}},
+		{ID: int32(3), Name: "Carrot", Category: "veg", Price: int32(75), Description: db.NullOf("An orange root")},
 	}
 	err = queries.InsertItemsBatch(ctx, smallBatch)
 	if err != nil {
@@ -103,7 +103,7 @@ func main() {
 			Name:        fmt.Sprintf("item_%d", index+1),
 			Category:    "bulk",
 			Price:       int32(index * 10),
-			Description: new(fmt.Sprintf("desc_%d", index+1)),
+			Description: db.NullOf(fmt.Sprintf("desc_%d", index+1)),
 		}
 	}
 	err = queries.InsertItemsBatch(ctx, boundaryBatch)
@@ -130,7 +130,7 @@ func main() {
 			Name:        fmt.Sprintf("item_%d", index+1),
 			Category:    "bulk",
 			Price:       int32(index * 10),
-			Description: new(fmt.Sprintf("desc_%d", index+1)),
+			Description: db.NullOf(fmt.Sprintf("desc_%d", index+1)),
 		}
 	}
 	err = queries.InsertItemsBatch(ctx, overBoundaryBatch)
@@ -162,7 +162,7 @@ func main() {
 			Name:        fmt.Sprintf("item_%d", index+1),
 			Category:    "bulk",
 			Price:       int32(index * 10),
-			Description: new(fmt.Sprintf("desc_%d", index+1)),
+			Description: db.NullOf(fmt.Sprintf("desc_%d", index+1)),
 		}
 	}
 	err = queries.InsertItemsBatch(ctx, largeBatch)

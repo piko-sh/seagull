@@ -1,0 +1,3 @@
+{
+  "description": "DuckDB keyword functions, with and without parentheses, scan into the types Seagull gives them: CURRENT_TIME and get_current_time() return TIME WITH TIME ZONE, LOCALTIME TIME and LOCALTIMESTAMP TIMESTAMP."
+}

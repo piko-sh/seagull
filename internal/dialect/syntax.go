@@ -87,6 +87,47 @@ type Affix struct {
 	After string
 }
 
+// ColumnListSyntax describes how an engine matches a column list written after a CTE's
+// name, or after a derived table's or table's alias, against the columns the relation
+// returns. A list naming as many columns as the relation returns is always taken.
+//
+// The zero value refuses every list of another length.
+type ColumnListSyntax struct {
+	// ShortCTE takes a CTE column list naming fewer columns than the CTE returns, renaming
+	// the leading columns and keeping the rest.
+	ShortCTE bool
+
+	// SurplusCTE takes a CTE column list naming more columns than the CTE returns, ignoring
+	// the surplus names.
+	SurplusCTE bool
+
+	// ShortDerived takes a derived table's or table's alias list naming fewer columns than
+	// the relation returns, renaming the leading columns and keeping the rest.
+	ShortDerived bool
+
+	// NoDerivedLists refuses a column list after a derived table's alias.
+	NoDerivedLists bool
+}
+
+// FloatBitsSyntax describes how a dialect rebuilds a floating-point parameter from the
+// exact bits of its value, for drivers that would otherwise send the value as rounded
+// text.
+//
+// The zero value means the dialect needs no such transport.
+type FloatBitsSyntax struct {
+	// Single names the unsigned integer type that holds the bits of a single-precision
+	// value.
+	Single string
+
+	// Double names the unsigned integer type that holds the bits of a double-precision
+	// value.
+	Double string
+
+	// Arrow separates a lambda's parameter from its body, which rebuilds each element of a
+	// composite value.
+	Arrow string
+}
+
 // ListSyntax describes how a dialect writes membership in a list of values the caller
 // supplies, which code generation writes for a slice parameter.
 //
@@ -132,8 +173,39 @@ type PaginationSyntax struct {
 	// offset may stand alone.
 	UnboundedLimit string
 
+	// DerivedOrderLimit is the limit written inside a derived table so the engine keeps the
+	// table's ORDER BY, for a dialect that may drop the order of a derived table without a
+	// limit, such as MySQL's "18446744073709551615". It is empty when the order survives.
+	DerivedOrderLimit string
+
 	// OffsetFirst reports a dialect that writes the offset before the limit.
 	OffsetFirst bool
+
+	// CompoundBindsLastBranch reports a dialect that applies an ORDER BY or a limit written
+	// after a compound statement, such as a UNION ALL, to its last branch alone, as
+	// ClickHouse does. A builder wraps such a statement before ordering or limiting it.
+	CompoundBindsLastBranch bool
+}
+
+// OrderingSyntax describes where a dialect sorts NULL and how it writes a NULL placement
+// the generated runtime query builder asks for with NULLS FIRST or NULLS LAST.
+type OrderingSyntax struct {
+	// NullsFirstAscending reports that NULL sorts before every value in an ascending key
+	// that names no placement.
+	NullsFirstAscending bool
+
+	// NullsFirstDescending reports that NULL sorts before every value in a descending key
+	// that names no placement.
+	NullsFirstDescending bool
+
+	// NullsByIsNull reports a dialect without NULLS FIRST and NULLS LAST, such as MySQL,
+	// whose placement other than its own is written as a key on whether the column is NULL.
+	NullsByIsNull bool
+
+	// DistinctNullsDefaultOnly reports a dialect that refuses a placement other than its own
+	// in a SELECT DISTINCT, as CockroachDB does, since the placement is a key the select
+	// list does not hold.
+	DistinctNullsDefaultOnly bool
 }
 
 // CastForm is one way a dialect writes a conversion of a value to a type: the text before

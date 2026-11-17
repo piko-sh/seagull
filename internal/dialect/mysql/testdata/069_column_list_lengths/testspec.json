@@ -1,0 +1,4 @@
+{
+  "description": "MySQL refuses a CTE or derived table column list naming fewer or more columns than the relation returns.",
+  "expectedDiagnosticCount": 4
+}

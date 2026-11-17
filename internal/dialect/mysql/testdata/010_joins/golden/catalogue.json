@@ -96,6 +96,19 @@
               ],
               "ForeignTable": "departments",
               "Kind": "foreign-key",
+              "Name": "employees_ibfk_1",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              }
+            }
+          ],
+          "Indexes": [
+            {
+              "Columns": [
+                "department_id"
+              ],
+              "Name": "department_id",
               "Origin": {
                 "Filename": "001_schema.up.sql",
                 "Statement": 1

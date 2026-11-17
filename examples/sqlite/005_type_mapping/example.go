@@ -28,14 +28,7 @@ import (
 	"seagull.sh/seagull/examples/sqlite/005_type_mapping/internal/store"
 )
 
-// run records a landing of fish and reads it back, printing the Go type sgl chose for
-// each column. SQLite stores every value as one of five storage classes, so Seagull maps
-// the type each column declares in db/migrations. SMALLINT, INTEGER and BIGINT all have
-// INTEGER affinity, which SQLite stores in up to eight bytes whatever width the column
-// declares, so each gives int64, as the INTEGER PRIMARY KEY rowid does. REAL gives
-// float64, and DATETIME gives time.Time, which the driver parses back from the text it
-// stored. SQLite has no exact decimal type, so money is best kept as INTEGER pence; a
-// DECIMAL column maps to apd.Decimal from github.com/cockroachdb/apd/v3.
+// run records a fish landing and prints its generated Go field types.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes output (io.Writer) which receives one line per column.
@@ -53,7 +46,7 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 		OnIce:    true,
 		LandedAt: time.Date(2026, time.May, 1, 5, 30, 0, 0, time.UTC),
 		Tag:      []byte{0x04, 0xa2, 0x19, 0xf3},
-		Notes:    new("landed at Newlyn"),
+		Notes:    store.NullOf("landed at Newlyn"),
 	})
 	if err != nil {
 		return fmt.Errorf("recording a landing: %w", err)
@@ -73,6 +66,6 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 	fmt.Fprintf(output, "landed_at  %-10T %s\n", landing.LandedAt, landing.LandedAt.Format(time.RFC3339))
 	// %T prints []byte as []uint8, since byte is an alias for uint8.
 	fmt.Fprintf(output, "tag        %-10T % x\n", landing.Tag, landing.Tag)
-	fmt.Fprintf(output, "notes      %-10T %s\n", landing.Notes, *landing.Notes)
+	fmt.Fprintf(output, "notes      %-10T %s\n", landing.Notes, landing.Notes.V)
 	return nil
 }

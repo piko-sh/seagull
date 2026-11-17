@@ -529,13 +529,14 @@ func (b *catalogueBuilder) scanFunctionBody(signature *sqlmodel.Function) {
 // BodyParameters and whose signature receives an inferred ReturnType when the prior
 // ReturnType.Category was Unknown.
 func (b *catalogueBuilder) analyseBodyExpressionFunction(ctx context.Context, definition *ast.FunctionDefinition) {
+	ctx, logger := logging.From(ctx)
 	analyseErr := b.guardBody(ctx, definition.Function, "analysing", func() error {
 		functionResolver := resolve.NewFunctionResolver(b.engine.BuiltinFunctions(), b.catalogue, b.engine)
 		resolver := resolve.NewTypeResolver(b.catalogue, functionResolver, b.engine)
 		return analyseFunctionBody(ctx, definition, resolver)
 	})
 	if analyseErr != nil && !errors.Is(analyseErr, fault.ErrPanic) {
-		logging.LoggerFrom(ctx).Log(ctx, logging.LevelInternal, "function body inference degraded; registering with prior return type",
+		logger.Log(ctx, logging.LevelInternal, "function body inference degraded; registering with prior return type",
 			slog.String("function", definition.Name),
 			logging.ErrAttr(analyseErr),
 		)
@@ -670,7 +671,8 @@ func (*catalogueBuilder) logBodyFallback(ctx context.Context, message string, si
 	if errors.Is(err, fault.ErrPanic) {
 		return
 	}
-	logging.LoggerFrom(ctx).Log(ctx, logging.LevelInternal, message,
+	_, logger := logging.From(ctx)
+	logger.Log(ctx, logging.LevelInternal, message,
 		slog.String("function", signature.Name),
 		logging.ErrAttr(err),
 	)

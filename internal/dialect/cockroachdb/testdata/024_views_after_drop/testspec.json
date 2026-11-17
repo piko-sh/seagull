@@ -1,0 +1,4 @@
+{
+  "description": "CockroachDB refuses to drop a table a view reads.",
+  "expectedDiagnosticCount": 1
+}

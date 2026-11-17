@@ -1149,13 +1149,13 @@ func TestPromoteType_CrossCategory(t *testing.T) {
 
 	engine := New()
 
-	t.Run("different categories return left", func(t *testing.T) {
+	t.Run("a number and text meet in the text", func(t *testing.T) {
 		t.Parallel()
 
 		left := sqlmodel.NewIntegerType("int4", 32, false)
 		right := sqlmodel.SQLType{Category: sqlmodel.TypeCategoryText, EngineName: "varchar"}
-		result := engine.PromoteType(left, right)
-		assert.Equal(t, "int4", result.EngineName, "cross-category should return left type")
+		assert.Equal(t, "varchar", engine.PromoteType(left, right).EngineName, "DuckDB reads an INTEGER and a VARCHAR together as a VARCHAR")
+		assert.Equal(t, "varchar", engine.PromoteType(right, left).EngineName)
 	})
 
 	t.Run("text category returns left", func(t *testing.T) {
@@ -1167,50 +1167,31 @@ func TestPromoteType_CrossCategory(t *testing.T) {
 		assert.Equal(t, "varchar", result.EngineName)
 	})
 
-	t.Run("usmallint promoted over int1", func(t *testing.T) {
-		t.Parallel()
+	for _, testCase := range []struct {
+		name  string
+		left  sqlmodel.SQLType
+		right sqlmodel.SQLType
+		want  string
+	}{
+		{name: "a TINYINT and a USMALLINT meet in an INTEGER", left: sqlmodel.NewIntegerType("int1", 8, false),
+			right: sqlmodel.NewIntegerType("usmallint", 16, true), want: "int4"},
+		{name: "an INTEGER and a UBIGINT meet in a HUGEINT", left: sqlmodel.NewIntegerType("int4", 32, false),
+			right: sqlmodel.NewIntegerType("ubigint", 64, true), want: "hugeint"},
+		{name: "a HUGEINT and a UHUGEINT meet in a DOUBLE", left: sqlmodel.NewIntegerType("hugeint", 128, false),
+			right: sqlmodel.NewIntegerType("uhugeint", 128, true), want: "float8"},
+		{name: "a TINYINT and a UTINYINT meet in a SMALLINT", left: sqlmodel.NewIntegerType("int1", 8, false),
+			right: sqlmodel.NewIntegerType("utinyint", 8, true), want: "int2"},
+		{name: "a SMALLINT and a UINTEGER meet in a BIGINT", left: sqlmodel.NewIntegerType("int2", 16, false),
+			right: sqlmodel.NewIntegerType("uinteger", 32, true), want: "int8"},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
 
-		left := sqlmodel.NewIntegerType("int1", 8, false)
-		right := sqlmodel.NewIntegerType("usmallint", 16, true)
-		result := engine.PromoteType(left, right)
-		assert.Equal(t, "usmallint", result.EngineName)
-	})
-
-	t.Run("ubigint promoted over int4", func(t *testing.T) {
-		t.Parallel()
-
-		left := sqlmodel.NewIntegerType("int4", 32, false)
-		right := sqlmodel.NewIntegerType("ubigint", 64, true)
-		result := engine.PromoteType(left, right)
-		assert.Equal(t, "ubigint", result.EngineName)
-	})
-
-	t.Run("uhugeint promoted over hugeint", func(t *testing.T) {
-		t.Parallel()
-
-		left := sqlmodel.NewIntegerType("hugeint", 128, false)
-		right := sqlmodel.NewIntegerType("uhugeint", 128, true)
-		result := engine.PromoteType(left, right)
-		assert.Equal(t, "uhugeint", result.EngineName)
-	})
-
-	t.Run("utinyint promoted over int1", func(t *testing.T) {
-		t.Parallel()
-
-		left := sqlmodel.NewIntegerType("int1", 8, false)
-		right := sqlmodel.NewIntegerType("utinyint", 8, true)
-		result := engine.PromoteType(left, right)
-		assert.Equal(t, "utinyint", result.EngineName)
-	})
-
-	t.Run("uinteger promoted over int2", func(t *testing.T) {
-		t.Parallel()
-
-		left := sqlmodel.NewIntegerType("int2", 16, false)
-		right := sqlmodel.NewIntegerType("uinteger", 32, true)
-		result := engine.PromoteType(left, right)
-		assert.Equal(t, "uinteger", result.EngineName)
-	})
+			assert.Equal(t, testCase.want, engine.PromoteType(testCase.left, testCase.right).EngineName)
+			assert.Equal(t, testCase.want, engine.PromoteType(testCase.right, testCase.left).EngineName)
+			assert.False(t, engine.PromoteType(testCase.left, testCase.right).Unsigned, "a signed and an unsigned integer meet in a signed type")
+		})
+	}
 }
 
 func TestCanImplicitCast_FloatToDecimal(t *testing.T) {
@@ -1243,7 +1224,7 @@ func newLoggingContext(t *testing.T) (context.Context, *bytes.Buffer) {
 	t.Helper()
 
 	logs := &bytes.Buffer{}
-	return logging.ContextWithLogger(t.Context(), slog.New(slog.NewJSONHandler(logs, nil))), logs
+	return logging.WithLogger(t.Context(), slog.New(slog.NewJSONHandler(logs, nil))), logs
 }
 
 func loggedRecords(t *testing.T, logs *bytes.Buffer) []map[string]any {

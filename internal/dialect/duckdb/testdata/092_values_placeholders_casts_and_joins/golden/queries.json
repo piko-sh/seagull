@@ -39,6 +39,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        1
+      ]
+    },
     "SQL": "-- sgl.query(name: Dearer, command: many)\nSELECT id, fare * 2 AS doubled FROM trips WHERE doubled \u003e ? ORDER BY doubled DESC;",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:fare * 2⟩ AS doubled FROM trips WHERE doubled \u003e ⟨p0⟩ ORDER BY doubled DESC;⟨arguments p0⟩"
   },
@@ -125,10 +130,7 @@
           "Category": "integer",
           "EngineName": "int4",
           "Width": 32
-        },
-        "SourceColumn": "fare",
-        "SourceQualifier": "trips",
-        "SourceTable": "trips"
+        }
       },
       {
         "Name": "triple",
@@ -142,10 +144,7 @@
             "Width": 32
           },
           "EngineName": "int4[]"
-        },
-        "SourceColumn": "doc",
-        "SourceQualifier": "trips",
-        "SourceTable": "trips"
+        }
       },
       {
         "Name": "labels",
@@ -341,6 +340,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(name: TripsFor, command: many)\nSELECT id FROM trips WHERE city = :city AND id \u003e $1 AND city \u003c\u003e :other ORDER BY id;",
     "Template": "SELECT ⟨c0:id⟩ FROM trips WHERE city = ⟨p1⟩ AND id \u003e ⟨p0⟩ AND city \u003c\u003e ⟨p2⟩ ORDER BY id;⟨arguments p0 p1 p2⟩"
   },
@@ -395,6 +399,10 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Compound": true,
+      "Ordinal": true
+    },
     "SQL": "-- sgl.query(name: Mixed, command: many)\nSELECT id, city FROM trips UNION ALL VALUES (0, 'none') ORDER BY 1;",
     "Template": "SELECT id, city FROM trips UNION ALL VALUES (0, 'none') ORDER BY 1;"
   },

@@ -161,6 +161,36 @@ func (p *parser) reparse(start, end int, list, subqueries bool) []ast.Expression
 	return expressions
 }
 
+// checkSortList records a syntax error unless the tokens from start to end are one or
+// more sort keys, each an expression and its direction and NULLS placement, separated by
+// commas, so a key followed by stray words is refused rather than skipped.
+//
+// Takes start (int) which is the index of the list's first token.
+// Takes end (int) which is the index past its last token.
+func (p *parser) checkSortList(start, end int) {
+	if start >= end || end > len(p.Tokens) {
+		p.recordSyntaxError(dialectkit.NewParseError(p.Tokens[min(start, len(p.Tokens)-1)], "expected an ORDER BY key"))
+		return
+	}
+	scratch := p.newChildParser(p.Tokens[start:end:end])
+	scratch.skipSubqueries = true
+	for !scratch.AtEnd() {
+		before := scratch.Position
+		scratch.parseExpression()
+		for scratch.MatchKeyword("COLLATE") && !scratch.AtEnd() {
+			scratch.Advance()
+		}
+		scratch.skipSortModifiers()
+		if scratch.Current().Kind != tokenComma || scratch.Position == before {
+			break
+		}
+		scratch.Advance()
+	}
+	if !scratch.AtEnd() {
+		p.recordSyntaxError(dialectkit.NewParseError(p.Tokens[start+scratch.Position], "expected ',' or the end of the ORDER BY list"))
+	}
+}
+
 // skipSortModifiers consumes the direction and NULLS placement that may follow an ORDER
 // BY key.
 func (p *parser) skipSortModifiers() {

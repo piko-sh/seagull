@@ -1,0 +1,1 @@
+CREATE TABLE rt (k INT NOT NULL, v INT);

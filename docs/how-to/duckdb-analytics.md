@@ -60,7 +60,7 @@ For `AuctionPrices`, pass the path to an existing Parquet file as `priceList`:
 	}
 	fmt.Fprintln(output, "auction prices (read_parquet):")
 	for _, price := range prices {
-		fmt.Fprintf(output, "  %-8s %dp a kg\n", *price.Species, *price.PencePerKg)
+		fmt.Fprintf(output, "  %-8s %dp a kg\n", price.Species.V, price.PencePerKg.V)
 	}
 ```
 

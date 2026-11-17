@@ -47,20 +47,28 @@ type progressRow struct {
 	dirty           bool
 }
 
+type seedProgressRow struct {
+	checksum string
+	last     int64
+}
+
 type progressStore struct {
-	mu               sync.Mutex
-	rows             map[int64]progressRow
-	failures         map[string]error
-	columns          map[string]bool
-	executed         []string
-	transactions     int
-	tableExists      bool
-	refuseAlter      bool
-	addedByOther     bool
-	lost             bool
-	replacing        bool
-	rollbackError    error
-	loseConnectionOn string
+	mu                 sync.Mutex
+	rows               map[int64]progressRow
+	seedProgress       map[int64]seedProgressRow
+	migrationProgress  map[int64]seedProgressRow
+	timestampAppliedAt bool
+	failures           map[string]error
+	columns            map[string]bool
+	executed           []string
+	transactions       int
+	tableExists        bool
+	refuseAlter        bool
+	addedByOther       bool
+	lost               bool
+	replacing          bool
+	rollbackError      error
+	loseConnectionOn   string
 }
 
 func newProgressStore() *progressStore {
@@ -198,6 +206,23 @@ func (store *progressStore) exec(query string, arguments []driver.NamedValue) (d
 		return nil, err
 	}
 	switch {
+	case strings.HasPrefix(query, "INSERT INTO sgl_seeds_progress"):
+		if store.seedProgress == nil {
+			store.seedProgress = make(map[int64]seedProgressRow)
+		}
+		store.seedProgress[valueInt64(arguments, 0)] = seedProgressRow{checksum: valueString(arguments, 1), last: valueInt64(arguments, 2)}
+	case strings.HasPrefix(query, "SET "), strings.Contains(query, "MODIFY applied_at"):
+		if strings.Contains(query, "MODIFY applied_at") {
+			store.timestampAppliedAt = false
+		}
+	case strings.HasPrefix(query, "TRUNCATE TABLE sgl_seeds_progress"):
+		store.seedProgress = nil
+	case strings.HasPrefix(query, "INSERT INTO sgl_migrations_progress"):
+		if store.migrationProgress == nil {
+			store.migrationProgress = make(map[int64]seedProgressRow)
+		}
+		store.migrationProgress[valueInt64(arguments, 0)] = seedProgressRow{checksum: valueString(arguments, 1), last: valueInt64(arguments, 2)}
+	case strings.HasPrefix(query, "CREATE TABLE IF NOT EXISTS sgl_migrations_progress"):
 	case strings.HasPrefix(query, "CREATE TABLE IF NOT EXISTS sgl_migrations"):
 		store.tableExists = true
 	case strings.HasPrefix(query, "ALTER TABLE sgl_migrations ADD COLUMN"):
@@ -303,8 +328,26 @@ func (store *progressStore) query(query string, arguments []driver.NamedValue) (
 	}
 	store.executed = append(store.executed, query)
 	switch {
+	case strings.HasPrefix(query, "SELECT checksum, last_statement FROM sgl_seeds_progress"):
+		row, found := store.seedProgress[valueInt64(arguments, 0)]
+		if !found {
+			return &progressRows{columns: []string{"checksum", "last_statement"}}, nil
+		}
+		return &progressRows{columns: []string{"checksum", "last_statement"}, values: [][]driver.Value{{row.checksum, row.last}}}, nil
+	case strings.HasPrefix(query, "SELECT checksum, last_statement FROM sgl_migrations_progress"):
+		row, found := store.migrationProgress[valueInt64(arguments, 0)]
+		if !found {
+			return &progressRows{columns: []string{"checksum", "last_statement"}}, nil
+		}
+		return &progressRows{columns: []string{"checksum", "last_statement"}, values: [][]driver.Value{{row.checksum, row.last}}}, nil
 	case query == mysqlEngine().currentSchemaSQL:
 		return &progressRows{columns: []string{"database"}, values: [][]driver.Value{{nil}}}, nil
+	case strings.Contains(query, "information_schema.columns"):
+		old := int64(0)
+		if store.timestampAppliedAt {
+			old = 1
+		}
+		return &progressRows{columns: []string{"count"}, values: [][]driver.Value{{old}}}, nil
 	case strings.Contains(query, "sqlite_master"), strings.Contains(query, "information_schema.tables"):
 		exists := int64(0)
 		if store.tableExists {

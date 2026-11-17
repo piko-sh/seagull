@@ -79,6 +79,10 @@ var generalCases = []corpusCase{
 		query("ItemsNotIn", commandMany, "SELECT id FROM items WHERE kind = {kind} AND id NOT IN ({ids});", scenarioSlices,
 			text(columnKindName), integers("ids")),
 	)},
+	{name: caseBatchLiterals, general: true, runtime: true, refusable: true, tables: nil, files: singleFile(
+		query("InsertLiteralItems", commandBatch,
+			"INSERT INTO items (id, kind, rank, name) VALUES (1, 'literal', 1 + 1, "+confusableLiteral+");", scenarioBatch),
+	)},
 	{name: caseBatch, general: true, runtime: true, refusable: false, tables: nil, files: singleFile(
 		query("InsertItems", commandBatch,
 			"INSERT INTO items (id, kind, rank, name) VALUES ({id}, {kind}, {rank} + 1, "+confusableLiteral+");",
@@ -377,13 +381,11 @@ func nestedEnumCase(name, column, label string, kind columnKind) corpusCase {
 }
 
 // searchOrdered returns a runtime-built query whose base SQL orders and limits, the limit
-// a parameter a count need not bind.
+// a parameter. Its builder reads the rows that limit returns, so its count binds it too.
 //
 // Returns corpusQuery which is the query.
 func searchOrdered() corpusQuery {
-	ordered := builderQuery("SearchOrdered", "SELECT id, kind FROM items ORDER BY id LIMIT {page}", integer("page"))
-	ordered.uncounted = []string{"page"}
-	return ordered
+	return builderQuery("SearchOrdered", "SELECT id, kind FROM items ORDER BY id LIMIT {page}", integer("page"))
 }
 
 // reservedParametersCase returns queries whose parameters are named like the locals,

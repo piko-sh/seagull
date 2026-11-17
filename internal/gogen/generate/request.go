@@ -227,6 +227,7 @@ func checkQueryNaming(query *sqlmodel.AnalysedQuery, naming *emit.QueryNaming) e
 	single := []string{
 		naming.Method, naming.SQLConstant, naming.CountConstant, naming.Params, naming.ParamsArgument, naming.Row,
 		naming.Builder, naming.AllowedColumns, naming.OrderBy, naming.DirectionField,
+		naming.FilteredConstant, naming.FilteredCountConstant, naming.FilteredColumns,
 	}
 	if !optionalIdentifiers(single) || !identifiers(naming.ParameterFields) || !identifiers(naming.ColumnFields) ||
 		!identifiers(naming.ColumnLocals) || !identifiers(naming.OrderByConstants) || !embedIdentifiers(naming.Embeds) {

@@ -1,0 +1,42 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 55,
+    "EndColumn": 58,
+    "EndLine": 7,
+    "Filename": "001_schema.up.sql",
+    "Line": 7,
+    "Message": "failed to interpret DDL: syntax error near \"NOT\": MariaDB takes only a REFERENCES clause after a column's CHECK",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 66,
+    "EndColumn": 71,
+    "EndLine": 8,
+    "Filename": "001_schema.up.sql",
+    "Line": 8,
+    "Message": "failed to interpret DDL: syntax error near \"CHECK\": MariaDB ends a column definition at its REFERENCES clause",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 33,
+    "EndColumn": 43,
+    "EndLine": 9,
+    "Filename": "001_schema.up.sql",
+    "Line": 9,
+    "Message": "failed to interpret DDL: syntax error near \"CONSTRAINT\": MariaDB names only a REFERENCES clause in a column definition",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 46,
+    "EndColumn": 51,
+    "EndLine": 10,
+    "Filename": "001_schema.up.sql",
+    "Line": 10,
+    "Message": "failed to interpret DDL: syntax error near \"CHECK\": MariaDB takes only a REFERENCES clause after a column's CHECK",
+    "Severity": "error"
+  }
+]

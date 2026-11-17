@@ -23,6 +23,7 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
+	"os"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -97,14 +98,17 @@ func IsolatedDatabase(t *testing.T, driver, connection string) (*sql.DB, string)
 	return openIsolated(t, driver, isolated), isolated
 }
 
-// UniqueName returns a schema or database name for the test: a prefix, a digest of the
-// test's name and a number no other call in the test binary returns, so tests running at
-// once never share one and a failed test's leftovers are easy to trace.
+// UniqueName returns a unique schema or database name for a test.
+//
+// The name combines a prefix, the test name's digest, the process ID and a counter.
+// Concurrent workers receive distinct names that remain traceable to their tests.
+//
+// Takes t (*testing.T) which identifies the test.
 //
 // Returns string which is the name, a valid unquoted identifier on every engine.
 func UniqueName(t *testing.T) string {
 	digest := sha256.Sum256([]byte(t.Name()))
-	return isolatedPrefix + hex.EncodeToString(digest[:nameDigestBytes]) + "_" + strconv.FormatUint(isolatedCount.Add(1), 10)
+	return isolatedPrefix + hex.EncodeToString(digest[:nameDigestBytes]) + "_" + strconv.Itoa(os.Getpid()) + "_" + strconv.FormatUint(isolatedCount.Add(1), 10)
 }
 
 // WithDatabase returns a connection string naming another database on the same server,
@@ -132,6 +136,8 @@ func WithDatabase(connection, name string) string {
 // CleanupContext returns the context a clean-up runs under: the test's values without its
 // cancellation, which has already happened when clean-ups run, ending with a cause once
 // cleanupTimeout has passed.
+//
+// Takes t (*testing.T) which supplies the original context values.
 //
 // Returns context.Context which bounds the clean-up.
 // Returns context.CancelFunc which releases it.

@@ -128,7 +128,7 @@ func (p *parser) parseCreateTable(engine *Dialect) (*ast.CatalogueMutation, erro
 	widenRowidAlias(&body, isWithoutRowID)
 	widenStrictIntegers(&body, isStrict)
 
-	return ast.NewCatalogueMutation(
+	mutation := ast.NewCatalogueMutation(
 		ast.MutationCreateTable,
 		"",
 		tableName,
@@ -137,7 +137,9 @@ func (p *parser) parseCreateTable(engine *Dialect) (*ast.CatalogueMutation, erro
 		ast.WithConstraints(body.constraints),
 		ast.WithWithoutRowID(isWithoutRowID),
 		ast.WithIfNotExists(ifNotExists),
-	), nil
+	)
+	mutation.KeyNames, mutation.AttributeNames = p.takeDeclaredNames()
+	return mutation, nil
 }
 
 // parseCreateTableAs parses the query of a CREATE TABLE ... AS, which gives the new table
@@ -224,7 +226,13 @@ func (p *parser) parseCreateTableHeader() (string, bool, error) {
 		return "", false, err
 	}
 	tableName, err := p.parseTableName()
-	return tableName, ifNotExists, err
+	if err != nil {
+		return "", false, err
+	}
+	if word := p.Tokens[p.Position-1].Keyword(tokenIdentifier); p.reservedNames.RefusesTable(word) {
+		return "", false, dialectkit.NewParseError(p.Tokens[p.Position-1], dialectkit.ReservedNameMessage(word, "table"))
+	}
+	return tableName, ifNotExists, nil
 }
 
 // matchIfNotExists consumes an optional IF NOT EXISTS clause.
@@ -345,6 +353,7 @@ func (p *parser) parseTableBodyColumn(engine *Dialect, result *tableBodyResult) 
 		return err
 	}
 	result.columns = append(result.columns, column)
+	result.constraints = append(result.constraints, p.takeColumnConstraints()...)
 	result.declaredTypes[column.Name] = declaredType
 	if columnPrimaryKey != primaryKeyNone {
 		result.primaryKey = append(result.primaryKey, column.Name)
@@ -371,6 +380,9 @@ func (p *parser) parseTableBodyColumn(engine *Dialect, result *tableBodyResult) 
 func (p *parser) parseColumnDefinition(
 	engine *Dialect,
 ) (column sqlmodel.Column, primaryKey primaryKeyOrder, declaredType string, err error) {
+	if word := p.Current().Keyword(tokenIdentifier); p.reservedNames.RefusesColumnDefinition(word, p.Peek().Kind == tokenLeftParen) {
+		return sqlmodel.Column{}, primaryKeyNone, "", dialectkit.NewParseError(p.Current(), dialectkit.ReservedNameMessage(word, "column"))
+	}
 	name, nameError := p.parseIdentifierOrKeyword()
 	if nameError != nil {
 		return sqlmodel.Column{}, primaryKeyNone, "", fmt.Errorf("parsing column name: %w", nameError)
@@ -423,7 +435,11 @@ func (p *parser) parseColumnConstraints(column *sqlmodel.Column) (primaryKeyOrde
 // order.
 // Returns err (error) which is non-nil when the constraint is malformed.
 func (p *parser) parseOneColumnConstraint(column *sqlmodel.Column) (handled bool, primaryKey primaryKeyOrder, err error) {
+	if !p.IsKeyword(keywordCONSTRAINT) {
+		defer func() { p.columnConstraintName = "" }()
+	}
 	if p.MatchKeyword(keywordPRIMARY) {
+		p.recordColumnName(&p.keyNames)
 		order, keyError := p.parsePrimaryKeyColumnConstraint()
 		return true, order, keyError
 	}
@@ -433,6 +449,7 @@ func (p *parser) parseOneColumnConstraint(column *sqlmodel.Column) (handled bool
 			return true, primaryKeyNone, nullError
 		}
 		column.Nullable = false
+		p.recordNamedColumnConstraint(column.Name, sqlmodel.ConstraintNotNull)
 		return true, primaryKeyNone, p.skipConflictClause()
 	}
 
@@ -442,15 +459,18 @@ func (p *parser) parseOneColumnConstraint(column *sqlmodel.Column) (handled bool
 	}
 
 	if p.MatchKeyword(keywordUNIQUE) {
+		p.recordColumnName(&p.keyNames)
 		return true, primaryKeyNone, p.skipConflictClause()
 	}
 
 	if p.MatchKeyword(keywordCHECK) {
+		p.recordNamedColumnConstraint(column.Name, sqlmodel.ConstraintCheck)
 		return true, primaryKeyNone, p.skipParenthesised()
 	}
 
 	if p.MatchKeyword("DEFAULT") {
 		column.HasDefault = true
+		p.recordColumnName(&p.attributeNames)
 		return true, primaryKeyNone, p.skipDefaultValue()
 	}
 
@@ -496,13 +516,19 @@ func (p *parser) parsePrimaryKeyColumnConstraint() (primaryKeyOrder, error) {
 // Returns err (error) which is non-nil when the constraint is malformed.
 func (p *parser) parseSecondaryColumnConstraint(column *sqlmodel.Column) (handled bool, primaryKey primaryKeyOrder, err error) {
 	if p.MatchKeyword(keywordCOLLATE) {
+		p.recordColumnName(&p.attributeNames)
 		_, err = p.parseIdentifierOrKeyword()
 		return true, primaryKeyNone, err
 	}
 
 	if p.MatchKeyword(keywordREFERENCES) {
-		_, _, err = p.parseForeignKeyTarget()
-		return true, primaryKeyNone, err
+		foreignTable, foreignColumns, targetError := p.parseForeignKeyTarget()
+		if p.columnConstraintName != "" && targetError == nil {
+			p.columnConstraints = append(p.columnConstraints, sqlmodel.Constraint{Name: p.columnConstraintName,
+				Kind: sqlmodel.ConstraintForeignKey, Columns: []string{column.Name}, ForeignTable: foreignTable,
+				ForeignColumns: foreignColumns, Origin: sqlmodel.MigrationOrigin{}})
+		}
+		return true, primaryKeyNone, targetError
 	}
 
 	if p.IsKeyword("GENERATED", keywordAS) {
@@ -510,11 +536,57 @@ func (p *parser) parseSecondaryColumnConstraint(column *sqlmodel.Column) (handle
 	}
 
 	if p.MatchKeyword(keywordCONSTRAINT) {
-		_, err = p.parseIdentifierOrKeyword()
+		p.columnConstraintName, err = p.parseIdentifierOrKeyword()
 		return true, primaryKeyNone, err
 	}
 
 	return false, primaryKeyNone, nil
+}
+
+// recordNamedColumnConstraint records a named NOT NULL or CHECK column constraint.
+//
+// ALTER TABLE ... DROP CONSTRAINT can drop a named constraint but not an unnamed one.
+//
+// Takes columnName (string) which is the column the constraint belongs to.
+// Takes kind (sqlmodel.ConstraintKind) which is the constraint's kind.
+func (p *parser) recordNamedColumnConstraint(columnName string, kind sqlmodel.ConstraintKind) {
+	if p.columnConstraintName == "" {
+		return
+	}
+	p.columnConstraints = append(p.columnConstraints, sqlmodel.Constraint{Name: p.columnConstraintName, Kind: kind,
+		Columns: []string{columnName}, ForeignTable: "", ForeignColumns: nil, Origin: sqlmodel.MigrationOrigin{}})
+}
+
+// recordColumnName keeps the name a CONSTRAINT clause gives the column clause that
+// follows it, when it gives one.
+//
+// Takes names (*[]string) which receives the name.
+func (p *parser) recordColumnName(names *[]string) {
+	if p.columnConstraintName != "" {
+		*names = append(*names, p.columnConstraintName)
+	}
+}
+
+// takeDeclaredNames returns the key and attribute names the definitions read so far give,
+// and forgets them.
+//
+// Returns keys ([]string) which holds the primary key and unique constraint names.
+// Returns attributes ([]string) which holds the DEFAULT and COLLATE names.
+func (p *parser) takeDeclaredNames() (keys []string, attributes []string) {
+	keys, attributes = p.keyNames, p.attributeNames
+	p.keyNames, p.attributeNames = nil, nil
+	return keys, attributes
+}
+
+// takeColumnConstraints returns the named constraints the column definitions read so far
+// declare, and forgets them.
+//
+// Returns []sqlmodel.Constraint which holds them in order.
+func (p *parser) takeColumnConstraints() []sqlmodel.Constraint {
+	constraints := p.columnConstraints
+	p.columnConstraints = nil
+	p.columnConstraintName = ""
+	return constraints
 }
 
 // parseGeneratedColumnBody consumes a generated column's definition, `[GENERATED ALWAYS]
@@ -702,6 +774,9 @@ func (p *parser) parseTableConstraint() ([]string, *sqlmodel.Constraint, error) 
 	}
 
 	if p.MatchKeyword(keywordPRIMARY) {
+		if constraintName != "" {
+			p.keyNames = append(p.keyNames, constraintName)
+		}
 		return p.parsePrimaryKeyConstraint()
 	}
 
@@ -1053,7 +1128,45 @@ func (p *parser) parseAlterTable(engine *Dialect) (*ast.CatalogueMutation, error
 		return p.parseAlterTableDrop(tableName)
 	}
 
-	return nil, dialectkit.NewParseError(p.Current(), "expected ADD, RENAME or DROP: unsupported ALTER TABLE operation")
+	if p.MatchKeyword("ALTER") {
+		return p.parseAlterTableAlterColumn(tableName)
+	}
+
+	return nil, dialectkit.NewParseError(p.Current(), "expected ADD, RENAME, DROP or ALTER: unsupported ALTER TABLE operation")
+}
+
+// parseAlterTableAlterColumn parses ALTER [COLUMN] c SET NOT NULL or DROP NOT NULL, which
+// SQLite 3.53 added.
+//
+// Takes tableName (string) which is the target table name.
+//
+// Returns *ast.CatalogueMutation which changes whether the column may hold NULL.
+// Returns error when the action is not SET NOT NULL or DROP NOT NULL.
+func (p *parser) parseAlterTableAlterColumn(tableName string) (*ast.CatalogueMutation, error) {
+	p.MatchKeyword(keywordCOLUMN)
+	columnName, nameError := p.parseIdentifierOrKeyword()
+	if nameError != nil {
+		return nil, nameError
+	}
+	nullable := p.MatchKeyword(keywordDROP)
+	if !nullable && !p.MatchKeyword("SET") {
+		return nil, dialectkit.NewParseError(p.Current(), "expected SET NOT NULL or DROP NOT NULL")
+	}
+	if err := p.expectKeywordSequence(keywordNOT, keywordNULL); err != nil {
+		return nil, err
+	}
+	if !nullable {
+		if err := p.skipConflictClause(); err != nil {
+			return nil, err
+		}
+	}
+	return ast.NewCatalogueMutation(
+		ast.MutationAlterTableAlterColumn,
+		"",
+		tableName,
+		ast.WithColumnName(columnName),
+		ast.WithColumnNullability(nullable),
+	), nil
 }
 
 // parseAlterTableAdd parses an ALTER TABLE ADD COLUMN action.
@@ -1064,17 +1177,54 @@ func (p *parser) parseAlterTable(engine *Dialect) (*ast.CatalogueMutation, error
 // Returns *ast.CatalogueMutation which describes the new column.
 // Returns error when the column fails to parse.
 func (p *parser) parseAlterTableAdd(engine *Dialect, tableName string) (*ast.CatalogueMutation, error) {
-	p.MatchKeyword("COLUMN")
+	if p.IsKeyword(keywordCONSTRAINT, keywordCHECK) {
+		return p.parseAlterTableAddCheck(tableName)
+	}
+	p.MatchKeyword(keywordCOLUMN)
 	column, _, _, columnError := p.parseColumnDefinition(engine)
 	if columnError != nil {
 		return nil, columnError
 	}
-	return ast.NewCatalogueMutation(
+	mutation := ast.NewCatalogueMutation(
 		ast.MutationAlterTableAddColumn,
 		"",
 		tableName,
 		ast.WithColumns([]sqlmodel.Column{column}),
-	), nil
+	)
+	mutation.KeyNames, mutation.AttributeNames = p.takeDeclaredNames()
+	if constraints := p.takeColumnConstraints(); len(constraints) > 0 {
+		mutation.AdditionalMutations = append(mutation.AdditionalMutations,
+			ast.NewCatalogueMutation(ast.MutationAlterTableAddConstraint, "", tableName, ast.WithConstraints(constraints)))
+	}
+	return mutation, nil
+}
+
+// parseAlterTableAddCheck parses an ALTER TABLE statement that adds a CHECK constraint.
+//
+// SQLite 3.53 accepts an optional CONSTRAINT name but no other kind of constraint here.
+//
+// Takes tableName (string) which is the target table name.
+//
+// Returns *ast.CatalogueMutation which adds the check.
+// Returns error when the constraint is not a CHECK or is malformed.
+func (p *parser) parseAlterTableAddCheck(tableName string) (*ast.CatalogueMutation, error) {
+	var constraintName string
+	if p.MatchKeyword(keywordCONSTRAINT) {
+		name, nameError := p.parseIdentifierOrKeyword()
+		if nameError != nil {
+			return nil, nameError
+		}
+		constraintName = name
+	}
+	if _, err := p.ExpectKeyword(keywordCHECK); err != nil {
+		return nil, dialectkit.NewParseError(p.Current(), "SQLite's ALTER TABLE adds only a CHECK constraint")
+	}
+	_, constraint, err := p.parseCheckConstraint(constraintName)
+	if err != nil {
+		return nil, err
+	}
+	return ast.NewCatalogueMutation(ast.MutationAlterTableAddConstraint, "", tableName,
+		ast.WithConstraints([]sqlmodel.Constraint{*constraint})), nil
 }
 
 // parseAlterTableRename parses an ALTER TABLE RENAME action covering both table rename
@@ -1098,7 +1248,7 @@ func (p *parser) parseAlterTableRename(tableName string) (*ast.CatalogueMutation
 		), nil
 	}
 
-	p.MatchKeyword("COLUMN")
+	p.MatchKeyword(keywordCOLUMN)
 	oldName, oldError := p.parseIdentifierOrKeyword()
 	if oldError != nil {
 		return nil, oldError
@@ -1126,7 +1276,17 @@ func (p *parser) parseAlterTableRename(tableName string) (*ast.CatalogueMutation
 // Returns *ast.CatalogueMutation which describes the column to drop.
 // Returns error when the column name fails to parse.
 func (p *parser) parseAlterTableDrop(tableName string) (*ast.CatalogueMutation, error) {
-	p.MatchKeyword("COLUMN")
+	if p.MatchKeyword(keywordCONSTRAINT) {
+		constraintName, nameError := p.parseIdentifierOrKeyword()
+		if nameError != nil {
+			return nil, nameError
+		}
+		mutation := ast.NewCatalogueMutation(ast.MutationAlterTableDropConstraint, "", tableName,
+			ast.WithConstraintName(constraintName))
+		mutation.RefusesUnknownConstraint = true
+		return mutation, nil
+	}
+	p.MatchKeyword(keywordCOLUMN)
 	columnName, nameError := p.parseIdentifierOrKeyword()
 	if nameError != nil {
 		return nil, nameError
@@ -1136,6 +1296,7 @@ func (p *parser) parseAlterTableDrop(tableName string) (*ast.CatalogueMutation, 
 		"",
 		tableName,
 		ast.WithColumnName(columnName),
+		ast.WithDroppedColumnIndexes(ast.ColumnIndexesRestrict),
 	), nil
 }
 

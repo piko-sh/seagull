@@ -331,14 +331,17 @@ func (p *parser) parseAlterAddConstraint(database, table string) (*ast.Catalogue
 		return nil, err
 	}
 	specific := map[string]string{engineKeyConstraintName: name}
+	var constraints []sqlmodel.Constraint
 	if p.MatchKeyword("CHECK") {
 		specific[engineKeyConstraintCheck] = p.consumeUntilTopLevelCommaAsText()
+		constraints = append(constraints, *checkConstraint(name))
 	}
 	return ast.NewCatalogueMutation(
 		ast.MutationAlterTableAddConstraint,
 		database,
 		table,
 		ast.WithConstraintName(name),
+		ast.WithConstraints(constraints),
 		ast.WithEngineSpecific(specific),
 	), nil
 }
@@ -519,6 +522,9 @@ func (p *parser) parseAlterModifyColumnAction(database, table string) (*ast.Cata
 		}
 		return mutation, actionErr
 	}
+	if p.IsKeyword("DEFAULT") {
+		return p.parseModifyColumnDefault(database, table, columnName, ifColumnExists)
+	}
 	p.Position = savedPosition
 	column, err := p.parseClickHouseColumn()
 	if err != nil {
@@ -534,6 +540,37 @@ func (p *parser) parseAlterModifyColumnAction(database, table string) (*ast.Cata
 		table,
 		ast.WithColumnName(column.Name),
 		ast.WithColumns([]sqlmodel.Column{column}),
+		ast.WithPlacement(placement.Kind, placement.Anchor),
+	)
+	mutation.IfColumnExists = ifColumnExists
+	mutation.KeepsUnstated = true
+	return mutation, nil
+}
+
+// parseModifyColumnDefault handles `MODIFY COLUMN name DEFAULT expr`, which gives the
+// column a default and keeps its type.
+//
+// Takes database (string) which is the schema name of the target table.
+// Takes table (string) which is the name of the target table.
+// Takes columnName (string) which is the name of the column being modified.
+// Takes ifColumnExists (bool) which is true when the clause said IF EXISTS.
+//
+// Returns *ast.CatalogueMutation which sets the column's default.
+// Returns error when the placement after the expression is malformed.
+func (p *parser) parseModifyColumnDefault(database, table, columnName string, ifColumnExists bool) (*ast.CatalogueMutation, error) {
+	var modifiers sqlmodel.Column
+	for p.applyColumnModifier(&modifiers) {
+	}
+	placement, err := p.parsePlacement()
+	if err != nil {
+		return nil, err
+	}
+	mutation := ast.NewCatalogueMutation(
+		ast.MutationAlterTableAlterColumn,
+		database,
+		table,
+		ast.WithColumnName(columnName),
+		ast.WithColumnDefault(true),
 		ast.WithPlacement(placement.Kind, placement.Anchor),
 	)
 	mutation.IfColumnExists = ifColumnExists
@@ -562,6 +599,10 @@ func (p *parser) tryParseModifyColumnSubAction(database, table, columnName strin
 		property, parseErr := p.parseIdentifierOrKeyword()
 		if parseErr != nil {
 			return nil, true, parseErr
+		}
+		if strings.EqualFold(property, "DEFAULT") {
+			return ast.NewCatalogueMutation(ast.MutationAlterTableAlterColumn, database, table, ast.WithColumnName(columnName),
+				ast.WithColumnDefault(false)), true, nil
 		}
 		return p.buildModifyColumnMutation(database, table, columnName,
 			engineKeyColumnRemove, strings.ToUpper(property)), true, nil
@@ -757,4 +798,22 @@ func (p *parser) parseAlterMaterializeTTL(database, table string) (*ast.Catalogu
 	}))
 	p.captureMaterializeInPartition(mutation)
 	return mutation, nil
+}
+
+// atPlacement reports whether the cursor is on a column placement that ends the action,
+// FIRST or AFTER name, followed by the end of the statement or a comma.
+//
+// Returns bool which is true on such a placement.
+func (p *parser) atPlacement() bool {
+	ends := func(candidate token) bool {
+		return candidate.Kind == tokenComma || candidate.Kind == tokenSemicolon || candidate.Kind == tokenEOF
+	}
+	switch {
+	case p.IsKeyword("FIRST"):
+		return ends(p.Peek())
+	case p.IsKeyword(keywordAfter):
+		return p.Peek().Kind == tokenIdentifier && ends(p.PeekAt(2))
+	default:
+		return false
+	}
 }

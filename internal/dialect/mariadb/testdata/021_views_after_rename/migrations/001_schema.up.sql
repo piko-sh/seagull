@@ -1,0 +1,3 @@
+CREATE TABLE src (id INT PRIMARY KEY, label TEXT);
+CREATE VIEW v AS SELECT id, label FROM src;
+RENAME TABLE src TO dst;

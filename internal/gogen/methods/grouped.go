@@ -20,7 +20,6 @@ package methods
 
 import (
 	"go/ast"
-	"go/token"
 	"strings"
 
 	"piko.sh/goastutil"
@@ -243,6 +242,7 @@ func buildGroupedScanLoop(groupContext *groupedContext) []ast.Stmt {
 //
 // Returns *ast.IfStmt which holds the if-exists branching statement.
 func buildGroupExistsCheck(groupContext *groupedContext) *ast.IfStmt {
+	const groupEntryStatements = 3
 	query := groupContext.Query
 	key := goastutil.CachedIdent(query.Naming.ColumnLocals[groupContext.KeyColumnIndex])
 	detailAppends := buildDetailAppendStatements(groupContext)
@@ -250,7 +250,7 @@ func buildGroupExistsCheck(groupContext *groupedContext) *ast.IfStmt {
 	entryFields := buildKeyEmbedEntryFields(groupContext)
 	entryFields = append(entryFields, columnValues(query, flatColumns(query.Analysed))...)
 
-	elseStatements := make([]ast.Stmt, 0, 3+len(detailAppends))
+	elseStatements := make([]ast.Stmt, 0, groupEntryStatements+len(detailAppends))
 	elseStatements = append(elseStatements,
 		goastutil.DefineStmt(identEntry,
 			goastutil.CallExpr(goastutil.CachedIdent("len"), goastutil.CachedIdent(goast.IdentResults)),
@@ -339,11 +339,8 @@ func buildDetailAppendStatements(groupContext *groupedContext) []ast.Stmt {
 			continue
 		}
 		statements = append(statements, &ast.IfStmt{
-			Cond: &ast.BinaryExpr{
-				X:  goastutil.CachedIdent(groupContext.Query.Naming.ColumnLocals[group.Columns[0]]),
-				Op: token.NEQ,
-				Y:  goastutil.CachedIdent(goast.IdentNil),
-			},
+			Cond: presenceTest(goastutil.CachedIdent(groupContext.Query.Naming.ColumnLocals[group.Columns[0]]),
+				ColumnGoType(groupContext.Query, group.Columns[0])),
 			Body: goastutil.BlockStmt(appendStatement),
 		})
 	}

@@ -21,6 +21,7 @@ package methods
 import (
 	"go/ast"
 	"go/token"
+	"go/types"
 	"strconv"
 	"strings"
 
@@ -205,11 +206,7 @@ func BuildEmbedNilCheckStatements(query *gogen.Query) []ast.Stmt {
 		embed := goastutil.SelectorExprFrom(goastutil.CachedIdent(goast.IdentRow), group.naming.Field)
 		statements = append(statements,
 			&ast.IfStmt{
-				Cond: &ast.BinaryExpr{
-					X:  goastutil.SelectorExprFrom(embed, query.Naming.ColumnFields[sentinel]),
-					Op: token.EQL,
-					Y:  goastutil.CachedIdent(goast.IdentNil),
-				},
+				Cond: nullTest(goastutil.SelectorExprFrom(embed, query.Naming.ColumnFields[sentinel]), ColumnGoType(query, sentinel)),
 				Body: goastutil.BlockStmt(
 					goastutil.AssignStmt(
 						goastutil.SelectorExprFrom(goastutil.CachedIdent(goast.IdentRow), group.naming.Field),
@@ -247,9 +244,10 @@ func BuildErrCheck(zeroValues ...ast.Expr) *ast.IfStmt {
 // buildScan constructs how a row is read into targets.
 //
 // A column the query's SQL wraps in the dialect's to-JSON function scans through the JSON
-// scan adapter, a column the driver reads converted through the driver's converting scan
-// adapter, since its SQL is not wrapped, and a column whose Go type an override chose
-// through the driver's override scan adapter where the driver has one.
+// scan adapter, an array the driver returns in its text form through the array scanner, a
+// column the driver reads converted through the driver's converting scan adapter, since
+// its SQL is not wrapped, and a column whose Go type an override chose through the
+// driver's override scan adapter where the driver has one.
 //
 // Takes emission (*gogen.Emission) which names the scan adapter and says which enums the
 // driver fills only as strings.
@@ -276,6 +274,11 @@ func buildScan(emission *gogen.Emission, query *gogen.Query, target func(index i
 			scan.Arguments = append(scan.Arguments, emission.ConvertingScan(goastutil.AddressExpr(destination)))
 		case wrapped && kind == emitkit.ColumnWrapJSON:
 			scan.Arguments = append(scan.Arguments, emission.Vocabulary.ScanIntoCall(goastutil.AddressExpr(destination), query.Imports))
+		case emission.ReadsArrayText(&columns[index]):
+			scanner := goastutil.CachedIdent(emission.Vocabulary.Helper(gogen.SuffixScanArray))
+			scan.Arguments = append(scan.Arguments, goastutil.CallExpr(scanner, goastutil.AddressExpr(destination)))
+		case holding.Null:
+			scan.Arguments = append(scan.Arguments, goastutil.AddressExpr(destination))
 		case holding.Shape == gogen.EnumValue && !holding.Pointer:
 			address := holding
 			address.Pointer = true
@@ -286,6 +289,9 @@ func buildScan(emission *gogen.Emission, query *gogen.Query, target func(index i
 			scan.Arguments = append(scan.Arguments, goastutil.AddressExpr(rawSelector(field.name)))
 		case emission.ReadsOverride(&columns[index]):
 			scan.Arguments = append(scan.Arguments, emission.OverrideScan(goastutil.AddressExpr(destination), &columns[index]))
+		case emission.Driver.Connection.ScansNarrowNumbers && narrowNumber(ColumnGoType(query, index)):
+			scanner := goastutil.CachedIdent(emission.Vocabulary.Helper(gogen.SuffixScanNumber))
+			scan.Arguments = append(scan.Arguments, goastutil.CallExpr(scanner, goastutil.AddressExpr(destination)))
 		default:
 			scan.Arguments = append(scan.Arguments, goastutil.AddressExpr(destination))
 		}
@@ -330,6 +336,61 @@ func unclaimed(name string, taken map[string]bool) string {
 	}
 	taken[claimed] = true
 	return claimed
+}
+
+// narrowNumber reports whether a Go type is one of the number types database/sql fills
+// from a driver's int64 or float64 through text. These are int, a narrower integer and
+// float32.
+//
+// Takes goType (sqlmodel.GoType) which is the Go type.
+//
+// Returns bool which is true for such a type.
+func narrowNumber(goType sqlmodel.GoType) bool {
+	if goType.Composite != nil || goType.Package != "" {
+		return false
+	}
+	object := types.Universe.Lookup(goType.Name)
+	if object == nil {
+		return false
+	}
+	basic, ok := object.Type().(*types.Basic)
+	if !ok {
+		return false
+	}
+	switch basic.Kind() {
+	case types.Int, types.Int8, types.Int16, types.Int32, types.Uint8, types.Uint16, types.Uint32, types.Float32:
+		return true
+	default:
+		return false
+	}
+}
+
+// nullTest writes the test of whether a nullable value is NULL. That is a Null[T]'s Valid
+// flag negated, or a comparison of a pointer, slice or map with nil.
+//
+// Takes value (ast.Expr) which reads the value.
+// Takes goType (sqlmodel.GoType) which is the value's Go type.
+//
+// Returns ast.Expr which is the test.
+func nullTest(value ast.Expr, goType sqlmodel.GoType) ast.Expr {
+	if sqlmodel.IsNullValue(goType) {
+		return &ast.UnaryExpr{Op: token.NOT, X: goastutil.SelectorExprFrom(value, goast.FieldNullValid)}
+	}
+	return &ast.BinaryExpr{X: value, Op: token.EQL, Y: goastutil.CachedIdent(goast.IdentNil)}
+}
+
+// presenceTest writes the test of whether a nullable value holds a value. That is a
+// Null[T]'s Valid flag, or a comparison of a pointer, slice or map with nil.
+//
+// Takes value (ast.Expr) which reads the value.
+// Takes goType (sqlmodel.GoType) which is the value's Go type.
+//
+// Returns ast.Expr which is the test.
+func presenceTest(value ast.Expr, goType sqlmodel.GoType) ast.Expr {
+	if sqlmodel.IsNullValue(goType) {
+		return goastutil.SelectorExprFrom(value, goast.FieldNullValid)
+	}
+	return &ast.BinaryExpr{X: value, Op: token.NEQ, Y: goastutil.CachedIdent(goast.IdentNil)}
 }
 
 // nilableSentinel returns the first of a group's columns whose field can be compared

@@ -1,0 +1,4 @@
+{
+  "description": "SQLite 3.54 drops a foreign key by its name, declared on the column or the table, and drops the name a column gives its DEFAULT or COLLATE while keeping the clause, as SQLite 3.54.1 does: neither foreign key is left and the default stays.",
+  "expectedDiagnosticCount": 0
+}

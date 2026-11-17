@@ -50,6 +50,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        3
+      ]
+    },
     "SQL": "-- sgl.query(name: StreamEvents, command: stream)\nSELECT id, name, payload, created_at FROM events ORDER BY created_at;",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:payload⟩, ⟨c3:created_at⟩ FROM events ORDER BY created_at;"
   }

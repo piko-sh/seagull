@@ -1,0 +1,3 @@
+{
+  "description": "Columns read through text keep their numeric order, interval DISTINCT and compound meaning when the query names them through their table or a derived table."
+}

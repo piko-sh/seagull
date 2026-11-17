@@ -1,1 +1,1 @@
-{"description": "Multi-argument UNNEST with typed column definitions"}
+{"description": "Multi-argument UNNEST with typed column definitions is refused, as PostgreSQL refuses a column definition list for a function whose columns are its own"}

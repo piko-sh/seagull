@@ -3,8 +3,8 @@
 package store
 
 type Tasks struct {
-	ID        int64   `json:"id"`
-	Title     string  `json:"title"`
-	Completed int64   `json:"completed"`
-	Notes     *string `json:"notes"`
+	ID        int64        `json:"id"`
+	Title     string       `json:"title"`
+	Completed int64        `json:"completed"`
+	Notes     Null[string] `json:"notes"`
 }

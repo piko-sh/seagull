@@ -79,6 +79,12 @@ func TestDialectFacadeAPI(t *testing.T) {
 		"TypeCategoryUnknown":        dialect.TypeCategoryUnknown,
 		"TypeCategoryAggregateState": dialect.TypeCategoryAggregateState,
 
+		"TemporalKind":          dialect.TemporalKind(0),
+		"TemporalKindDate":      dialect.TemporalKindDate,
+		"TemporalKindTime":      dialect.TemporalKindTime,
+		"TemporalKindTimestamp": dialect.TemporalKindTimestamp,
+		"TemporalKindInterval":  dialect.TemporalKindInterval,
+
 		"MaxTypeDepth": dialect.MaxTypeDepth,
 		"NewSQLType":   dialect.NewSQLType,
 		"NewColumn":    dialect.NewColumn,

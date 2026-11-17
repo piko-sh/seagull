@@ -136,6 +136,21 @@ func TestRulesRequiresNoTransaction(t *testing.T) {
 		{name: "a quoted identifier", input: `CREATE TABLE "concurrently" (id int);`, expected: false},
 		{name: "a dollar-quoted body", input: "DO $$ BEGIN EXECUTE 'VACUUM'; END $$;", expected: false},
 		{name: "an identifier containing the word", input: "CREATE TABLE concurrently_built (id int);", expected: false},
+		{name: "create database", input: "CREATE DATABASE app;", expected: true},
+		{name: "drop tablespace", input: "DROP TABLESPACE fast;", expected: true},
+		{name: "reindex system", input: "REINDEX SYSTEM app;", expected: true},
+		{name: "reindex a table", input: "REINDEX TABLE t;", expected: false},
+		{name: "cluster every table", input: "CLUSTER;", expected: true},
+		{name: "cluster verbose", input: "CLUSTER VERBOSE;", expected: true},
+		{name: "cluster one table", input: "CLUSTER t;", expected: false},
+		{name: "discard all", input: "DISCARD ALL;", expected: true},
+		{name: "discard plans", input: "DISCARD PLANS;", expected: false},
+		{name: "alter system", input: "ALTER SYSTEM SET work_mem = '64MB';", expected: true},
+		{name: "alter database tablespace", input: "ALTER DATABASE app SET TABLESPACE fast;", expected: true},
+		{name: "alter database setting", input: "ALTER DATABASE app SET search_path = app;", expected: false},
+		{name: "alter type add value", input: "ALTER TYPE mood ADD VALUE 'ok';", expected: true},
+		{name: "alter type rename value", input: "ALTER TYPE mood RENAME VALUE 'a' TO 'b';", expected: false},
+		{name: "alter table", input: "ALTER TABLE t ADD COLUMN c int;", expected: false},
 	}
 
 	for _, testCase := range testCases {

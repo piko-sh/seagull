@@ -371,6 +371,15 @@ func (parsed *parsedStatement) checkTokenBudget(limits dialectkit.Limits) error 
 // forward-only cursor through the token stream plus the accumulator state used during DML
 // analysis.
 type parser struct {
+	// aliasKeywords lists the keywords the engine refuses, unquoted, as an output column's
+	// alias.
+	aliasKeywords dialectkit.AliasKeywords
+
+	// strayItem holds the first select item whose scan took stray words, recorded as the
+	// statement's syntax error once the statement is parsed unless another error came first,
+	// so a nesting limit met in the same item is the error reported.
+	strayItem error
+
 	// namedParameterMap deduplicates `{name:Type}` placeholders by name so the generated Go
 	// method exposes one parameter per distinct name.
 	namedParameterMap map[string]int
@@ -454,6 +463,10 @@ type parser struct {
 	// dialect's assumed server setting unless the statement sets its own. It decides whether
 	// a key a subtotal row does not group by is NULL or its type's default value.
 	groupByUseNulls bool
+
+	// missingOperand records that an operand was wanted where the tokens ended, which a
+	// select item's reparse reads as an operator left without its right side.
+	missingOperand bool
 }
 
 // newParser builds a parser positioned at the start of the supplied token stream with the
@@ -465,6 +478,9 @@ type parser struct {
 // Returns *parser which is the ready-to-use parser state.
 func newParser(tokens []token) *parser {
 	return &parser{
+		aliasKeywords:           clickHouseAliasKeywords,
+		strayItem:               nil,
+		missingOperand:          false,
 		Cursor:                  dialectkit.NewCursor(tokens, tokenIdentifier, tokenEOF),
 		maxParseDepth:           dialectkit.DefaultMaxParseDepth,
 		types:                   newTypeResolver(nil, nil, defaultMaxTypeParseDepth),
@@ -618,6 +634,7 @@ func (p *parser) expectKeywordSequence(keywords ...string) error {
 func (p *parser) newChildParser(tokens []token) *parser {
 	child := newParser(tokens)
 	child.Interrupt = p.Interrupt
+	child.aliasKeywords = p.aliasKeywords
 	child.analysisDepth = p.analysisDepth
 	child.expressionDepth = p.expressionDepth
 	child.maxParseDepth = p.maxParseDepth

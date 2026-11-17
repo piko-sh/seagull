@@ -53,6 +53,10 @@ const (
 	// seedTableSuffix follows the namespace in the seed history table name.
 	seedTableSuffix = "_seeds"
 
+	// progressTableSuffix follows the seed table's name in the name of the table that
+	// records how far a seed got on an engine whose seeds cannot run in a transaction.
+	progressTableSuffix = "_progress"
+
 	// migrationLockTableSuffix follows the namespace in the table-based migration lock table
 	// name.
 	migrationLockTableSuffix = "_migration_lock"
@@ -90,7 +94,7 @@ const (
     version        BIGINT       NOT NULL PRIMARY KEY,
     name           VARCHAR(255) NOT NULL,
     checksum       VARCHAR(64)  NOT NULL,
-    applied_at     TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    applied_at     DATETIME(6)  NOT NULL DEFAULT (UTC_TIMESTAMP(6)),
     duration_ms    BIGINT       NOT NULL,
     down_checksum  VARCHAR(64),
     last_statement INTEGER,
@@ -102,7 +106,7 @@ const (
     version     BIGINT       NOT NULL PRIMARY KEY,
     name        VARCHAR(255) NOT NULL,
     checksum    VARCHAR(64)  NOT NULL,
-    applied_at  TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    applied_at  DATETIME(6)  NOT NULL DEFAULT (UTC_TIMESTAMP(6)),
     duration_ms BIGINT       NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`
 
@@ -117,6 +121,16 @@ const (
     last_statement Nullable(Int32),
     dirty          UInt8       NOT NULL DEFAULT 0
 ) ENGINE = ReplacingMergeTree(applied_at) ORDER BY version`
+
+	// clickHouseSeedProgressTableDDL creates a ClickHouse progress table, for seeds and for
+	// migrations, whose latest row for a version, by recorded_at, holds the last statement
+	// it completed, or -1 once it has completed.
+	clickHouseSeedProgressTableDDL = `CREATE TABLE IF NOT EXISTS %s (
+    version        Int64         NOT NULL,
+    checksum       String        NOT NULL,
+    last_statement Int64         NOT NULL,
+    recorded_at    DateTime64(6) NOT NULL DEFAULT now64(6)
+) ENGINE = ReplacingMergeTree(recorded_at) ORDER BY version`
 
 	// clickHouseSeedTableDDL creates the ClickHouse seed history table.
 	clickHouseSeedTableDDL = `CREATE TABLE IF NOT EXISTS %s (
@@ -159,6 +173,16 @@ const (
     last_statement INTEGER,
     dirty          BOOLEAN     NOT NULL DEFAULT FALSE
 )`
+
+	// duckDBCheckpoint moves DuckDB's schema changes from the write-ahead log into the
+	// database file.
+	//
+	// DuckDB 1.5 cannot replay an ALTER TABLE ... ADD COLUMN on a table whose column default
+	// calls a function, as the history table's applied_at does when it gains
+	// splitter_version and statements_hash, so a process killed before the next checkpoint
+	// leaves a file that will not open. DuckDB 2.0 replays it, and the checkpoint stays for
+	// applications that link a driver bundling DuckDB 1.x.
+	duckDBCheckpoint = "CHECKPOINT"
 
 	// duckDBSeedTableDDL creates the DuckDB seed history table.
 	duckDBSeedTableDDL = `CREATE TABLE IF NOT EXISTS %s (
@@ -240,10 +264,10 @@ var clickHouseHistoryColumnTypes = map[string]string{
 // split under DuckDB's lexical rules, as the DuckDB dialect splits them.
 //
 // DuckDB has no advisory locks and no row locks (it rejects SELECT ... FOR UPDATE), so
-// the backend takes no lock. A database file is opened read-write by one process at a
-// time, so no other process can migrate it meanwhile; within a process an Executor admits
-// one lock holder at a time, and DuckDB's optimistic concurrency control fails a
-// conflicting transaction from another executor rather than applying it twice.
+// the backend takes a lease. A database file is opened read-write by one process at a
+// time, so no other process can migrate it meanwhile; within a process the lease, and an
+// Executor admitting one lock holder at a time, serialise runs. Each migration ends with
+// a CHECKPOINT, so a crash leaves no schema change in the write-ahead log.
 var duckDBSpec = BackendSpec{
 	Placeholder:         numberedPlaceholder,
 	CreateHistoryTable:  renderTable(duckDBHistoryTableDDL),
@@ -257,9 +281,11 @@ var duckDBSpec = BackendSpec{
 	Rules:               duckdb_lexical.Rules(),
 	AdvisoryLock:        nil,
 	TableLock:           nil,
+	LeaseLock:           true,
 	Name:                duckDBEngineName,
 	HistoryReadModifier: "",
-	DefaultLock:         LockNone,
+	SchemaCheckpoint:    duckDBCheckpoint,
+	DefaultLock:         LockLease,
 	TransactionalDDL:    true,
 	TransactionalSeeds:  true,
 	AppendOnlyHistory:   false,
@@ -294,6 +320,27 @@ type Names struct {
 	// SeedLockKey is the advisory lock key the seed lock uses: the seed table name, scoped
 	// on MySQL in the same way as LockKey.
 	SeedLockKey string
+
+	// MigrationLease is the table the lease-based migration lock uses.
+	MigrationLease string
+
+	// SeedLease is the table the lease-based seed lock uses.
+	SeedLease string
+
+	// SeedProgress is the table that records the last statement a seed completed on an
+	// engine whose seeds cannot run in a transaction, so a failed seed resumes after it
+	// rather than running its earlier statements again.
+	SeedProgress string
+}
+
+// MigrationProgress names the table that records the last statement a migration completed
+// on an engine with an append-only history, so a migration that stops partway resumes
+// after it rather than running its earlier statements again. It follows the history
+// table's name.
+//
+// Returns string which is the table name.
+func (names Names) MigrationProgress() string {
+	return names.History + progressTableSuffix
 }
 
 // engine is the run-time SQL of one database: everything a Backend needs apart from the
@@ -310,6 +357,11 @@ type engine struct {
 
 	// createSeedTable renders the idempotent DDL of the seed history table.
 	createSeedTable func(table string) string
+
+	// createProgressTable renders the idempotent DDL of a progress table, the seed one and
+	// the migration one, on an engine whose seeds and append-only migrations cannot run in a
+	// transaction, and is nil elsewhere.
+	createProgressTable func(table string) string
 
 	// insertSeed renders the idempotent INSERT that records an applied seed.
 	insertSeed func(table, version, name, checksum, duration string) string
@@ -356,6 +408,19 @@ type engine struct {
 	// historyReadModifier follows the history table in the applied-versions SELECT, such as
 	// " FINAL" for a ClickHouse ReplacingMergeTree; empty for most engines.
 	historyReadModifier string
+
+	// schemaCheckpoint is a statement run after each migration and each history column
+	// upgrade, such as DuckDB's CHECKPOINT; empty for most engines.
+	schemaCheckpoint string
+
+	// sessionSettings describes the session settings the engine ignores inside a
+	// transaction, which a migration runs outside its transaction on a connection of its
+	// own; nil for most engines.
+	sessionSettings *sessionSettings
+
+	// appliedAtUpgrade moves a history table created by an earlier release off an applied_at
+	// type that cannot hold every time, such as MySQL's TIMESTAMP(6); nil for most engines.
+	appliedAtUpgrade *appliedAtUpgrade
 
 	// rules are the engine's lexical rules. Unless a Custom spec supplies its own split,
 	// they divide files into statements, and their RequiresNoTransaction predicate decides
@@ -413,6 +478,22 @@ func (e *engine) requiresNoTransaction(ctx context.Context, statements []string)
 	return false, nil
 }
 
+// controlsTransaction returns the first statement that opens, ends or rolls back a
+// transaction under the engine's lexical rules.
+//
+// Takes statements ([]string) which holds the statements of one file.
+//
+// Returns int which is the statement's 0-based index.
+// Returns bool which is true when a statement controls a transaction.
+func (e *engine) controlsTransaction(statements []string) (int, bool) {
+	for index, statement := range statements {
+		if sqllex.ControlsTransaction(sqllex.SignificantTokens(e.rules, statement)) {
+			return index, true
+		}
+	}
+	return 0, false
+}
+
 // lockFactory builds a lock mode's migration and seed locks for a backend's names.
 //
 // Takes names (Names) which holds the lock tables, constraints and keys.
@@ -450,6 +531,9 @@ func namesFor(namespace string) Names {
 		SeedLockConstraint:      seedLock + singleRowConstraintSuffix,
 		LockKey:                 history,
 		SeedLockKey:             seeds,
+		MigrationLease:          migrationLock + leaseTableSuffix,
+		SeedLease:               seedLock + leaseTableSuffix,
+		SeedProgress:            seeds + progressTableSuffix,
 	}
 }
 
@@ -752,19 +836,20 @@ func clickHouseClearSeedHistory(seedTable string) string {
 // Returns *engine which describes PostgreSQL.
 func postgresEngine() *engine {
 	return &engine{
-		name:               "PostgreSQL",
-		placeholder:        numberedPlaceholder,
-		createHistoryTable: renderTable(postgresHistoryTableDDL),
-		createSeedTable:    renderTable(postgresSeedTableDDL),
-		insertSeed:         postgresOnConflictSeedInsert,
-		tableExists:        renderTable("SELECT CASE WHEN to_regclass(%s) IS NULL THEN 0 ELSE 1 END"),
-		deleteHistory:      nil,
-		clearSeedHistory:   nil,
-		split:              lexicalSplitter(postgres_lexical.Rules()),
-		addHistoryColumn:   addColumnRenderer(standardHistoryColumnTypes),
-		qualifyTable:       postgresQualifiedTable,
-		rules:              postgres_lexical.Rules(),
-		ansiQuotesRules:    nil,
+		name:                "PostgreSQL",
+		placeholder:         numberedPlaceholder,
+		createHistoryTable:  renderTable(postgresHistoryTableDDL),
+		createSeedTable:     renderTable(postgresSeedTableDDL),
+		createProgressTable: nil,
+		insertSeed:          postgresOnConflictSeedInsert,
+		tableExists:         renderTable("SELECT CASE WHEN to_regclass(%s) IS NULL THEN 0 ELSE 1 END"),
+		deleteHistory:       nil,
+		clearSeedHistory:    nil,
+		split:               lexicalSplitter(postgres_lexical.Rules()),
+		addHistoryColumn:    addColumnRenderer(standardHistoryColumnTypes),
+		qualifyTable:        postgresQualifiedTable,
+		rules:               postgres_lexical.Rules(),
+		ansiQuotesRules:     nil,
 		locks: map[LockMode]lockFactory{
 			LockAdvisory: postgresAdvisoryLocks,
 			LockTable:    postgresTableLocks,
@@ -772,6 +857,9 @@ func postgresEngine() *engine {
 		},
 		currentSchemaSQL:    "SELECT current_schema()",
 		historyReadModifier: "",
+		schemaCheckpoint:    "",
+		sessionSettings:     nil,
+		appliedAtUpgrade:    nil,
 		defaultLock:         LockAdvisory,
 		transactionalDDL:    true,
 		transactionalSeeds:  true,
@@ -856,25 +944,29 @@ func cockroachDBEngine() *engine {
 // Returns *engine which describes MySQL.
 func mysqlEngine() *engine {
 	return &engine{
-		name:               "MySQL",
-		placeholder:        questionPlaceholder,
-		createHistoryTable: renderTable(mysqlHistoryTableDDL),
-		createSeedTable:    renderTable(mysqlSeedTableDDL),
-		insertSeed:         mysqlIgnoreSeedInsert,
-		tableExists:        mysqlTableExists,
-		deleteHistory:      nil,
-		clearSeedHistory:   nil,
-		split:              lexicalSplitter(mysql_lexical.Rules()),
-		addHistoryColumn:   addColumnRenderer(standardHistoryColumnTypes),
-		qualifyTable:       mysqlQualifiedTable,
-		rules:              mysql_lexical.Rules(),
-		ansiQuotesRules:    new(mysql_lexical.ANSIQuotesRules()),
+		name:                "MySQL",
+		placeholder:         questionPlaceholder,
+		createHistoryTable:  renderTable(mysqlHistoryTableDDL),
+		createSeedTable:     renderTable(mysqlSeedTableDDL),
+		createProgressTable: nil,
+		insertSeed:          mysqlIgnoreSeedInsert,
+		tableExists:         mysqlTableExists,
+		deleteHistory:       nil,
+		clearSeedHistory:    nil,
+		split:               lexicalSplitter(mysql_lexical.Rules()),
+		addHistoryColumn:    addColumnRenderer(standardHistoryColumnTypes),
+		qualifyTable:        mysqlQualifiedTable,
+		rules:               mysql_lexical.Rules(),
+		ansiQuotesRules:     new(mysql_lexical.ANSIQuotesRules()),
 		locks: map[LockMode]lockFactory{
 			LockAdvisory: mysqlAdvisoryLocks,
 			LockNone:     noLocks,
 		},
 		currentSchemaSQL:    "SELECT DATABASE()",
 		historyReadModifier: "",
+		schemaCheckpoint:    "",
+		sessionSettings:     nil,
+		appliedAtUpgrade:    mysqlAppliedAtUpgrade,
 		defaultLock:         LockAdvisory,
 		transactionalDDL:    false,
 		transactionalSeeds:  true,
@@ -913,6 +1005,7 @@ func clickHouseEngine() *engine {
 		placeholder:         questionPlaceholder,
 		createHistoryTable:  renderTable(clickHouseHistoryTableDDL),
 		createSeedTable:     renderTable(clickHouseSeedTableDDL),
+		createProgressTable: renderTable(clickHouseSeedProgressTableDDL),
 		insertSeed:          clickHouseNotExistsSeedInsert,
 		tableExists:         renderProbe("SELECT count() FROM system.tables WHERE database = currentDatabase() AND name = "),
 		deleteHistory:       clickHouseDeleteHistory,
@@ -925,6 +1018,9 @@ func clickHouseEngine() *engine {
 		locks:               map[LockMode]lockFactory{LockNone: noLocks},
 		currentSchemaSQL:    "",
 		historyReadModifier: " FINAL",
+		schemaCheckpoint:    "",
+		sessionSettings:     nil,
+		appliedAtUpgrade:    nil,
 		defaultLock:         LockNone,
 		transactionalDDL:    false,
 		transactionalSeeds:  false,
@@ -933,8 +1029,9 @@ func clickHouseEngine() *engine {
 	}
 }
 
-// sqliteEngine returns the engine for SQLite: ? placeholders, transactional DDL and no
-// lock, since SQLite serialises writers itself.
+// sqliteEngine returns the engine for SQLite: ? placeholders, transactional DDL and a
+// lease lock, since SQLite has no session locks and serialising writers alone lets two
+// runs apply one migration that runs outside a transaction.
 //
 // Returns *engine which describes SQLite.
 func sqliteEngine() *engine {
@@ -943,6 +1040,7 @@ func sqliteEngine() *engine {
 		placeholder:         questionPlaceholder,
 		createHistoryTable:  renderTable(sqliteHistoryTableDDL),
 		createSeedTable:     renderTable(sqliteSeedTableDDL),
+		createProgressTable: nil,
 		insertSeed:          sqliteOnConflictSeedInsert,
 		tableExists:         renderProbe("SELECT count(*) FROM sqlite_master WHERE type = 'table' AND name = "),
 		deleteHistory:       nil,
@@ -952,10 +1050,13 @@ func sqliteEngine() *engine {
 		qualifyTable:        nil,
 		rules:               sqlite_lexical.Rules(),
 		ansiQuotesRules:     nil,
-		locks:               map[LockMode]lockFactory{LockNone: noLocks},
+		locks:               map[LockMode]lockFactory{LockNone: noLocks, LockLease: leaseLocks(questionPlaceholder)},
 		currentSchemaSQL:    "",
 		historyReadModifier: "",
-		defaultLock:         LockNone,
+		schemaCheckpoint:    "",
+		sessionSettings:     sqliteSessionSettings,
+		appliedAtUpgrade:    nil,
+		defaultLock:         LockLease,
 		transactionalDDL:    true,
 		transactionalSeeds:  true,
 		appendOnlyHistory:   false,

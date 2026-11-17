@@ -1,0 +1,4 @@
+{
+  "description": "MariaDB 12.3 renames a column a check reads, which MySQL refuses, and keeps a primary key's column NOT NULL though a definition declares it NULL, in CREATE TABLE or MODIFY, so both key columns read as non-null.",
+  "expectedDiagnosticCount": 0
+}

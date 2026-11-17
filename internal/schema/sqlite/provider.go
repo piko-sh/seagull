@@ -348,11 +348,12 @@ func (provider *Source) tableIndexes(
 			position = len(indexes[tableName])
 			positionByName[key] = position
 			indexes[tableName] = append(indexes[tableName], sqlmodel.Index{
-				Name:      indexName,
-				Columns:   nil,
-				IsUnique:  unique != 0,
-				IsPrimary: origin == indexOriginPrimaryKey,
-				Origin:    sqlmodel.MigrationOrigin{},
+				Name:       indexName,
+				Columns:    nil,
+				IsUnique:   unique != 0,
+				IsPrimary:  origin == indexOriginPrimaryKey,
+				IsFullText: false,
+				Origin:     sqlmodel.MigrationOrigin{},
 			})
 		}
 		if columnName.Valid {
@@ -421,6 +422,7 @@ func (provider *Source) assembleView(listed listedView, rows []pragmaColumn) *sq
 		Schema:     schemaMain,
 		Columns:    columns,
 		Definition: viewDefinition(listed.statement),
+		Broken:     "",
 		Comment:    "",
 		Origin:     sqlmodel.MigrationOrigin{},
 	}

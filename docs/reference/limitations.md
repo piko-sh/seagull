@@ -10,7 +10,7 @@ order: 42
 
 Seagull reads SQL without a database. In a few places its analysis is less precise than
 the engine's: a column or parameter is typed `any`, a value that can never be NULL becomes
-a pointer, a name differs from the one the engine gives, or SQL the engine would reject
+a `Null`, a name differs from the one the engine gives, or SQL the engine would reject
 passes without a diagnostic. The engine always has the final word. This page lists the
 known cases, grouped by topic and then by engine, each with what you see and how to work
 around it, followed by the features Seagull does not support yet.
@@ -29,7 +29,7 @@ Most entries below come down to one of these:
 - **A parameter typed `any` or badly named**: cast the placeholder (`$1::bigint`,
   `CAST(? AS SIGNED)`) or name and type it with
   [`-- $1 as sgl.param(name, type: int8)`](directives.md#sglparamname-type-nullable-default).
-- **A pointer for a value that is never NULL**, or the reverse: set `nullable:` on the
+- **A `Null` for a value that is never NULL**, or the reverse: set `nullable:` on the
   same `sgl.column` or `sgl.param` directive.
 - **An unknown function** ([Q005](diagnostics.md#q005)): declare it under
   `custom_functions` in [the database's configuration](configuration.md#database). Each
@@ -99,7 +99,7 @@ Most entries below come down to one of these:
 - Some built-in function results have a different width or kind than the engine gives,
   for example an integer `abs` typed `numeric`; the value still scans. The engine sections
   list the known ones.
-- A result that can never be NULL is sometimes still a pointer (SQLite `ifnull`/`iif`,
+- A result that can never be NULL is sometimes still a `Null` (SQLite `ifnull`/`iif`,
   narrowing by `IS NOT NULL`). Set `nullable: false` with `sgl.column`.
 - A CTE inside a subquery cannot read the outer query's columns; the result is typed
   `any`.
@@ -118,7 +118,7 @@ Most entries below come down to one of these:
 - A parameter passed to a built-in function with several same-arity overloads
   (`length($1)`, `json_each(:x)`), compared through a JSON key operator (`doc ->> $1`),
   or carried through a CTE into `INSERT ... SELECT` is typed `any`. Cast it.
-- A cast parameter inserted into a nullable column is not a pointer
+- A cast parameter inserted into a nullable column is not a `Null`
   (`VALUES ($1::text)`); use `sgl.param(name, nullable: true)`.
 - A parameter used as two different types is reported ([Q004](diagnostics.md#q004))
   only where it is used directly, not through a cast, a call or a larger expression.
@@ -408,7 +408,7 @@ Typing:
 
 Parameters:
 
-- Typed `any`: `x -> x + $1` inside a lambda, a struct literal's field (`{'a': $1}`), a
+- Typed `any`: `lambda x: x + $1` inside a lambda, a struct literal's field (`{'a': $1}`), a
   `map()` argument, an enum-list parameter that nothing types (cast it, `$1::mood[]`), and
   a parameter compared with a macro whose body Seagull cannot type (cast it).
 - A parameter compared with a lambda parameter is named `p1`.

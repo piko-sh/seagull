@@ -1,0 +1,1 @@
+{"description": "A recursive CTE column fed from a column that becomes NULL only after a later round of recursion is nullable."}

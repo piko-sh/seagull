@@ -213,6 +213,9 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Compound": true
+    },
     "SQL": "-- sgl.query(name: AllNames, command: many)\nSELECT name FROM boats UNION ALL BY NAME SELECT harbour AS name FROM landings;",
     "Template": "SELECT name FROM boats UNION ALL BY NAME SELECT harbour AS name FROM landings;"
   },

@@ -1,0 +1,4 @@
+{
+  "description": "MariaDB 12.3, like MySQL, refuses a key name the table holds already, between two indexes of one CREATE TABLE or from a later CREATE INDEX (1061).",
+  "expectedDiagnosticCount": 2
+}

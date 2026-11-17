@@ -330,6 +330,33 @@ func (b *catalogueBuilder) copiedKeys(mutation *ast.CatalogueMutation) ([]string
 	return primaryKey, constraints
 }
 
+// copiedIndexes returns the indexes copied by MySQL or MariaDB CREATE TABLE ... LIKE.
+//
+// The indexes keep their own names, including full-text indexes. Other engines name
+// copied indexes afresh, so they copy none here.
+//
+// Takes mutation (*ast.CatalogueMutation) which holds the copied tables.
+//
+// Returns []sqlmodel.Index which are the indexes copied, or nil.
+func (b *catalogueBuilder) copiedIndexes(mutation *ast.CatalogueMutation) []sqlmodel.Index {
+	if !b.mysqlFamily() {
+		return nil
+	}
+	var indexes []sqlmodel.Index
+	for _, copied := range mutation.CopiedTables {
+		source, findError := b.findTable(copied.Table.Schema, copied.Table.Name)
+		if !copied.Keys || findError != nil {
+			continue
+		}
+		for _, index := range source.Indexes {
+			index.Columns = slices.Clone(index.Columns)
+			index.Origin = mutation.Origin
+			indexes = append(indexes, index)
+		}
+	}
+	return indexes
+}
+
 // recordInheritance records that a created table inherits its parents' columns and which
 // of its columns it declares itself.
 //
@@ -455,6 +482,7 @@ func (b *catalogueBuilder) propagateDroppedColumn(parent *sqlmodel.Table, mutati
 		child.Columns = slices.DeleteFunc(child.Columns, func(column sqlmodel.Column) bool {
 			return b.sameName(column.Name, mutation.ColumnName)
 		})
+		b.dropIndexColumns(child, mutation)
 	}
 }
 
@@ -472,7 +500,9 @@ func (b *catalogueBuilder) propagateColumnChange(parent *sqlmodel.Table, mutatio
 	for _, child := range b.inheritorsOf(parent) {
 		for index := range child.Columns {
 			if b.sameName(child.Columns[index].Name, mutation.ColumnName) {
+				previous := child.Columns[index].Name
 				change(&child.Columns[index])
+				b.renameKeyColumns(child, previous, child.Columns[index].Name)
 			}
 		}
 	}

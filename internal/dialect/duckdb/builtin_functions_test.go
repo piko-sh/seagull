@@ -70,5 +70,5 @@ func TestBuiltinFunctionCatalogueKeepsEverySignature(t *testing.T) {
 	}
 
 	require.Len(t, functions, 421)
-	require.Equal(t, 495, signatures)
+	require.Equal(t, 492, signatures)
 }

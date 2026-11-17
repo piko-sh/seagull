@@ -690,7 +690,7 @@ func TestEmitQueryFileDynamicQueryEmitsParamsAndSortableScaffolding(t *testing.T
 	assert.Contains(t, source, "if params.PageSize > 100")
 
 	assert.Contains(t, source, "query := searchPostsSQL[:46]")
-	assert.Contains(t, source, "query = query + (\" ORDER BY \" + string(params.Sort))")
+	assert.Contains(t, source, "query = query + \" ORDER BY \\\"created_at\\\"\"", "a sortable column is written quoted, as the query names it")
 }
 
 func TestEmitQueryFileDynamicCommandsProduceValidGo(t *testing.T) {

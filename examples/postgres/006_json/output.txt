@@ -5,6 +5,6 @@ cod orders:
   order 3  Morwenna  extras ["pickled egg"]                to 4 Harbour Row
 cod orders as JSON: [{"id":1,"customer":"Steven","extras":["mushy peas","curry sauce"]},{"id":3,"customer":"Morwenna","extras":["pickled egg"],"deliveryAddress":"4 Harbour Row"}]
 plaice orders as JSON: []
-DeliveryAddress is tagged json:"deliveryAddress,omitempty" db:"delivery_address"
+DeliveryAddress is tagged json:"deliveryAddress,omitzero" db:"delivery_address"
 
 orders containing {"extras": ["pickled egg"]}: Morwenna

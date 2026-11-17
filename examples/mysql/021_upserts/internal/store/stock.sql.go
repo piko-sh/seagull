@@ -25,7 +25,7 @@ type GetStockRow struct {
 
 func (queries *Queries) GetStock(ctx context.Context, item string) (GetStockRow, error) {
 	var row GetStockRow
-	err := queries.reader.QueryRowContext(ctx, getStockSQL, item).Scan(&row.Item, &row.Quantity, &row.Deliveries)
+	err := queries.reader.QueryRowContext(ctx, getStockSQL, item).Scan(&row.Item, sglScanNumber(&row.Quantity), sglScanNumber(&row.Deliveries))
 	if err != nil {
 		return GetStockRow{}, err
 	}
@@ -49,7 +49,7 @@ func (queries *Queries) ListStock(ctx context.Context) ([]ListStockRow, error) {
 	var results []ListStockRow
 	if rows.Next() {
 		var row ListStockRow
-		scanArgs := []any{&row.Item, &row.Quantity, &row.Deliveries}
+		scanArgs := []any{&row.Item, sglScanNumber(&row.Quantity), sglScanNumber(&row.Deliveries)}
 		for more := true; more; more = rows.Next() {
 			row = ListStockRow{}
 			if err := rows.Scan(scanArgs...); err != nil {

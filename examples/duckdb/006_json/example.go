@@ -46,20 +46,7 @@ type delivery struct {
 	Address string `json:"address"`
 }
 
-// run places three chip shop orders and reads them back. A JSON column read by a query
-// becomes the generated store.JSON type, which holds the raw document as bytes: decode it
-// with json.Unmarshal. A nil store.JSON is SQL NULL.
-//
-// The generated SQL casts each JSON column it reads to VARCHAR, so store.JSON holds the
-// document as DuckDB stored it, the keys in the order they were written.
-//
-// PlaceOrder takes its documents as store.JSON too, and the generated code hands
-// duckdb-go their text; DuckDB's JSON type is VARCHAR underneath and checks the text as
-// it is stored.
-//
-// OrdersWithFish filters with ->>, which extracts a value as text, and selects with ->,
-// which extracts a JSON fragment, so Extras is store.JSON again. Address is *string
-// because ->> gives NULL when the delivery column or its address is missing.
+// run places chip shop orders and reads their JSON data.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes output (io.Writer) which receives the decoded orders and the search.
@@ -113,8 +100,8 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 	fmt.Fprintln(output, "\ncod orders:")
 	for _, order := range cod {
 		address := "collecting"
-		if order.Address != nil {
-			address = "to " + *order.Address
+		if order.Address.Valid {
+			address = "to " + order.Address.V
 		}
 		fmt.Fprintf(output, "  order %d  %-9s extras %-30s %s\n", order.ID, order.Customer, order.Extras, address)
 	}

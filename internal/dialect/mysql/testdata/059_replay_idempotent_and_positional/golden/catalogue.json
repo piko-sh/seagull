@@ -62,7 +62,6 @@
           "Columns": [
             {
               "GeneratedKind": "none",
-              "HasDefault": true,
               "Name": "id",
               "Origin": {
                 "Filename": "001_schema.up.sql",
@@ -393,10 +392,8 @@
           "PrimaryKey": [
             "id"
           ]
-        }
-      },
-      "Views": {
-        "new_view": {
+        },
+        "view_source": {
           "Columns": [
             {
               "GeneratedKind": "none",
@@ -425,10 +422,50 @@
               }
             }
           ],
-          "Name": "new_view",
+          "Name": "view_source",
           "Origin": {
             "Filename": "001_schema.up.sql",
             "Statement": 15
+          },
+          "PrimaryKey": [
+            "id"
+          ]
+        }
+      },
+      "Views": {
+        "new_view": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 16
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "label",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 16
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            }
+          ],
+          "Name": "new_view",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 16
           }
         }
       }
@@ -440,11 +477,10 @@
           "Columns": [
             {
               "GeneratedKind": "none",
-              "HasDefault": true,
               "Name": "id",
               "Origin": {
                 "Filename": "001_schema.up.sql",
-                "Statement": 17
+                "Statement": 18
               },
               "SQLType": {
                 "Category": "integer",
@@ -456,7 +492,7 @@
           "Name": "moved",
           "Origin": {
             "Filename": "001_schema.up.sql",
-            "Statement": 17
+            "Statement": 18
           },
           "PrimaryKey": [
             "id"

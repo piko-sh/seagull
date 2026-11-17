@@ -1,0 +1,32 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 20,
+    "EndColumn": 21,
+    "EndLine": 2,
+    "Filename": "clock.sql",
+    "Line": 2,
+    "Message": "failed to analyse query \"EmptyDate\": syntax error near \"(\": CURRENT_DATE takes no parentheses",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 20,
+    "EndColumn": 21,
+    "EndLine": 5,
+    "Filename": "clock.sql",
+    "Line": 5,
+    "Message": "failed to analyse query \"EmptyUser\": syntax error near \"(\": CURRENT_USER takes no parentheses",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 20,
+    "EndColumn": 21,
+    "EndLine": 8,
+    "Filename": "clock.sql",
+    "Line": 8,
+    "Message": "failed to analyse query \"DatePrecision\": syntax error near \"(\": CURRENT_DATE takes no arguments",
+    "Severity": "error"
+  }
+]

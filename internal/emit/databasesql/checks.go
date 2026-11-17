@@ -27,11 +27,14 @@ import (
 	"seagull.sh/seagull/internal/emit/emitkit"
 	"seagull.sh/seagull/internal/emit/internal/chvalues"
 	"seagull.sh/seagull/internal/gogen"
+	"seagull.sh/seagull/internal/gogen/methods"
 	"seagull.sh/seagull/internal/sqlmodel"
 )
 
 var (
 	_ emit.CheckerPort = (*Emitter)(nil)
+
+	_ emit.NullTypePort = (*Emitter)(nil)
 
 	_ emit.NullElementBinderPort = (*Emitter)(nil)
 )
@@ -78,6 +81,10 @@ func (emitter *Emitter) Check(request *emit.Request) []emit.Problem {
 			problems = append(problems, problem)
 		}
 	}
+	emission := gogen.NewEmission(request, newSQLDriver(request, &profile, false).driver())
+	for _, query := range request.Queries {
+		problems = append(problems, methods.CheckRewrittenShapes(emission, query)...)
+	}
 	for _, query := range request.Queries {
 		if query.Command == sqlmodel.QueryCommandBatch || query.Command == sqlmodel.QueryCommandCopyFrom {
 			problems = append(problems, emitkit.CheckBatch(query, emitkit.BatchRows, emitkit.BindLimit{
@@ -96,6 +103,14 @@ func (emitter *Emitter) Check(request *emit.Request) []emit.Problem {
 		problems = append(problems, unbindableHeldElements(&profile, query)...)
 	}
 	return problems
+}
+
+// DeclaresNullType reports that the emitter declares the generated Null type and reads
+// and binds nullable values as it.
+//
+// Returns bool which is always true.
+func (*Emitter) DeclaresNullType() bool {
+	return true
 }
 
 // PreparesStatements reports whether the database/sql emitter can generate the
@@ -272,7 +287,7 @@ func unbindableCompositeArrays(profile *driverProfile, request *emit.Request, qu
 // unreadableDocumentMaps reports Map-of-JSON columns that make the driver panic.
 //
 // The failure happens while constructing the row, before a scan adapter can handle it
-// (clickhouse-go v2.48).
+// (clickhouse-go v2.48 to v2.51).
 //
 // Takes profile (*driverProfile) which is the driver's profile.
 // Takes query (*sqlmodel.AnalysedQuery) which is the query.

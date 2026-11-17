@@ -121,11 +121,14 @@ column named in Go capitalisation. A view has no model, and nor does a partition
 rows a query reads into a Row struct, or with `model:` into the model of the table it
 partitions. It also declares the named types the queries and tables use: each enum as a string type
 with a constant per value and a `Valid` method, and each struct of named fields as a struct
-type (see [type mapping](type-mapping.md#defaults)).
+type (see [type mapping](type-mapping.md#defaults)). A nullable column's field is a
+`Null[T]`, which `sgl_null.go` declares with `NullOf` and `NullFrom` (see
+[NULL values](type-mapping.md#null-values)), unless `go.nullable_pointers` makes it a `*T`.
 
 Every field holding a column carries a `json` tag naming the column as it is written,
 made unique in its struct (`id`, `id2`). `go.json_tags` writes the names in `snake`,
-`camel` or `pascal` case, adds the `omitempty` option, or leaves the tags out;
+`camel` or `pascal` case, adds the `omitempty` option, which a `Null` field takes as
+`omitzero`, or leaves the tags out;
 `go.struct_tags` adds tags to every field after `json`, such as `db: "{name}"`, and a
 column's own tags, from a column override or a
 [`sgl.column` directive](directives.md#type-override-sglcolumn), take precedence key by key.
@@ -141,8 +144,8 @@ them:
 type Posts struct {
 	ID int64 `json:"id"`
 	// The headline, shown in lists.
-	Title    string `json:"title"`
-	AuthorID *int64 `json:"author_id"`
+	Title    string      `json:"title"`
+	AuthorID Null[int64] `json:"author_id"`
 }
 ```
 
@@ -168,8 +171,9 @@ the failure, `preparing statement: ...`, joined with any error closing them, so 
 start leaves no statement open.
 
 Transactions keep the statements. On a `Queries` built from the `PreparedDBTX`, `WithTx` and
-`RunInTx` bind each prepared statement to the transaction with `tx.StmtContext`, and send
-every other query to the transaction directly. `RunInTx` takes the `*sql.DB`, which
+`RunInTx` bind each prepared statement to the transaction with `tx.StmtContext` the first
+time the transaction runs it, and reuse that statement for the rest of the transaction, and
+send every other query to the transaction directly. `RunInTx` takes the `*sql.DB`, which
 `prepared.UnderlyingDB()` returns:
 
 ```go
@@ -224,7 +228,9 @@ them into the model without the keyword. See
 
 A method takes its parameters as arguments, or as one `<Name>Params` struct when there are
 several. A nil slice passed for an array or list parameter binds `NULL` and an empty one an
-empty array, except on ClickHouse, whose arrays cannot be `NULL`; see
+empty array, except on ClickHouse, whose arrays cannot be `NULL`, and except where the value
+is written into a column that refuses `NULL`, where a nil slice or `[]byte` binds the empty
+value; see
 [nil and empty slices](type-mapping.md#nil-and-empty-slices).
 
 A `many` method returns `nil` when no row matches, which `encoding/json` writes as `null`;
@@ -282,29 +288,29 @@ called `ctx` is passed as `ctx2`, and a table called `queries` gets the model `Q
 A doc comment taken from a description or a schema comment writes a NUL, a byte order
 mark or a byte that is not valid UTF-8 as U+FFFD, which Go source can hold.
 
-### Helper files
+Generated queries include the helpers they need, so they do not import Seagull.
+Helper names use the preset's prefix (`sgl` by default).
 
-Query helpers are written into the package, so generated queries do not import the
-Seagull generator. Complex-value adapters and runtime-filter conversion can use
-reflection; ordinary row methods scan into known fields. Each file appears only when a query needs it, and its
-identifiers start with the preset's helper prefix (`sgl` by default):
+### Choosing the JSON codec: `SetJSONCodec`
 
-<!-- generated-file-table: helpers (make generate-all) -->
-| File | When | Contents |
-|---|---|---|
-| `sortable.go` | A query is sortable | `OrderDirection` with `OrderAsc` and `OrderDesc`, declared once for the package. |
-| `bind_limits.go` | A query expands a slice or is built at run time | The engine's bind-variable limit, `ErrSglTooManyBindVariables`, and the splicer that edits a query's SQL at offsets fixed when the code was generated. |
-| `slice_helpers.go` | A query expands a slice | The list writer: a placeholder per element, or the dialect's test for an empty list. |
-| `runtime_helpers.go` | A query is built at run time | The builder's allowed operators, conversions, filters, ordering and pagination, in the dialect's syntax, and `ErrSglUnknownColumn`, `ErrSglUnknownOperator` and `ErrSglUnknownDirection`. |
-| `sgl_json.go` | A JSON value keeps the default JSON slot | The `JSON` type and its scan adapter. The file is named after the helper prefix. |
-| `driver_values.go` | database/sql, where the driver needs a parameter converted; pgx, where a binary column's override type binds its own bytes | Conversions of the parameters a driver does not bind as they are, such as nullable decimals and the bytes a binary override marshals itself to. |
-| `driver_composites.go` | database/sql, where a driver binds or returns lists, structs or maps in a form of its own, or a column whose Go type an override chose needs reading through the adapter | The scan adapter reading those forms and the one reading an overridden column (see [what an override type must support](type-mapping.md#what-an-override-type-must-support)), and the conversion of a list, struct or map parameter into the driver's form, which refuses a value nesting more than 32 levels deep or referring to itself. |
-| `clickhouse_values.go` | A ClickHouse query binds a parameter by name, or a native batch writes `clickhouse_appending.go` | The formatter writing each value in the shape its ClickHouse type takes, and the parser of those shapes. |
-| `clickhouse_appending.go` | A native ClickHouse batch or copyfrom appends a value holding an IP address, a map of tuples or an overridden Go type | The conversion of each row into the forms clickhouse-go appends, refusing a bad address before the batch sends anything. It reads shapes with the parser in `clickhouse_values.go`, so that file always comes with it. |
-| `clickhouse_composites.go` | A native ClickHouse read needs a column converted: an array, map or tuple holding IP addresses, wide integers or JSON, a JSON column, or an overridden Go type | The converting scan adapter: the driver fills the form it reads, and the adapter converts it into the generated field after the scan. |
-| `clickhouse_documents.go` | A ClickHouse query reads a JSON value, on either emitter | The conversion of the documents clickhouse-go decodes into the JSON slot's type or an override's type, giving the same bytes on both emitters. |
-| `value_reading.go` | A query reads a column through the scan adapter in `driver_composites.go` or `clickhouse_composites.go` | The reflection readers both emitters share: a list into a slice, a map, a Go map or the driver's ordered one, into a map, and a scalar into a scalar of its kind, each element through the driver's own reader, refusing an integer its target cannot hold. A nil list or map reads as nil. |
-| `error_wrapping.go` | The preset sets `WrapErrors` | `sglWrapError` and `sglWrapResult`, which label each error a generated method returns with the error prefix and the method's name, keeping the error beneath for `errors.Is` and `errors.As` (see [labelled errors](#labelled-errors-wraperrors)). |
-| `convert_strings.go` | A driver binds or reads an enum only as plain strings: pgx, pgx's stdlib behind database/sql, the native ClickHouse driver, or ClickHouse behind database/sql | Conversions between an enum's named type and plain strings, in slices, slices of pointers and maps. |
-| `query_names.go` | The preset enables the query-names file, under the name it gives | The function mapping a statement's SQL to its query's name, for labelling telemetry, including SQL a method edits at run time. |
-<!-- end generated-file-table -->
+A generated package that uses JSON declares `JSONCodec` and `SetJSONCodec` in
+`sgl_json_codec.go`. It uses `encoding/json` until you install another codec:
+
+```go
+type JSONCodec interface {
+	Marshal(value any) ([]byte, error)
+	Unmarshal(data []byte, value any) error
+}
+
+func SetJSONCodec(codec JSONCodec)
+```
+
+`SetJSONCodec(nil)` restores `encoding/json`. The codec is held atomically, so it is safe
+to set while queries run. Each value uses the codec installed when it is encoded or
+decoded. A codec with a `Pretouch(reflect.Type) error` method receives the JSON column types
+listed in `sgl_json_codec.go` before installation. A `Pretouch` error does not stop
+installation.
+
+The codec must reject input that is not exactly one JSON document. The generated code
+still uses `encoding/json` to check nullable array and object values against their Go
+types, and to read array elements written in an engine's own form.

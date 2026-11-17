@@ -1,0 +1,191 @@
+[
+  {
+    "AllowedColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceExpression": "i.id",
+        "SourceQualifier": "i"
+      },
+      {
+        "Name": "grp",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "grp",
+        "SourceExpression": "i.grp",
+        "SourceQualifier": "i"
+      }
+    ],
+    "Command": "many",
+    "CountTemplate": "SELECT COUNT(*) FROM (SELECT ⟨c0:i.id⟩, ⟨c1:i.grp⟩, ⟨c2 aliased:row_number() OVER (PARTITION BY i.grp ORDER BY i.id)⟩ AS rn\\nFROM items i\\nWHERE i.score IS NOT NULL) sub",
+    "DynamicRuntime": true,
+    "Filename": "builders.sql",
+    "FilteredCountTemplate": "SELECT COUNT(*) FROM (SELECT ⟨c0:i.id⟩, ⟨c1:i.grp⟩, ⟨c2 aliased:row_number() OVER (PARTITION BY i.grp ORDER BY i.id)⟩ AS rn\\nFROM items i\\nWHERE i.score IS NOT NULL\\nORDER BY i.id) AS result_rows⟨where⟩",
+    "FilteredTemplate": "SELECT * FROM (SELECT ⟨c0:i.id⟩, ⟨c1:i.grp⟩, ⟨c2 aliased:row_number() OVER (PARTITION BY i.grp ORDER BY i.id)⟩ AS rn\\nFROM items i\\nWHERE i.score IS NOT NULL\\nORDER BY i.id) AS result_rows⟨where⟩⟨order⟩⟨pagination⟩;",
+    "Line": 1,
+    "Name": "NumberItems",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "i",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "grp",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "grp",
+        "SourceQualifier": "i",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "rn",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: NumberItems, command: many, dynamic: runtime)\nSELECT i.id, i.grp, row_number() OVER (PARTITION BY i.grp ORDER BY i.id) AS rn\nFROM items i\nWHERE i.score IS NOT NULL\nORDER BY i.id;",
+    "Template": "SELECT ⟨c0:i.id⟩, ⟨c1:i.grp⟩, ⟨c2 aliased:row_number() OVER (PARTITION BY i.grp ORDER BY i.id)⟩ AS rn\\nFROM items i\\nWHERE i.score IS NOT NULL\\n⟨order:ORDER BY i.id⟩⟨pagination⟩;"
+  },
+  {
+    "AllowedColumns": [
+      {
+        "Name": "grp",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "grp",
+        "SourceExpression": "items.grp",
+        "SourceQualifier": "items"
+      }
+    ],
+    "Command": "many",
+    "CountTemplate": "SELECT COUNT(*) FROM (SELECT ⟨c0:grp⟩, ⟨c1 aliased:count(*)⟩ AS total FROM items GROUP BY grp) sub",
+    "DynamicRuntime": true,
+    "Filename": "builders.sql",
+    "FilteredCountTemplate": "SELECT COUNT(*) FROM (SELECT ⟨c0:grp⟩, ⟨c1 aliased:count(*)⟩ AS total FROM items GROUP BY grp) AS result_rows⟨where⟩",
+    "FilteredTemplate": "SELECT * FROM (SELECT ⟨c0:grp⟩, ⟨c1 aliased:count(*)⟩ AS total FROM items GROUP BY grp) AS result_rows⟨where⟩⟨order⟩⟨pagination⟩;",
+    "Line": 7,
+    "Name": "GroupTotals",
+    "OutputColumns": [
+      {
+        "Name": "grp",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "grp",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "total",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: GroupTotals, command: many, dynamic: runtime)\nSELECT grp, count(*) AS total FROM items GROUP BY grp;",
+    "Template": "SELECT ⟨c0:grp⟩, ⟨c1 aliased:count(*)⟩ AS total FROM items GROUP BY grp⟨order⟩⟨pagination⟩;"
+  },
+  {
+    "AllowedColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceExpression": "items.id",
+        "SourceQualifier": "items"
+      },
+      {
+        "Name": "grp",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "grp",
+        "SourceExpression": "items.grp",
+        "SourceQualifier": "items"
+      }
+    ],
+    "Command": "many",
+    "CountTemplate": "SELECT COUNT(*) FROM items WHERE ⟨where:score \u003e ⟨p0⟩⟩⟨arguments p0⟩",
+    "DynamicRuntime": true,
+    "Filename": "builders.sql",
+    "Line": 10,
+    "Name": "PlainItems",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "grp",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "grp",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "score",
+        "Nullable": true,
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int4",
+          "Width": 32
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: PlainItems, command: many, dynamic: runtime)\nSELECT id, grp FROM items WHERE score \u003e $1;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1:grp⟩ FROM items WHERE ⟨where:score \u003e ⟨p0⟩⟩⟨order⟩⟨pagination⟩;⟨arguments p0⟩"
+  }
+]

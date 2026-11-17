@@ -1,3 +1,4 @@
 {
-  "description": "LIKE, GLOB, and MATCH pattern-matching operators in WHERE clauses. Verifies each operator is parsed with its correct keyword rather than being collapsed to LIKE."
+  "description": "LIKE, GLOB, and MATCH pattern-matching operators in WHERE clauses. Verifies each operator is parsed with its correct keyword rather than being collapsed to LIKE, and warns that MATCH against an ordinary table fails unless the application registers a match function.",
+  "expectedDiagnosticCount": 1
 }

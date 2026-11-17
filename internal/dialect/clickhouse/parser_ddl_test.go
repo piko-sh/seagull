@@ -959,6 +959,88 @@ func TestDDL_RecordsHowAStatementReplays(t *testing.T) {
 			},
 		},
 		{
+			name: "ADD COLUMN with a default AFTER",
+			sql:  "ALTER TABLE t ADD COLUMN c2 Int64 DEFAULT 7 AFTER id",
+			check: func(t *testing.T, mutation *ast.CatalogueMutation) {
+				t.Helper()
+				require.True(t, mutation.Columns[0].HasDefault)
+				require.Equal(t, ast.Placement{Anchor: "id", Kind: ast.PlacementAfter}, mutation.Placement)
+			},
+		},
+		{
+			name: "ADD COLUMN of a Nullable type FIRST",
+			sql:  "ALTER TABLE t ADD COLUMN c2 Nullable(Int64) FIRST",
+			check: func(t *testing.T, mutation *ast.CatalogueMutation) {
+				t.Helper()
+				require.True(t, mutation.Columns[0].Nullable)
+				require.Equal(t, ast.Placement{Anchor: "", Kind: ast.PlacementFirst}, mutation.Placement)
+			},
+		},
+		{
+			name: "ADD COLUMN of a Nullable type AFTER",
+			sql:  "ALTER TABLE t ADD COLUMN c2 Nullable(Int64) AFTER id",
+			check: func(t *testing.T, mutation *ast.CatalogueMutation) {
+				t.Helper()
+				require.Equal(t, ast.Placement{Anchor: "id", Kind: ast.PlacementAfter}, mutation.Placement)
+			},
+		},
+		{
+			name: "MODIFY COLUMN DEFAULT keeps the type",
+			sql:  "ALTER TABLE t MODIFY COLUMN c1 DEFAULT 7",
+			check: func(t *testing.T, mutation *ast.CatalogueMutation) {
+				t.Helper()
+				require.Equal(t, ast.MutationAlterTableAlterColumn, mutation.Kind)
+				require.Equal(t, "c1", mutation.ColumnName)
+				require.True(t, mutation.SetsDefault)
+				require.Empty(t, mutation.Columns)
+			},
+		},
+		{
+			name: "MODIFY COLUMN REMOVE DEFAULT",
+			sql:  "ALTER TABLE t MODIFY COLUMN c1 REMOVE DEFAULT",
+			check: func(t *testing.T, mutation *ast.CatalogueMutation) {
+				t.Helper()
+				require.Equal(t, ast.MutationAlterTableAlterColumn, mutation.Kind)
+				require.True(t, mutation.DropsDefault)
+			},
+		},
+		{
+			name: "MODIFY COLUMN with a type keeps the default",
+			sql:  "ALTER TABLE t MODIFY COLUMN c1 String",
+			check: func(t *testing.T, mutation *ast.CatalogueMutation) {
+				t.Helper()
+				require.True(t, mutation.KeepsUnstated)
+			},
+		},
+		{
+			name: "CREATE TABLE records a CHECK constraint",
+			sql:  "CREATE TABLE t (id Int64, CONSTRAINT positive CHECK id >= 0, CONSTRAINT hint ASSUME id < 10) ENGINE = MergeTree ORDER BY id",
+			check: func(t *testing.T, mutation *ast.CatalogueMutation) {
+				t.Helper()
+				require.Len(t, mutation.Columns, 1)
+				require.Len(t, mutation.Constraints, 1)
+				require.Equal(t, "positive", mutation.Constraints[0].Name)
+				require.Equal(t, sqlmodel.ConstraintCheck, mutation.Constraints[0].Kind)
+			},
+		},
+		{
+			name: "ADD CONSTRAINT CHECK",
+			sql:  "ALTER TABLE t ADD CONSTRAINT positive CHECK id >= 0",
+			check: func(t *testing.T, mutation *ast.CatalogueMutation) {
+				t.Helper()
+				require.Len(t, mutation.Constraints, 1)
+				require.Equal(t, "positive", mutation.Constraints[0].Name)
+			},
+		},
+		{
+			name: "DROP TABLE drops a view of the name",
+			sql:  "DROP TABLE v",
+			check: func(t *testing.T, mutation *ast.CatalogueMutation) {
+				t.Helper()
+				require.True(t, mutation.DropsView)
+			},
+		},
+		{
 			name: "CREATE TABLE IF NOT EXISTS",
 			sql:  "CREATE TABLE IF NOT EXISTS t (id Int32) ENGINE = MergeTree ORDER BY id",
 			check: func(t *testing.T, mutation *ast.CatalogueMutation) {

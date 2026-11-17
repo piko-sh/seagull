@@ -26,6 +26,12 @@ import (
 	"seagull.sh/seagull/internal/sqlmodel"
 )
 
+// arrowLambdaWarning says how DuckDB 2.0 treats a lambda written with an arrow and how to
+// write it instead.
+const arrowLambdaWarning = "DuckDB 2.0 refuses a lambda written with an arrow unless the session sets " +
+	"lambda_syntax = 'ENABLE_SINGLE_ARROW', and later releases drop the form: write it with the LAMBDA keyword, " +
+	"as lambda x: x + 1 or lambda x, i: x + i"
+
 // parseFunctionCall parses a function invocation after its name is consumed.
 //
 // Takes name (string) which is the original-case function name.
@@ -266,7 +272,7 @@ func (p *parser) tryParseLambda() ast.Expression {
 	}
 	if p.Current().Kind == tokenIdentifier && p.Peek().Kind == tokenArrow {
 		parameterName := p.Advance().Value
-		p.Advance()
+		p.warnArrowLambda(p.Advance())
 		body := p.parseFunctionArgumentExpression()
 		return &ast.LambdaExpression{
 			Parameters: []string{parameterName},
@@ -324,13 +330,24 @@ func (p *parser) parseMultiParamLambda() ast.Expression {
 	if p.Current().Kind == tokenRightParen {
 		p.Advance()
 	}
-	p.Advance()
+	p.warnArrowLambda(p.Advance())
 	body := p.parseFunctionArgumentExpression()
 	return &ast.LambdaExpression{
 		Parameters: parameters,
 		Body:       body,
 		Bindings:   nil,
 	}
+}
+
+// warnArrowLambda warns of a lambda written with an arrow, which DuckDB 2.0 refuses
+// unless the session sets lambda_syntax to ENABLE_SINGLE_ARROW.
+//
+// Takes arrow (token) which is the lambda's arrow.
+func (p *parser) warnArrowLambda(arrow token) {
+	if p.statement == nil {
+		return
+	}
+	p.statement.warn(arrow, arrowLambdaWarning)
 }
 
 // parseKeywordLambda parses a lambda written with the LAMBDA keyword: its parameters,

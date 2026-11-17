@@ -42,6 +42,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(name: GetCategorySummary, command: many)\nSELECT\n  category,\n  COUNT(*) AS total_count,\n  COUNT(*) FILTER (WHERE region = 'north') AS north_count,\n  SUM(amount) FILTER (WHERE region = 'south') AS south_total\nFROM sales\nGROUP BY category\nORDER BY category;",
     "Template": "SELECT\\n  ⟨c0:category⟩,\\n  ⟨c1 aliased:COUNT(*)⟩ AS total_count,\\n  ⟨c2 aliased:COUNT(*) FILTER (WHERE region = 'north')⟩ AS north_count,\\n  ⟨c3 aliased:SUM(amount) FILTER (WHERE region = 'south')⟩ AS south_total\\nFROM sales\\nGROUP BY category\\nORDER BY category;"
   }

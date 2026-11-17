@@ -25,6 +25,7 @@ import (
 	"piko.sh/goastutil"
 
 	"seagull.sh/seagull/internal/emit"
+	"seagull.sh/seagull/internal/emit/emitkit"
 	"seagull.sh/seagull/internal/gogen"
 	"seagull.sh/seagull/internal/gogen/goast"
 	"seagull.sh/seagull/internal/gogen/helpers"
@@ -40,11 +41,14 @@ const (
 
 	// identWrappedValue is the wrapper's field holding the parameter.
 	identWrappedValue = "value"
+
+	// nullMethodsSource is the source of the pgx scanner methods of the Null type.
+	nullMethodsSource = "null_pgx.go"
 )
 
 // sources holds the sources of the helpers the emitter adds to a generated package.
 //
-//go:embed internal/source/driver_values.go
+//go:embed internal/source/driver_values.go internal/source/null_pgx.go
 var sources embed.FS
 
 // preparedSources caches immutable parsed helper templates for this emitter.
@@ -107,6 +111,24 @@ func (binder pgxBinder) Helpers(request *emit.Request) ([]sqlmodel.GeneratedFile
 		return nil, err
 	}
 	return []sqlmodel.GeneratedFile{file}, nil
+}
+
+// renderNullMethods renders the file of the pgx scanner methods of the generated Null
+// type, so pgx reads a nullable text, integer, float, boolean, time, UUID or numeric
+// value without database/sql's conversion or an allocation.
+//
+// Takes packageName (string) which is the generated package's name.
+// Takes vocabulary (helpers.Vocabulary) which names the package's helpers.
+//
+// Returns sqlmodel.GeneratedFile which is the file.
+// Returns error when the file cannot be rendered.
+func renderNullMethods(packageName string, vocabulary helpers.Vocabulary) (sqlmodel.GeneratedFile, error) {
+	return preparedSources.File(vocabulary.Helper(emitkit.NullPgxFileSuffix), nullMethodsSource, vocabulary, &helpers.Data{
+		Flags:   nil,
+		Values:  nil,
+		Renames: nil,
+		Package: packageName,
+	})
 }
 
 // bindsAsDriverBinary reports a binary parameter whose Go type an override chose, other

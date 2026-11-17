@@ -58,6 +58,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(ListFinds, many)\n-- {page_size:UInt32} as sgl.param(page_size, default: 3, max: 5)\nSELECT id, creature FROM finds ORDER BY id LIMIT {page_size:UInt32} OFFSET {page_offset:UInt32};",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1:creature⟩ FROM finds⟨where⟩ ⟨order:ORDER BY id⟩ ⟨pagination:LIMIT ⟨p0 UInt32⟩ OFFSET ⟨p1 UInt32⟩⟩;⟨arguments p0 p1⟩"
   },
@@ -107,6 +112,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(FetchFinds, many)\nSELECT id FROM finds ORDER BY id OFFSET {skip:UInt32} ROWS FETCH FIRST {take:UInt32} ROWS ONLY;",
     "Template": "SELECT ⟨c0:id⟩ FROM finds ORDER BY id OFFSET ⟨p0 UInt32⟩ ROWS FETCH FIRST ⟨p1 UInt32⟩ ROWS ONLY;⟨arguments p0 p1⟩"
   }

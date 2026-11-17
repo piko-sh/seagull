@@ -12,10 +12,10 @@ import (
 const beachRecordsSQL = `SELECT beach, gulls, thefts, last_theft FROM beach_records ORDER BY beach;`
 
 type BeachRecordsRow struct {
-	Beach     string     `json:"beach"`
-	Gulls     int64      `json:"gulls"`
-	Thefts    int64      `json:"thefts"`
-	LastTheft *time.Time `json:"last_theft"`
+	Beach     string          `json:"beach"`
+	Gulls     int64           `json:"gulls"`
+	Thefts    int64           `json:"thefts"`
+	LastTheft Null[time.Time] `json:"last_theft"`
 }
 
 func (queries *Queries) BeachRecords(ctx context.Context) ([]BeachRecordsRow, error) {
@@ -25,12 +25,16 @@ func (queries *Queries) BeachRecords(ctx context.Context) ([]BeachRecordsRow, er
 	}
 	defer rows.Close()
 	var results []BeachRecordsRow
-	for rows.Next() {
+	if rows.Next() {
 		var row BeachRecordsRow
-		if err := rows.Scan(&row.Beach, &row.Gulls, &row.Thefts, &row.LastTheft); err != nil {
-			return nil, err
+		scanArgs := []any{&row.Beach, &row.Gulls, &row.Thefts, &row.LastTheft}
+		for more := true; more; more = rows.Next() {
+			row = BeachRecordsRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -53,9 +57,9 @@ LEFT JOIN gulls AS parents ON parents.id = family.parent_id
 ORDER BY family.generation, family.id;`
 
 type FamilyTreeRow struct {
-	Name       string  `json:"name"`
-	Generation int32   `json:"generation"`
-	Parent     *string `json:"parent"`
+	Name       string       `json:"name"`
+	Generation int32        `json:"generation"`
+	Parent     Null[string] `json:"parent"`
 }
 
 func (queries *Queries) FamilyTree(ctx context.Context, id int64) ([]FamilyTreeRow, error) {
@@ -65,12 +69,16 @@ func (queries *Queries) FamilyTree(ctx context.Context, id int64) ([]FamilyTreeR
 	}
 	defer rows.Close()
 	var results []FamilyTreeRow
-	for rows.Next() {
+	if rows.Next() {
 		var row FamilyTreeRow
-		if err := rows.Scan(&row.Name, &row.Generation, &row.Parent); err != nil {
-			return nil, err
+		scanArgs := []any{&row.Name, sglScanNumber(&row.Generation), &row.Parent}
+		for more := true; more; more = rows.Next() {
+			row = FamilyTreeRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -82,7 +90,7 @@ const hatchGullSQL = `INSERT INTO gulls (name, parent_id, beach) VALUES (?, ?, ?
 
 type HatchGullParams struct {
 	Name     string
-	ParentID *int64
+	ParentID Null[int64]
 	Beach    string
 }
 
@@ -120,11 +128,11 @@ FROM totals
 ORDER BY beach, beach_rank, name;`
 
 type TheftLeagueRow struct {
-	Name        string       `json:"name"`
-	Beach       string       `json:"beach"`
-	Thefts      int64        `json:"thefts"`
-	BeachRank   int64        `json:"beach_rank"`
-	BeachThefts *apd.Decimal `json:"beach_thefts"`
+	Name        string            `json:"name"`
+	Beach       string            `json:"beach"`
+	Thefts      int64             `json:"thefts"`
+	BeachRank   int64             `json:"beach_rank"`
+	BeachThefts Null[apd.Decimal] `json:"beach_thefts"`
 }
 
 func (queries *Queries) TheftLeague(ctx context.Context) ([]TheftLeagueRow, error) {

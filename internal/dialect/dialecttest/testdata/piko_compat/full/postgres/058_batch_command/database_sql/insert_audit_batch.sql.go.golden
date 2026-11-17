@@ -12,7 +12,7 @@ const insertauditbatch = `INSERT INTO audit_log (action, detail) VALUES ($1, $2)
 
 type InsertAuditBatchParams struct {
 	Action string
-	Detail *string
+	Detail Null[string]
 }
 
 func (queries *Queries) InsertAuditBatch(ctx context.Context, params []InsertAuditBatchParams) error {

@@ -27,6 +27,7 @@ import (
 	"io/fs"
 	"math"
 	"os"
+	"slices"
 	"sync/atomic"
 	"testing"
 	"testing/fstest"
@@ -752,6 +753,29 @@ func TestMigrationService_Validate(t *testing.T) {
 			},
 			wantError:   true,
 			wantErrType: &MissingMigrationFileError{},
+		},
+		{
+			name:   "a dirty migration returns DirtyMigrationError",
+			reader: threeFileMigrationReader(),
+			applied: func() []AppliedMigration {
+				applied := appliedFromReader(threeFileMigrationReader(), 1, 2)
+				applied[1].Dirty = true
+				applied[1].LastStatement = new(0)
+				return applied
+			}(),
+			wantError:   true,
+			wantErrType: &DirtyMigrationError{},
+		},
+		{
+			name:   "a changed down file returns DownChecksumMismatchError",
+			reader: threeFileMigrationReader(),
+			applied: func() []AppliedMigration {
+				applied := appliedFromReader(threeFileMigrationReader(), 1)
+				applied[0].DownChecksum = "recorded-before-the-edit"
+				return applied
+			}(),
+			wantError:   true,
+			wantErrType: &DownChecksumMismatchError{},
 		},
 		{
 			name:         "applied versions error is propagated",
@@ -2163,6 +2187,64 @@ func TestMigrationService_DownRefusesWhileAMigrationIsDirty(t *testing.T) {
 	}
 }
 
+func TestMigrationService_TargetedRunsAroundADirtyMigration(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		roll      func(ctx context.Context, service *Migrator) (int, error)
+		name      string
+		applied   []int64
+		dirty     int64
+		wantDirty bool
+	}{
+		{
+			name:    "DownTo the dirty migration's own version has nothing to roll back",
+			applied: []int64{1}, dirty: 2,
+			roll: func(ctx context.Context, service *Migrator) (int, error) { return service.DownTo(ctx, 2) },
+		},
+		{
+			name:    "UpTo below the dirty migration with nothing pending at or below the target",
+			applied: []int64{1}, dirty: 3,
+			roll: func(ctx context.Context, service *Migrator) (int, error) { return service.UpTo(ctx, 1) },
+		},
+		{
+			name:    "UpTo below the dirty migration with a migration pending at or below the target",
+			applied: []int64{1}, dirty: 3, wantDirty: true,
+			roll: func(ctx context.Context, service *Migrator) (int, error) { return service.UpTo(ctx, 2) },
+		},
+	}
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			reader := threeFileMigrationReader()
+			applied := appliedFromReader(reader, append(testCase.applied, testCase.dirty)...)
+			applied[len(applied)-1].Dirty = true
+			applied[len(applied)-1].LastStatement = new(-1)
+			var executed []int64
+			executor := &mockMigrationExecutor{
+				appliedVersionsFn: func(context.Context) ([]AppliedMigration, error) { return applied, nil },
+				executeMigrationFn: func(_ context.Context, migration MigrationRecord, _ MigrationDirection, _ bool) error {
+					executed = append(executed, migration.Version)
+					return nil
+				},
+			}
+
+			count, err := testCase.roll(t.Context(), setupMigrationService(t, executor, reader))
+
+			if testCase.wantDirty {
+				var dirtyError *DirtyMigrationError
+				require.ErrorAs(t, err, &dirtyError)
+				assert.Equal(t, testCase.dirty, dirtyError.Version)
+			} else {
+				require.NoError(t, err)
+			}
+			assert.Zero(t, count)
+			assert.Empty(t, executed)
+		})
+	}
+}
+
 func TestMigrationService_DownRefusesNegativeStepsBeforeTakingTheLock(t *testing.T) {
 	t.Parallel()
 
@@ -2390,6 +2472,47 @@ func TestMigrationServiceRefusesAMalformedTransactionDirectiveBeforeRunningAnyth
 			assert.Zero(t, count)
 			assert.Zero(t, executed, "no migration runs")
 			assert.Zero(t, beforeHooks, "no hook runs")
+		})
+	}
+}
+
+func TestMigrationService_DownChecksEveryMigrationBeforeRollingAnyBack(t *testing.T) {
+	t.Parallel()
+
+	withoutOldestDown := threeFileMigrationReader()
+	withoutOldestDown.Directories["/migrations"] = slices.DeleteFunc(slices.Clone(withoutOldestDown.Directories["/migrations"]), func(entry os.DirEntry) bool {
+		return entry.Name() == "001_create_users.down.sql"
+	})
+	edited := appliedFromReader(threeFileMigrationReader(), 1, 2, 3)
+	edited[0].Checksum = "recorded-before-the-edit"
+	for _, testCase := range []struct {
+		name    string
+		reader  *fakefs.FileReader
+		applied []AppliedMigration
+		want    any
+	}{
+		{name: "an older migration without a down file", reader: withoutOldestDown, applied: appliedFromReader(threeFileMigrationReader(), 1, 2, 3), want: &NoDownMigrationError{}},
+		{name: "an applied migration whose up file changed", reader: threeFileMigrationReader(), applied: edited, want: &ChecksumMismatchError{}},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+			var rolledBack []int64
+			executor := &mockMigrationExecutor{
+				appliedVersionsFn: func(_ context.Context) ([]AppliedMigration, error) { return testCase.applied, nil },
+				acquireLockFn:     func(_ context.Context) error { return nil },
+				releaseLockFn:     func(_ context.Context) error { return nil },
+				executeMigrationFn: func(_ context.Context, migration MigrationRecord, _ MigrationDirection, _ bool) error {
+					rolledBack = append(rolledBack, migration.Version)
+					return nil
+				},
+			}
+			service := setupMigrationService(t, executor, testCase.reader)
+
+			count, err := service.Down(t.Context(), 3)
+
+			require.ErrorAs(t, err, &testCase.want)
+			assert.Zero(t, count)
+			assert.Empty(t, rolledBack, "no migration is rolled back before every one is checked")
 		})
 	}
 }

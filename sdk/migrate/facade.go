@@ -55,6 +55,10 @@ const (
 	// It is the only mode the SQLite, ClickHouse and DuckDB backends offer.
 	LockNone = sqlexec.LockNone
 
+	// LockLease holds a lease row in a lock table, renewed while the run lasts and taken
+	// over once it expires. It is the default for SQLite and DuckDB.
+	LockLease = sqlexec.LockLease
+
 	// DefaultTerminator is the statement terminator used when Rules.Terminator is empty.
 	DefaultTerminator = sqllex.DefaultTerminator
 
@@ -135,6 +139,21 @@ var (
 	// The error also wraps a *DirtyMigrationError naming the migration. Finish it with Up,
 	// or record which of its statements ran with PlanRepair and Repair, then roll back.
 	ErrDirtyRollback = migrate.ErrDirtyRollback
+
+	// ErrSeedChangedSinceInterrupted is returned when a seed that stopped partway on an
+	// engine whose seeds cannot run in a transaction, such as ClickHouse, has changed since,
+	// so its completed statements cannot be told apart from the rest. Restore the seed as it
+	// was to resume it, or reseed.
+	ErrSeedChangedSinceInterrupted = migrate.ErrSeedChangedSinceInterrupted
+
+	// ErrTransactionControl is returned when a migration writes BEGIN, COMMIT, ROLLBACK or
+	// another statement that controls a transaction, which the runner owns.
+	ErrTransactionControl = migrate.ErrTransactionControl
+
+	// ErrSettingInsideTransaction is returned when a migration that runs in a transaction
+	// changes, between other statements, a session setting the engine ignores inside a
+	// transaction, such as SQLite's PRAGMA foreign_keys.
+	ErrSettingInsideTransaction = migrate.ErrSettingInsideTransaction
 
 	// ErrRepairOutOfDate is returned by the Migrator's Repair when the history no longer
 	// matches what the caller resolved, such as a dirty migration that another run has
@@ -339,7 +358,7 @@ type (
 )
 
 // LockMode selects how a Backend stops two processes migrating at once: LockAdvisory,
-// LockTable or LockNone. Pass it to WithLock.
+// LockTable, LockLease or LockNone. Pass it to WithLock.
 type LockMode = sqlexec.LockMode
 
 // The ports a Migrator and a Seeder run through, and the database/sql implementation.
@@ -597,7 +616,7 @@ type DoubleQuoteMeaning = sqllex.DoubleQuoteMeaning
 // Takes options (...BackendOption) which set the namespace, history table and lock mode.
 //
 // Returns Backend which is ready for NewMigrator, NewSeeder or NewExecutor.
-func CustomBackend(spec BackendSpec, options ...BackendOption) Backend {
+func CustomBackend(spec BackendSpec, options ...BackendOption) Backend { //nolint:gocritic // the public signature takes the spec by value
 	return sqlexec.Custom(spec, options...)
 }
 
@@ -695,8 +714,9 @@ func WithDirectivePrefixes(canonical string, aliases ...string) Option {
 	return migrate.WithDirectivePrefixes(canonical, aliases...)
 }
 
-// WithLogger sets the logger every call logs through. Without it a call logs through the
-// logger carried by its context, or slog.Default().
+// WithLogger sets the logger a call logs through when its context carries none. A logger
+// bound into the call's context wins, and without either a call logs through
+// slog.Default().
 //
 // Takes logger (*slog.Logger) which receives the log records; nil keeps the default.
 //
@@ -747,7 +767,8 @@ func WithHistoryTable(name string) BackendOption {
 	return sqlexec.WithHistoryTable(name)
 }
 
-// WithLock selects how runs are serialised: LockAdvisory, LockTable or LockNone.
+// WithLock selects how runs are serialised: LockAdvisory, LockTable, LockLease or
+// LockNone.
 //
 // Takes mode (LockMode) which is the lock mode.
 //

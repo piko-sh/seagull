@@ -53,6 +53,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(name: InvoicePage, command: many)\nSELECT id, shop FROM invoices ORDER BY id OFFSET ? ROWS FETCH NEXT ? ROWS ONLY;",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1:shop⟩ FROM invoices ORDER BY id OFFSET ⟨p0⟩ ROWS FETCH NEXT ⟨p1⟩ ROWS ONLY;⟨arguments p0 p1⟩"
   },
@@ -87,6 +92,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        1
+      ]
+    },
     "SQL": "-- sgl.query(name: TopInvoices, command: many)\nSELECT id, amount FROM invoices ORDER BY amount DESC FETCH FIRST 3 ROWS WITH TIES;",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1:amount⟩ FROM invoices ORDER BY amount DESC FETCH FIRST 3 ROWS WITH TIES;"
   },
@@ -263,6 +273,9 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Compound": true
+    },
     "SQL": "-- sgl.query(name: ShopsWithDefault, command: many)\nVALUES ('none', 0) UNION ALL SELECT shop, items FROM invoices WHERE items \u003e ?;",
     "Template": "VALUES ('none', 0) UNION ALL SELECT shop, items FROM invoices WHERE items \u003e ⟨p0⟩;⟨arguments p0⟩"
   },
@@ -297,6 +310,12 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Compound": true,
+      "Named": [
+        1
+      ]
+    },
     "SQL": "-- sgl.query(name: CheapestAndDearest, command: many)\n(SELECT id, amount FROM invoices ORDER BY amount LIMIT 1) UNION ALL (SELECT id, amount FROM invoices ORDER BY amount DESC LIMIT 1);",
     "Template": "(SELECT id, amount FROM invoices ORDER BY amount LIMIT 1) UNION ALL (SELECT id, amount FROM invoices ORDER BY amount DESC LIMIT 1);"
   },

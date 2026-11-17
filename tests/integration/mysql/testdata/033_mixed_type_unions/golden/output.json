@@ -1,0 +1,41 @@
+{
+  "Aggregates": {
+    "average_delta": "-1.0000",
+    "average_price": "1.675000",
+    "total_weight": 2
+  },
+  "MixedBranches": [
+    {
+      "biggest": 7,
+      "small": -5,
+      "wide": "-9"
+    },
+    {
+      "biggest": 4000000000,
+      "small": 4000000000,
+      "wide": "5"
+    }
+  ],
+  "MixedColumns": [
+    {
+      "number_or_text": "gull",
+      "small": -5,
+      "wide": "-9"
+    },
+    {
+      "number_or_text": "tern",
+      "small": 3,
+      "wide": "9"
+    },
+    {
+      "number_or_text": "-5",
+      "small": 7,
+      "wide": "18446744073709551615"
+    },
+    {
+      "number_or_text": "3",
+      "small": 4000000000,
+      "wide": "5"
+    }
+  ]
+}

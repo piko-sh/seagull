@@ -74,6 +74,7 @@ func Preset() app.Preset {
 		Interface:            app.Interface{Enabled: false, Name: ""},
 		JSONTags:             app.JSONTags{Case: app.JSONCaseAsWritten, Omit: false, OmitEmpty: false},
 		EmptySlices:          false,
+		NullablePointers:     false,
 		DocComments:          false,
 		ReuseModels:          false,
 		ModernIdioms:         false,

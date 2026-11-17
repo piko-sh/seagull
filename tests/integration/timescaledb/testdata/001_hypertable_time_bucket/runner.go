@@ -71,7 +71,7 @@ func main() {
 		err = queries.InsertReading(ctx, db.InsertReadingParams{
 			Ts:          baseline.Add(time.Duration(sample.offsetMinutes) * time.Minute),
 			DeviceID:    device,
-			Temperature: &temperature,
+			Temperature: db.NullOf(temperature),
 		})
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
@@ -93,8 +93,8 @@ func main() {
 	summaries := []bucketSummary{}
 	for _, row := range rows {
 		mean := 0.0
-		if row.MeanTemperature != nil {
-			mean = *row.MeanTemperature
+		if row.MeanTemperature.Valid {
+			mean = row.MeanTemperature.V
 		}
 		summaries = append(summaries, bucketSummary{
 			BucketISO:       row.Bucket.UTC().Format(time.RFC3339),

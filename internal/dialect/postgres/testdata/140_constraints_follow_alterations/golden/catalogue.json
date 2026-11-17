@@ -1,0 +1,234 @@
+{
+  "DefaultSchema": "public",
+  "Identifiers": {
+    "Unquoted": "lower"
+  },
+  "Schemas": {
+    "billing": {
+      "Name": "billing",
+      "Tables": {
+        "accounts": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int8",
+                "Width": 64
+              }
+            }
+          ],
+          "Constraints": [
+            {
+              "Columns": [
+                "id"
+              ],
+              "Kind": "primary-key",
+              "Name": "accounts_key",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              }
+            }
+          ],
+          "Name": "accounts",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 1
+          },
+          "PrimaryKey": [
+            "id"
+          ],
+          "Schema": "billing"
+        }
+      }
+    },
+    "public": {
+      "Name": "public",
+      "Tables": {
+        "keepers": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "owner_id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int8",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "contact",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              },
+              "SQLType": {
+                "Category": "text",
+                "EngineName": "text"
+              }
+            }
+          ],
+          "Constraints": [
+            {
+              "Columns": [
+                "owner_id"
+              ],
+              "Kind": "primary-key",
+              "Name": "owners_key",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              }
+            },
+            {
+              "Columns": [
+                "contact"
+              ],
+              "Kind": "unique",
+              "Name": "owners_email",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 2
+              }
+            }
+          ],
+          "Name": "keepers",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 2
+          },
+          "PrimaryKey": [
+            "owner_id"
+          ],
+          "Schema": "public"
+        },
+        "pets": {
+          "Columns": [
+            {
+              "GeneratedKind": "none",
+              "Name": "id",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 3
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int8",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "owner",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 3
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int8",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "account",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 3
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int8",
+                "Width": 64
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "HasDefault": true,
+              "Name": "age",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 3
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            },
+            {
+              "GeneratedKind": "none",
+              "Name": "weight",
+              "Nullable": true,
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 3
+              },
+              "SQLType": {
+                "Category": "integer",
+                "EngineName": "int4",
+                "Width": 32
+              }
+            }
+          ],
+          "Constraints": [
+            {
+              "Columns": [
+                "owner"
+              ],
+              "ForeignColumns": [
+                "owner_id"
+              ],
+              "ForeignTable": "keepers",
+              "Kind": "foreign-key",
+              "Name": "pets_owner",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 3
+              }
+            },
+            {
+              "Columns": [
+                "account"
+              ],
+              "ForeignColumns": [
+                "id"
+              ],
+              "ForeignTable": "billing.accounts",
+              "Kind": "foreign-key",
+              "Name": "pets_account",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 3
+              }
+            }
+          ],
+          "Name": "pets",
+          "Origin": {
+            "Filename": "001_schema.up.sql",
+            "Statement": 3
+          },
+          "Schema": "public"
+        }
+      }
+    }
+  },
+  "SearchPath": [
+    "public"
+  ]
+}

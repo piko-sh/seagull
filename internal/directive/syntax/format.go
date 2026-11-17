@@ -19,6 +19,7 @@
 package syntax
 
 import (
+	"slices"
 	"strings"
 
 	"seagull.sh/seagull/internal/namespace"
@@ -34,8 +35,11 @@ const (
 	// indentSpace lists the characters that indent a line or a comment's text.
 	indentSpace = " \t"
 
-	// directiveSpace lists the characters normalised as spacing inside a directive.
+	// directiveSpace finds whitespace that ends a parameter anchor.
 	directiveSpace = " \t\r\v\f"
+
+	// directiveNameEnd lists the characters that may follow a directive's name.
+	directiveNameEnd = "( \t"
 )
 
 // FormatSource rewrites the directives of a SQL file into their canonical form.
@@ -53,12 +57,16 @@ const (
 // Quoted values and comments that are not directives are unchanged. Line endings are
 // preserved, and formatting is idempotent.
 //
+// Parameter bindings use the supplied anchor forms. Without anchor forms, the formatter
+// accepts the common placeholder forms.
+//
 // Takes source (string) which is the SQL file content.
 // Takes lexicon (Lexicon) which is how the dialect writes SQL.
 // Takes prefixes (namespace.Set) which names the canonical prefix and its aliases.
+// Takes sigils (...SigilForm) which optionally restricts parameter anchor prefixes.
 //
 // Returns string which is the formatted content.
-func FormatSource(source string, lexicon Lexicon, prefixes namespace.Set) string {
+func FormatSource(source string, lexicon Lexicon, prefixes namespace.Set, sigils ...SigilForm) string {
 	comments, lines := lexicon.DirectiveComments(source)
 	var builder strings.Builder
 	builder.Grow(len(source))
@@ -71,7 +79,14 @@ func FormatSource(source string, lexicon Lexicon, prefixes namespace.Set) string
 			depth = 0
 		}
 		previousLine = line
-		formatted, nextDepth, changed := formatComment(comment.Token.Raw[len(lexicon.LinePrefix):], depth, prefixes)
+		body := comment.Token.Raw[len(lexicon.LinePrefix):]
+		if startsQueryDirective(body, prefixes) {
+			depth = 0
+		}
+		if depth == 0 && !parameterFormattingAllowed(body, sigils) {
+			continue
+		}
+		formatted, nextDepth, changed := formatComment(body, depth, prefixes)
 		depth = nextDepth
 		if !changed {
 			continue
@@ -83,6 +98,18 @@ func FormatSource(source string, lexicon Lexicon, prefixes namespace.Set) string
 	}
 	builder.WriteString(source[written:])
 	return builder.String()
+}
+
+// startsQueryDirective recognises query boundaries even when their arguments are absent.
+//
+// Takes body (string) which follows the SQL comment opener.
+// Takes prefixes (namespace.Set) which includes canonical, alias and foreign prefixes.
+//
+// Returns bool which prevents an earlier directive from consuming the query's prose.
+func startsQueryDirective(body string, prefixes namespace.Set) bool {
+	prefix, role, rest := DirectiveName(body)
+	return prefixes.Match(prefix) != namespace.KindNone && role == roleQuery &&
+		(rest == "" || strings.IndexByte(directiveNameEnd, rest[0]) >= 0)
 }
 
 // formatComment formats the text of one directive comment after its opener, as a
@@ -107,6 +134,9 @@ func formatComment(body string, depth int, prefixes namespace.Set) (string, int,
 		return body, 0, false
 	}
 	normalised, nextDepth := normaliseDirective(text, 0)
+	if IsDirectiveText(body, prefixes) != IsDirectiveText(normalised, prefixes) {
+		return body, 0, false
+	}
 	return directiveIndent + normalised, nextDepth, true
 }
 
@@ -166,8 +196,11 @@ func canonicalParameter(text string, prefixes namespace.Set) (string, bool) {
 	}
 	reference := text[:end]
 	after := strings.TrimLeft(text[end:], indentSpace)
-	keyword, isParameter := strings.CutPrefix(after, parameterKeyword)
-	if !isParameter || keyword == "" || strings.IndexByte(indentSpace, keyword[0]) < 0 {
+	if len(after) <= len(parameterKeyword) || !strings.EqualFold(after[:len(parameterKeyword)], parameterKeyword) {
+		return text, false
+	}
+	keyword := after[len(parameterKeyword):]
+	if strings.IndexByte(indentSpace, keyword[0]) < 0 {
 		return text, false
 	}
 	after = strings.TrimLeft(keyword, indentSpace)
@@ -199,14 +232,17 @@ func normaliseDirective(text string, depth int) (string, int) {
 	for index < len(text) {
 		character := text[index]
 		switch {
-		case strings.IndexByte(directiveSpace, character) >= 0:
+		case strings.IndexByte(indentSpace, character) >= 0:
 			pendingSpace = true
 			index++
 			continue
 		case character == '\'' || character == '"':
-			end, _ := SkipString(text, index)
+			end, closed := SkipString(text, index)
 			writeSeparated(&builder, pendingSpace, character)
 			builder.WriteString(text[index+1 : end])
+			if !closed {
+				return builder.String(), 0
+			}
 			pendingSpace = false
 			index = end
 			continue
@@ -220,7 +256,7 @@ func normaliseDirective(text string, depth int) (string, int) {
 		case ')', ']':
 			depth = max(depth-1, 0)
 			if depth == 0 && character == ')' {
-				builder.WriteString(strings.TrimRight(text[index:], directiveSpace))
+				builder.WriteString(strings.TrimRight(text[index:], indentSpace))
 				return builder.String(), 0
 			}
 		}
@@ -242,4 +278,20 @@ func writeSeparated(builder *strings.Builder, pendingSpace bool, character byte)
 		}
 	}
 	builder.WriteByte(character)
+}
+
+// parameterFormattingAllowed leaves unsupported parameter forms in prose unchanged.
+//
+// Takes body (string) which is the comment text after its opener.
+// Takes sigils ([]SigilForm) which lists accepted input anchor prefixes.
+//
+// Returns bool which allows ordinary calls and supported parameter anchors.
+func parameterFormattingAllowed(body string, sigils []SigilForm) bool {
+	text := strings.TrimLeft(body, indentSpace)
+	if text == "" || IsIdentifierStart(text[0]) || len(sigils) == 0 {
+		return true
+	}
+	return slices.ContainsFunc(sigils, func(sigil SigilForm) bool {
+		return sigil.Prefix != "" && strings.HasPrefix(text, sigil.Prefix)
+	})
 }

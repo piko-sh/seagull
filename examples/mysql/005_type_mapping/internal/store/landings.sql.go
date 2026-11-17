@@ -15,23 +15,23 @@ FROM landings
 WHERE id = ?;`
 
 type GetLandingRow struct {
-	ID         int64       `json:"id"`
-	Species    string      `json:"species"`
-	Boxes      int16       `json:"boxes"`
-	Fish       int32       `json:"fish"`
-	WeightG    int64       `json:"weight_g"`
-	LengthCm   float64     `json:"length_cm"`
-	OnIce      bool        `json:"on_ice"`
-	LandedAt   time.Time   `json:"landed_at"`
-	Tag        []byte      `json:"tag"`
-	Notes      *string     `json:"notes"`
-	Berth      uint8       `json:"berth"`
-	PricePerKg apd.Decimal `json:"price_per_kg"`
+	ID         int64        `json:"id"`
+	Species    string       `json:"species"`
+	Boxes      int16        `json:"boxes"`
+	Fish       int32        `json:"fish"`
+	WeightG    int64        `json:"weight_g"`
+	LengthCm   float64      `json:"length_cm"`
+	OnIce      bool         `json:"on_ice"`
+	LandedAt   time.Time    `json:"landed_at"`
+	Tag        []byte       `json:"tag"`
+	Notes      Null[string] `json:"notes"`
+	Berth      uint8        `json:"berth"`
+	PricePerKg apd.Decimal  `json:"price_per_kg"`
 }
 
 func (queries *Queries) GetLanding(ctx context.Context, id int64) (GetLandingRow, error) {
 	var row GetLandingRow
-	err := queries.reader.QueryRowContext(ctx, getLandingSQL, id).Scan(&row.ID, &row.Species, &row.Boxes, &row.Fish, &row.WeightG, &row.LengthCm, &row.OnIce, &row.LandedAt, &row.Tag, &row.Notes, &row.Berth, &row.PricePerKg)
+	err := queries.reader.QueryRowContext(ctx, getLandingSQL, id).Scan(&row.ID, &row.Species, sglScanNumber(&row.Boxes), sglScanNumber(&row.Fish), &row.WeightG, &row.LengthCm, &row.OnIce, &row.LandedAt, &row.Tag, &row.Notes, sglScanNumber(&row.Berth), &row.PricePerKg)
 	if err != nil {
 		return GetLandingRow{}, err
 	}
@@ -50,11 +50,11 @@ type RecordLandingParams struct {
 	OnIce      bool
 	LandedAt   time.Time
 	Tag        []byte
-	Notes      *string
+	Notes      Null[string]
 	Berth      uint8
 	PricePerKg string
 }
 
 func (queries *Queries) RecordLanding(ctx context.Context, params RecordLandingParams) (sql.Result, error) {
-	return queries.writer.ExecContext(ctx, recordLandingSQL, params.Species, params.Boxes, params.Fish, params.WeightG, params.LengthCm, params.OnIce, params.LandedAt, params.Tag, params.Notes, params.Berth, params.PricePerKg)
+	return queries.writer.ExecContext(ctx, recordLandingSQL, params.Species, params.Boxes, params.Fish, params.WeightG, params.LengthCm, params.OnIce, params.LandedAt, sglNonNil(params.Tag), params.Notes, params.Berth, params.PricePerKg)
 }

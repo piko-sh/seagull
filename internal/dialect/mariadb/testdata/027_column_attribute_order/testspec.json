@@ -1,0 +1,9 @@
+{
+  "description": "MariaDB ends a column definition at its CHECK, which only a REFERENCES clause may follow, ends it at REFERENCES, and takes CONSTRAINT only before REFERENCES. Each other order is a syntax error (1064).",
+  "expectedDiagnosticCount": 4,
+  "diagnostics": [
+    {"severity": "error", "code": "Q010", "messageContains": "MariaDB takes only a REFERENCES clause after a column's CHECK"},
+    {"severity": "error", "code": "Q010", "messageContains": "MariaDB ends a column definition at its REFERENCES clause"},
+    {"severity": "error", "code": "Q010", "messageContains": "MariaDB names only a REFERENCES clause in a column definition"}
+  ]
+}

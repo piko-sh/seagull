@@ -19,6 +19,7 @@
 package mysql
 
 import (
+	"math/big"
 	"slices"
 	"strconv"
 
@@ -116,6 +117,12 @@ const (
 	// statementKindShow identifies a SHOW statement.
 	statementKindShow
 
+	// statementKindCreateSequence identifies a MariaDB CREATE SEQUENCE statement.
+	statementKindCreateSequence
+
+	// statementKindDropSequence identifies a MariaDB DROP SEQUENCE statement.
+	statementKindDropSequence
+
 	// statementKindUnknown identifies a statement whose kind could not be determined.
 	statementKindUnknown
 
@@ -154,11 +161,14 @@ var (
 		"VIEW":           statementKindCreateView,
 		"INDEX":          statementKindCreateIndex,
 		keywordUNIQUE:    statementKindCreateIndex,
+		"FULLTEXT":       statementKindCreateIndex,
+		"SPATIAL":        statementKindCreateIndex,
 		"TRIGGER":        statementKindCreateTrigger,
 		keywordDATABASE:  statementKindCreateDatabase,
 		keywordSCHEMA:    statementKindCreateDatabase,
 		keywordFUNCTION:  statementKindCreateFunction,
 		keywordPROCEDURE: statementKindCreateFunction,
+		keywordSEQUENCE:  statementKindCreateSequence,
 	}
 
 	// dmlKeywords maps the data-manipulation keywords recognised inside a WITH statement to
@@ -201,6 +211,37 @@ func (*parsedStatement) IsParsedStatement() {}
 // parser holds the mutable state required to walk a single SQL statement and accumulate
 // parameter and table references.
 type parser struct {
+	// declaredIndexes holds the FULLTEXT and other non-unique indexes a table definition or
+	// ALTER TABLE ADD declares, which its statement attaches as index mutations.
+	declaredIndexes []declaredIndex
+
+	// columnConstraints holds the unique, check and foreign key constraints the column
+	// definitions read so far declare, which their statement takes.
+	columnConstraints []sqlmodel.Constraint
+
+	// keyNames holds the names of the keys and indexes a CREATE TABLE has declared so far,
+	// so that an unnamed one is named in the order MySQL names them. It is nil outside a
+	// CREATE TABLE, where the catalogue names them.
+	keyNames *[]string
+
+	// fullTextSearches holds the MATCH ... AGAINST searches the statement makes, shared with
+	// the child parsers that read its conditions and nested queries.
+	fullTextSearches *[]ast.FullTextSearch
+
+	// reservedNames lists the keywords the engine refuses, unquoted, as a table's or a
+	// column's name in a definition.
+	reservedNames dialectkit.ReservedNames
+
+	// aliasKeywords lists the keywords the engine refuses, unquoted, as an output column's
+	// alias.
+	aliasKeywords dialectkit.AliasKeywords
+
+	// constantFractions retains bounded decimal and approximate cast operands.
+	constantFractions map[ast.Expression]constantFraction
+
+	// constantNumbers retains exact integer values while parsing numeric prefixes.
+	constantNumbers map[ast.Expression]*big.Int
+
 	// types normalises type names, such as a CAST target, through the dialect's hooks and
 	// extra types; nil resolves through the built-in types alone.
 	types *typeResolver
@@ -293,6 +334,10 @@ type parser struct {
 	// last.
 	itemSpans []ast.ItemSpan
 
+	// explicitNull holds the columns the definitions read so far declare NULL in words,
+	// which MySQL refuses for a primary key's column.
+	explicitNull []string
+
 	// Cursor walks the statement's tokens; its keyword matching never matches a quoted
 	// identifier.
 	dialectkit.Cursor[tokenKind]
@@ -323,6 +368,10 @@ type parser struct {
 	// token after its expression when it has none; -1 before the alias is looked for.
 	aliasStart int
 
+	// fullTextFrom is how many searches fullTextSearches held when this parser started, so
+	// the query it finishes takes the searches made since that no nested query took.
+	fullTextFrom int
+
 	// hasDataModifyingCTE records whether any CTE in the statement performs a data-modifying
 	// operation.
 	hasDataModifyingCTE bool
@@ -340,6 +389,18 @@ type parser struct {
 	// sequence.
 	sequences bool
 
+	// noRollupFunction records that the dialect refuses GROUP BY ROLLUP (...), taking only
+	// WITH ROLLUP.
+	noRollupFunction bool
+
+	// noDerivedColumnLists records that the dialect refuses a column list after a derived
+	// table's alias.
+	noDerivedColumnLists bool
+
+	// rollupForbidsOrderBy records that the dialect refuses ORDER BY on a query grouped WITH
+	// ROLLUP.
+	rollupForbidsOrderBy bool
+
 	// offsetFetch records that the dialect takes OFFSET n ROWS and FETCH FIRST n ROWS ONLY
 	// as a row limit.
 	offsetFetch bool
@@ -347,6 +408,14 @@ type parser struct {
 	// createOrReplace records that a CREATE of a table, index, database or trigger may say
 	// OR REPLACE.
 	createOrReplace bool
+
+	// foldNegatedLiterals applies MariaDB's literal and bound constant negation rules.
+	foldNegatedLiterals bool
+
+	// referencesNeedColumns records that a foreign key's REFERENCES clause must list the
+	// referenced columns, as MariaDB requires. MySQL reads a clause without them as
+	// referencing the primary key.
+	referencesNeedColumns bool
 
 	// suppressClauses stops clause expressions being recorded, inside a clause whose names
 	// the analyser must not check, such as ON DUPLICATE KEY UPDATE naming the inserted row.
@@ -360,6 +429,10 @@ type parser struct {
 	// otherwise step over a token it cannot read, such as a missing operand or an unclosed
 	// parenthesis, in a parser that checks a condition another scan stepped over.
 	strictExpressions bool
+
+	// rowLimited records that the query this parser analyses has a LIMIT, OFFSET or FETCH
+	// clause.
+	rowLimited bool
 }
 
 // newParser creates a parser over the token stream seeded with the default depth cap.
@@ -369,6 +442,19 @@ type parser struct {
 // Returns *parser which is ready to analyse the statement.
 func newParser(tokens []token) *parser {
 	return &parser{
+		fullTextFrom:                  0,
+		fullTextSearches:              new([]ast.FullTextSearch),
+		declaredIndexes:               nil,
+		columnConstraints:             nil,
+		keyNames:                      nil,
+		reservedNames:                 mySQLReservedNames,
+		aliasKeywords:                 mySQLAliasKeywords,
+		rowLimited:                    false,
+		constantNumbers:               nil,
+		constantFractions:             nil,
+		foldNegatedLiterals:           false,
+		explicitNull:                  nil,
+		referencesNeedColumns:         false,
 		types:                         nil,
 		functions:                     nil,
 		parenthesisIndex:              nil,
@@ -402,6 +488,9 @@ func newParser(tokens []token) *parser {
 		jsonValueReturningUnavailable: false,
 		sequences:                     false,
 		offsetFetch:                   false,
+		rollupForbidsOrderBy:          false,
+		noDerivedColumnLists:          false,
+		noRollupFunction:              false,
 		createOrReplace:               false,
 		suppressClauses:               false,
 		skipSubqueries:                false,
@@ -419,14 +508,22 @@ func newParser(tokens []token) *parser {
 // Returns *parser which is the child parser.
 func (p *parser) newChildParser(tokens []token) *parser {
 	child := newParser(tokens)
+	child.fullTextSearches = p.fullTextSearches
+	child.fullTextFrom = len(*p.fullTextSearches)
 	child.Interrupt = p.Interrupt
+	child.reservedNames = p.reservedNames
+	child.aliasKeywords = p.aliasKeywords
 	child.types = p.types
 	child.functions = p.functions
 	child.rowAliasUnavailable = p.rowAliasUnavailable
 	child.jsonValueReturningUnavailable = p.jsonValueReturningUnavailable
 	child.sequences = p.sequences
 	child.offsetFetch = p.offsetFetch
+	child.rollupForbidsOrderBy = p.rollupForbidsOrderBy
+	child.noDerivedColumnLists = p.noDerivedColumnLists
+	child.noRollupFunction = p.noRollupFunction
 	child.createOrReplace = p.createOrReplace
+	child.foldNegatedLiterals = p.foldNegatedLiterals
 	child.parameterCount = p.parameterCount
 	child.placeholderNumbers = p.placeholderNumbers
 	child.scannedSubqueries = p.scannedSubqueries
@@ -1035,6 +1132,9 @@ func classifyDropStatement(tokens []token) statementKind {
 	if second == "TEMPORARY" && len(tokens) > 2 && tokens[2].IsKeyword(tokenIdentifier, keywordTABLE) {
 		return statementKindDropTable
 	}
+	if second == "TEMPORARY" && len(tokens) > 2 && tokens[2].IsKeyword(tokenIdentifier, keywordSEQUENCE) {
+		return statementKindDropSequence
+	}
 	switch second {
 	case keywordTABLE:
 		return statementKindDropTable
@@ -1048,6 +1148,8 @@ func classifyDropStatement(tokens []token) statementKind {
 		return statementKindDropDatabase
 	case keywordFUNCTION, keywordPROCEDURE:
 		return statementKindDropFunction
+	case keywordSEQUENCE:
+		return statementKindDropSequence
 	}
 
 	return statementKindUnknown

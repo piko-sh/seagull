@@ -29,6 +29,9 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Compound": true
+    },
     "SQL": "-- sgl.query(AllLabels, many)\nSELECT id, label FROM recent\nUNION ALL\nSELECT id, label FROM archived\nORDER BY id;",
     "Template": "SELECT id, label FROM recent\\nUNION ALL\\nSELECT id, label FROM archived\\nORDER BY id;"
   }

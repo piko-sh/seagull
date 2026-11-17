@@ -25,6 +25,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(name: DailySpine, command: many)\nSELECT day, count(s.id) AS signups\nFROM generate_series(TIMESTAMP '2024-01-01', TIMESTAMP '2024-01-03', INTERVAL 1 DAY) AS t(day)\nLEFT JOIN signups s ON s.created_at \u003e= day AND s.created_at \u003c day + INTERVAL 1 DAY\nGROUP BY day\nORDER BY day;",
     "Template": "SELECT ⟨c0:day⟩, ⟨c1 aliased:count(s.id)⟩ AS signups\\nFROM generate_series(TIMESTAMP '2024-01-01', TIMESTAMP '2024-01-03', INTERVAL 1 DAY) AS t(day)\\nLEFT JOIN signups s ON s.created_at \u003e= day AND s.created_at \u003c day + INTERVAL 1 DAY\\nGROUP BY day\\nORDER BY day;"
   },

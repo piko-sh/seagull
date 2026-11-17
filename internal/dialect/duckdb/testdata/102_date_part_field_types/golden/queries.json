@@ -1,0 +1,70 @@
+[
+  {
+    "Command": "many",
+    "Filename": "parts.sql",
+    "Line": 1,
+    "Name": "Parts",
+    "OutputColumns": [
+      {
+        "Name": "day_of_month",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "epoch_seconds",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "whole_seconds",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "julian_day",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "epoch_again",
+        "SQLType": {
+          "Category": "float",
+          "EngineName": "float8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "chosen_part",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "span_hours",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: Parts, command: many)\nSELECT\n    extract(day FROM taken) AS day_of_month,\n    extract(epoch FROM taken) AS epoch_seconds,\n    date_part('second', taken) AS whole_seconds,\n    date_part('JULIAN', taken) AS julian_day,\n    datepart('epoch', taken) AS epoch_again,\n    date_part(field, taken) AS chosen_part,\n    extract(hour FROM span) AS span_hours\nFROM readings;",
+    "Template": "SELECT\\n    ⟨c0 aliased:extract(day FROM taken)⟩ AS day_of_month,\\n    ⟨c1 aliased:extract(epoch FROM taken)⟩ AS epoch_seconds,\\n    ⟨c2 aliased:date_part('second', taken)⟩ AS whole_seconds,\\n    ⟨c3 aliased:date_part('JULIAN', taken)⟩ AS julian_day,\\n    ⟨c4 aliased:datepart('epoch', taken)⟩ AS epoch_again,\\n    ⟨c5 aliased:date_part(field, taken)⟩ AS chosen_part,\\n    ⟨c6 aliased:extract(hour FROM span)⟩ AS span_hours\\nFROM readings;"
+  }
+]

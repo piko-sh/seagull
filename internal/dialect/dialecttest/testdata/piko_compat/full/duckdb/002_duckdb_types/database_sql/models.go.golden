@@ -9,17 +9,17 @@ import (
 )
 
 type DuckdbTypes struct {
-	ID        int32         `json:"id"`
-	TinyVal   *int8         `json:"tiny_val"`
-	SmallVal  *int16        `json:"small_val"`
-	BigVal    *int64        `json:"big_val"`
-	HugeVal   *maths.BigInt `json:"huge_val"`
-	UtinyVal  *uint8        `json:"utiny_val"`
-	UsmallVal *uint16       `json:"usmall_val"`
-	UintVal   *uint32       `json:"uint_val"`
-	UbigVal   *uint64       `json:"ubig_val"`
-	BlobVal   []byte        `json:"blob_val"`
-	TsS       *time.Time    `json:"ts_s"`
-	TsMs      *time.Time    `json:"ts_ms"`
-	TsNs      *time.Time    `json:"ts_ns"`
+	ID        int32              `json:"id"`
+	TinyVal   Null[int8]         `json:"tiny_val"`
+	SmallVal  Null[int16]        `json:"small_val"`
+	BigVal    Null[int64]        `json:"big_val"`
+	HugeVal   Null[maths.BigInt] `json:"huge_val"`
+	UtinyVal  Null[uint8]        `json:"utiny_val"`
+	UsmallVal Null[uint16]       `json:"usmall_val"`
+	UintVal   Null[uint32]       `json:"uint_val"`
+	UbigVal   Null[uint64]       `json:"ubig_val"`
+	BlobVal   []byte             `json:"blob_val"`
+	TsS       Null[time.Time]    `json:"ts_s"`
+	TsMs      Null[time.Time]    `json:"ts_ms"`
+	TsNs      Null[time.Time]    `json:"ts_ns"`
 }

@@ -28,8 +28,14 @@ type MigrationFile struct {
 	// Filename is the original filename for error reporting.
 	Filename string
 
-	// Checksum is the SHA-256 hex digest of Content, computed at read time.
+	// Checksum is the SHA-256 hex digest of Content with a byte order mark removed and CRLF
+	// line endings written as LF, computed at read time.
 	Checksum string
+
+	// LegacyChecksum is the SHA-256 hex digest of the content as written, which earlier
+	// releases recorded, when it differs from Checksum because the content has a byte order
+	// mark or CRLF line endings. It is empty otherwise.
+	LegacyChecksum string
 
 	// Content is the raw SQL content of the migration file.
 	Content []byte
@@ -41,4 +47,28 @@ type MigrationFile struct {
 	// Down reports whether this is a down migration, which reverts its version, rather than
 	// an up migration, which applies it.
 	Down bool
+}
+
+// MatchesChecksum reports whether a recorded checksum is this file's, as recorded now or
+// by an earlier release that hashed the bytes as written.
+//
+// Takes recorded (string) which is the checksum the history holds.
+//
+// Returns bool which is true when the file is the one recorded.
+func (file *MigrationFile) MatchesChecksum(recorded string) bool {
+	return matchesChecksum(recorded, file.Checksum, file.LegacyChecksum)
+}
+
+// matchesChecksum reports whether a recorded checksum is a file's current or legacy one.
+//
+// Takes recorded (string) which is the checksum the history holds.
+// Takes checksum (string) which is the file's checksum.
+// Takes legacy (string) which is the file's legacy checksum, or empty.
+//
+// Returns bool which is true when the recorded checksum is either of them.
+func matchesChecksum(recorded, checksum, legacy string) bool {
+	if recorded == checksum {
+		return true
+	}
+	return legacy != "" && recorded == legacy
 }

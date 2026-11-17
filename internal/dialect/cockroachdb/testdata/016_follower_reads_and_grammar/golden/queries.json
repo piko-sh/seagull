@@ -166,6 +166,9 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Compound": true
+    },
     "SQL": "-- sgl.query(name: WithNone, command: many)\nVALUES (0, 'none') UNION ALL SELECT id, label FROM owners;",
     "Template": "VALUES (0, 'none') UNION ALL SELECT id, label FROM owners;"
   },

@@ -145,8 +145,10 @@ func (allowlist Allowlist) stale(checked, used map[string]bool) []string {
 // CompareCatalogues lists the differences between a schema replayed from migrations and
 // the schema introspected from a database that ran them: tables, views and enums one side
 // lacks, and the columns, primary keys, partitions' parents, view columns and enum values
-// that differ. A column's type is compared with its schema left out when it is the schema
-// compared, since the two sides name the same schema differently.
+// that differ.
+//
+// A column's type is compared with its schema left out when it is the schema compared,
+// since the two sides name the same schema differently.
 //
 // Takes migrations (CatalogueSchema) which is the replayed schema.
 // Takes database (CatalogueSchema) which is the introspected schema.

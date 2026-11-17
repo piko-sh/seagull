@@ -88,9 +88,13 @@ BackendSpec: |- # Kind: Struct
       // Field
       HistoryReadModifier string
       // Field
+      SchemaCheckpoint string
+      // Field
       Rules sqllex.Rules
       // Field
       DefaultLock sqlexec.LockMode
+      // Field
+      LeaseLock bool
       // Field
       TransactionalDDL bool
       // Field
@@ -199,6 +203,9 @@ ErrLockLost: '*errors.errorString' # Kind: Type
 ErrLockNotAcquired: '*errors.errorString' # Kind: Type
 ErrLockTimeout: '*errors.errorString' # Kind: Type
 ErrRepairOutOfDate: '*errors.errorString' # Kind: Type
+ErrSeedChangedSinceInterrupted: '*errors.errorString' # Kind: Type
+ErrSettingInsideTransaction: '*errors.errorString' # Kind: Type
+ErrTransactionControl: '*errors.errorString' # Kind: Type
 ErrUnsupportedLock: '*fmt.wrapError' # Kind: Type
 EscapeBackslash: sqllex.EscapeMode # Kind: Type
 EscapeDoubled: sqllex.EscapeMode # Kind: Type
@@ -206,7 +213,7 @@ EscapeDoubledOrBackslash: sqllex.EscapeMode # Kind: Type
 EscapeMode: sqllex.EscapeMode # Kind: Type
 Executor: |- # Kind: Struct
   struct {
-      // (+7 unexported fields)
+      // (+8 unexported fields)
 
       // Method
       AcquireLock(context.Context) error
@@ -291,6 +298,7 @@ LockAcquisitionError: |- # Kind: Struct
       Unwrap() error
   }
 LockAdvisory: sqlexec.LockMode # Kind: Type
+LockLease: sqlexec.LockMode # Kind: Type
 LockMode: sqlexec.LockMode # Kind: Type
 LockNone: sqlexec.LockMode # Kind: Type
 LockTable: sqlexec.LockMode # Kind: Type
@@ -424,6 +432,15 @@ Names: |- # Kind: Struct
       LockKey string
       // Field
       SeedLockKey string
+      // Field
+      MigrationLease string
+      // Field
+      SeedLease string
+      // Field
+      SeedProgress string
+
+      // Method
+      MigrationProgress() string
   }
 NewExecutor: func(*sql.DB, sqlexec.Backend, ...sqlexec.ExecutorOption) (*sqlexec.Executor, error) # Kind: Func
 NewMigrator: func(*sql.DB, sqlexec.Backend, fs.FS, string, ...migrate.Option) (*migrate.Migrator, error) # Kind: Func

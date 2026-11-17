@@ -30,12 +30,16 @@ import (
 	"seagull.sh/seagull/sdk/dialect/dialect_engine_sqlite"
 )
 
+// main runs the embedding example and reports failures.
 func main() {
 	if err := run(context.Background()); err != nil {
 		log.Fatal(err)
 	}
 }
 
+// run vets and generates a store from embedded tutorial inputs.
+//
+// Returns error when validation or generation fails.
 func run(ctx context.Context) error {
 	generator, err := seagull.New(dialect_engine_sqlite.New())
 	if err != nil {

@@ -78,7 +78,7 @@ A `Result` or `Report` retains every diagnostic up to the run's cap (`WithMaxDia
 
 ## Observer callbacks
 
-`observe.ObserverPort.Start(ctx, stage, attrs...)` returns the context for the stage and an end callback receiving its final operational error or nil. A derived context can carry a parent tracing span. Seagull calls the end callback once; observer panics and nil callbacks are contained. A panic in `Start` or the end callback is logged once at warning level, with its stack, through the logger the context carries (`WithLogger`, `seagull.ContextWithLogger` or `slog.Default()`), and the stage runs on unobserved.
+`observe.ObserverPort.Start(ctx, stage, attrs...)` returns the context for the stage and an end callback receiving its final operational error or nil. A derived context can carry a parent tracing span. Seagull calls the end callback once; observer panics and nil callbacks are contained. A panic in `Start` or the end callback is logged once at warning level, with its stack, through the run's logger (`seagull.ContextWithLogger`, then `WithLogger`, then `slog.Default()`), and the stage runs on unobserved.
 
 `seagull.WithObserver` supplies an observer for a generator, and `migrate.WithObserver` one for a migrator or seeder. Otherwise a run uses the observer `observe.ContextWithObserver` attached to the context, if any, and observes nothing when there is none.
 

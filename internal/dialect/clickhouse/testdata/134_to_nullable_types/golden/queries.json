@@ -1,0 +1,79 @@
+[
+  {
+    "Command": "many",
+    "Filename": "items.sql",
+    "Line": 1,
+    "Name": "NullableColumns",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "score",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Nullable": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(NullableColumns, many)\nSELECT toNullable(id) AS id, toNullable(score) AS score FROM items;",
+    "Template": "SELECT ⟨c0 aliased:toNullable(id)⟩ AS id, ⟨c1 aliased:toNullable(score)⟩ AS score FROM items;"
+  },
+  {
+    "Command": "many",
+    "Filename": "items.sql",
+    "Line": 4,
+    "Name": "RecursiveChain",
+    "OutputColumns": [
+      {
+        "Name": "step",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt8",
+          "Unsigned": true,
+          "Width": 8
+        },
+        "SourceColumn": "n",
+        "SourceQualifier": "chain",
+        "SourceTable": "chain"
+      },
+      {
+        "Name": "value_a",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "a",
+        "SourceQualifier": "chain",
+        "SourceTable": "chain"
+      },
+      {
+        "Name": "value_b",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "b",
+        "SourceQualifier": "chain",
+        "SourceTable": "chain"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(RecursiveChain, many)\nWITH RECURSIVE chain (n, a, b) AS (\n    SELECT 1, toNullable(i.id), toNullable(i.category) FROM items i WHERE i.id \u003c= 1\n    UNION ALL\n    SELECT n + 1, b, NULL FROM chain WHERE n \u003c 4\n)\nSELECT n AS step, a AS value_a, b AS value_b FROM chain;",
+    "Template": "WITH RECURSIVE chain (n, a, b) AS (\\n    SELECT 1, toNullable(i.id), toNullable(i.category) FROM items i WHERE i.id \u003c= 1\\n    UNION ALL\\n    SELECT n + 1, b, NULL FROM chain WHERE n \u003c 4\\n)\\nSELECT ⟨c0 aliased:n⟩ AS step, ⟨c1 aliased:a⟩ AS value_a, ⟨c2 aliased:b⟩ AS value_b FROM chain;"
+  }
+]

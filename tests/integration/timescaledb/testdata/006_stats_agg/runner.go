@@ -100,14 +100,14 @@ func main() {
 			mean   float64
 			stddev float64
 		)
-		if row.SampleCount != nil {
-			count = *row.SampleCount
+		if row.SampleCount.Valid {
+			count = row.SampleCount.V
 		}
-		if row.MeanValue != nil {
-			mean = *row.MeanValue
+		if row.MeanValue.Valid {
+			mean = row.MeanValue.V
 		}
-		if row.StddevValue != nil {
-			stddev = *row.StddevValue
+		if row.StddevValue.Valid {
+			stddev = row.StddevValue.V
 		}
 		if math.IsNaN(stddev) {
 			stddev = 0

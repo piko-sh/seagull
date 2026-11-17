@@ -25,6 +25,10 @@ import (
 )
 
 const (
+	// leadingBlockWords is how many words, BEGIN and the two after it, the ProceduralBlock
+	// callback is given for a BEGIN that starts a statement.
+	leadingBlockWords = 3
+
 	// keywordBegin opens a procedural block.
 	keywordBegin = "BEGIN"
 
@@ -80,7 +84,7 @@ func (s *splitter) trackWord(token Token, wasCode bool) {
 	}
 	switch {
 	case token.IsWord(keywordBegin):
-		if wasCode && s.opensBlock(procedural, token) {
+		if s.beginOpensBlock(procedural, token, wasCode) {
 			if s.blockDepth == 0 {
 				s.blockStart = token.Start
 			}
@@ -94,6 +98,21 @@ func (s *splitter) trackWord(token Token, wasCode bool) {
 		s.closeWithEnd()
 	}
 	s.recordWord(token)
+}
+
+// beginOpensBlock asks the rules' ProceduralBlock callback whether a BEGIN opens a
+// procedural block, giving it the words that suit where the BEGIN stands.
+//
+// Takes procedural (ProceduralBlockFunc) which is the rules' callback.
+// Takes token (Token) which is the BEGIN word.
+// Takes wasCode (bool) which is true when the statement had started before the BEGIN.
+//
+// Returns bool which is true when the callback says the BEGIN opens a block.
+func (s *splitter) beginOpensBlock(procedural ProceduralBlockFunc, token Token, wasCode bool) bool {
+	if wasCode {
+		return s.opensBlock(procedural, token)
+	}
+	return s.opensLeadingBlock(procedural, token)
 }
 
 // opensBlock asks the rules' ProceduralBlock callback whether a BEGIN opens a procedural
@@ -114,6 +133,32 @@ func (s *splitter) opensBlock(procedural ProceduralBlockFunc, token Token) bool 
 		s.err = fmt.Errorf("checking %s at line %d, column %d (byte %d): %w", token.Raw, line, column, token.Start, err)
 	}
 	return false
+}
+
+// opensLeadingBlock asks the rules' ProceduralBlock callback whether a BEGIN that starts
+// a statement opens a procedural block, as MariaDB's BEGIN NOT ATOMIC does, passing BEGIN
+// and the two words after it.
+//
+// Takes procedural (ProceduralBlockFunc) which is the rules' callback.
+// Takes token (Token) which is the BEGIN word.
+//
+// Returns bool which is true when the callback says the BEGIN opens a block.
+func (s *splitter) opensLeadingBlock(procedural ProceduralBlockFunc, token Token) bool {
+	lookahead := s.scanner
+	words := make([]string, 1, leadingBlockWords)
+	words[0] = keywordBegin
+	for len(words) < leadingBlockWords {
+		next, ok := lookahead.NextSignificant()
+		if !ok || next.Kind != KindWord {
+			break
+		}
+		words = append(words, upperWord(next.Raw))
+	}
+	saved := s.words
+	s.words = words
+	opens := s.opensBlock(procedural, token)
+	s.words = saved
+	return opens
 }
 
 // recordWord adds a word to the leading words while there is room.

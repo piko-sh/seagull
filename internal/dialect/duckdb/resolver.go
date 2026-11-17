@@ -109,6 +109,11 @@ var (
 		"array_remove":       passThroughArgument(0),
 		"array_replace":      passThroughArgument(0),
 		"array_prepend":      passThroughArgument(1),
+		"lag":                resolveValueWindow,
+		"lead":               resolveValueWindow,
+		"first_value":        resolveValueWindow,
+		"last_value":         resolveValueWindow,
+		"nth_value":          resolveValueWindow,
 		"min":                resolveIdentityAggregate,
 		"max":                resolveIdentityAggregate,
 		"sum":                resolveSum,
@@ -314,6 +319,30 @@ func resolveArrayPassthrough(argumentTypes []sqlmodel.SQLType, arrayArgumentInde
 	return &ast.FunctionResolution{
 		ReturnType:        argumentTypes[arrayArgumentIndex],
 		NullableBehaviour: sqlmodel.FunctionNullableReturnsNullOnNull,
+		NullingArgument:   0,
+		DataAccess:        sqlmodel.DataAccessReadOnly,
+		IsAggregate:       false,
+		ReturnsSet:        false,
+		ElementsKnown:     false,
+	}, nil
+}
+
+// resolveValueWindow types lag, lead, first_value, last_value and nth_value, which return
+// a value of the expression they read, or NULL where the frame or offset reaches no row.
+//
+// Takes argumentTypes ([]sqlmodel.SQLType) which describes the call argument types in
+// declared order, the expression first.
+//
+// Returns *ast.FunctionResolution which carries the expression's type, or nil when the
+// call has no arguments.
+// Returns error which is always nil.
+func resolveValueWindow(argumentTypes []sqlmodel.SQLType) (*ast.FunctionResolution, error) {
+	if len(argumentTypes) == 0 {
+		return nil, nil
+	}
+	return &ast.FunctionResolution{
+		ReturnType:        argumentTypes[0],
+		NullableBehaviour: sqlmodel.FunctionNullableCalledOnNull,
 		NullingArgument:   0,
 		DataAccess:        sqlmodel.DataAccessReadOnly,
 		IsAggregate:       false,

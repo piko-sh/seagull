@@ -15,7 +15,7 @@ type GetUserRow struct {
 
 func (queries *Queries) GetUser(ctx context.Context, id int64) (GetUserRow, error) {
 	var row GetUserRow
-	err := queries.reader.QueryRowContext(ctx, getuser, id).Scan(&row.ID, &row.Name, &row.Email, &row.Active)
+	err := queries.reader.QueryRowContext(ctx, getuser, id).Scan(&row.ID, &row.Name, &row.Email, pikoScanNumber(&row.Active))
 	if err != nil {
 		return GetUserRow{}, err
 	}

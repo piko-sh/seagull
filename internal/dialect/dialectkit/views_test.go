@@ -147,9 +147,9 @@ func TestOverlayViewColumnNamesRenamesTheProjection(t *testing.T) {
 	}{
 		{name: "a shorter list keeps the rest", names: []string{"key"}, undeclared: dialectkit.UndeclaredColumnsKept,
 			want: []ast.RawOutputColumn{renamed, {Name: "", IsStar: true}}},
-		{name: "a shorter list drops the rest", names: []string{"key"}, undeclared: dialectkit.UndeclaredColumnsDropped,
+		{name: "a refused shorter list drops the rest past a star", names: []string{"key"}, undeclared: dialectkit.UndeclaredColumnsRefused,
 			want: []ast.RawOutputColumn{renamed}},
-		{name: "a list that names a star", names: []string{"key", "rest"}, undeclared: dialectkit.UndeclaredColumnsDropped,
+		{name: "a list that names a star", names: []string{"key", "rest"}, undeclared: dialectkit.UndeclaredColumnsRefused,
 			want: []ast.RawOutputColumn{renamed, {Name: "rest"}}},
 		{name: "a longer list adds name-only columns", names: []string{"key", "rest", "extra"},
 			undeclared: dialectkit.UndeclaredColumnsKept, want: []ast.RawOutputColumn{renamed, {Name: "rest"}, {Name: "extra"}}},
@@ -160,7 +160,7 @@ func TestOverlayViewColumnNamesRenamesTheProjection(t *testing.T) {
 
 			analysis := &ast.RawQueryAnalysis{OutputColumns: projection()}
 
-			dialectkit.OverlayViewColumnNames(analysis, testCase.names, testCase.undeclared)
+			require.NoError(t, dialectkit.OverlayViewColumnNames(analysis, testCase.names, testCase.undeclared))
 
 			require.Equal(t, testCase.want, analysis.OutputColumns)
 		})
@@ -171,6 +171,35 @@ func TestOverlayViewColumnNamesLeavesANilAnalysisAlone(t *testing.T) {
 	t.Parallel()
 
 	require.NotPanics(t, func() {
-		dialectkit.OverlayViewColumnNames(nil, []string{"id"}, dialectkit.UndeclaredColumnsDropped)
+		require.NoError(t, dialectkit.OverlayViewColumnNames(nil, []string{"id"}, dialectkit.UndeclaredColumnsRefused))
 	})
+}
+
+func TestOverlayViewColumnNamesRefusesALengthTheEngineRefuses(t *testing.T) {
+	t.Parallel()
+
+	projection := func() []ast.RawOutputColumn {
+		return []ast.RawOutputColumn{{Name: "a", ColumnName: "a"}, {Name: "b", ColumnName: "b"}}
+	}
+	cases := []struct {
+		name       string
+		names      []string
+		undeclared dialectkit.UndeclaredColumns
+		refused    bool
+	}{
+		{name: "a full list is taken", names: []string{"x", "y"}, undeclared: dialectkit.UndeclaredColumnsRefused},
+		{name: "a shorter list is taken where the rest are kept", names: []string{"x"}, undeclared: dialectkit.UndeclaredColumnsKept},
+		{name: "a shorter list is refused where the engine refuses it", names: []string{"x"}, undeclared: dialectkit.UndeclaredColumnsRefused, refused: true},
+		{name: "a longer list is refused where the rest are kept", names: []string{"x", "y", "z"}, undeclared: dialectkit.UndeclaredColumnsKept, refused: true},
+		{name: "a longer list is refused where a shorter is", names: []string{"x", "y", "z"}, undeclared: dialectkit.UndeclaredColumnsRefused, refused: true},
+	}
+	for _, testCase := range cases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			err := dialectkit.OverlayViewColumnNames(&ast.RawQueryAnalysis{OutputColumns: projection()}, testCase.names, testCase.undeclared)
+
+			require.Equal(t, testCase.refused, err != nil, "error: %v", err)
+		})
+	}
 }

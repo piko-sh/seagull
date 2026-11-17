@@ -1,0 +1,45 @@
+{
+  "count_limit_zero": {
+    "n": null
+  },
+  "count_offset": {
+    "n": null
+  },
+  "count_plain": {
+    "n": 2
+  },
+  "nested_derived": [
+    {
+      "x": 10,
+      "y": 100
+    },
+    {
+      "x": 20,
+      "y": null
+    }
+  ],
+  "nested_full": [
+    {
+      "x": 10,
+      "y": 100,
+      "z": 1000
+    },
+    {
+      "x": 20,
+      "y": null,
+      "z": null
+    }
+  ],
+  "nested_right": [
+    {
+      "x": 10,
+      "y": 100,
+      "z": 1000
+    },
+    {
+      "x": 20,
+      "y": null,
+      "z": null
+    }
+  ]
+}

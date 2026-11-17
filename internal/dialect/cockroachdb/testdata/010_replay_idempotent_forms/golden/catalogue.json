@@ -66,6 +66,20 @@
               }
             }
           ],
+          "Constraints": [
+            {
+              "Columns": [
+                "community_id",
+                "user_id"
+              ],
+              "Kind": "primary-key",
+              "Name": "members_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 3
+              }
+            }
+          ],
           "Name": "members",
           "Origin": {
             "Filename": "001_schema.up.sql",

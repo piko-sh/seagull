@@ -44,6 +44,18 @@
               }
             }
           ],
+          "Constraints": [
+            {
+              "Columns": [
+                "id"
+              ],
+              "Kind": "primary-key",
+              "Name": "profiles_pkey",
+              "Origin": {
+                "Filename": "001_init.up.sql"
+              }
+            }
+          ],
           "Name": "profiles",
           "Origin": {
             "Filename": "001_init.up.sql"
@@ -79,6 +91,20 @@
                 "Category": "integer",
                 "EngineName": "int4",
                 "Width": 32
+              }
+            }
+          ],
+          "Constraints": [
+            {
+              "Columns": [
+                "user_id",
+                "profile_id"
+              ],
+              "Kind": "primary-key",
+              "Name": "user_profiles_pkey",
+              "Origin": {
+                "Filename": "001_init.up.sql",
+                "Statement": 1
               }
             }
           ],

@@ -37,9 +37,9 @@ const (
 	unnamedStructSuggestion = "name the struct's fields: struct_pack(a := a, b := b) or {'a': a, 'b': b}"
 
 	// compositeKeyReason says why duckdb-go cannot read a value holding a MAP keyed by a
-	// value that holds others.
-	compositeKeyReason = "it holds a MAP keyed by a LIST, STRUCT, MAP or UNION, which duckdb-go cannot read (it fails with " +
-		"\"MAP key type not supported\")"
+	// value that holds others, or by a BLOB or UUID.
+	compositeKeyReason = "it holds a MAP keyed by a LIST, STRUCT, MAP, UNION, BLOB or UUID, which duckdb-go cannot read " +
+		"(it fails with \"MAP key type not supported\")"
 
 	// compositeKeySuggestion says how to read such a MAP instead.
 	compositeKeySuggestion = "read map_entries(m), a list of its key and value structs, or map_keys(m) and map_values(m) instead"
@@ -62,9 +62,11 @@ const (
 
 var (
 	// compositeKeyCategories lists the categories of the MAP keys duckdb-go cannot read: the
-	// types that hold other values.
+	// types that hold other values, and since v2.20000 the BLOB and UUID it reads as []byte,
+	// which cannot be a Go map key.
 	compositeKeyCategories = []sqlmodel.SQLTypeCategory{
 		sqlmodel.TypeCategoryArray, sqlmodel.TypeCategoryStruct, sqlmodel.TypeCategoryMap, sqlmodel.TypeCategoryUnion,
+		sqlmodel.TypeCategoryBinary, sqlmodel.TypeCategoryUUID,
 	}
 
 	// deepTypeReason says why a value whose type nests too deeply to check is refused.
@@ -161,8 +163,8 @@ func typeParts(sqlType *sqlmodel.SQLType) iter.Seq[*sqlmodel.SQLType] {
 	}
 }
 
-// isCompositeKeyedMap reports whether a type is a MAP keyed by a LIST, STRUCT, MAP or
-// UNION.
+// isCompositeKeyedMap reports whether a type is a MAP keyed by a LIST, STRUCT, MAP,
+// UNION, BLOB or UUID.
 //
 // Takes sqlType (*sqlmodel.SQLType) which is the type, not nil.
 //

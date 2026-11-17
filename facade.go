@@ -125,7 +125,7 @@ func (g *Generator) implementation() *app.Generator {
 }
 
 // ContextWithLogger returns a copy of ctx that carries logger, so a generation run with
-// that context logs through it. WithLogger sets a logger for every run instead.
+// that context logs through it. It wins over a logger set with WithLogger.
 //
 // Takes logger (*slog.Logger) which receives the log records; nil returns ctx unchanged.
 //

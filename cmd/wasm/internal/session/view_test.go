@@ -53,11 +53,11 @@ var rowTypes = []struct {
 	description string
 	columnTypes []string
 }{
-	{query: "GetAuthor", rowType: "GetAuthorRow", rowKind: "own", description: "GetAuthor reads one author.\nIt reads the author by id.", columnTypes: []string{"int64", "string", "*string"}},
-	{query: "GetAuthorModel", rowType: "Authors", rowKind: "model", columnTypes: []string{"*string", "string", "int64"}},
+	{query: "GetAuthor", rowType: "GetAuthorRow", rowKind: "own", description: "GetAuthor reads one author.\nIt reads the author by id.", columnTypes: []string{"int64", "string", "Null[string]"}},
+	{query: "GetAuthorModel", rowType: "Authors", rowKind: "model", columnTypes: []string{"Null[string]", "string", "int64"}},
 	{query: "ListAuthorNames", rowType: "AuthorName", rowKind: "shared", columnTypes: []string{"int64", "string"}},
 	{query: "AuthorNamed", rowType: "AuthorName", rowKind: "shared", columnTypes: []string{"string", "int64"}},
-	{query: "StreamAuthors", rowType: "Authors", rowKind: "model", columnTypes: []string{"int64", "string", "*string"}},
+	{query: "StreamAuthors", rowType: "Authors", rowKind: "model", columnTypes: []string{"int64", "string", "Null[string]"}},
 	{query: "DeleteAuthor", rowType: "", rowKind: "", columnTypes: []string{}},
 }
 
@@ -146,7 +146,7 @@ func TestRunFindsColumnGoTypesWhateverTheJSONTags(t *testing.T) {
 			for _, column := range query.Columns {
 				columnTypes = append(columnTypes, column.GoType)
 			}
-			require.Equal(t, []string{"int64", "string", "*string"}, columnTypes)
+			require.Equal(t, []string{"int64", "string", "Null[string]"}, columnTypes)
 		})
 	}
 }
@@ -170,7 +170,7 @@ func TestRunFindsColumnGoTypesOfColumnsTheCaseStylesRename(t *testing.T) {
 			for _, column := range query.Columns {
 				columnTypes = append(columnTypes, column.GoType)
 			}
-			require.Equal(t, []string{"int64", "string", "*string", "int64"}, columnTypes)
+			require.Equal(t, []string{"int64", "string", "Null[string]", "int64"}, columnTypes)
 		})
 	}
 }

@@ -139,6 +139,9 @@ func (s *Scanner) seek(offset int) {
 //
 // Returns lexeme which is the token's kind and end, or the error that stopped it.
 func (s *Scanner) scanAt(start int) lexeme {
+	if found, matched := s.commonTokenAt(start); matched {
+		return found
+	}
 	if found, isNoise := s.noiseAt(start); isNoise {
 		return found
 	}
@@ -158,6 +161,30 @@ func (s *Scanner) scanAt(start int) lexeme {
 		return lexeme{err: nil, end: end, kind: KindWord}
 	}
 	return lexeme{err: nil, end: s.punctuationEnd(start), kind: KindPunctuation}
+}
+
+// commonTokenAt reads a parenthesis, a comma or a number without trying the rarer token
+// kinds first, as none of them starts with these bytes. A byte the rules use as a named
+// parameter sigil takes the full path instead.
+//
+// Takes start (int) which is the candidate token's first byte.
+//
+// Returns lexeme which is the token.
+// Returns bool which is true when start opens such a token.
+func (s *Scanner) commonTokenAt(start int) (lexeme, bool) {
+	character := s.input[start]
+	if strings.IndexByte(s.rules.Parameters.NamedSigils, character) >= 0 {
+		return lexeme{}, false
+	}
+	switch {
+	case character == '(' || character == ')' || character == ',':
+		return lexeme{err: nil, end: start + 1, kind: KindPunctuation}, true
+	case isDigit(character):
+		end, matched := s.numberAt(start)
+		return lexeme{err: nil, end: end, kind: KindNumber}, matched
+	default:
+		return lexeme{}, false
+	}
 }
 
 // noiseAt reads whitespace or an ordinary comment starting at start.

@@ -104,7 +104,9 @@ func (meaning DoubleQuoteMeaning) String() string {
 //
 // The splitter calls it when it meets the word BEGIN after the statement has already
 // started, passing the statement's leading unquoted words in upper case, up to (and not
-// including) that BEGIN and at most LeadingWordLimit of them. When it returns true, the
+// including) that BEGIN and at most LeadingWordLimit of them. For a BEGIN that starts the
+// statement it passes BEGIN and up to two words after it, so a block such as MariaDB's
+// BEGIN NOT ATOMIC can be told from a transaction's BEGIN. When it returns true, the
 // BEGIN opens a block: terminators stay inside the statement until the matching END, CASE
 // ... END expressions inside the block are balanced, and END IF, END LOOP, END WHILE and
 // END REPEAT close inner constructs without closing the block. When it returns false the
@@ -248,8 +250,8 @@ type ParameterRules struct {
 	// punctuation.
 	BracedLiteralWords []string
 
-	// NoNamedParameterAfterOperand treats a named sigil directly after an operand as
-	// punctuation, distinguishing lambdas and slices from placeholders.
+	// NoNamedParameterAfterOperand treats a colon directly after an operand as punctuation,
+	// distinguishing lambdas and slices from placeholders.
 	NoNamedParameterAfterOperand bool
 
 	// QuestionMark reads ? as an anonymous positional parameter.

@@ -127,24 +127,36 @@ func TestReadSeedFiles_SkipsInvalidFiles(t *testing.T) {
 				&fakefs.DirEntry{EntryName: "README.md"},
 				&fakefs.DirEntry{EntryName: "no_version.sql"},
 				&fakefs.DirEntry{EntryName: "subdir", Directory: true},
-				&fakefs.DirEntry{EntryName: "003_migration.up.sql"},
 				&fakefs.DirEntry{EntryName: "002_another.sql"},
 			},
 		},
 		Files: map[string][]byte{
-			"seeds/001_valid.sql":        []byte("INSERT 1;"),
-			"seeds/003_migration.up.sql": []byte("CREATE TABLE x;"),
-			"seeds/002_another.sql":      []byte("INSERT 2;"),
+			"seeds/001_valid.sql":   []byte("INSERT 1;"),
+			"seeds/002_another.sql": []byte("INSERT 2;"),
 		},
 	}
 
 	files, err := ReadSeedFiles(t.Context(), reader, "seeds")
 	require.NoError(t, err)
 
-	require.Len(t, files, 3)
+	require.Len(t, files, 2)
 	assert.Equal(t, "valid", files[0].Name)
 	assert.Equal(t, "another", files[1].Name)
-	assert.Equal(t, "migration.up", files[2].Name)
+}
+
+func TestReadSeedFilesRefusesAMigrationInTheSeedDirectory(t *testing.T) {
+	t.Parallel()
+
+	reader := &fakefs.FileReader{
+		Directories: map[string][]os.DirEntry{
+			"seeds": {&fakefs.DirEntry{EntryName: "001_valid.sql"}, &fakefs.DirEntry{EntryName: "003_migration.up.sql"}},
+		},
+		Files: map[string][]byte{"seeds/001_valid.sql": []byte("INSERT 1;"), "seeds/003_migration.up.sql": []byte("CREATE TABLE x;")},
+	}
+
+	_, err := ReadSeedFiles(t.Context(), reader, "seeds")
+
+	require.ErrorIs(t, err, errMisnamedMigration)
 }
 
 func TestReadSeedFiles_EmptyDirectory(t *testing.T) {

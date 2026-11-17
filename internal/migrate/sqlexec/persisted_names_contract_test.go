@@ -111,6 +111,8 @@ func describeStrategy(strategy lockStrategy, seed bool) string {
 		return describeMySQLLock(lock, seed)
 	case *noOpLock:
 		return "&" + recordedPackageQualifier + "NoOpLock{}"
+	case *leaseLock:
+		return fmt.Sprintf("&%sLeaseLock{LeaseTable:%#v, Placeholder:%#v}", recordedPackageQualifier, lock.table, lock.placeholder(1))
 	}
 	return fmt.Sprintf("%#v", strategy)
 }

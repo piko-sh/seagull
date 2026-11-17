@@ -1,0 +1,4 @@
+{
+  "description": "ClickHouse refuses a plain view column list naming fewer or more columns than its query.",
+  "expectedDiagnosticCount": 2
+}

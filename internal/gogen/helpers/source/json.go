@@ -29,8 +29,15 @@ import (
 	"reflect"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 )
+
+// sglJSONRefusals caches sglJSONRefusesNulls by Go type, so a scan looks the answer up
+// without allocating.
+//
+//sgl:when scanInto
+var sglJSONRefusals sync.Map
 
 // JSON holds a JSON document read from or written to a JSON column. A nil JSON is SQL
 // NULL and encodes as the JSON null literal.
@@ -60,7 +67,7 @@ func (j *JSON) Scan(source any) error {
 		*j = JSON(value)
 		return nil
 	default:
-		encoded, err := json.Marshal(value)
+		encoded, err := sglJSONMarshal(value)
 		if err != nil {
 			return fmt.Errorf("sgl: encode %T to JSON: %w", source, err)
 		}
@@ -139,7 +146,7 @@ func (s sglJSONScanner[T]) Scan(source any) error {
 	case string:
 		raw = []byte(value)
 	default:
-		encoded, err := json.Marshal(value)
+		encoded, err := sglJSONMarshal(value)
 		if err != nil {
 			return fmt.Errorf("sgl: re-encode %T to JSON: %w", source, err)
 		}
@@ -174,10 +181,11 @@ func sglScanInto[T any](dest *T) sql.Scanner {
 	return sglJSONScanner[T]{dest: dest}
 }
 
-// sglDecodeJSONColumn decodes a non-empty JSON column into dest: a single document, with
-// nothing but space around it, decoded again in the forms an engine writes when
-// json.Unmarshal refuses it, and refused when it holds a null array element or object
-// value dest cannot hold.
+// sglDecodeJSONColumn decodes one JSON document into dest.
+//
+// A document with null array elements or object values is rejected when dest cannot hold
+// them. Engine-specific JSON forms are decoded when the installed codec refuses the
+// original document.
 //
 // Takes raw ([]byte) which contains exactly one JSON document.
 // Takes dest (*T) which receives the decoded value.
@@ -186,10 +194,10 @@ func sglScanInto[T any](dest *T) sql.Scanner {
 //
 //sgl:when scanInto
 func sglDecodeJSONColumn[T any](raw []byte, dest *T) error {
-	fast := !bytes.Contains(raw, []byte("null"))
+	fast := !sglJSONRefusesNulls(reflect.TypeFor[T]()) || !bytes.Contains(raw, []byte("null"))
 	var decodeErr error
 	if fast {
-		decodeErr = json.Unmarshal(raw, dest)
+		decodeErr = sglJSONUnmarshal(raw, dest)
 		if decodeErr == nil {
 			return nil
 		}
@@ -199,7 +207,7 @@ func sglDecodeJSONColumn[T any](raw []byte, dest *T) error {
 		return err
 	}
 	if !fast {
-		decodeErr = json.Unmarshal(raw, dest)
+		decodeErr = sglJSONUnmarshal(raw, dest)
 	}
 	if decodeErr != nil && !sglDecodeEngineJSON(document, dest) {
 		return decodeErr
@@ -216,6 +224,10 @@ func sglDecodeJSONColumn[T any](raw []byte, dest *T) error {
 //
 // Returns any which is the decoded document with numbers preserved as json.Number.
 // Returns error when the text does not contain exactly one valid JSON document.
+//
+// It decodes with encoding/json whatever codec SetJSONCodec installed, since it needs
+// json.Number and a decoder that keeps numbers as written, which a codec's Unmarshal does
+// not promise.
 //
 //sgl:when scanInto
 func sglJSONDocument(raw []byte) (any, error) {
@@ -248,13 +260,14 @@ func sglJSONDocument(raw []byte) (any, error) {
 //
 //sgl:when scanInto
 func sglDecodeEngineJSON[T any](document any, dest *T) bool {
+
 	rewritten, err := json.Marshal(sglEngineJSONValue(document, reflect.TypeFor[T]()))
 	if err != nil {
 		return false
 	}
 	var zero T
 	*dest = zero
-	return json.Unmarshal(rewritten, dest) == nil
+	return sglJSONUnmarshal(rewritten, dest) == nil
 }
 
 // sglEngineJSONValue writes one decoded value, and the values inside it, in the form the
@@ -455,4 +468,60 @@ func sglJSONNull(value any, target reflect.Type) error {
 		return nil
 	}
 	return fmt.Errorf("converting NULL to %s is unsupported", target)
+}
+
+// sglJSONRefusesNulls reports whether a JSON null could reach an array element or object
+// value, at any depth, that the Go type reading it cannot hold, which is the only null
+// sglJSONNulls refuses. A type without one reads any document json.Unmarshal accepts as
+// it is.
+//
+// Takes target (reflect.Type) which is the destination Go type.
+//
+// Returns bool which reports whether sglJSONNulls could refuse a document read into the
+// type.
+//
+//sgl:when scanInto
+func sglJSONRefusesNulls(target reflect.Type) bool {
+	if cached, found := sglJSONRefusals.Load(target); found {
+		if refuses, ok := cached.(bool); ok {
+			return refuses
+		}
+	}
+	refuses := sglJSONRefusesNullsIn(target, map[reflect.Type]bool{})
+	sglJSONRefusals.Store(target, refuses)
+	return refuses
+}
+
+// sglJSONRefusesNullsIn reports what sglJSONRefusesNulls does, following the element
+// types of slices, arrays and maps, looked through any pointers to them, as sglJSONNulls
+// does. A type met again on the way adds no element of its own.
+//
+// Takes target (reflect.Type) which is the destination Go type.
+// Takes seen (map[reflect.Type]bool) which holds the types already followed.
+//
+// Returns bool which reports whether a null element or value could be refused.
+//
+//sgl:when scanInto
+func sglJSONRefusesNullsIn(target reflect.Type, seen map[reflect.Type]bool) bool {
+	for target.Kind() == reflect.Pointer {
+		target = target.Elem()
+	}
+	switch target.Kind() {
+	case reflect.Slice, reflect.Array, reflect.Map:
+	default:
+		return false
+	}
+	if seen[target] {
+		return false
+	}
+	seen[target] = true
+	element := target.Elem()
+	switch element.Kind() {
+	case reflect.Pointer, reflect.Interface, reflect.Slice, reflect.Map:
+	default:
+		if !sglUnmarshalsJSON(element) {
+			return true
+		}
+	}
+	return sglJSONRefusesNullsIn(element, seen)
 }

@@ -43,7 +43,7 @@ The inner query can refer to the current boat. Its `LIMIT 2` applies per boat; t
 
 ## Handle a boat with no matching landing
 
-Run `sgl generate` and construct `store.New(database)`. The related landing fields are pointers because the join can find no row:
+Run `sgl generate` and construct `store.New(database)`. The related landing fields are `Null` values because the join can find no row:
 
 ```go
 	biggest, err := queries.BiggestLandings(ctx)
@@ -52,11 +52,11 @@ Run `sgl generate` and construct `store.New(database)`. The related landing fiel
 	}
 	fmt.Fprintln(output, "two biggest landings per boat (LEFT JOIN LATERAL):")
 	for _, landing := range biggest {
-		if landing.Species == nil || landing.Kilos == nil {
+		if !landing.Species.Valid || !landing.Kilos.Valid {
 			fmt.Fprintf(output, "  %-9s nothing landed\n", landing.Name)
 			continue
 		}
-		fmt.Fprintf(output, "  %-9s %-8s %3dkg\n", landing.Name, *landing.Species, *landing.Kilos)
+		fmt.Fprintf(output, "  %-9s %-8s %3dkg\n", landing.Name, landing.Species.V, landing.Kilos.V)
 	}
 ```
 

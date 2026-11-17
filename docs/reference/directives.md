@@ -284,7 +284,10 @@ rows, err := queries.SearchPosts().
 The query's method takes only the query's own parameters; the context goes to the
 terminal, `All`, `One` or `Count`. The builder checks every column, operator and direction
 against a closed allow-list, and a column must be one the query selects. A column
-expression holding a backslash or a NUL is refused whatever else it holds.
+expression holding a backslash or a NUL is refused whatever else it holds. A query that
+picks its own rows, with its own `LIMIT`, `OFFSET`, `FETCH` or `DISTINCT ON`, returns at
+most those rows, and the builder's `Where`, `OrderBy`, `Limit`, `Offset` and `Count` apply
+to the rows it returns.
 [Runtime query builder](runtime-builder.md) is the full reference: its methods, where it
 writes what the caller adds, its operators and the errors it returns.
 
@@ -410,6 +413,16 @@ An empty slice replaces the whole `IN (...)` with a form that matches no row, an
 | SQLite | `IN (SELECT NULL WHERE 0)` | `NOT IN (SELECT NULL WHERE 0)` |
 | DuckDB | `IN (SELECT NULL WHERE FALSE)` | `NOT IN (SELECT NULL WHERE FALSE)` |
 
+database/sql on PostgreSQL, CockroachDB and TimescaleDB writes a list of text, UUIDs held as
+strings, integers or booleans, and their pointers, as `= ANY($1)` (and `NOT IN ($1)` as
+`<> ALL($1)`) instead, and binds the slice as one parameter holding the array's text form,
+written by `sglArrayLiteral`, so the SQL text, and a prepared statement, is the same for
+every call and no bind-variable limit applies. `= ANY` and `<> ALL` test each row as the
+expanded `IN` and `NOT IN` do, a NULL element included, and a nil slice is the empty array.
+A query with any other slice, such as one of enums, Null values or an override's type, and
+any batch, copyfrom or runtime-built query, keeps its placeholders; so does a `CHAR` list on
+CockroachDB, which compares `CHAR` with an array element keeping its trailing spaces.
+
 pgx rewrites `IN ($1)` to `= ANY($1)` (and `NOT IN ($1)` to `<> ALL($1)`) and binds the slice
 as one array. It sends a nil slice in a `NOT IN` list as an empty array, so it excludes no row
 as an empty list does. ClickHouse needs no `kind: slice`: compare with an `Array` parameter,
@@ -510,8 +523,8 @@ LEFT JOIN employees m ON m.id = e.manager_id;
 
 ```go
 type ListEmployeesManager struct {
-    ID   *int64  `json:"id"`
-    Name *string `json:"name"`
+    ID   Null[int64]  `json:"id"`
+    Name Null[string] `json:"name"`
 }
 
 type ListEmployeesRow struct {
@@ -584,7 +597,7 @@ SELECT id, email FROM users WHERE id = $1;
 
 The generated row struct uses `uuid.UUID` and the file gains
 `import "github.com/google/uuid"`. Nullable columns become
-`*uuid.UUID` automatically.
+`Null[uuid.UUID]` automatically.
 
 A `go_type:` value is a type name, optionally qualified by the import
 path of its package, optionally preceded by `*` or `[]`, and optionally

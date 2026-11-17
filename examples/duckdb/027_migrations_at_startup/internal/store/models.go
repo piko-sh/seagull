@@ -3,7 +3,7 @@
 package store
 
 type Boats struct {
-	ID       int64   `json:"id"`
-	Name     string  `json:"name"`
-	HomePort *string `json:"home_port"`
+	ID       int64        `json:"id"`
+	Name     string       `json:"name"`
+	HomePort Null[string] `json:"home_port"`
 }

@@ -102,8 +102,8 @@ func main() {
 	for _, row := range rows {
 		out = append(out, topEntry{
 			DeviceID: row.DeviceID,
-			MaxFreq:  derefFloat(row.MaxFreq),
-			MinFreq:  derefFloat(row.MinFreq),
+			MaxFreq:  derefFloat(row.MaxFreq.Ptr()),
+			MinFreq:  derefFloat(row.MinFreq.Ptr()),
 		})
 	}
 

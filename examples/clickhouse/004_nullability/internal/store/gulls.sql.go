@@ -15,9 +15,9 @@ LEFT JOIN sightings ON sightings.gull_id = gulls.id
 ORDER BY gulls.id, sightings.seen_on;`
 
 type ListSightingsRow struct {
-	Ring     string  `json:"ring"`
-	Nickname *string `json:"nickname"`
-	Place    string  `json:"place"`
+	Ring     string       `json:"ring"`
+	Nickname Null[string] `json:"nickname"`
+	Place    string       `json:"place"`
 }
 
 func (queries *Queries) ListSightings(ctx context.Context) ([]ListSightingsRow, error) {
@@ -27,12 +27,16 @@ func (queries *Queries) ListSightings(ctx context.Context) ([]ListSightingsRow, 
 	}
 	defer rows.Close()
 	var results []ListSightingsRow
-	for rows.Next() {
+	if rows.Next() {
 		var row ListSightingsRow
-		if err := rows.Scan(&row.Ring, &row.Nickname, &row.Place); err != nil {
-			return nil, err
+		scanArgs := []any{&row.Ring, &row.Nickname, &row.Place}
+		for more := true; more; more = rows.Next() {
+			row = ListSightingsRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -59,7 +63,7 @@ const ringGullSQL = `INSERT INTO gulls (id, ring, nickname) VALUES ({p_id:UInt64
 type RingGullParams struct {
 	ID       uint64
 	Ring     string
-	Nickname *string
+	Nickname Null[string]
 }
 
 func (queries *Queries) RingGull(ctx context.Context, params RingGullParams) error {
@@ -79,10 +83,10 @@ ORDER BY gulls.id
 SETTINGS join_use_nulls = 1;`
 
 type SummariseGullsRow struct {
-	Ring      string     `json:"ring"`
-	KnownAs   string     `json:"known_as"`
-	TimesSeen uint64     `json:"times_seen"`
-	LastSeen  *time.Time `json:"last_seen"`
+	Ring      string          `json:"ring"`
+	KnownAs   string          `json:"known_as"`
+	TimesSeen uint64          `json:"times_seen"`
+	LastSeen  Null[time.Time] `json:"last_seen"`
 }
 
 func (queries *Queries) SummariseGulls(ctx context.Context) ([]SummariseGullsRow, error) {
@@ -92,12 +96,16 @@ func (queries *Queries) SummariseGulls(ctx context.Context) ([]SummariseGullsRow
 	}
 	defer rows.Close()
 	var results []SummariseGullsRow
-	for rows.Next() {
+	if rows.Next() {
 		var row SummariseGullsRow
-		if err := rows.Scan(&row.Ring, &row.KnownAs, &row.TimesSeen, &row.LastSeen); err != nil {
-			return nil, err
+		scanArgs := []any{&row.Ring, &row.KnownAs, &row.TimesSeen, &row.LastSeen}
+		for more := true; more; more = rows.Next() {
+			row = SummariseGullsRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

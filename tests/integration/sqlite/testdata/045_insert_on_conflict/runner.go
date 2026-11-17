@@ -48,7 +48,7 @@ func main() {
 	theme := "theme"
 
 	err = queries.UpsertSetting(ctx, db.UpsertSettingParams{
-		Key:   &theme,
+		Key:   db.NullOf(theme),
 		Value: "dark",
 	})
 	if err != nil {
@@ -57,7 +57,7 @@ func main() {
 	}
 
 	err = queries.UpsertSetting(ctx, db.UpsertSettingParams{
-		Key:   &theme,
+		Key:   db.NullOf(theme),
 		Value: "light",
 	})
 	if err != nil {

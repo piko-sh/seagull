@@ -49,6 +49,34 @@
               }
             }
           ],
+          "Constraints": [
+            {
+              "Columns": [
+                "id"
+              ],
+              "Kind": "primary-key",
+              "Name": "berths_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              }
+            },
+            {
+              "Columns": [
+                "harbour_id"
+              ],
+              "ForeignColumns": [
+                "id"
+              ],
+              "ForeignTable": "harbours",
+              "Kind": "foreign-key",
+              "Name": "berths_harbour_id_fkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              }
+            }
+          ],
           "Name": "berths",
           "Origin": {
             "Filename": "001_schema.up.sql",
@@ -108,6 +136,18 @@
               "SQLType": {
                 "Category": "json",
                 "EngineName": "jsonb"
+              }
+            }
+          ],
+          "Constraints": [
+            {
+              "Columns": [
+                "id"
+              ],
+              "Kind": "primary-key",
+              "Name": "harbours_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
               }
             }
           ],

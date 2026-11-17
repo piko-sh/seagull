@@ -27,7 +27,7 @@ type GetLandingRow struct {
 	OnIce    bool            `json:"on_ice"`
 	LandedAt time.Time       `json:"landed_at"`
 	Tag      string          `json:"tag"`
-	Notes    *string         `json:"notes"`
+	Notes    Null[string]    `json:"notes"`
 }
 
 func (queries *Queries) GetLanding(ctx context.Context, id uint64) (GetLandingRow, error) {
@@ -47,7 +47,7 @@ VALUES (
     {p_boxes:UInt16},
     {p_fish:UInt32},
     {p_weight_g:Int64},
-    {p_length_cm:Float32},
+    CAST(arrayMap(sgl_float0 -> reinterpretAsFloat32(sgl_float0), CAST(concat('[', {p_length_cm:String}, ']') AS Array(UInt32)))[1] AS Float32),
     toDecimal32({p_price:String}, 2),
     {p_on_ice:Bool},
     {p_landed_at:DateTime('UTC')},
@@ -67,10 +67,10 @@ type RecordLandingParams struct {
 	OnIce    bool
 	LandedAt time.Time
 	Tag      string
-	Notes    *string
+	Notes    Null[string]
 }
 
 func (queries *Queries) RecordLanding(ctx context.Context, params RecordLandingParams) error {
-	_, err := queries.writer.ExecContext(ctx, recordLandingSQL, clickhouse.Named("p_id", sglClickHouseShapedValue(params.ID, sglClickHouseShapes[0])), clickhouse.Named("p_catch_id", sglClickHouseShapedValue(params.CatchID, sglClickHouseShapes[1])), clickhouse.Named("p_species", sglClickHouseShapedValue(params.Species, sglClickHouseShapes[1])), clickhouse.Named("p_boxes", sglClickHouseShapedValue(params.Boxes, sglClickHouseShapes[0])), clickhouse.Named("p_fish", sglClickHouseShapedValue(params.Fish, sglClickHouseShapes[0])), clickhouse.Named("p_weight_g", sglClickHouseShapedValue(params.WeightG, sglClickHouseShapes[0])), clickhouse.Named("p_length_cm", sglClickHouseShapedValue(params.LengthCm, sglClickHouseShapes[0])), clickhouse.Named("p_price", sglClickHouseShapedValue(params.Price, sglClickHouseShapes[1])), clickhouse.Named("p_on_ice", sglClickHouseShapedValue(params.OnIce, sglClickHouseShapes[0])), clickhouse.Named("p_landed_at", sglClickHouseShapedValue(params.LandedAt, sglClickHouseShapes[2])), clickhouse.Named("p_tag", sglClickHouseShapedValue(params.Tag, sglClickHouseShapes[1])), clickhouse.Named("p_notes", sglClickHouseShapedValue(params.Notes, sglClickHouseShapes[1])))
+	_, err := queries.writer.ExecContext(ctx, recordLandingSQL, clickhouse.Named("p_id", sglClickHouseShapedValue(params.ID, sglClickHouseShapes[0])), clickhouse.Named("p_catch_id", sglClickHouseShapedValue(params.CatchID, sglClickHouseShapes[1])), clickhouse.Named("p_species", sglClickHouseShapedValue(params.Species, sglClickHouseShapes[1])), clickhouse.Named("p_boxes", sglClickHouseShapedValue(params.Boxes, sglClickHouseShapes[0])), clickhouse.Named("p_fish", sglClickHouseShapedValue(params.Fish, sglClickHouseShapes[0])), clickhouse.Named("p_weight_g", sglClickHouseShapedValue(params.WeightG, sglClickHouseShapes[0])), clickhouse.Named("p_length_cm", sglClickHouseFloatValue(params.LengthCm, "F", true)), clickhouse.Named("p_price", sglClickHouseShapedValue(params.Price, sglClickHouseShapes[1])), clickhouse.Named("p_on_ice", sglClickHouseShapedValue(params.OnIce, sglClickHouseShapes[0])), clickhouse.Named("p_landed_at", sglClickHouseShapedValue(params.LandedAt, sglClickHouseShapes[2])), clickhouse.Named("p_tag", sglClickHouseShapedValue(params.Tag, sglClickHouseShapes[1])), clickhouse.Named("p_notes", sglClickHouseShapedValue(params.Notes, sglClickHouseShapes[1])))
 	return err
 }

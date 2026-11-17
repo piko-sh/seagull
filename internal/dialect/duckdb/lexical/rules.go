@@ -25,13 +25,13 @@ import (
 // Rules returns DuckDB's lexical rules.
 //
 // Strings are '...' with doubled quotes, B'...' bit strings, E'...' strings with
-// backslash escapes and dollar-quoted $tag$...$tag$ bodies; "..." is a quoted identifier.
+// backslash escapes and dollar-quoted $tag$...$tag$ bodies. "..." is a quoted identifier.
 // Comments are -- and nesting /* */. Parameters are $1, ?, ?2, :name and $name, a "$"
 // followed by a name and then by another "$" opening a dollar-quoted string instead, and
 // a ":" written directly after an operand separating, as in lambda x:x or {'k':v}, rather
 // than starting a parameter. BEGIN opens a procedural block in CREATE [OR REPLACE] [TEMP]
 // MACRO and FUNCTION statements. The rules mark a leading VACUUM for execution outside a
-// transaction.
+// transaction. Unquoted identifiers can contain dollar signs after the first character.
 //
 // Returns sqllex.Rules which describes DuckDB.
 func Rules() sqllex.Rules {
@@ -68,7 +68,7 @@ func Rules() sqllex.Rules {
 		DelimiterCommand:             false,
 		MetaCommands:                 false,
 		TerminatorOutsideParentheses: false,
-		DollarInIdentifiers:          false,
+		DollarInIdentifiers:          true,
 	}
 }
 

@@ -5,8 +5,8 @@ package generated
 import "time"
 
 type Articles struct {
-	ID          int32      `json:"id"`
-	Title       string     `json:"title"`
-	Body        string     `json:"body"`
-	PublishedAt *time.Time `json:"published_at"`
+	ID          int32           `json:"id"`
+	Title       string          `json:"title"`
+	Body        string          `json:"body"`
+	PublishedAt Null[time.Time] `json:"published_at"`
 }

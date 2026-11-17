@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 78,
+    "EndColumn": 83,
+    "EndLine": 2,
+    "Filename": "rollup.sql",
+    "Line": 2,
+    "Message": "failed to analyse query \"OrderedSubtotals\": syntax error near \"ORDER\": this engine refuses ORDER BY on a query grouped WITH ROLLUP; order the rolled-up rows in a derived table",
+    "Severity": "error"
+  }
+]

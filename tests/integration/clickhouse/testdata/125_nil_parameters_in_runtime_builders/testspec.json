@@ -1,0 +1,3 @@
+{
+  "description": "A runtime builder, whose values both drivers format into the statement's text themselves through database/sql, binds a nullable parameter that is not Valid as NULL whatever its type: a Null[uuid.UUID], Null[decimal.Decimal] or Null[string] that is not Valid matches no row, a value matches its row, and an INSERT and a batch write and read back the ones not Valid as NULL."
+}

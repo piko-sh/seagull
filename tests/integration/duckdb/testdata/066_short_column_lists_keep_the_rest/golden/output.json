@@ -1,0 +1,38 @@
+{
+  "cte_items": [
+    {
+      "item_id": 1,
+      "label": "first",
+      "note": null
+    },
+    {
+      "item_id": 2,
+      "label": "second",
+      "note": "kept"
+    }
+  ],
+  "derived_items": [
+    {
+      "item_id": 1,
+      "label": "first",
+      "note": null
+    },
+    {
+      "item_id": 2,
+      "label": "second",
+      "note": "kept"
+    }
+  ],
+  "view_items": [
+    {
+      "item_id": 1,
+      "label": "first",
+      "note": null
+    },
+    {
+      "item_id": 2,
+      "label": "second",
+      "note": "kept"
+    }
+  ]
+}

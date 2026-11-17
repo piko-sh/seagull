@@ -30,6 +30,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"seagull.sh/seagull/internal/diag"
+	"seagull.sh/seagull/internal/dialect"
 	"seagull.sh/seagull/internal/dialect/ast"
 	"seagull.sh/seagull/internal/fault"
 	"seagull.sh/seagull/internal/sqlmodel"
@@ -1143,23 +1144,31 @@ func TestColumnListsRenameTheColumnsOfARelation(t *testing.T) {
 		OutputColumns: []ast.RawOutputColumn{{Name: "x", ColumnName: "x"}, {Name: "y", Expression: &ast.LiteralExpression{TypeName: "text"}}},
 		FromTables:    []ast.TableReference{{Name: "t"}},
 	}
+	permissive := dialect.ColumnListSyntax{ShortCTE: true, SurplusCTE: true, ShortDerived: true, NoDerivedLists: false}
+	strict := dialect.ColumnListSyntax{ShortCTE: false, SurplusCTE: false, ShortDerived: false, NoDerivedLists: false}
 	testCases := []struct {
 		name          string
+		rules         dialect.ColumnListSyntax
 		columnNames   []string
 		expectedNames []string
-		expectedCode  string
+
+		expected [2]string
 	}{
-		{name: "a full list renames every column", columnNames: []string{"a", "b"}, expectedNames: []string{"a", "b"}},
-		{name: "a shorter list renames the leading columns and keeps the rest", columnNames: []string{"a"},
+		{name: "a full list renames every column", rules: strict, columnNames: []string{"a", "b"}, expectedNames: []string{"a", "b"}},
+		{name: "a shorter list renames the leading columns and keeps the rest", rules: permissive, columnNames: []string{"a"},
 			expectedNames: []string{"a", "y"}},
-		{name: "a longer list is reported and its surplus names ignored", columnNames: []string{"a", "b", "c"},
-			expectedNames: []string{"a", "b"}, expectedCode: diag.CodeCompoundColumnCount},
+		{name: "a shorter list is refused where the engine needs a name for every column", rules: strict, columnNames: []string{"a"},
+			expectedNames: []string{"a", "y"}, expected: [2]string{"error", "error"}},
+		{name: "a longer list is refused unless the engine ignores a CTE's surplus names", rules: permissive, columnNames: []string{"a", "b", "c"},
+			expectedNames: []string{"a", "b"}, expected: [2]string{"warning", "error"}},
+		{name: "a longer list is refused", rules: strict, columnNames: []string{"a", "b", "c"},
+			expectedNames: []string{"a", "b"}, expected: [2]string{"error", "error"}},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			for _, query := range []*ast.RawQueryAnalysis{
+			for kind, query := range []*ast.RawQueryAnalysis{
 				{
 					CTEDefinitions: []ast.RawCTEDefinition{{Name: "c", OutputColumns: twoColumns.OutputColumns, ColumnNames: testCase.columnNames, Query: twoColumns}},
 					FromTables:     []ast.TableReference{{Name: "c"}},
@@ -1171,6 +1180,7 @@ func TestColumnListsRenameTheColumnsOfARelation(t *testing.T) {
 				},
 			} {
 				builder := nestedQueryBuilder()
+				builder.TypeResolver.columnLists = testCase.rules
 				scope := builder.TypeResolver.NewRootScope(ScopeKindQuery)
 				diagnostics := builder.BuildQueryScope(t.Context(), query, scope)
 				columns, _, problems := builder.TypeResolver.ResolveOutputColumns(t.Context(), query.OutputColumns, scope)
@@ -1181,12 +1191,13 @@ func TestColumnListsRenameTheColumnsOfARelation(t *testing.T) {
 				}
 				require.Equal(t, testCase.expectedNames, names)
 				require.Equal(t, sqlmodel.TypeCategoryInteger, columns[0].SQLType.Category)
-				if testCase.expectedCode == "" {
+				if testCase.expected[kind] == "" {
 					require.Empty(t, diagnostics)
 					continue
 				}
 				require.Len(t, diagnostics, 1)
-				require.Equal(t, testCase.expectedCode, diagnostics[0].Code)
+				require.Equal(t, diag.CodeCompoundColumnCount, diagnostics[0].Code)
+				require.Equal(t, testCase.expected[kind], diagnostics[0].Severity.String())
 			}
 		})
 	}

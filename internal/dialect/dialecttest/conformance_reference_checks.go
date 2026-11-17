@@ -30,6 +30,9 @@ import (
 	"seagull.sh/seagull/internal/sqlmodel"
 )
 
+// conformanceColumnSeparator separates generated column references.
+const conformanceColumnSeparator = ", "
+
 const (
 	// queryCommandMany is the command of a query reading rows.
 	queryCommandMany = "many"
@@ -87,8 +90,8 @@ func checkReservedWordColumns(ctx context.Context, _ checkEnvironment, fixture *
 	expectedColumns := append([]string{"id"}, reservedWordColumns...)
 	var problems []string
 	if columns := catalogueColumnNames(emitter.catalogue, reservedWordTable); !slices.Equal(columns, expectedColumns) {
-		problems = append(problems, "the catalogue must hold exactly the columns "+strings.Join(expectedColumns, ", ")+
-			" of "+reservedWordTable+", got ["+strings.Join(columns, ", ")+"]")
+		problems = append(problems, "the catalogue must hold exactly the columns "+strings.Join(expectedColumns, conformanceColumnSeparator)+
+			" of "+reservedWordTable+", got ["+strings.Join(columns, conformanceColumnSeparator)+"]")
 	}
 	query := findQuery(emitter.queries, "GetReserved")
 	if query == nil {
@@ -96,7 +99,7 @@ func checkReservedWordColumns(ctx context.Context, _ checkEnvironment, fixture *
 			formatDiagnostics(result.Diagnostics)))
 	}
 	if outputs := outputColumnNames(query); !slices.Equal(outputs, []string{"id", "group"}) {
-		problems = append(problems, "GetReserved must output id and group, got ["+strings.Join(outputs, ", ")+"]")
+		problems = append(problems, "GetReserved must output id and group, got ["+strings.Join(outputs, conformanceColumnSeparator)+"]")
 	}
 	if len(query.Parameters) != 1 {
 		problems = append(problems, fmt.Sprintf("GetReserved filters on one parameter but reports %d; a delimited "+
@@ -123,7 +126,7 @@ func checkDeclaredColumns(ctx context.Context, _ checkEnvironment, fixture *Fixt
 	columns := catalogueColumnNames(emitter.catalogue, typedTable)
 	if !slices.Equal(columns, fixture.TypedColumns) {
 		return failed("%s declares the columns [%s] but the catalogue holds [%s]; diagnostics %s",
-			typedTable, strings.Join(fixture.TypedColumns, ", "), strings.Join(columns, ", "),
+			typedTable, strings.Join(fixture.TypedColumns, conformanceColumnSeparator), strings.Join(columns, conformanceColumnSeparator),
 			formatDiagnostics(result.Diagnostics))
 	}
 	return passed

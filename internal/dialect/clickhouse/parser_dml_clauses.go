@@ -48,6 +48,7 @@ func (p *parser) parseOrderByList(analysis *ast.RawQueryAnalysis) {
 		column := p.parseOrderByColumn(analysis)
 		if column.Expression == "" && column.Direction == ast.OrderDirectionUnspecified &&
 			column.Nulls == ast.OrderNullsUnspecified && !column.HasFill {
+			p.recordSyntaxError(dialectkit.NewParseError(p.Current(), "expected an ORDER BY key"))
 			return
 		}
 		analysis.OrderByColumns = append(analysis.OrderByColumns, column)
@@ -72,6 +73,9 @@ func (p *parser) parseOrderByList(analysis *ast.RawQueryAnalysis) {
 func (p *parser) parseOrderByColumn(analysis *ast.RawQueryAnalysis) ast.OrderByColumn {
 	start := p.Position
 	expression := p.captureOrderByPart(analysis)
+	if !p.wholeExpression(start, p.Position) {
+		p.recordSyntaxError(dialectkit.NewParseError(p.Tokens[start], "expected each ORDER BY key to be one expression"))
+	}
 	addClauseExpressions(analysis, ast.ClauseOrderBy, p.reparseExpression(start, p.Position))
 	column := ast.OrderByColumn{}
 	column.Expression = strings.TrimSpace(expression)
@@ -319,12 +323,18 @@ func (p *parser) analyseTrailingClauses(analysis *ast.RawQueryAnalysis) {
 	if p.IsKeyword(kwSettings) {
 		start := p.Position
 		p.Advance()
+		if p.AtEnd() || p.IsKeyword(kwFormat) {
+			p.recordSyntaxError(dialectkit.NewParseError(p.Current(), "expected a setting after SETTINGS"))
+		}
 		p.parseSettingsClause(analysis)
 		p.tail.trailing = p.tail.trailing.widened(p.tailPart(start, p.Position))
 	}
 	if p.IsKeyword(kwFormat) {
 		start := p.Position
 		p.Advance()
+		if p.AtEnd() {
+			p.recordSyntaxError(dialectkit.NewParseError(p.Current(), "expected a format name after FORMAT"))
+		}
 		p.Advance()
 		p.tail.trailing = p.tail.trailing.widened(p.tailPart(start, p.Position))
 	}
@@ -342,6 +352,7 @@ func (p *parser) analyseTrailingClauses(analysis *ast.RawQueryAnalysis) {
 func (p *parser) parseExpressionAlias(analysis *ast.RawQueryAnalysis) (more bool, err error) {
 	start := p.Position
 	p.consumeExpressionTrackingParams(analysis, sqlmodel.ParameterContextComparison, kwAs, "SELECT")
+	aliasEnd := p.Position
 	if p.Position == start || !p.MatchKeyword(kwAs) {
 		return false, dialectkit.NewParseError(p.Current(), "expected AS and a name after a WITH expression")
 	}
@@ -351,11 +362,46 @@ func (p *parser) parseExpressionAlias(analysis *ast.RawQueryAnalysis) (more bool
 	}
 	detail := detailOf(analysis)
 	detail.expressionAliases = append(detail.expressionAliases, alias)
+	if value, ok := p.aliasedExpression(start, aliasEnd); ok {
+		if detail.expressionAliasValues == nil {
+			detail.expressionAliasValues = make(map[string]ast.Expression)
+		}
+		detail.expressionAliasValues[alias] = value
+	}
 	if p.Current().Kind == tokenComma {
 		p.Advance()
 		return true, nil
 	}
 	return false, nil
+}
+
+// aliasedExpression parses the expression a WITH entry names, from its tokens, when the
+// parser reads it whole and it holds no placeholder, whose numbering belongs to the
+// statement.
+//
+// Takes start (int) which is the position of the expression's first token.
+// Takes end (int) which is the position just past its last token.
+//
+// Returns ast.Expression which is the parsed expression.
+// Returns bool which is false when the expression cannot stand in for the name.
+func (p *parser) aliasedExpression(start, end int) (ast.Expression, bool) {
+	if end <= start || end > len(p.Tokens) {
+		return nil, false
+	}
+	for _, current := range p.Tokens[start:end] {
+		if current.Kind == tokenClickHouseParam {
+			return nil, false
+		}
+	}
+	child := p.newChildParser(p.Tokens[start:end])
+	value := child.parseExpression()
+	if !child.AtEnd() || child.syntaxError != nil {
+		return nil, false
+	}
+	if _, unknown := value.(*ast.UnknownExpression); unknown {
+		return nil, false
+	}
+	return value, true
 }
 
 // analyseSelectFilters parses the WHERE clause of a SELECT.

@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 50,
+    "EndColumn": 52,
+    "EndLine": 5,
+    "Filename": "distinct.sql",
+    "Line": 5,
+    "Message": "failed to analyse query \"Mismatch\": syntax error near \"id\": SELECT DISTINCT ON expressions must match initial ORDER BY expressions",
+    "Severity": "error"
+  }
+]

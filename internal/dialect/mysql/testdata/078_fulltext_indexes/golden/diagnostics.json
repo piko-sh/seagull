@@ -1,0 +1,18 @@
+[
+  {
+    "Code": "Q074",
+    "Column": 1,
+    "Filename": "searches.sql",
+    "Line": 4,
+    "Message": "MATCH (txt) needs a FULLTEXT index of exactly those columns on notes, which the migrations do not create, so the engine refuses the query with error 1191",
+    "Severity": "warning"
+  },
+  {
+    "Code": "Q074",
+    "Column": 1,
+    "Filename": "searches.sql",
+    "Line": 13,
+    "Message": "MATCH (id) needs a FULLTEXT index of exactly those columns on posts, which the migrations do not create, so the engine refuses the query with error 1191",
+    "Severity": "warning"
+  }
+]

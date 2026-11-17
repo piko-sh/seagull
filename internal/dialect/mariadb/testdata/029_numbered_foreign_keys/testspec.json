@@ -1,0 +1,4 @@
+{
+  "description": "MariaDB 12 names an unnamed foreign key by a number alone: CREATE TABLE numbers them from 1, an ALTER TABLE from one past the highest numbered name the table holds, and a table rename keeps them, as MariaDB 12.3 shows; DROP FOREIGN KEY `1` drops the first.",
+  "expectedDiagnosticCount": 0
+}

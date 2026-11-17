@@ -261,8 +261,7 @@
             }
           ]
         },
-        "SourceColumn": "leg",
-        "SourceQualifier": "leg"
+        "SourceColumn": "leg"
       },
       {
         "Name": "legs.colony",
@@ -547,8 +546,7 @@
             }
           ]
         },
-        "SourceColumn": "nest",
-        "SourceQualifier": "nest"
+        "SourceColumn": "nest"
       }
     ],
     "ReadOnly": true,
@@ -606,8 +604,7 @@
           "Category": "text",
           "EngineName": "String"
         },
-        "SourceColumn": "tag",
-        "SourceQualifier": "tag"
+        "SourceColumn": "tag"
       },
       {
         "Name": "amount",
@@ -618,8 +615,7 @@
           "Nullable": true,
           "Width": 32
         },
-        "SourceColumn": "amount",
-        "SourceQualifier": "amount"
+        "SourceColumn": "amount"
       }
     ],
     "ReadOnly": true,
@@ -640,8 +636,7 @@
           "Unsigned": true,
           "Width": 8
         },
-        "SourceColumn": "level",
-        "SourceQualifier": "level"
+        "SourceColumn": "level"
       }
     ],
     "ReadOnly": true,
@@ -664,8 +659,7 @@
           "Unsigned": true,
           "Width": 32
         },
-        "SourceColumn": "doubled",
-        "SourceQualifier": "doubled"
+        "SourceColumn": "doubled"
       }
     ],
     "ReadOnly": true,

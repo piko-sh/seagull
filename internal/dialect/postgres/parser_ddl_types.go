@@ -721,9 +721,10 @@ func (p *parser) parseFunctionReturnsTableColumns(engine *Dialect) []sqlmodel.Co
 	return columns
 }
 
-// parseFunctionArgument parses a single CREATE FUNCTION argument, including any
-// IN/OUT/INOUT or VARIADIC mode, an optional argument name, its type, and a default
-// written after DEFAULT or an equals sign.
+// parseFunctionArgument parses one CREATE FUNCTION argument.
+//
+// It accepts an optional mode, name, and default. A multiword type at the end of the
+// argument is an unnamed type, rather than a name followed by a type.
 //
 // Takes engine (*Dialect) which supplies type-resolution context.
 //
@@ -734,6 +735,17 @@ func (p *parser) parseFunctionArgument(engine *Dialect) (sqlmodel.FunctionArgume
 	mode := p.parseFunctionArgumentMode()
 
 	savedPosition := p.Position
+	if unnamedType, arrayDimensions := p.parseColumnType(engine); p.Position > savedPosition+1 && p.endsFunctionArgument() {
+		argument := sqlmodel.FunctionArgument{
+			Name:       "",
+			Type:       arrayTypeOf(unnamedType, arrayDimensions),
+			IsOptional: false,
+			NotNull:    false,
+		}
+		argument.IsOptional = p.skipArgumentDefaultIfPresent()
+		return argument, mode, nil
+	}
+	p.Position = savedPosition
 	possibleName, _ := p.parseIdentifierOrKeyword()
 
 	if p.Current().Kind == tokenIdentifier && !p.isPostgresColumnConstraintKeyword() &&
@@ -763,6 +775,16 @@ func (p *parser) parseFunctionArgument(engine *Dialect) (sqlmodel.FunctionArgume
 	}
 	argument.IsOptional = p.skipArgumentDefaultIfPresent()
 	return argument, mode, nil
+}
+
+// endsFunctionArgument reports whether the cursor is at the end of a function argument's
+// type: a comma or closing parenthesis, or the DEFAULT or equals sign of a default.
+//
+// Returns bool which is true at such a token.
+func (p *parser) endsFunctionArgument() bool {
+	current := p.Current()
+	return current.Kind == tokenComma || current.Kind == tokenRightParen || p.IsKeyword(keywordDEFAULT) ||
+		current.Kind == tokenOperator && current.Value == "="
 }
 
 // skipArgumentDefaultIfPresent consumes the default of a function argument, written after

@@ -4,7 +4,6 @@ package store
 
 import (
 	"database/sql/driver"
-	"encoding/json"
 	"fmt"
 )
 
@@ -24,7 +23,7 @@ func (j *JSON) Scan(source any) error {
 		*j = JSON(value)
 		return nil
 	default:
-		encoded, err := json.Marshal(value)
+		encoded, err := sglJSONMarshal(value)
 		if err != nil {
 			return fmt.Errorf("sgl: encode %T to JSON: %w", source, err)
 		}

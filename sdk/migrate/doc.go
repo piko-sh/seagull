@@ -46,9 +46,9 @@
 // [WithBeforeRun] and [WithAfterRun] register hooks around a whole run, and
 // [WithBeforeMigration] and [WithAfterMigration] hooks around each migration, in either
 // direction. A hook that returns an error stops the run, and one that panics stops it
-// with a [HookPanicError]. [WithLogger] sets the logger each call logs through, and
-// [WithObserver] the observer, the ObserverPort of sdk/observe, that receives a span for
-// each migration and seed operation.
+// with a [HookPanicError]. [WithLogger] sets the logger a call logs through when its
+// context carries none, and [WithObserver] the observer, the ObserverPort of sdk/observe,
+// that receives a span for each migration and seed operation.
 //
 // # History and recovery
 //

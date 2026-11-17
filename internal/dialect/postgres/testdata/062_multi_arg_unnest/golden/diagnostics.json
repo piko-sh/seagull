@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q004",
+    "Column": 1,
+    "EndColumn": 79,
+    "EndLine": 2,
+    "Filename": "products.sql",
+    "Line": 2,
+    "Message": "a reference of several function calls takes no column definition list of its own; name its columns without types, as AS t(name, price)",
+    "Severity": "error"
+  }
+]

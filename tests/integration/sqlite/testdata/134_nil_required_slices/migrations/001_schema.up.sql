@@ -1,0 +1,1 @@
+CREATE TABLE blobs (id INTEGER PRIMARY KEY, data BLOB NOT NULL, maybe BLOB);

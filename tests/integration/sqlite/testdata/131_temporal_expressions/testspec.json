@@ -1,0 +1,3 @@
+{
+  "description": "Temporal values computed by aggregates, COALESCE and casts scan into their generated Go types."
+}

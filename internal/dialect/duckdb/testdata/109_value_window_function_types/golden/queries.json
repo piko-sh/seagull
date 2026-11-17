@@ -1,0 +1,71 @@
+[
+  {
+    "Command": "many",
+    "Filename": "items.sql",
+    "Line": 1,
+    "Name": "ValueWindows",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "previous_id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "next_id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      },
+      {
+        "Name": "first_score",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Nullable": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "last_score",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Nullable": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "second_id",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "int8",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(ValueWindows, many)\nSELECT\n    id,\n    LAG(id) OVER (ORDER BY id) AS previous_id,\n    LEAD(id) OVER (ORDER BY id) AS next_id,\n    FIRST_VALUE(score) OVER (ORDER BY id ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS first_score,\n    LAST_VALUE(score) OVER (ORDER BY id) AS last_score,\n    NTH_VALUE(id, 2) OVER (ORDER BY id) AS second_id\nFROM items;",
+    "Template": "SELECT\\n    ⟨c0:id⟩,\\n    ⟨c1 aliased:LAG(id) OVER (ORDER BY id)⟩ AS previous_id,\\n    ⟨c2 aliased:LEAD(id) OVER (ORDER BY id)⟩ AS next_id,\\n    ⟨c3 aliased:FIRST_VALUE(score) OVER (ORDER BY id ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)⟩ AS first_score,\\n    ⟨c4 aliased:LAST_VALUE(score) OVER (ORDER BY id)⟩ AS last_score,\\n    ⟨c5 aliased:NTH_VALUE(id, 2) OVER (ORDER BY id)⟩ AS second_id\\nFROM items;"
+  }
+]

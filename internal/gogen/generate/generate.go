@@ -30,6 +30,7 @@ import (
 	"seagull.sh/seagull/internal/emit/emitkit"
 	"seagull.sh/seagull/internal/gogen"
 	"seagull.sh/seagull/internal/gogen/goast"
+	"seagull.sh/seagull/internal/gogen/helpers"
 	"seagull.sh/seagull/internal/gogen/models"
 	"seagull.sh/seagull/internal/sqlmodel"
 )
@@ -120,13 +121,64 @@ func finishPackage(ctx context.Context, emission *gogen.Emission, files []sqlmod
 	if err != nil {
 		return nil, fmt.Errorf("emitting string conversions for %s: %w", request.Package, err)
 	}
-	files = append(files, dropEmptyFiles([]sqlmodel.GeneratedFile{jsonFile, conversionFile})...)
+	nullFiles, err := inlineNullFiles(ctx, emission, emission.Referenced)
+	if err != nil {
+		return nil, fmt.Errorf("emitting the Null type for %s: %w", request.Package, err)
+	}
+	valueFiles, err := valueHelperFiles(ctx, emission)
+	if err != nil {
+		return nil, err
+	}
+	added := slices.Concat([]sqlmodel.GeneratedFile{jsonFile, conversionFile}, valueFiles, nullFiles)
+	added = dropEmptyFiles(added)
+	codecFile, err := jsonCodecFile(ctx, emission, added)
+	if err != nil {
+		return nil, fmt.Errorf("emitting the JSON codec for %s: %w", request.Package, err)
+	}
+	files = append(files, dropEmptyFiles(append(added, codecFile))...)
 	if request.Style.ModernIdioms {
 		if err := spaceDeclarations(files); err != nil {
 			return nil, fmt.Errorf("spacing the declarations of %s: %w", request.Package, err)
 		}
 	}
 	return applyHeader(files, request.Style.Header), nil
+}
+
+// valueHelperFiles renders the helpers that read and bind values the generated code
+// refers to. They are the narrow-number scanner, the array scanner, the array literal
+// writer and the required slice binder.
+//
+// Takes emission (*gogen.Emission) which holds the request and the identifiers the files
+// refer to.
+//
+// Returns []sqlmodel.GeneratedFile which holds the helper files, or none.
+// Returns error when a helper cannot be rendered or the context is done.
+func valueHelperFiles(ctx context.Context, emission *gogen.Emission) ([]sqlmodel.GeneratedFile, error) {
+	if err := stopped(ctx, "value helpers for "+emission.Request.Package); err != nil {
+		return nil, err
+	}
+	helperFiles := []struct {
+		render func(packageName string, vocabulary helpers.Vocabulary) (sqlmodel.GeneratedFile, error)
+		suffix string
+		what   string
+	}{
+		{render: helpers.ScanNumbers, suffix: gogen.SuffixScanNumber, what: "the number scanner"},
+		{render: helpers.ScanArrays, suffix: gogen.SuffixScanArray, what: "the array scanner"},
+		{render: helpers.ArrayLiterals, suffix: gogen.SuffixArrayLiteral, what: "the array literal writer"},
+		{render: helpers.RequiredSlices, suffix: gogen.SuffixNonNil, what: "the required slice binder"},
+	}
+	var files []sqlmodel.GeneratedFile
+	for _, helper := range helperFiles {
+		if _, used := emission.Referenced[emission.Vocabulary.Helper(helper.suffix)]; !used {
+			continue
+		}
+		file, err := helper.render(emission.Request.Package, emission.Vocabulary)
+		if err != nil {
+			return nil, fmt.Errorf("emitting %s for %s: %w", helper.what, emission.Request.Package, err)
+		}
+		files = append(files, file)
+	}
+	return files, nil
 }
 
 // spaceDeclarations writes a blank line between every two top-level declarations of each

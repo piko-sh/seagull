@@ -27,31 +27,7 @@ import (
 	"seagull.sh/seagull/examples/duckdb/008_arrays/internal/store"
 )
 
-// run logs three fishing voyages and reads them back. A DuckDB list column becomes a
-// typed Go slice: VARCHAR[] gives []*string and INTEGER[] gives []*int32, and array_agg
-// over the NOT NULL id column gives []int64: the list can hold no NULL, so its elements
-// are plain values.
-//
-// The elements are pointers because DuckDB can hold NULL in any list, whatever the
-// column's type says, so a NULL element reads as nil, which elements prints as NULL.
-// Parameters keep plain elements, so LogVoyage takes []string and []int32. When the data
-// never holds a NULL element, non_null_elements: true opts out, in an sgl.column line of
-// a query or migration or as go.types.non_null_elements in sgl.yaml: the elements then
-// read as plain values, and a NULL one fails the read.
-//
-// A slice parameter is bound as a DuckDB list. duckdb-go would bind a nil slice as an
-// empty list, so the generated code converts the nullable sightings parameter and binds a
-// nil slice as NULL, as other drivers do: Salty Chip's Sightings: nil is stored as NULL,
-// and the second Kittiwake voyage's empty slice as an empty list.
-//
-// The generated SQL selects each list column as it is, and the generated code reads the
-// list duckdb-go returns into the slice; open internal/store to see it. A NULL list
-// therefore scans to a nil slice, and an empty list to an empty one.
-//
-// VoyagesCallingAt searches inside a list with $1 = ANY(ports), whose parameter is pinned
-// with sgl.param(port, type: varchar) as inference leaves it as any, and reads one
-// element with ports[1], which is *string because a missing element is NULL. DuckDB lists
-// count from 1, like PostgreSQL arrays.
+// run records fishing voyages and reads their array fields.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes output (io.Writer) which receives the voyages and the searches.
@@ -89,7 +65,7 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 	}
 	fmt.Fprintln(output, "\ncalling at Mousehole:")
 	for _, voyage := range calling {
-		fmt.Fprintf(output, "  %-10s  from %s, %d stops\n", voyage.Boat, *voyage.FirstPort, voyage.Stops)
+		fmt.Fprintf(output, "  %-10s  from %s, %d stops\n", voyage.Boat, voyage.FirstPort.V, voyage.Stops)
 	}
 
 	perBoat, err := queries.VoyagesPerBoat(ctx)

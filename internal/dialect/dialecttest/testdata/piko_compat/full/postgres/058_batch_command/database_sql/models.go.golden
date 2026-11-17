@@ -3,7 +3,7 @@
 package generated
 
 type AuditLog struct {
-	ID     int32   `json:"id"`
-	Action string  `json:"action"`
-	Detail *string `json:"detail"`
+	ID     int32        `json:"id"`
+	Action string       `json:"action"`
+	Detail Null[string] `json:"detail"`
 }

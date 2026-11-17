@@ -1,0 +1,4 @@
+{
+  "description": "PostgreSQL 18 refuses dropping the NOT NULL of a primary key's column, by its constraint's name or with DROP NOT NULL (column is in a primary key), and adding a NOT NULL constraint under a new name to a column that has one (a not-null constraint already exists), as PostgreSQL 18.7 reports them.",
+  "expectedDiagnosticCount": 3
+}

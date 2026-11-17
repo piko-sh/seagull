@@ -31,22 +31,7 @@ import (
 	"seagull.sh/seagull/examples/postgres/006_json_pgx/internal/store"
 )
 
-// run places three chip shop orders and reads them back through pgx. A JSONB column
-// becomes the generated store.JSON type, which holds the raw document as bytes; it
-// implements driver.Valuer and sql.Scanner, and pgx calls both, so the same type works
-// with either driver. A nil store.JSON is SQL NULL.
-//
-// pgx can also decode JSONB into any Go type itself. GetOrder's sgl.column(basket,
-// go_type: ...) makes Basket a chips.Basket, and pgx unmarshals the document into it, so
-// there is no json.Unmarshal to write. Through database/sql the same override fails,
-// unless the type implements sql.Scanner. A query's sgl.column override changes only that
-// query's returned column, so PlaceOrderParams still takes store.JSON, encoded with
-// json.Marshal.
-//
-// JSONB returns documents normalised, with a space after each comma and colon.
-// OrdersWithFish filters with ->>, which extracts text, and selects with ->, which
-// extracts a JSONB fragment; OrdersContaining uses @>, which matches a document
-// containing the one bound to $1::jsonb.
+// run places chip shop orders and reads their JSON data through pgx.
 //
 // Takes pool (*pgxpool.Pool) which is a pool on a migrated database.
 // Takes output (io.Writer) which receives the decoded order and the searches.
@@ -95,8 +80,8 @@ func run(ctx context.Context, pool *pgxpool.Pool, output io.Writer) error {
 	fmt.Fprintln(output, "\ncod orders:")
 	for _, order := range cod {
 		address := "collecting"
-		if order.Address != nil {
-			address = "to " + *order.Address
+		if order.Address.Valid {
+			address = "to " + order.Address.V
 		}
 		fmt.Fprintf(output, "  order %d  %-9s extras %-30s %s\n", order.ID, order.Customer, order.Extras, address)
 	}

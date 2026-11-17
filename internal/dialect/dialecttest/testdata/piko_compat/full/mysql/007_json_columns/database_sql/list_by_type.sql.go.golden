@@ -9,9 +9,9 @@ FROM events
 WHERE event_type = ?;`
 
 type ListByTypeRow struct {
-	ID        int32   `json:"id"`
-	EventType string  `json:"event_type"`
-	EventName *string `json:"event_name"`
+	ID        int32        `json:"id"`
+	EventType string       `json:"event_type"`
+	EventName Null[string] `json:"event_name"`
 }
 
 func (queries *Queries) ListByType(ctx context.Context, eventType string) ([]ListByTypeRow, error) {
@@ -21,12 +21,16 @@ func (queries *Queries) ListByType(ctx context.Context, eventType string) ([]Lis
 	}
 	defer rows.Close()
 	var results []ListByTypeRow
-	for rows.Next() {
+	if rows.Next() {
 		var row ListByTypeRow
-		if err := rows.Scan(&row.ID, &row.EventType, &row.EventName); err != nil {
-			return nil, err
+		scanArgs := []any{pikoScanNumber(&row.ID), &row.EventType, &row.EventName}
+		for more := true; more; more = rows.Next() {
+			row = ListByTypeRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

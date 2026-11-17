@@ -61,10 +61,7 @@
         "SQLType": {
           "Category": "text",
           "EngineName": "varchar"
-        },
-        "SourceColumn": "id",
-        "SourceQualifier": "users",
-        "SourceTable": "users"
+        }
       },
       {
         "Name": "email",

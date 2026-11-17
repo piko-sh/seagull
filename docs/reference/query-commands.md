@@ -58,7 +58,7 @@ sends nothing. Result rows, including those from `RETURNING`, are discarded;
 | Emitter | Execution |
 |---|---|
 | pgx | Queues one statement per item in a `pgx.Batch`; the statement need not be an `INSERT`. Returns the first failing statement's error, or else the error closing the batch reports, such as a deferred constraint failing at commit. |
-| database/sql | Sends chunked multi-row `INSERT`s, or one statement per item when a clause follows `VALUES`. |
+| database/sql | Sends chunked multi-row `INSERT`s, or one statement per item when a clause follows `VALUES`. On DuckDB, a plain `INSERT` whose values the appender stores as the `INSERT` would appends its rows through duckdb-go's appender instead, and on ClickHouse one whose values clickhouse-go appends as they are goes through its batch insert, when the writer is a `*sql.DB`. |
 | Native ClickHouse | Appends rows through `PrepareBatch` when the row contains only placeholders; otherwise sends chunked multi-row `INSERT`s. |
 
 For database/sql and native ClickHouse, the statement must be an `INSERT` into a named
@@ -75,6 +75,20 @@ statement allows could not be sent even alone, so it is refused when the code is
 row shares into the SQL. Separate statements can commit separately unless the caller
 supplies a transaction; with `WrapErrors`, a failed statement's error names the row it
 starts at, counted from zero. See [bulk writes](../how-to/bulk-writes.md).
+
+On DuckDB, database/sql uses duckdb-go's appender for a plain `INSERT INTO` with one
+`VALUES` row of distinct placeholders in column order, when every value can be stored
+as the equivalent `INSERT` would store it. Supported values include integers, floats,
+booleans, strings, bytes, dates, timestamps and non-null lists of them. Each chunk is
+written atomically through a connection from the supplied `*sql.DB`. Inside `WithTx`, or
+with a `*sql.Conn` or wrapper, the method sends SQL statements instead.
+
+On ClickHouse, database/sql uses clickhouse-go's batch insert for a plain `INSERT INTO`
+with one `VALUES` row of distinct placeholders when the driver can append every value
+unchanged. Supported values include integers up to 64 bits, strings, UUIDs, dates,
+times, and arrays or maps of them. Floats, decimals, addresses, tuples, enums and
+override types keep the SQL statements. Each chunk is sent in one transaction. Inside
+`WithTx`, or behind a wrapper, the method sends SQL statements instead.
 
 ## Copying rows
 

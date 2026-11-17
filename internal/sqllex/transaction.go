@@ -22,6 +22,26 @@ import (
 	"fmt"
 )
 
+const (
+	// leadingTransactionTokens is how many leading tokens, terminators aside,
+	// ControlsTransaction reads.
+	leadingTransactionTokens = 2
+)
+
+var (
+	// transactionModeWords are the words that may follow BEGIN or END when the statement
+	// opens or ends a transaction rather than a procedural block.
+	transactionModeWords = map[string]struct{}{
+		"TRANSACTION": {}, "WORK": {}, "DEFERRED": {}, "IMMEDIATE": {}, "EXCLUSIVE": {}, "ISOLATION": {}, "READ": {},
+	}
+
+	// transactionVerbs are the words that, opening a statement, always control a
+	// transaction.
+	transactionVerbs = map[string]struct{}{
+		"COMMIT": {}, "ROLLBACK": {}, "SAVEPOINT": {}, "RELEASE": {}, "ABORT": {},
+	}
+)
+
 // RequiresNoTransaction reports whether any statement of a script cannot run inside a
 // transaction, by applying the rules' RequiresNoTransaction predicate to each statement's
 // significant tokens.
@@ -80,4 +100,69 @@ func SignificantTokens(rules Rules, text string) []Token {
 		}
 		tokens = append(tokens, token)
 	}
+}
+
+// ControlsTransaction reports whether a statement opens, ends or rolls back a
+// transaction, such as BEGIN, START TRANSACTION, COMMIT, END, ROLLBACK or SAVEPOINT. A
+// migration must not write one itself, as the runner already runs it in a transaction and
+// a COMMIT inside would end that transaction early.
+//
+// BEGIN and END count only alone or followed by a transaction mode, so a procedural block
+// such as BEGIN NOT ATOMIC ... END does not.
+//
+// Takes tokens ([]Token) which are the statement's significant tokens.
+//
+// Returns bool which is true for a transaction-control statement.
+func ControlsTransaction(tokens []Token) bool {
+	leading := leadingStatementTokens(tokens)
+	first, second := tokenWord(leading, 0), tokenWord(leading, 1)
+	if _, verb := transactionVerbs[first]; verb {
+		return true
+	}
+	switch first {
+	case "START":
+		return second == "TRANSACTION"
+	case "BEGIN", "END":
+		if len(leading) == 1 {
+			return true
+		}
+		_, mode := transactionModeWords[second]
+		return mode
+	default:
+		return false
+	}
+}
+
+// leadingStatementTokens returns the first tokens of a statement that are not statement
+// terminators, at most leadingTransactionTokens of them.
+//
+// Takes tokens ([]Token) which are the statement's significant tokens.
+//
+// Returns []Token which holds the leading tokens.
+func leadingStatementTokens(tokens []Token) []Token {
+	leading := make([]Token, 0, leadingTransactionTokens)
+	for _, token := range tokens {
+		if token.Kind == KindPunctuation && token.Raw == ";" {
+			continue
+		}
+		leading = append(leading, token)
+		if len(leading) == leadingTransactionTokens {
+			break
+		}
+	}
+	return leading
+}
+
+// tokenWord returns the upper-cased word at a position of tokens.
+//
+// Takes tokens ([]Token) which are the tokens.
+// Takes position (int) which is the token's index.
+//
+// Returns string which is the word, or empty when there is no token there or it is not a
+// word.
+func tokenWord(tokens []Token, position int) string {
+	if position >= len(tokens) || tokens[position].Kind != KindWord {
+		return ""
+	}
+	return upperWord(tokens[position].Raw)
 }

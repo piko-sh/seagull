@@ -21,6 +21,7 @@ package main
 import (
 	"io"
 	"os"
+	"os/exec"
 	"slices"
 	"strings"
 	"testing"
@@ -147,4 +148,27 @@ func TestOnlyMainAndTheDriversPackageLinkTheStockDrivers(t *testing.T) {
 			require.Equal(t, testCase.wantLinked, slices.Contains(dependencies, driver), "%s links %s", testCase.pattern, driver)
 		}
 	}
+}
+
+func TestSglFinishesItsRunWhenTheReaderOfItsOutputGoesAway(t *testing.T) {
+	if os.Getenv("SGL_BROKEN_PIPE_CHILD") == "1" {
+		os.Args = []string{"sgl", "dialects"}
+		main()
+		return
+	}
+	reader, writer, err := os.Pipe()
+	require.NoError(t, err)
+	require.NoError(t, reader.Close())
+	command := exec.Command(os.Args[0], "-test.run=^TestSglFinishesItsRunWhenTheReaderOfItsOutputGoesAway$")
+	command.Env = append(os.Environ(), "SGL_BROKEN_PIPE_CHILD=1")
+	command.Stdout = writer
+	err = command.Run()
+	require.NoError(t, writer.Close())
+
+	var exitError *exec.ExitError
+	require.ErrorAs(t, err, &exitError, "a failed write must fail the run")
+	status, ok := exitError.Sys().(interface{ Signaled() bool })
+	require.True(t, ok, "the platform reports how the process ended")
+	assert.False(t, status.Signaled(), "the process ends with a status of its own rather than being killed by SIGPIPE")
+	assert.NotZero(t, exitError.ExitCode())
 }

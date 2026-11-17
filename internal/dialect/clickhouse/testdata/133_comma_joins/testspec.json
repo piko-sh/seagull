@@ -1,0 +1,4 @@
+{
+  "description": "ClickHouse joins the sources a comma separates in FROM as CROSS JOIN does, before or beside an explicit JOIN, so neither side's columns become nullable, as ClickHouse 26.8 runs them.",
+  "expectedDiagnosticCount": 0
+}

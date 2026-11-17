@@ -12,10 +12,10 @@ FROM hourly_readings
 ORDER BY bucket, buoy;`
 
 type HourlyStatsRow struct {
-	Bucket  time.Time `json:"bucket"`
-	Buoy    string    `json:"buoy"`
-	Samples int64     `json:"samples"`
-	Mean    *float64  `json:"mean"`
+	Bucket  time.Time     `json:"bucket"`
+	Buoy    string        `json:"buoy"`
+	Samples int64         `json:"samples"`
+	Mean    Null[float64] `json:"mean"`
 }
 
 func (queries *Queries) HourlyStats(ctx context.Context) ([]HourlyStatsRow, error) {
@@ -25,12 +25,16 @@ func (queries *Queries) HourlyStats(ctx context.Context) ([]HourlyStatsRow, erro
 	}
 	defer rows.Close()
 	var results []HourlyStatsRow
-	for rows.Next() {
+	if rows.Next() {
 		var row HourlyStatsRow
-		if err := rows.Scan(&row.Bucket, &row.Buoy, &row.Samples, &row.Mean); err != nil {
-			return nil, err
+		scanArgs := []any{&row.Bucket, &row.Buoy, &row.Samples, &row.Mean}
+		for more := true; more; more = rows.Next() {
+			row = HourlyStatsRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -49,11 +53,11 @@ GROUP BY buoy
 ORDER BY buoy;`
 
 type OverallStatsRow struct {
-	Buoy              string   `json:"buoy"`
-	Samples           *int64   `json:"samples"`
-	MeanOfHourlyMeans *float64 `json:"mean_of_hourly_means"`
-	Mean              *float64 `json:"mean"`
-	Spread            *float64 `json:"spread"`
+	Buoy              string        `json:"buoy"`
+	Samples           Null[int64]   `json:"samples"`
+	MeanOfHourlyMeans Null[float64] `json:"mean_of_hourly_means"`
+	Mean              Null[float64] `json:"mean"`
+	Spread            Null[float64] `json:"spread"`
 }
 
 func (queries *Queries) OverallStats(ctx context.Context) ([]OverallStatsRow, error) {
@@ -63,12 +67,16 @@ func (queries *Queries) OverallStats(ctx context.Context) ([]OverallStatsRow, er
 	}
 	defer rows.Close()
 	var results []OverallStatsRow
-	for rows.Next() {
+	if rows.Next() {
 		var row OverallStatsRow
-		if err := rows.Scan(&row.Buoy, &row.Samples, &row.MeanOfHourlyMeans, &row.Mean, &row.Spread); err != nil {
-			return nil, err
+		scanArgs := []any{&row.Buoy, &row.Samples, &row.MeanOfHourlyMeans, &row.Mean, &row.Spread}
+		for more := true; more; more = rows.Next() {
+			row = OverallStatsRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

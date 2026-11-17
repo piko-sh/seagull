@@ -73,6 +73,16 @@ Creating a table under a name a table already holds, or renaming one onto a name
 is [Q067](../diagnostics.md#q067), and altering a table, or dropping a table or view,
 that does not exist without `IF EXISTS` is [Q068](../diagnostics.md#q068).
 
+`ALTER TABLE` takes the forms SQLite 3.53 added: `ADD [CONSTRAINT name] CHECK (...)`,
+`DROP CONSTRAINT name` and `ALTER [COLUMN] c SET NOT NULL` or `DROP NOT NULL`. Dropping a
+NOT NULL a column definition names with `CONSTRAINT` lets the column hold `NULL`, and
+dropping a named check or foreign key removes it. Dropping the name a column gives its
+`DEFAULT` or `COLLATE` keeps the clause. Dropping a primary key or unique constraint is
+refused ([Q010](../diagnostics.md#q010)), and so is a name the table does not have
+([Q068](../diagnostics.md#q068)), as SQLite 3.54 refuses them. `ADD CONSTRAINT` of any
+other kind is a syntax error, as in SQLite. Both drivers bundle SQLite 3.54 (see
+[Drivers](#drivers)).
+
 A view or `CREATE TABLE ... AS` query with a syntax error fails the statement, and so
 does `CREATE VIEW v AS (SELECT ...)`, which SQLite refuses. A `VALUES` query is typed. A
 query nested past `max_parse_depth` applies with untyped columns and is reported as
@@ -151,7 +161,7 @@ Seagull reads a primary-key column as SQLite keeps it. For historical reasons SQ
 an ordinary table store NULL in a primary-key column unless the column is the rowid alias
 or is declared `NOT NULL`, or the table is `WITHOUT ROWID` or `STRICT`, so such a key,
 whether declared on the column or as a table constraint, is nullable and reads into a
-pointer (`*string` for a `TEXT PRIMARY KEY`); an `INTEGER PRIMARY KEY DESC` or `INT
+`Null` (`Null[string]` for a `TEXT PRIMARY KEY`); an `INTEGER PRIMARY KEY DESC` or `INT
 PRIMARY KEY` column is not the rowid alias and is nullable too. Declare a key `NOT NULL`,
 or make the table `WITHOUT ROWID` or `STRICT`, for a plain field.
 
@@ -171,24 +181,34 @@ such as `ATTACH DATABASE ? AS archive` or `VACUUM INTO ?`, cannot be bound and i
 
 ## Migrations
 
-No lock, since SQLite serialises writers itself (`migrate_backend_sqlite.New()`); DDL is transactional.
+The SQLite migration backend uses a [lease lock](../migration-runtime.md#lease-locks). DDL is transactional.
 
 ## Drivers
 
 `database/sql` with `modernc.org/sqlite` (pure Go) or `github.com/mattn/go-sqlite3` (cgo).
 
-The two drivers bundle SQLite built with different options. `modernc.org/sqlite` includes
-the math functions (`sqrt`, `ceil`, `floor`, `pow`, `ln`, `log`, the trigonometric and
-hyperbolic functions) and FTS5. The default build of `github.com/mattn/go-sqlite3` has
-neither: a query calling `sqrt` fails with `no such function: sqrt`, and a migration
-creating an FTS5 table fails, at run time, although Seagull accepts both. Build with the
+The two drivers bundle SQLite built with different options, and Seagull accepts what
+either build lacks, which then fails at run time.
+
+| Feature | `modernc.org/sqlite` | `github.com/mattn/go-sqlite3` |
+|---|---|---|
+| Math functions (`sqrt`, `ceil`, `floor`, `pow`, `ln`, `log`, trigonometric, hyperbolic) | Yes | Only with the `sqlite_math_functions` tag |
+| FTS5, with `bm25` and `highlight` | Yes | Only with the `sqlite_fts5` tag |
+| FTS3 and FTS4, with `matchinfo` | No | Yes |
+| `soundex` | Yes | No |
+| R*Tree | Yes | Yes |
+| SQLite 3.53 `ALTER TABLE` forms (`ADD CHECK`, `DROP CONSTRAINT`, `ALTER COLUMN ... NOT NULL`) | Yes (SQLite 3.54.1 in v1.62.0) | Yes (SQLite 3.54.1 in v1.14.53) |
+
+Without its tags, a mattn build fails a query calling `sqrt` with `no such function: sqrt`
+and a migration creating an FTS5 table with `no such module: fts5`. Build with the
 driver's tags to include them:
 
 ```sh
 go build -tags "sqlite_math_functions sqlite_fts5" ./...
 ```
 
-Both builds include FTS3 and R*Tree. A function newer than a driver's bundled SQLite, such
+A migration creating an FTS3 or FTS4 table fails on `modernc.org/sqlite` with
+`no such module: fts4`; use FTS5 there. A function newer than a driver's bundled SQLite, such
 as `if` (SQLite 3.48), needs a driver release that bundles that version.
 
 Seagull reads `generate_series(start, stop[, step])` as the table function the SQLite

@@ -41,6 +41,21 @@ func TestRulesSplit(t *testing.T) {
 		expected []string
 	}{
 		{
+			name:     "a BEGIN NOT ATOMIC block is one statement",
+			input:    "BEGIN NOT ATOMIC\n  INSERT INTO t VALUES (1);\n  BEGIN\n    INSERT INTO t VALUES (2);\n  END;\nEND;\nSELECT 1;",
+			expected: []string{"BEGIN NOT ATOMIC\n  INSERT INTO t VALUES (1);\n  BEGIN\n    INSERT INTO t VALUES (2);\n  END;\nEND", "SELECT 1"},
+		},
+		{
+			name:     "a transaction's BEGIN stays a statement of its own",
+			input:    "BEGIN; INSERT INTO t VALUES (1); COMMIT;",
+			expected: []string{"BEGIN", "INSERT INTO t VALUES (1)", "COMMIT"},
+		},
+		{
+			name:     "an event's body is one statement",
+			input:    "CREATE EVENT tidy ON SCHEDULE EVERY 1 DAY DO BEGIN\n  DELETE FROM t;\n  INSERT INTO t VALUES (1);\nEND;\nSELECT 1;",
+			expected: []string{"CREATE EVENT tidy ON SCHEDULE EVERY 1 DAY DO BEGIN\n  DELETE FROM t;\n  INSERT INTO t VALUES (1);\nEND", "SELECT 1"},
+		},
+		{
 			name:     "double-quoted strings hold terminators and escaped quotes",
 			input:    `INSERT INTO t VALUES ("a;b", "say \"hi\"; ok"); SELECT 1;`,
 			expected: []string{`INSERT INTO t VALUES ("a;b", "say \"hi\"; ok")`, "SELECT 1"},

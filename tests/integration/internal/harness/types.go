@@ -184,7 +184,8 @@ func ColumnTypeProbe(ctx context.Context, database *sql.DB, query string) (strin
 // Takes typeFunction (string) which is the function that names a value's type, written so
 // its result reads as text.
 //
-// Returns func which probes a query.
+// Returns func(ctx context.Context, database *sql.DB, query string) (string, error) which
+// probes a query.
 func ValueTypeProbe(typeFunction string) func(ctx context.Context, database *sql.DB, query string) (string, error) {
 	return func(ctx context.Context, database *sql.DB, query string) (string, error) {
 		var name string

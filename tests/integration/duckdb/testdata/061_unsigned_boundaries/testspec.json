@@ -1,0 +1,6 @@
+{
+  "description": "Unsigned parameters retain all 64 bits.",
+  "expectedDiagnostics": [
+    "Q022"
+  ]
+}

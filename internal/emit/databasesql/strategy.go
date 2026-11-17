@@ -21,6 +21,7 @@ package databasesql
 import (
 	"go/ast"
 	"slices"
+	"strings"
 
 	"piko.sh/goastutil"
 
@@ -65,6 +66,11 @@ var (
 		CountScan:          "",
 		NoRows:             sqlmodel.GoType{Composite: nil, Package: importSQL, Name: "ErrNoRows"},
 		RowsAffectedErrors: true,
+		ScansNarrowNumbers: false,
+		NilSlicesAsNull:    false,
+		NativeValues:       false,
+		RowIsInterface:     false,
+		NullMethods:        nil,
 	}
 
 	// sqlStatementParameters are the parameters every DBTX method running a statement takes.
@@ -142,6 +148,10 @@ type sqlDriver struct {
 	// types maps the request's SQL types, and says which Go types an override chose.
 	types sqlmodel.GoTypeResolver
 
+	// catalogue is the schema the queries were analysed against, which names the tables a
+	// batch appends to as the engine spells them.
+	catalogue *sqlmodel.Catalogue
+
 	// vocabulary names the generated helpers of the request.
 	vocabulary gogen.Vocabulary
 
@@ -172,9 +182,21 @@ type sqlDriver struct {
 	// driver-binary wrapper, so the package needs the wrapper's file.
 	wrapsDriverBinary bool
 
+	// wrapsUnsigned includes exact conversion for wide unsigned parameters.
+	wrapsUnsigned bool
+
 	// wrapsDriverDecimals is true when a query binds a decimal held by a pointer through the
 	// driver-decimal wrapper, so the package needs the wrapper's file.
 	wrapsDriverDecimals bool
+
+	// appendsDuckDB is true once a batch or copyfrom method appends through DuckDB's
+	// appender, so the package needs duckdb_appending.go. Methods are generated before the
+	// helpers.
+	appendsDuckDB bool
+
+	// batchesClickHouse is true once a batch or copyfrom method writes through
+	// clickhouse-go's batch insert, so the package needs clickhouse_batches.go.
+	batchesClickHouse bool
 }
 
 // newSQLDriver works out what one request needs of its database/sql driver.
@@ -199,7 +221,13 @@ func newSQLDriver(request *emit.Request, profile *driverProfile, prepared bool) 
 		wrapsDriverJSON:       anyParameterBindsAsJSONDocument(profile, &request.Dialect, request.Queries, request.Types),
 		wrapsDriverBinary:     anyParameterBindsAsDriverBinary(profile, request.Queries, request.Types),
 		wrapsDriverDecimals:   anyParameterBindsAsDriverDecimal(profile, request.Queries, request.Types),
-		types:                 request.Types, shapes: chvalues.Shapes{}}
+		wrapsUnsigned:         anyParameterBindsAsUnsigned(profile, request.Queries),
+		types:                 request.Types,
+		shapes:                chvalues.Shapes{},
+		catalogue:             request.Catalogue,
+		appendsDuckDB:         false,
+		batchesClickHouse:     false,
+	}
 }
 
 // ColumnReading selects direct, JSON, composite or text reading for a SQL type.
@@ -209,6 +237,52 @@ func newSQLDriver(request *emit.Request, profile *driverProfile, prepared bool) 
 // Returns gogen.ColumnReading which says how the column is read.
 func (s *sqlDriver) ColumnReading(sqlType sqlmodel.SQLType) gogen.ColumnReading {
 	return s.profile.reading(sqlType)
+}
+
+// ReadsArrayText reports whether the driver reads an array column as text.
+//
+// It accepts one-dimensional arrays of text, UUIDs, integers, floats, or booleans on
+// PostgreSQL-family dialects with array membership. Nested arrays are rejected.
+//
+// Takes sqlType (sqlmodel.SQLType) which is the column's SQL type.
+//
+// Returns bool which is true when the column may be read from its text form.
+func (s *sqlDriver) ReadsArrayText(sqlType sqlmodel.SQLType) bool {
+	if s.dialect.Lists.ArrayMembership.Before == "" || sqlType.Category != sqlmodel.TypeCategoryArray || sqlType.ElementType == nil ||
+		s.profile.reading(sqlType) != gogen.ColumnReadAsJSON {
+		return false
+	}
+	switch sqlType.ElementType.Category {
+	case sqlmodel.TypeCategoryText, sqlmodel.TypeCategoryUUID, sqlmodel.TypeCategoryInteger, sqlmodel.TypeCategoryFloat,
+		sqlmodel.TypeCategoryBoolean:
+		return true
+	default:
+		return false
+	}
+}
+
+// BindsListAsArrayText reports whether a slice binds as one text array parameter.
+//
+// The dialect's array membership or exclusion form preserves expanded IN or NOT IN
+// behavior, including NULL elements. On PostgreSQL-family dialects, it accepts native
+// text, UUIDs, integers, and booleans. Other text types retain placeholders because
+// CockroachDB compares CHAR array elements without ignoring trailing spaces.
+//
+// Takes sqlType (sqlmodel.SQLType) which is the SQL type of the slice's elements.
+//
+// Returns bool which is true when the list is bound as an array's text form.
+func (s *sqlDriver) BindsListAsArrayText(sqlType sqlmodel.SQLType) bool {
+	if s.dialect.Lists.ArrayMembership.Before == "" {
+		return false
+	}
+	switch sqlType.Category {
+	case sqlmodel.TypeCategoryText:
+		return sqlType.Length == nil && s.dialect.TextType != "" && strings.EqualFold(sqlType.EngineName, s.dialect.TextType)
+	case sqlmodel.TypeCategoryUUID, sqlmodel.TypeCategoryInteger, sqlmodel.TypeCategoryBoolean:
+		return true
+	default:
+		return false
+	}
 }
 
 // ReadsOverride reports whether a column's overridden Go type needs a scan adapter.
@@ -289,6 +363,9 @@ func (s *sqlDriver) Bind(access ast.Expr, parameter *sqlmodel.QueryParameter, im
 	if bindsNamedValues(s.profile, s.dialect.Placeholders) {
 		return s.clickHouseNamed(goastutil.StrLit(s.dialect.Placeholders.BoundName(parameter.Name)), access, parameter, imports)
 	}
+	if bindsAsUnsigned(s.profile, parameter) {
+		return driverUnsignedAccess(s.vocabulary, access)
+	}
 	if bindsAsDriverDecimal(s.profile, parameter, s.types) {
 		return driverDecimalAccess(s.vocabulary, access)
 	}
@@ -322,6 +399,9 @@ func (s *sqlDriver) Bind(access ast.Expr, parameter *sqlmodel.QueryParameter, im
 //
 // Returns ast.Expr which is the wrapped or unchanged access expression.
 func (s *sqlDriver) BindPositional(access ast.Expr, parameter *sqlmodel.QueryParameter) ast.Expr {
+	if bindsAsUnsigned(s.profile, parameter) {
+		return driverUnsignedAccess(s.vocabulary, access)
+	}
 	if !bindsNamedValues(s.profile, s.dialect.Placeholders) {
 		return access
 	}
@@ -352,6 +432,16 @@ func (s *sqlDriver) Helpers(request *emit.Request) ([]sqlmodel.GeneratedFile, er
 		documents:         s.readsDocuments(emission),
 	}
 	renderers := s.helperRenderers(request, reading)
+	if s.appendsDuckDB {
+		renderers = append(renderers, func() (sqlmodel.GeneratedFile, error) {
+			return renderDuckDBAppending(s.vocabulary, request.Package)
+		})
+	}
+	if s.batchesClickHouse {
+		renderers = append(renderers, func() (sqlmodel.GeneratedFile, error) {
+			return renderClickHouseBatches(s.vocabulary, request.Package)
+		})
+	}
 	files := make([]sqlmodel.GeneratedFile, 0, len(renderers))
 	for _, render := range renderers {
 		file, err := render()
@@ -398,6 +488,13 @@ func (*sqlDriver) CopyStatement(_ *gogen.Query) gogen.CopyStatement {
 // Returns error when the query's VALUES row cannot be repeated.
 func (s *sqlDriver) CopyFrom(query *gogen.Query) (ast.Decl, error) {
 	return s.batchMethod(query)
+}
+
+// CastRuntimeFloats enables exact floating-point values in runtime filters.
+//
+// Returns bool which requests casts from decimal text.
+func (s *sqlDriver) CastRuntimeFloats() bool {
+	return bindsNamedValues(s.profile, s.dialect.Placeholders)
 }
 
 // decodesJSONOverride reports whether a JSON column is decoded into its overridden Go
@@ -515,10 +612,10 @@ func (s *sqlDriver) helperRenderers(request *emit.Request, reading helperReading
 		parts := chvalues.ValueParts{Shapes: &s.shapes, Documents: documents, Nullables: chvalues.BindsNullablesPositionally(request.Queries, s.types),
 			Durations: chvalues.BindsDurations(request.Queries)}
 		renderers = append(renderers, func() (sqlmodel.GeneratedFile, error) { return chvalues.Values(s.vocabulary, packageName, parts) })
-	case s.wrapsDriverValues || s.wrapsDriverText || s.wrapsDriverJSON || s.wrapsDriverBinary || s.wrapsDriverDecimals:
+	case s.wrapsDriverValues || s.wrapsDriverText || s.wrapsDriverJSON || s.wrapsDriverBinary || s.wrapsDriverDecimals || s.wrapsUnsigned:
 		wrappers := driverWrappers{
 			values: s.wrapsDriverValues, text: s.wrapsDriverText, documents: s.wrapsDriverJSON, binary: s.wrapsDriverBinary,
-			decimals: s.wrapsDriverDecimals,
+			decimals: s.wrapsDriverDecimals, unsigned: s.wrapsUnsigned,
 		}
 		renderers = append(renderers, func() (sqlmodel.GeneratedFile, error) {
 			return renderDriverValues(s.vocabulary, packageName, wrappers)
@@ -550,7 +647,7 @@ func (s *sqlDriver) helperRenderers(request *emit.Request, reading helperReading
 	}
 	if s.prepared {
 		renderers = append(renderers, func() (sqlmodel.GeneratedFile, error) {
-			return renderPrepared(s.vocabulary, request)
+			return renderPrepared(s.vocabulary, request, s.profile.cachesUnboundStatements)
 		})
 	}
 	return renderers
@@ -563,13 +660,16 @@ func (s *sqlDriver) helperRenderers(request *emit.Request, reading helperReading
 // by name, where the slice is bound whole, as one value; and an enum is read and bound
 // through Go's own strings where the profile says.
 func (s *sqlDriver) driver() *gogen.Driver {
+	connection := sqlConnection
+	connection.ScansNarrowNumbers = s.profile.widensNumbers
+	connection.NilSlicesAsNull = s.profile.sendsNilSlicesAsNull
 	return &gogen.Driver{
 		Binder:     s,
 		Reader:     s.reader(),
 		Helpers:    s,
 		Batch:      s,
 		Querier:    sqlQuerier,
-		Connection: sqlConnection,
+		Connection: connection,
 		Lists:      sqlLists,
 		Enums:      s.profile.enums,
 	}

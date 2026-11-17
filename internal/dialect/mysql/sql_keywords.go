@@ -160,6 +160,9 @@ const (
 	// keywordNOT names the SQL NOT keyword.
 	keywordNOT = "NOT"
 
+	// keywordOR names the SQL OR keyword.
+	keywordOR = "OR"
+
 	// keywordNULL names the SQL NULL keyword.
 	keywordNULL = "NULL"
 
@@ -187,6 +190,9 @@ const (
 	// keywordREADS names the SQL READS keyword.
 	keywordREADS = "READS"
 
+	// keywordREFERENCES names the SQL REFERENCES keyword.
+	keywordREFERENCES = "REFERENCES"
+
 	// keywordREPLACE names the SQL REPLACE keyword.
 	keywordREPLACE = "REPLACE"
 
@@ -205,6 +211,9 @@ const (
 	// keywordROLLUP names the SQL ROLLUP keyword.
 	keywordROLLUP = "ROLLUP"
 
+	// keywordCUBE names the SQL CUBE keyword.
+	keywordCUBE = "CUBE"
+
 	// keywordSCHEMA names the SQL SCHEMA keyword.
 	keywordSCHEMA = "SCHEMA"
 
@@ -220,6 +229,9 @@ const (
 	// keywordCONVERT names the CONVERT keyword, which converts a value to a type or a
 	// character set.
 	keywordCONVERT = "CONVERT"
+
+	// keywordSEQUENCE names the SQL SEQUENCE keyword.
+	keywordSEQUENCE = "SEQUENCE"
 
 	// keywordSELECT names the SQL SELECT keyword.
 	keywordSELECT = "SELECT"

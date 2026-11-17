@@ -1,0 +1,4 @@
+{
+  "description": "MariaDB refuses a CTE column list naming fewer or more columns than the CTE returns, and takes no column list after a derived table's alias.",
+  "expectedDiagnosticCount": 3
+}

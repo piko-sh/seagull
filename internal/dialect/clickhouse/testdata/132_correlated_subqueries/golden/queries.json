@@ -1,0 +1,127 @@
+[
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 1,
+    "Name": "CrewCounts",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      },
+      {
+        "Name": "crew_count",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      },
+      {
+        "Name": "crew_total",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: CrewCounts, command: many)\nSELECT boats.id, (SELECT count() FROM crew WHERE crew.boat = boats.name) AS crew_count,\n       (SELECT sum(crew.id) FROM crew WHERE crew.boat = boats.name) AS crew_total\nFROM boats;",
+    "Template": "SELECT ⟨c0:boats.id⟩, ⟨c1 aliased:(SELECT count() FROM crew WHERE crew.boat = boats.name)⟩ AS crew_count,\\n       ⟨c2 aliased:(SELECT sum(crew.id) FROM crew WHERE crew.boat = boats.name)⟩ AS crew_total\\nFROM boats;"
+  },
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 6,
+    "Name": "UncorrelatedCount",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "boats",
+        "SourceTable": "boats"
+      },
+      {
+        "Name": "crew_count",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: UncorrelatedCount, command: many)\nSELECT boats.id, (SELECT count() FROM crew WHERE crew.boat = 'none') AS crew_count FROM boats;",
+    "Template": "SELECT ⟨c0:boats.id⟩, ⟨c1 aliased:(SELECT count() FROM crew WHERE crew.boat = 'none')⟩ AS crew_count FROM boats;"
+  },
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 9,
+    "Name": "OuterTableName",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "crew",
+        "SourceTable": "crew"
+      },
+      {
+        "Name": "mates",
+        "Nullable": true,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: OuterTableName, command: many)\nSELECT id, (SELECT count() FROM crew AS mates WHERE mates.boat = crew.boat) AS mates FROM crew;",
+    "Template": "SELECT ⟨c0:id⟩, ⟨c1 aliased:(SELECT count() FROM crew AS mates WHERE mates.boat = crew.boat)⟩ AS mates FROM crew;"
+  },
+  {
+    "Command": "many",
+    "Filename": "boats.sql",
+    "Line": 12,
+    "Name": "AliasedTableByName",
+    "OutputColumns": [
+      {
+        "Name": "boat",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "boat",
+        "SourceQualifier": "mates",
+        "SourceTable": "crew"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: AliasedTableByName, command: many)\nSELECT crew.boat FROM crew AS mates;",
+    "Template": "SELECT ⟨c0:crew.boat⟩ FROM crew AS mates;"
+  }
+]

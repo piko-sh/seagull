@@ -3,6 +3,7 @@
 package store
 
 import (
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"reflect"
@@ -11,6 +12,21 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+)
+
+const sglFilterFloatDepth = 32
+
+const sglFilterFloat32Bits = 32
+
+const sglDecimalBase = 10
+
+const sglIntDigits = len("-9223372036854775808")
+
+const (
+	sglOrderAscending  = "ASC"
+	sglOrderDescending = "DESC"
+	sglOrderGap        = " "
+	sglOrderSeparator  = ", "
 )
 
 const sglMaxColumnExpressionLength = 256
@@ -28,6 +44,14 @@ const sglOffsetBefore = "OFFSET "
 const sglOffsetAfter = ""
 
 const sglUnboundedLimit = ""
+
+type sglPredicateShape uint8
+
+const (
+	sglPredicateBare sglPredicateShape = iota
+	sglPredicateScalar
+	sglPredicateList
+)
 
 var ErrSglUnknownColumn = errors.New("sgl: unknown column in runtime query filter")
 
@@ -76,9 +100,22 @@ var sglCastAfter = []string{")", ""}
 var sglCastTypes = []string{"boolean", "bool", "smallint", "integer", "int", "bigint", "numeric", "real", "double precision", "text"}
 
 type sglPredicate struct {
-	text   string
-	values []any
-	list   bool
+	value    any
+	column   string
+	operator string
+	values   []any
+	shape    sglPredicateShape
+}
+
+func (predicate *sglPredicate) bound() int {
+	switch predicate.shape {
+	case sglPredicateScalar:
+		return 1
+	case sglPredicateList:
+		return len(predicate.values)
+	default:
+		return 0
+	}
 }
 
 func sglNormaliseDirection(direction string) string {
@@ -91,8 +128,7 @@ func sglResolveColumn(column string, allowed map[string]string) (string, bool) {
 	if len(trimmed) > sglMaxColumnExpressionLength || strings.ContainsAny(trimmed, unsafeText) {
 		return "", false
 	}
-	if sglSimpleColumn(trimmed) {
-		resolved, ok := allowed[trimmed]
+	if resolved, ok := allowed[trimmed]; ok || sglSimpleColumn(trimmed) {
 		return resolved, ok
 	}
 	if !sglColumnExpressionRegex.MatchString(trimmed) {
@@ -249,10 +285,9 @@ func sglNewPredicate(column, operator string, value any, allowed map[string]stri
 	if !sglAllowedOperators[operator] {
 		return sglPredicate{}, ErrSglUnknownOperator
 	}
-	const space = " "
 	switch {
 	case sglIsUnaryOperator(operator):
-		return sglPredicate{text: resolved + space + operator, values: nil, list: false}, nil
+		return sglPredicate{value: nil, column: resolved, operator: operator, values: nil, shape: sglPredicateBare}, nil
 	case sglIsMultiOperator(operator):
 		count := sglMultiValueLen(value)
 		if count > sglMaxBindVariables {
@@ -263,15 +298,15 @@ func sglNewPredicate(column, operator string, value any, allowed map[string]stri
 			if strings.EqualFold(strings.TrimSpace(operator), "NOT IN") {
 				empty = sglEmptyExclusion
 			}
-			return sglPredicate{text: resolved + space + empty, values: nil, list: false}, nil
+			return sglPredicate{value: nil, column: resolved, operator: empty, values: nil, shape: sglPredicateBare}, nil
 		}
-		return sglPredicate{text: resolved + space + operator + space, values: sglReflectSlice(value), list: true}, nil
+		return sglPredicate{value: nil, column: resolved, operator: operator, values: sglReflectSlice(value), shape: sglPredicateList}, nil
 	default:
-		return sglPredicate{text: resolved + space + operator + space, values: []any{value}, list: false}, nil
+		return sglPredicate{value: value, column: resolved, operator: operator, values: nil, shape: sglPredicateScalar}, nil
 	}
 }
 
-func sglNewOrder(column, direction string, allowed map[string]string) (string, error) {
+func sglNewOrder(column, direction string, allowed map[string]string, distinct bool) (string, error) {
 	resolved, ok := sglResolveColumn(column, allowed)
 	if !ok {
 		return "", ErrSglUnknownColumn
@@ -280,21 +315,47 @@ func sglNewOrder(column, direction string, allowed map[string]string) (string, e
 	if !sglAllowedDirections[normalised] {
 		return "", ErrSglUnknownDirection
 	}
-	return resolved + " " + normalised, nil
+	order, placement, placed := strings.Cut(normalised, " NULLS ")
+	if !placed {
+		return resolved + sglOrderGap + order, nil
+	}
+	nullsFirst := placement == "FIRST"
+	if nullsFirst == sglNullsFirstByDefault(order) {
+		return resolved + sglOrderGap + order, nil
+	}
+	switch {
+	case distinct && false:
+		return "", fmt.Errorf("%w: the engine cannot place NULLs %s in a SELECT DISTINCT, as the placement is not in its select list",
+			ErrSglUnknownDirection, strings.ToLower(placement))
+	case false:
+		nullOrder := sglOrderAscending
+		if nullsFirst {
+			nullOrder = sglOrderDescending
+		}
+		return "(" + resolved + " IS NULL) " + nullOrder + sglOrderSeparator + resolved + sglOrderGap + order, nil
+	default:
+		return resolved + sglOrderGap + normalised, nil
+	}
+}
+
+func sglNullsFirstByDefault(order string) bool {
+	if order == sglOrderAscending {
+		return false
+	}
+	return order == sglOrderDescending && true
 }
 
 func sglWriteBindPlaceholder(builder *strings.Builder, number int) {
-	const decimalBase = 10
 	builder.WriteString("$")
-	var digits [20]byte
-	builder.Write(strconv.AppendInt(digits[:0], int64(number), decimalBase))
+	var digits [sglIntDigits]byte
+	builder.Write(strconv.AppendInt(digits[:0], int64(number), sglDecimalBase))
 	builder.WriteString("")
 }
 
 func sglFilterCount(predicates []sglPredicate) int {
 	count := 0
-	for _, predicate := range predicates {
-		count += len(predicate.values)
+	for index := range predicates {
+		count += predicates[index].bound()
 	}
 	return count
 }
@@ -308,37 +369,47 @@ func sglFilter(predicates []sglPredicate, next int) (string, []any) {
 }
 
 func sglFilterInto(predicates []sglPredicate, next int, values []any) (string, []any) {
-	const decimalBase = 10
 	var builder strings.Builder
 	start := len(values)
 	size := 0
 	width := len("$") + len("") + 2
-	var digits [20]byte
-	width += len(strconv.AppendInt(digits[:0], int64(next+sglFilterCount(predicates)-1), decimalBase))
-	for _, predicate := range predicates {
-		size += len(predicate.text) + len(" AND ()") + len(predicate.values)*width
+	var digits [sglIntDigits]byte
+	width += len(strconv.AppendInt(digits[:0], int64(next+sglFilterCount(predicates)-1), sglDecimalBase))
+	for index := range predicates {
+		predicate := &predicates[index]
+		size += len(predicate.column) + len(predicate.operator) + len(" AND   ()") + predicate.bound()*width
 	}
 	builder.Grow(size)
-	for index, predicate := range predicates {
+	for index := range predicates {
+		predicate := &predicates[index]
 		if index > 0 {
 			builder.WriteString(" AND ")
 		}
-		builder.WriteString(predicate.text)
-		if predicate.list {
-			builder.WriteString("(")
-		}
-		for position, value := range predicate.values {
-			if position > 0 {
-				builder.WriteString(", ")
+		builder.WriteString(predicate.column)
+		builder.WriteByte(' ')
+		builder.WriteString(predicate.operator)
+		switch predicate.shape {
+		case sglPredicateScalar:
+			builder.WriteByte(' ')
+			values = append(values, sglWriteFilterValue(&builder, next+len(values)-start, predicate.value))
+		case sglPredicateList:
+			builder.WriteString(" (")
+			for position, value := range predicate.values {
+				if position > 0 {
+					builder.WriteString(", ")
+				}
+				values = append(values, sglWriteFilterValue(&builder, next+len(values)-start, value))
 			}
-			sglWriteBindPlaceholder(&builder, next+len(values)-start)
-			values = append(values, value)
-		}
-		if predicate.list {
-			builder.WriteString(")")
+			builder.WriteByte(')')
+		default:
 		}
 	}
 	return builder.String(), values
+}
+
+func sglWriteFilterValue(builder *strings.Builder, next int, value any) any {
+	sglWriteBindPlaceholder(builder, next)
+	return value
 }
 
 func sglWhereOpen(filter string, start int, present bool) []sglEdit {
@@ -393,7 +464,8 @@ func sglPaginationInto(limit, offset, next int, values []any) (string, []any) {
 		return "", values
 	}
 	var builder strings.Builder
-	builder.Grow(len(sglLimitBefore) + len(sglLimitAfter) + len(sglOffsetBefore) + len(sglOffsetAfter) + len(sglUnboundedLimit) + 2*(len("$")+len("")+21))
+	clause := len(" ") + len("$") + len("") + sglIntDigits
+	builder.Grow(len(sglLimitBefore) + len(sglLimitAfter) + len(sglOffsetBefore) + len(sglOffsetAfter) + len(sglUnboundedLimit) + 2*clause)
 	start := len(values)
 	write := func(before, after string, value int) {
 		builder.WriteByte(' ')
@@ -428,4 +500,30 @@ func sglAt(text string, at int) []sglEdit {
 		return nil
 	}
 	return []sglEdit{{Text: text, Start: at, End: at}}
+}
+
+func sglIsFloat(value reflect.Value) bool {
+	if !value.IsValid() {
+		return false
+	}
+	kind := value.Kind()
+	return kind == reflect.Float32 || kind == reflect.Float64
+}
+
+func sglFilterFloat(value any) (reflect.Value, any) {
+	current := reflect.ValueOf(value)
+	for depth := 0; current.IsValid() && depth < sglFilterFloatDepth; depth++ {
+		pointer := current.Kind() == reflect.Pointer || current.Kind() == reflect.Interface
+		if pointer && current.IsNil() {
+			return reflect.Value{}, nil
+		}
+		if _, ok := reflect.TypeAssert[driver.Valuer](current); ok {
+			return reflect.Value{}, value
+		}
+		if !pointer {
+			break
+		}
+		current = current.Elem()
+	}
+	return current, value
 }

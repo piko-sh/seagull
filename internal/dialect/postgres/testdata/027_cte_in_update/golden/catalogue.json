@@ -37,6 +37,18 @@
               }
             }
           ],
+          "Constraints": [
+            {
+              "Columns": [
+                "id"
+              ],
+              "Kind": "primary-key",
+              "Name": "accounts_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            }
+          ],
           "Name": "accounts",
           "Origin": {
             "Filename": "001_schema.up.sql"
@@ -87,6 +99,34 @@
                 "EngineName": "numeric",
                 "Precision": 10,
                 "Scale": 2
+              }
+            }
+          ],
+          "Constraints": [
+            {
+              "Columns": [
+                "id"
+              ],
+              "Kind": "primary-key",
+              "Name": "transactions_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
+              }
+            },
+            {
+              "Columns": [
+                "account_id"
+              ],
+              "ForeignColumns": [
+                "id"
+              ],
+              "ForeignTable": "accounts",
+              "Kind": "foreign-key",
+              "Name": "transactions_account_id_fkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 1
               }
             }
           ],

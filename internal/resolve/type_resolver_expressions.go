@@ -315,7 +315,28 @@ func (r *TypeResolver) resolveFunctionCallExpression(
 	}
 	r.recordResolvedCall(expression, match)
 
-	return match.returnType, resultNullable(match.nullableBehaviour, match.nullingArgument, argumentNullability(arguments)), nil
+	nullable := resultNullable(match.nullableBehaviour, match.nullingArgument, argumentNullability(arguments)) ||
+		nullsOnInput(match, arguments)
+	return match.returnType, nullable, nil
+}
+
+// nullsOnInput reports whether a call's result may be NULL because of what an argument
+// holds rather than because it is NULL. Examples are an empty string where the function
+// takes a format the call does not write as a literal, or text where it takes a number.
+//
+// Takes match (*FunctionMatch) which is the resolved overload.
+// Takes arguments ([]callArgument) which are the call's arguments.
+//
+// Returns bool which is true when such an argument may make the result NULL.
+func nullsOnInput(match *FunctionMatch, arguments []callArgument) bool {
+	if position := match.nullUnlessLiteral - 1; position >= 0 && position < len(arguments) && !arguments[position].literal {
+		return true
+	}
+	if position := match.nullOnNonNumeric - 1; position >= 0 && position < len(arguments) {
+		category := arguments[position].sqlType.Category
+		return category == sqlmodel.TypeCategoryText || category == sqlmodel.TypeCategoryBinary || category == sqlmodel.TypeCategoryUnknown
+	}
+	return false
 }
 
 // recordResolvedCall records properties of a call's chosen overload for later checks.
@@ -430,7 +451,7 @@ func (r *TypeResolver) resolveCoalesceExpression(
 		argumentType, argumentNullable, err := r.resolveExpressionType(ctx, argument, scope, dataModifying)
 		r.noteOperandProblem(err)
 		if typed {
-			resultType = r.commonSupertype(resultType, argumentType)
+			resultType = r.coalescedType(resultType, argumentType)
 		}
 		if !argumentNullable {
 			allNullable = false
@@ -442,6 +463,24 @@ func (r *TypeResolver) resolveCoalesceExpression(
 	r.noteCoalescedParameters(expression.Arguments, resultType)
 
 	return resultType, allNullable, nil
+}
+
+// coalescedType widens a COALESCE's type to hold another argument's, warning when the
+// engine has no type both fit, as ClickHouse has none for a UInt64 and an Int8.
+//
+// Takes resultType (sqlmodel.SQLType) which is the type of the arguments so far.
+// Takes argumentType (sqlmodel.SQLType) which is the next argument's type.
+//
+// Returns sqlmodel.SQLType which is the widened type, or unknown when none fits both.
+func (r *TypeResolver) coalescedType(resultType, argumentType sqlmodel.SQLType) sqlmodel.SQLType {
+	promoted := r.commonSupertype(resultType, argumentType)
+	if promoted.Category == sqlmodel.TypeCategoryUnknown && resultType.Category != sqlmodel.TypeCategoryUnknown &&
+		argumentType.Category != sqlmodel.TypeCategoryUnknown {
+		r.noteDepthLimit(newError(diag.CodeEngineReading,
+			"COALESCE has no type both %s and %s fit, so the engine may refuse the query or read its values each in its own type; cast the arguments to one type",
+			resultType.EngineName, argumentType.EngineName).withSeverity(diag.SeverityWarning))
+	}
+	return promoted
 }
 
 // resolveCastExpression resolves a CAST expression by normalising the target type name
@@ -697,10 +736,48 @@ func (r *TypeResolver) resolveScalarSubqueryExpression(
 	if !found {
 		return sqlmodel.NewSQLType(sqlmodel.TypeCategoryUnknown, ""), true, nil
 	}
+	if innerScope.rules.NullableCorrelation && readsEnclosingScope(expression.InnerQuery, innerScope) {
+		return column.SQLType, true, nil
+	}
 	if r.givesOneRow(expression.InnerQuery, innerScope) {
 		return column.SQLType, column.Nullable, nil
 	}
 	return column.SQLType, true, nil
+}
+
+// readsEnclosingScope reports whether a subquery reads a column of an enclosing query: a
+// column reference in its select list or clauses, outside the subqueries it nests, that
+// resolves to a relation of an enclosing scope rather than its own.
+//
+// Takes query (*ast.RawQueryAnalysis) which is the subquery.
+// Takes scope (*ScopeChain) which is the subquery's scope.
+//
+// Returns bool which is true when the subquery is correlated.
+func readsEnclosingScope(query *ast.RawQueryAnalysis, scope *ScopeChain) bool {
+	own := scope.orderedTables()
+	reachesOut := func(tableAlias, columnName string) bool {
+		_, table, err := scope.ResolveColumn(tableAlias, columnName)
+		return err == nil && table != nil && !slices.Contains(own, table)
+	}
+	visit := func(expression ast.Expression) bool {
+		correlated := false
+		ast.Walk(expression, func(node ast.Expression) bool {
+			if reference, isReference := node.(*ast.ColumnRefExpression); isReference && reachesOut(reference.TableAlias, reference.ColumnName) {
+				correlated = true
+			}
+			return !correlated
+		})
+		return correlated
+	}
+	for _, column := range query.OutputColumns {
+		if column.Expression == nil && column.ColumnName != "" && reachesOut(column.TableAlias, column.ColumnName) {
+			return true
+		}
+		if column.Expression != nil && visit(column.Expression) {
+			return true
+		}
+	}
+	return slices.ContainsFunc(query.ClauseExpressions, func(clause ast.ClauseExpression) bool { return visit(clause.Expression) })
 }
 
 // resolveSubqueryColumn types the first column of a subquery's select list in a scope of

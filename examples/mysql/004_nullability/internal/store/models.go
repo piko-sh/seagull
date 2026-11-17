@@ -5,9 +5,9 @@ package store
 import "time"
 
 type Gulls struct {
-	ID       int64   `json:"id"`
-	Ring     string  `json:"ring"`
-	Nickname *string `json:"nickname"`
+	ID       int64        `json:"id"`
+	Ring     string       `json:"ring"`
+	Nickname Null[string] `json:"nickname"`
 }
 
 type Sightings struct {

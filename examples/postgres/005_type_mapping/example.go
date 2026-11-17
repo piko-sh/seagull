@@ -31,17 +31,7 @@ import (
 	"seagull.sh/seagull/examples/postgres/005_type_mapping/internal/store"
 )
 
-// run records a landing of fish and reads it back, printing the Go type sgl chose for
-// each column of db/migrations. PostgreSQL's types are exact, so each maps by name:
-//
-//   - SMALLINT, INTEGER and BIGINT give int16, int32 and int64;
-//   - REAL is single precision and gives float32, while DOUBLE PRECISION gives float64;
-//   - NUMERIC gives apd.Decimal from github.com/cockroachdb/apd/v3, which keeps money
-//     exact, and UUID gives uuid.UUID from github.com/google/uuid;
-//   - DATE and TIMESTAMPTZ give time.Time, and BYTEA gives []byte;
-//   - a type Seagull has no mapping for, such as INET, gives any, and the driver decides
-//     what it holds: pgx's database/sql driver hands back the address as a string. Give
-//     such a column a go_type override to pin it down.
+// run records a fish landing and prints its generated Go field types.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes output (io.Writer) which receives one line per column.
@@ -64,7 +54,7 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 		LandedAt:  time.Date(2026, time.May, 1, 5, 30, 0, 0, time.UTC),
 		HarbourIP: "192.0.2.17",
 		Tag:       []byte{0x04, 0xa2, 0x19, 0xf3},
-		Notes:     new("landed at Newlyn"),
+		Notes:     store.NullOf("landed at Newlyn"),
 	})
 	if err != nil {
 		return fmt.Errorf("recording a landing: %w", err)
@@ -90,6 +80,6 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 	fmt.Fprintf(output, "harbour_ip  %-12T %v\n", landing.HarbourIP, landing.HarbourIP)
 	// %T prints []byte as []uint8, since byte is an alias for uint8.
 	fmt.Fprintf(output, "tag         %-12T % x\n", landing.Tag, landing.Tag)
-	fmt.Fprintf(output, "notes       %-12T %s\n", landing.Notes, *landing.Notes)
+	fmt.Fprintf(output, "notes       %-12T %s\n", landing.Notes, landing.Notes.V)
 	return nil
 }

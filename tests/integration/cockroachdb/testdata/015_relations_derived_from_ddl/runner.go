@@ -60,19 +60,19 @@ func main() {
 	kind, rowID, label, colour := int64(3), int64(42), "pinned", "red"
 	output := results{}
 	output.record("add_notes", func() (any, error) {
-		if err := queries.AddNote(ctx, db.AddNoteParams{Body: "first", Kind: &kind}); err != nil {
+		if err := queries.AddNote(ctx, db.AddNoteParams{Body: "first", Kind: db.NullOf(kind)}); err != nil {
 			return nil, err
 		}
-		return "added", queries.AddNote(ctx, db.AddNoteParams{Body: "second", Kind: nil})
+		return "added", queries.AddNote(ctx, db.AddNoteParams{Body: "second", Kind: db.Null[int64]{}})
 	})
 	output.record("notes", func() (any, error) { return queries.ListNotes(ctx) })
 	output.record("keyed_notes", func() (any, error) { return queries.ListKeyedNotes(ctx) })
 	output.record("add_mark", func() (any, error) {
-		return "added", queries.AddMark(ctx, db.AddMarkParams{Rowid: &rowID, Label: &label})
+		return "added", queries.AddMark(ctx, db.AddMarkParams{Rowid: db.NullOf(rowID), Label: db.NullOf(label)})
 	})
 	output.record("marks", func() (any, error) { return queries.ListMarks(ctx) })
 	output.record("add_tag", func() (any, error) {
-		return "added", queries.AddTag(ctx, db.AddTagParams{Label: "urgent", Colour: &colour})
+		return "added", queries.AddTag(ctx, db.AddTagParams{Label: "urgent", Colour: db.NullOf(colour)})
 	})
 	output.record("tags", func() (any, error) { return queries.ListTags(ctx) })
 	output.record("labels", func() (any, error) { return queries.ListLabels(ctx) })

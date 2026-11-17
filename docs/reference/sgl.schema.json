@@ -165,6 +165,9 @@
                 },
                 "type": "array"
               },
+              "nullable_pointers": {
+                "type": "boolean"
+              },
               "out": {
                 "type": "string"
               },
@@ -283,6 +286,7 @@
                 "enum": [
                   "advisory",
                   "table",
+                  "lease",
                   "none"
                 ],
                 "type": "string"

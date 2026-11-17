@@ -19,11 +19,14 @@
 package sqlexec
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"testing"
 	"testing/fstest"
+	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -79,7 +82,7 @@ func TestResumeDigest(t *testing.T) {
 			name:         "progress from another splitter version is refused",
 			record:       migrate.MigrationRecord{SkipUpTo: 0, SplitterVersion: splitterVersion + 1, StatementsHash: digestOf(statements[:1])},
 			wantMismatch: true,
-			wantReason:   "statement splitter version 2",
+			wantReason:   fmt.Sprintf("statement splitter version %d", splitterVersion+1),
 		},
 		{
 			name:         "progress past the last statement is refused",
@@ -323,7 +326,9 @@ func TestHistoryUpgradeToleratesAConcurrentUpgrade(t *testing.T) {
 			executor, err := NewExecutor(database, SQLite())
 			require.NoError(t, err)
 
-			ensureError := executor.EnsureMigrationTable(t.Context())
+			ctx, cancel := context.WithTimeout(t.Context(), time.Second)
+			defer cancel()
+			ensureError := executor.EnsureMigrationTable(ctx)
 			if testCase.wantError {
 				require.ErrorContains(t, ensureError, "upgrading migration table")
 				return
@@ -500,4 +505,46 @@ func TestMalformedMigrationRunsNothing(t *testing.T) {
 	require.ErrorIs(t, err, ErrMalformedStatement)
 	require.ErrorContains(t, err, "splitting migration 3 statements")
 	require.Empty(t, store.userStatements())
+}
+
+func TestAClickHouseSeedThatStopsPartwayResumesAfterItsLastCompletedStatement(t *testing.T) {
+	t.Parallel()
+
+	store := newProgressStore()
+	database := store.open()
+	t.Cleanup(func() { _ = database.Close() })
+	executor, err := NewSeedExecutor(database, ClickHouse())
+	require.NoError(t, err)
+	seed := migrate.SeedRecord{Name: "s", Checksum: "c", Content: []byte("STMT_0 a; STMT_1 b; STMT_2 c;"), Version: 1}
+
+	store.failOn("STMT_1 b", errors.New("boom"))
+	require.Error(t, executor.ExecuteSeed(t.Context(), seed))
+	require.Equal(t, []string{"STMT_0 a", "STMT_1 b"}, store.userStatements())
+
+	store.resetExecuted()
+	require.NoError(t, executor.ExecuteSeed(t.Context(), seed))
+	require.Equal(t, []string{"STMT_1 b", "STMT_2 c"}, store.userStatements(), "the completed first statement does not run again")
+}
+
+func TestAClickHouseSeedThatChangedSinceItStoppedIsRefused(t *testing.T) {
+	t.Parallel()
+
+	store := newProgressStore()
+	database := store.open()
+	t.Cleanup(func() { _ = database.Close() })
+	executor, err := NewSeedExecutor(database, ClickHouse())
+	require.NoError(t, err)
+
+	store.failOn("STMT_1 b", errors.New("boom"))
+	require.Error(t, executor.ExecuteSeed(t.Context(), migrate.SeedRecord{Name: "s", Checksum: "c", Content: []byte("STMT_0 a; STMT_1 b;"), Version: 1}))
+
+	store.resetExecuted()
+	err = executor.ExecuteSeed(t.Context(), migrate.SeedRecord{Name: "s", Checksum: "changed", Content: []byte("STMT_0 x; STMT_1 b;"), Version: 1})
+	require.ErrorIs(t, err, migrate.ErrSeedChangedSinceInterrupted)
+	require.Empty(t, store.userStatements(), "nothing runs when the completed statements cannot be told apart")
+
+	require.NoError(t, executor.ClearSeedHistory(t.Context()))
+	require.NoError(t, executor.ExecuteSeed(t.Context(), migrate.SeedRecord{Name: "s", Checksum: "changed", Content: []byte("STMT_0 x; STMT_1 b;"), Version: 1}),
+		"reseeding clears the progress, so the changed seed runs from the start")
+	require.Equal(t, []string{"STMT_0 x", "STMT_1 b"}, store.userStatements())
 }

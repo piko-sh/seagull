@@ -150,7 +150,7 @@ func TestAppliedVersionsWarnsOnceForEveryAppliedAtItCannotRead(t *testing.T) {
 			executor, err := NewExecutor(database, SQLite())
 			require.NoError(t, err)
 			var logs bytes.Buffer
-			ctx := logging.ContextWithLogger(t.Context(), slog.New(slog.NewJSONHandler(&logs, nil)))
+			ctx := logging.WithLogger(t.Context(), slog.New(slog.NewJSONHandler(&logs, nil)))
 
 			applied, err := executor.AppliedVersions(ctx)
 			require.NoError(t, err)
@@ -247,6 +247,10 @@ func TestParseAppliedAt_HandlesEveryTextLayout(t *testing.T) {
 		{name: "sqlite datetime", value: "2026-10-06 06:10:34", want: instant.Truncate(time.Second)},
 		{name: "go time string", value: "2026-10-06 06:10:34.172113129 +0000 UTC", want: instant},
 		{name: "go time string with monotonic reading", value: "2026-10-06 06:10:34.172113129 +0000 UTC m=+0.001", want: instant},
+		{name: "mattn sqlite3", value: "2026-10-06 06:10:34.172113129+00:00", want: instant},
+		{name: "mysql datetime", value: "2026-10-06 06:10:34.172113", want: instant.Truncate(time.Microsecond)},
+		{name: "mattn sqlite3 with an offset", value: "2026-10-06 07:10:34.172113129+01:00", want: instant},
+		{name: "mattn sqlite3 with a T separator", value: "2026-10-06T06:10:34.172113129+00:00", want: instant},
 	}
 	for _, testCase := range cases {
 		t.Run(testCase.name, func(t *testing.T) {

@@ -20,6 +20,7 @@ package resolve
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"slices"
 	"strconv"
@@ -30,6 +31,17 @@ import (
 	"seagull.sh/seagull/internal/dialect/ast"
 	"seagull.sh/seagull/internal/sqlmodel"
 )
+
+const (
+	// relationKindCTE names a CTE in a column list problem.
+	relationKindCTE = "CTE"
+
+	// relationKindDerived names a derived table in a column list problem.
+	relationKindDerived = "derived table"
+)
+
+// errBrokenView marks a reference to a view the engine no longer resolves.
+var errBrokenView = errors.New("the engine no longer resolves this view")
 
 // ScopeBuilder populates scope chains from raw query analyses. It is the one place that
 // turns the relations of a parsed query (CTEs, FROM and JOIN tables, table-valued
@@ -290,7 +302,7 @@ func (b *ScopeBuilder) resolveCompoundBranches(
 		}
 		mergeBranchNullability(primaryColumns, branchColumns)
 		if !recursiveMember {
-			b.promoteBranchTypes(primaryColumns, branchColumns)
+			diagnostics = append(diagnostics, b.promoteBranchTypes(primaryColumns, branchColumns)...)
 		}
 	}
 
@@ -298,24 +310,36 @@ func (b *ScopeBuilder) resolveCompoundBranches(
 }
 
 // promoteBranchTypes widens each primary column's type to hold the matching branch
-// column's, or takes the branch's type where the primary's is unknown. A recursive member
-// is never promoted from, so the anchor keeps its types, an unknown one included.
+// column's, or takes the branch's type where the primary's is unknown.
+//
+// A recursive member is never promoted from, so the anchor keeps its types, an unknown
+// one included. Where the engine has no common type for two known types, as ClickHouse
+// has none for a UInt64 and an Int64, the column becomes unknown and a Q063 warning says
+// the engine may refuse the query or hand the values over in their own types.
 //
 // Takes primaryColumns ([]sqlmodel.OutputColumn) which holds the primary columns, updated
 // in place.
 // Takes branchColumns ([]sqlmodel.OutputColumn) which holds the branch's columns, as many
 // as the primary's.
-func (b *ScopeBuilder) promoteBranchTypes(primaryColumns, branchColumns []sqlmodel.OutputColumn) {
+//
+// Returns []*Error which holds a warning for each column with no common type.
+func (b *ScopeBuilder) promoteBranchTypes(primaryColumns, branchColumns []sqlmodel.OutputColumn) []*Error {
+	var diagnostics []*Error
 	for columnIndex := range primaryColumns {
-		if primaryColumns[columnIndex].SQLType.Category == sqlmodel.TypeCategoryUnknown {
-			primaryColumns[columnIndex].SQLType = branchColumns[columnIndex].SQLType
+		primary, branch := primaryColumns[columnIndex].SQLType, branchColumns[columnIndex].SQLType
+		if primary.Category == sqlmodel.TypeCategoryUnknown {
+			primaryColumns[columnIndex].SQLType = branch
 			continue
 		}
-		primaryColumns[columnIndex].SQLType = b.TypeResolver.engine.PromoteType(
-			primaryColumns[columnIndex].SQLType,
-			branchColumns[columnIndex].SQLType,
-		)
+		promoted := b.TypeResolver.engine.PromoteType(primary, branch)
+		if promoted.Category == sqlmodel.TypeCategoryUnknown && branch.Category != sqlmodel.TypeCategoryUnknown {
+			diagnostics = append(diagnostics, newError(diag.CodeEngineReading,
+				"column %q has no type both %s and %s fit, so the engine may refuse the query or read the column's values each in its own type; cast the branches to one type",
+				primaryColumns[columnIndex].Name, primary.EngineName, branch.EngineName).withSeverity(diag.SeverityWarning))
+		}
+		primaryColumns[columnIndex].SQLType = promoted
 	}
+	return diagnostics
 }
 
 // buildScopeChain populates the scope chain from a raw query analysis result.
@@ -421,7 +445,10 @@ func (b *ScopeBuilder) resolveCTEs(
 //
 // The child scope sees the CTEs of every enclosing WITH clause, including those declared
 // before this one, but none of the enclosing query's relations. A recursive CTE is
-// registered with the columns its anchor gives before its recursive member is resolved.
+// registered with the columns its anchor gives before its recursive member is resolved,
+// and its member is resolved again over the columns as they now stand until their
+// nullability settles, so a column that becomes NULL only after several rounds of
+// recursion, as one fed from another nullable column does, is nullable.
 //
 // Takes cteDefinition (*ast.RawCTEDefinition) which holds the parsed CTE definition to
 // resolve.
@@ -440,23 +467,47 @@ func (b *ScopeBuilder) resolveSingleCTE(
 
 	cteColumns, diagnostics := b.resolveNestedProjection(ctx, body, cteScope)
 	scoped := outputColumnsToScoped(cteColumns)
-	if problem := nameColumns(scoped, cteDefinition.ColumnNames, "CTE", cteDefinition.Name); problem != nil {
+	if problem := b.nameColumnsChecked(scoped, cteDefinition.ColumnNames, relationKindCTE, cteDefinition.Name); problem != nil {
 		diagnostics = append(diagnostics, problem)
 	}
 	for index := range scoped {
 		cteColumns[index].Name = scoped[index].Name
 	}
 
-	recursiveName := ""
-	if cteDefinition.IsRecursive && len(body.CompoundBranches) > 0 {
-		scope.AddCTE(cteDefinition.Name, scoped)
-		recursiveName = cteDefinition.Name
+	if !cteDefinition.IsRecursive || len(body.CompoundBranches) == 0 {
+		diagnostics = append(diagnostics, b.resolveNestedBranches(ctx, body, cteColumns, cteScope, "")...)
+		scope.AddCTE(cteDefinition.Name, outputColumnsToScoped(cteColumns))
+		return diagnostics
 	}
-	diagnostics = append(diagnostics, b.resolveNestedBranches(ctx, body, cteColumns, cteScope, recursiveName)...)
+
+	scope.AddCTE(cteDefinition.Name, scoped)
+	diagnostics = append(diagnostics, b.resolveNestedBranches(ctx, body, cteColumns, cteScope, cteDefinition.Name)...)
+	for range cteColumns {
+		before := nullability(cteColumns)
+		scope.AddCTE(cteDefinition.Name, outputColumnsToScoped(cteColumns))
+
+		_ = b.resolveNestedBranches(ctx, body, cteColumns, cteScope, cteDefinition.Name)
+		if slices.Equal(before, nullability(cteColumns)) || ctx.Err() != nil {
+			break
+		}
+	}
 
 	scope.AddCTE(cteDefinition.Name, outputColumnsToScoped(cteColumns))
 
 	return diagnostics
+}
+
+// nullability lists whether each column may be NULL.
+//
+// Takes columns ([]sqlmodel.OutputColumn) which are the columns.
+//
+// Returns []bool which holds each column's nullability.
+func nullability(columns []sqlmodel.OutputColumn) []bool {
+	result := make([]bool, len(columns))
+	for index := range columns {
+		result[index] = columns[index].Nullable
+	}
+	return result
 }
 
 // resolveTableValuedFunctions resolves table-valued function references and adds them to
@@ -521,7 +572,7 @@ func (b *ScopeBuilder) resolveRawDerivedTables(
 		diagnostics = append(diagnostics, innerDiagnostics...)
 
 		columns := outputColumnsToScoped(innerColumns)
-		if problem := nameColumns(columns, rawDerived.ColumnNames, "derived table", rawDerived.Alias); problem != nil {
+		if problem := b.nameColumnsChecked(columns, rawDerived.ColumnNames, relationKindDerived, rawDerived.Alias); problem != nil {
 			diagnostics = append(diagnostics, problem)
 		}
 		scope.AddDerivedTable(DerivedTableReference{
@@ -631,7 +682,7 @@ func (b *ScopeBuilder) addSingleCTEToScope(
 	body := cteBody(cteDefinition)
 	b.addRawTablesToScope(ctx, body, innerScope)
 	columns := b.resolveSilentColumns(ctx, body.OutputColumns, innerScope)
-	_ = nameColumns(columns, cteDefinition.ColumnNames, "CTE", cteDefinition.Name)
+	_ = nameColumns(columns, cteDefinition.ColumnNames, relationKindCTE, cteDefinition.Name)
 	scope.AddCTE(cteDefinition.Name, columns)
 }
 
@@ -693,7 +744,7 @@ func (b *ScopeBuilder) addRawDerivedTableToScope(
 	b.addRawTablesToScope(ctx, rawDerived.InnerQuery, innerScope)
 
 	columns := b.resolveSilentColumns(ctx, rawDerived.InnerQuery.OutputColumns, innerScope)
-	_ = nameColumns(columns, rawDerived.ColumnNames, "derived table", rawDerived.Alias)
+	_ = nameColumns(columns, rawDerived.ColumnNames, relationKindDerived, rawDerived.Alias)
 	scope.AddDerivedTable(DerivedTableReference{
 		Alias:    rawDerived.Alias,
 		Columns:  columns,
@@ -878,6 +929,9 @@ func (b *ScopeBuilder) addRelation(
 	scope *ScopeChain,
 ) *Error {
 	catalogueTable, resolveError := b.resolveTableReference(reference)
+	if errors.Is(resolveError, errBrokenView) {
+		return newError(diag.CodeUnknownTable, "%s", resolveError.Error()).withSeverity(diag.SeverityError)
+	}
 	if resolveError != nil {
 		return newError(diag.CodeUnknownTable, "%s", resolveError.Error())
 	}
@@ -911,6 +965,9 @@ func (b *ScopeBuilder) resolveTableReference(
 	}
 
 	if view := b.catalogue.LookupView(reference.Schema, reference.Name); view != nil {
+		if view.Broken != "" {
+			return nil, fmt.Errorf("%w: %s", errBrokenView, view.Broken)
+		}
 		return &sqlmodel.Table{
 			Name:              view.Name,
 			Schema:            view.Schema,
@@ -1048,6 +1105,39 @@ func nameColumns(columns []ast.ScopedColumn, names []string, kind string, relati
 	return newError(diag.CodeCompoundColumnCount,
 		"%s %q has %d columns but its column list names %d; the surplus names are ignored",
 		kind, relation, len(columns), len(names))
+}
+
+// nameColumnsChecked renames a relation's columns from its column list, as nameColumns
+// does, and reports a list of another length than the relation as an error unless the
+// engine takes it, when a surplus is reported as a warning and a shortfall as nothing.
+//
+// Takes columns ([]ast.ScopedColumn) which are the relation's columns, renamed in place.
+// Takes names ([]string) which is the column list.
+// Takes kind (string) which names the kind of relation, CTE or derived table.
+// Takes relation (string) which names the relation.
+//
+// Returns *Error which describes a list of the wrong length, or nil.
+func (b *ScopeBuilder) nameColumnsChecked(columns []ast.ScopedColumn, names []string, kind string, relation string) *Error {
+	rules := b.TypeResolver.columnLists
+	cte := kind == relationKindCTE
+	if problem := nameColumns(columns, names, kind, relation); problem != nil {
+		if cte && rules.SurplusCTE {
+			return problem
+		}
+		return newError(diag.CodeCompoundColumnCount,
+			"%s %q has %d columns but its column list names %d; this engine refuses the surplus names",
+			kind, relation, len(columns), len(names)).withSeverity(diag.SeverityError)
+	}
+	shortTaken := rules.ShortDerived
+	if cte {
+		shortTaken = rules.ShortCTE
+	}
+	if len(names) > 0 && len(names) < len(columns) && !shortTaken {
+		return newError(diag.CodeCompoundColumnCount,
+			"%s %q has %d columns but its column list names %d; this engine needs a name for every column",
+			kind, relation, len(columns), len(names)).withSeverity(diag.SeverityError)
+	}
+	return nil
 }
 
 // quotedNames renders names as a comma-separated list of quoted strings.

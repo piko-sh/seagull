@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q063",
+    "Column": 39,
+    "EndColumn": 44,
+    "EndLine": 2,
+    "Filename": "match_query.sql",
+    "Line": 2,
+    "Message": "SQLite runs MATCH only against a full-text table, and fails it on an ordinary table unless the application registers a match function",
+    "Severity": "warning"
+  }
+]

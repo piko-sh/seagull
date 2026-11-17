@@ -69,8 +69,7 @@ var places = []store.AddPlaceParams{
 	},
 }
 
-// run fills the harbour guide, then finds places three ways: by the words in their
-// descriptions with FTS5, by a point on the map with R*Tree, and by tag with json_each.
+// run searches harbour places with SQLite extensions.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes output (io.Writer) which receives what each search found.
@@ -100,8 +99,8 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 	fmt.Fprintln(output, `descriptions matching "gull*":`)
 	for _, place := range found {
 		excerpt := ""
-		if place.Excerpt != nil {
-			excerpt = *place.Excerpt
+		if place.Excerpt.Valid {
+			excerpt = place.Excerpt.V
 		}
 		fmt.Fprintf(output, "  %-12s %s\n", place.Name, excerpt)
 	}

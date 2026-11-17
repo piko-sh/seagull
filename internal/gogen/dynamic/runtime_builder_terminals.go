@@ -49,6 +49,14 @@ const (
 	// methodBuildCountQuery is the builder's unexported method assembling its count.
 	methodBuildCountQuery = "buildCountQuery"
 
+	// methodBuildFilteredQuery is the builder's unexported method assembling its filtered
+	// form.
+	methodBuildFilteredQuery = "buildFilteredQuery"
+
+	// methodBuildFilteredCountQuery is the builder's unexported method assembling its
+	// filtered form's count.
+	methodBuildFilteredCountQuery = "buildFilteredCountQuery"
+
 	// suffixFilter names the helper that writes the conditions.
 	suffixFilter = "FilterInto"
 
@@ -120,6 +128,13 @@ type assembly struct {
 	// constant names the constant the query starts from.
 	constant string
 
+	// orders is the builder field holding the orderings it writes.
+	orders string
+
+	// filtered names the method assembling the filtered form the builder runs instead once
+	// Where added a condition, or is empty when it runs this one whatever was added.
+	filtered string
+
 	// splits holds where, among the rendering's arguments, the values the caller's
 	// conditions and pagination bind go for an anonymous form.
 	splits splits
@@ -177,10 +192,32 @@ func (counter *occurrenceCounter) walk(segments []sqlmodel.SQLSegment) {
 //
 // Returns *ast.FuncDecl which is the buildQuery method declaration.
 func (b *builder) buildQueryMethod() *ast.FuncDecl {
-	return b.assembleMethod(methodBuildQuery, &assembly{
+	plan := &assembly{
 		arguments: b.arguments(&b.query.Rendered),
 		constant:  b.query.Naming.SQLConstant,
+		orders:    fieldOrders,
+		filtered:  "",
 		splits:    b.splits(b.query.Analysed.Template.Segments, len(b.query.Rendered.Arguments)),
+		ordered:   true,
+	}
+	if b.filtersResult() {
+		plan.filtered = methodBuildFilteredQuery
+	}
+	return b.assembleMethod(methodBuildQuery, plan)
+}
+
+// buildFilteredQueryMethod constructs the buildFilteredQuery() method that writes the
+// caller's conditions, orderings and pagination after the derived table of the query's
+// filtered form, which buildQuery runs once Where added a condition.
+//
+// Returns *ast.FuncDecl which is the buildFilteredQuery method declaration.
+func (b *builder) buildFilteredQueryMethod() *ast.FuncDecl {
+	return b.assembleMethod(methodBuildFilteredQuery, &assembly{
+		arguments: b.arguments(b.query.Filtered),
+		constant:  b.query.Naming.FilteredConstant,
+		orders:    fieldFilteredOrders,
+		filtered:  "",
+		splits:    b.splits(b.query.Analysed.FilteredTemplate.Segments, len(b.query.Filtered.Arguments)),
 		ordered:   true,
 	})
 }
@@ -191,10 +228,32 @@ func (b *builder) buildQueryMethod() *ast.FuncDecl {
 //
 // Returns *ast.FuncDecl which is the buildCountQuery method declaration.
 func (b *builder) buildCountQueryMethod() *ast.FuncDecl {
-	return b.assembleMethod(methodBuildCountQuery, &assembly{
+	plan := &assembly{
 		arguments: b.arguments(b.query.Count),
 		constant:  b.query.Naming.CountConstant,
+		orders:    "",
+		filtered:  "",
 		splits:    b.splits(b.query.Analysed.CountTemplate.Segments, len(b.query.Count.Arguments)),
+		ordered:   false,
+	}
+	if b.query.FilteredCount != nil {
+		plan.filtered = methodBuildFilteredCountQuery
+	}
+	return b.assembleMethod(methodBuildCountQuery, plan)
+}
+
+// buildFilteredCountQueryMethod constructs the buildFilteredCountQuery() method that
+// writes the caller's conditions after the derived table of the filtered form's count,
+// which buildCountQuery runs once Where added a condition.
+//
+// Returns *ast.FuncDecl which is the buildFilteredCountQuery method declaration.
+func (b *builder) buildFilteredCountQueryMethod() *ast.FuncDecl {
+	return b.assembleMethod(methodBuildFilteredCountQuery, &assembly{
+		arguments: b.arguments(b.query.FilteredCount),
+		constant:  b.query.Naming.FilteredCountConstant,
+		orders:    "",
+		filtered:  "",
+		splits:    b.splits(b.query.Analysed.FilteredCountTemplate.Segments, len(b.query.FilteredCount.Arguments)),
 		ordered:   false,
 	})
 }
@@ -233,18 +292,24 @@ func (b *builder) splits(segments []sqlmodel.SQLSegment, total int) splits {
 	return found
 }
 
-// assembleMethod constructs an unexported builder method that returns the pending error,
-// writes the caller's additions as SQL and values, gathers every value in binding order,
-// checks them against the bind limit, and returns the query spliced with the additions.
+// assembleMethod builds a terminal method for a runtime query builder.
+//
+// A pending error returns before additions are rendered and joined to the query. Values
+// are gathered in binding order and checked against the bind limit. A filtered form
+// handles conditions added by Where before the other forms.
 //
 // Takes name (string) which names the method.
 // Takes plan (*assembly) which says what it assembles.
 //
 // Returns *ast.FuncDecl which is the method declaration.
 func (b *builder) assembleMethod(name string, plan *assembly) *ast.FuncDecl {
+	const assemblyStatements = 4
 	next := plan.arguments.Count(1)
 	var capacity []ast.Expr
-	statements := make([]ast.Stmt, 0, 4+len(plan.arguments.Rendered.Arguments))
+	statements := make([]ast.Stmt, 0, assemblyStatements+1+len(plan.arguments.Rendered.Arguments))
+	if plan.filtered != "" {
+		statements = append(statements, filteredHandover(plan.filtered))
+	}
 	statements = append(statements, pendingErrorGuard(goastutil.StrLit(""), goastutil.CachedIdent(goast.IdentNil)))
 	if b.filters(plan) {
 		capacity = append(capacity, b.helperCall("FilterCount", builderField(fieldPredicates)))
@@ -259,12 +324,12 @@ func (b *builder) assembleMethod(name string, plan *assembly) *ast.FuncDecl {
 		sum(plan.arguments.Count(0), capacity...),
 	)))
 	statements = append(statements, b.gatherArguments(plan, next)...)
+	arguments := goastutil.CachedIdent(goast.IdentArgs)
+	if bound := b.emission.BindRuntimeArguments(arguments); bound != arguments {
+		statements = append(statements, &ast.AssignStmt{Lhs: []ast.Expr{arguments}, Tok: token.ASSIGN, Rhs: []ast.Expr{bound}})
+	}
 	statements = append(statements,
-		goastutil.IfStmt(
-			goastutil.DefineStmt(goast.IdentErr, goastutil.CallExpr(goastutil.CachedIdent(b.helper(suffixCheckBinds)), lengthOf(goast.IdentArgs))),
-			&ast.BinaryExpr{X: goastutil.CachedIdent(goast.IdentErr), Op: token.NEQ, Y: goastutil.CachedIdent(goast.IdentNil)},
-			goastutil.BlockStmt(goastutil.ReturnStmt(goastutil.StrLit(""), goastutil.CachedIdent(goast.IdentNil), goastutil.CachedIdent(goast.IdentErr))),
-		),
+		b.bindLimitCheck(),
 		goastutil.ReturnStmt(b.splice(plan), goastutil.CachedIdent(goast.IdentArgs), goastutil.CachedIdent(goast.IdentNil)),
 	)
 	return &ast.FuncDecl{
@@ -277,6 +342,18 @@ func (b *builder) assembleMethod(name string, plan *assembly) *ast.FuncDecl {
 		)},
 		Body: goastutil.BlockStmt(statements...),
 	}
+}
+
+// bindLimitCheck constructs the statement that returns the bind limit helper's error when
+// args holds more values than the engine binds.
+//
+// Returns ast.Stmt which is the check.
+func (b *builder) bindLimitCheck() ast.Stmt {
+	return goastutil.IfStmt(
+		goastutil.DefineStmt(goast.IdentErr, goastutil.CallExpr(goastutil.CachedIdent(b.helper(suffixCheckBinds)), lengthOf(goast.IdentArgs))),
+		&ast.BinaryExpr{X: goastutil.CachedIdent(goast.IdentErr), Op: token.NEQ, Y: goastutil.CachedIdent(goast.IdentNil)},
+		goastutil.BlockStmt(goastutil.ReturnStmt(goastutil.StrLit(""), goastutil.CachedIdent(goast.IdentNil), goastutil.CachedIdent(goast.IdentErr))),
+	)
 }
 
 // gatherArguments returns the statements that append every value to args in binding
@@ -324,20 +401,20 @@ func (b *builder) splice(plan *assembly) ast.Expr {
 			edit{call: b.helperCall(suffixWhereClose, goastutil.CachedIdent(identFilter), goastutil.IntLit(filter.InsertAt), present), offset: filter.InsertAt, rank: rankWhereClose},
 		)
 	}
-	if order := marks.OrderBy; plan.ordered && order != nil {
+	if order := marks.OrderBy; plan.ordered && b.order != nil && order != nil {
 		present := order.Start != order.End
 		offset := order.Start
 		if present {
 			offset = order.End
 		}
 		edits = append(edits, edit{
-			call:   b.helperCall(suffixOrder, builderField(fieldOrders), goastutil.IntLit(order.Start), goastutil.IntLit(order.End), boolIdent(present)),
+			call:   b.helperCall(suffixOrder, builderField(plan.orders), goastutil.IntLit(order.Start), goastutil.IntLit(order.End), boolIdent(present)),
 			offset: offset,
 			rank:   rankOrder,
 		})
 	}
-	if plan.ordered && b.pagination != nil {
-		edits = append(edits, edit{call: b.helperCall(suffixAt, goastutil.CachedIdent(identPagination), goastutil.IntLit(b.pagination.Start)), offset: b.pagination.Start, rank: rankPagination})
+	if pagination := marks.Pagination; plan.ordered && b.pagination != nil && pagination != nil {
+		edits = append(edits, edit{call: b.helperCall(suffixAt, goastutil.CachedIdent(identPagination), goastutil.IntLit(pagination.Start)), offset: pagination.Start, rank: rankPagination})
 	}
 	slices.SortStableFunc(edits, func(left, right edit) int {
 		return cmp.Or(cmp.Compare(left.offset, right.offset), cmp.Compare(left.rank, right.rank))
@@ -394,10 +471,11 @@ func (b *builder) allMethod() *ast.FuncDecl {
 //
 // Returns *ast.FuncDecl which is the One method declaration.
 func (b *builder) oneMethod() *ast.FuncDecl {
+	const terminalStatements = 6
 	row := b.query.Naming.Row
 	zero := goastutil.CompositeLit(goastutil.CachedIdent(row))
 	reading := methods.BuildScan(b.emission, b.query)
-	statements := make([]ast.Stmt, 0, 6+len(reading.Declarations)+len(reading.Conversions)+len(reading.Checked))
+	statements := make([]ast.Stmt, 0, terminalStatements+len(reading.Declarations)+len(reading.Conversions)+len(reading.Checked))
 	statements = append(statements,
 		goastutil.DefineStmtMulti([]string{goast.IdentQuery, goast.IdentArgs, goast.IdentErr}, callOwn(methodBuildQuery)),
 		methods.BuildErrCheck(zero),
@@ -542,4 +620,17 @@ func boolIdent(value bool) ast.Expr {
 		return goastutil.CachedIdent(identTrue)
 	}
 	return goastutil.CachedIdent(identFalse)
+}
+
+// filteredHandover constructs the statement that runs a method's filtered form instead
+// once Where added a condition.
+//
+// Takes method (string) which names the method assembling the filtered form.
+//
+// Returns ast.Stmt which is the handover.
+func filteredHandover(method string) ast.Stmt {
+	return &ast.IfStmt{
+		Cond: &ast.BinaryExpr{X: goastutil.CallExpr(goastutil.CachedIdent("len"), builderField(fieldPredicates)), Op: token.GTR, Y: goastutil.IntLit(0)},
+		Body: goastutil.BlockStmt(goastutil.ReturnStmt(callOwn(method))),
+	}
 }

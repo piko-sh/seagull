@@ -1,0 +1,195 @@
+[
+  {
+    "AllowedColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceExpression": "id"
+      },
+      {
+        "Name": "grp",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "grp",
+        "SourceExpression": "grp"
+      },
+      {
+        "Name": "score",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "score",
+        "SourceExpression": "score"
+      }
+    ],
+    "Command": "many",
+    "CountTemplate": "SELECT COUNT(*) FROM (SELECT ⟨c0:id⟩, ⟨c1:grp⟩, ⟨c2:score⟩ FROM items ORDER BY score DESC LIMIT 2 BY grp) AS result_rows⟨where⟩",
+    "DynamicRuntime": true,
+    "Filename": "builders.sql",
+    "Line": 1,
+    "Name": "TopPerGroup",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "grp",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "grp",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "score",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "score",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      }
+    ],
+    "ReadOnly": true,
+    "ReadsResultRows": true,
+    "ResultShape": {
+      "Named": [
+        2
+      ]
+    },
+    "SQL": "-- sgl.query(name: TopPerGroup, command: many, dynamic: runtime)\nSELECT id, grp, score FROM items ORDER BY score DESC LIMIT 2 BY grp;",
+    "Template": "SELECT * FROM (SELECT ⟨c0:id⟩, ⟨c1:grp⟩, ⟨c2:score⟩ FROM items ORDER BY score DESC LIMIT 2 BY grp) AS result_rows⟨where⟩⟨order⟩⟨pagination⟩;"
+  },
+  {
+    "AllowedColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceExpression": "id"
+      },
+      {
+        "Name": "grp",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "grp",
+        "SourceExpression": "grp"
+      },
+      {
+        "Name": "score",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "score",
+        "SourceExpression": "score"
+      }
+    ],
+    "Command": "many",
+    "CountTemplate": "SELECT COUNT(*) FROM (SELECT ⟨c0:id⟩, ⟨c1:grp⟩, ⟨c2:score⟩ FROM items WHERE score \u003e ⟨p0 Int64⟩ ORDER BY score DESC LIMIT ⟨p1 UInt64⟩) AS result_rows⟨where⟩⟨arguments p0 p1⟩",
+    "DynamicRuntime": true,
+    "Filename": "builders.sql",
+    "Line": 4,
+    "Name": "TopItems",
+    "OutputColumns": [
+      {
+        "Name": "id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "id",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "grp",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "grp",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      },
+      {
+        "Name": "score",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        },
+        "SourceColumn": "score",
+        "SourceQualifier": "items",
+        "SourceTable": "items"
+      }
+    ],
+    "Parameters": [
+      {
+        "Context": "comparison",
+        "Kind": "none",
+        "Name": "min",
+        "Number": 1,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "Int64",
+          "Width": 64
+        }
+      },
+      {
+        "Context": "limit",
+        "Kind": "none",
+        "Name": "lim",
+        "Number": 2,
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt64",
+          "Unsigned": true,
+          "Width": 64
+        }
+      }
+    ],
+    "ReadOnly": true,
+    "ReadsResultRows": true,
+    "ResultShape": {
+      "Named": [
+        2
+      ]
+    },
+    "SQL": "-- sgl.query(name: TopItems, command: many, dynamic: runtime)\nSELECT id, grp, score FROM items WHERE score \u003e {min:Int64} ORDER BY score DESC LIMIT {lim:UInt64};",
+    "Template": "SELECT * FROM (SELECT ⟨c0:id⟩, ⟨c1:grp⟩, ⟨c2:score⟩ FROM items WHERE score \u003e ⟨p0 Int64⟩ ORDER BY score DESC LIMIT ⟨p1 UInt64⟩) AS result_rows⟨where⟩⟨order⟩⟨pagination⟩;⟨arguments p0 p1⟩"
+  }
+]

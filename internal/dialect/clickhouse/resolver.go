@@ -102,7 +102,22 @@ const (
 
 	// integerRank256Bit is the rank for 256-bit integer engine names.
 	integerRank256Bit = 6
+
+	// functionGreatest is the lowercase spelling of greatest.
+	functionGreatest = "greatest"
 )
+
+const (
+	// extremeLeast marks a call to least.
+	extremeLeast extremeKind = iota
+
+	// extremeGreatest marks a call to greatest.
+	extremeGreatest
+)
+
+// extremeKind says which of greatest and least a call is, as the two type a UInt64 and an
+// Int64 differently.
+type extremeKind uint8
 
 var (
 	// errResolverNoOpinion signals that the resolver has no answer for a call where the
@@ -111,6 +126,16 @@ var (
 	// Callers wanting to distinguish "no opinion" from "no error and no result" can
 	// errors.Is the returned error against this sentinel.
 	errResolverNoOpinion = errors.New("clickhouse: resolver has no opinion")
+
+	// signedIntegerNames maps each integer width rank to the signed integer of that width.
+	signedIntegerNames = [...]string{
+		integerRank8Bit:   "Int8",
+		integerRank16Bit:  "Int16",
+		integerRank32Bit:  "Int32",
+		integerRank64Bit:  "Int64",
+		integerRank128Bit: "Int128",
+		integerRank256Bit: "Int256",
+	}
 
 	// combinatorSuffixOrder holds the ordered list of recognised combinator suffixes, with
 	// longer suffixes that overlap shorter ones placed first.
@@ -503,8 +528,9 @@ var (
 		"first_value":            ignoreName(resolveScalarIdentity),
 		"last_value":             ignoreName(resolveScalarIdentity),
 		"nth_value":              ignoreName(resolveScalarIdentity),
-		"greatest":               ignoreName(resolveSupertype),
-		"least":                  ignoreName(resolveSupertype),
+		"tonullable":             ignoreName(resolveToNullable),
+		"greatest":               resolveGreatestLeast,
+		"least":                  resolveGreatestLeast,
 		"untuple":                ignoreName(resolveUntuple),
 		"tuple":                  ignoreName(resolveTuple),
 		"map":                    ignoreName(resolveMap),
@@ -1060,7 +1086,7 @@ func unifyPair(left, right sqlmodel.SQLType) sqlmodel.SQLType {
 	if left.Category == right.Category {
 		switch left.Category {
 		case sqlmodel.TypeCategoryInteger:
-			return widerInteger(left, right)
+			return promoteSameCategoryInteger(left, right)
 		case sqlmodel.TypeCategoryFloat:
 			return primitiveType(engineNameFloat64)
 		case sqlmodel.TypeCategoryText:
@@ -1076,36 +1102,6 @@ func unifyPair(left, right sqlmodel.SQLType) sqlmodel.SQLType {
 	return left
 }
 
-// widerInteger returns the wider of two ClickHouse integer types using the same rank
-// table as set-operation unification.
-//
-// The ranking maps bit width to a numeric rank so the comparison is a single integer
-// compare regardless of signed and unsigned mixing. When the two operands share a width
-// rank but differ in sign (for example Int32 and UInt32) the least-common-type is the
-// next wider signed type, because the signed range cannot hold the unsigned operand's
-// high-bit values at the same width. The 64-bit pair (Int64 and UInt64) is excluded
-// because stock ClickHouse throws rather than promoting to Int128, so the resolver leaves
-// the left operand in place for that pair.
-//
-// Takes left (sqlmodel.SQLType) which is the first integer operand.
-// Takes right (sqlmodel.SQLType) which is the second integer operand.
-//
-// Returns sqlmodel.SQLType which is the wider integer type.
-func widerInteger(left, right sqlmodel.SQLType) sqlmodel.SQLType {
-	leftRank := integerRank(left.EngineName)
-	rightRank := integerRank(right.EngineName)
-	if leftRank == rightRank && leftRank != 0 &&
-		isUnsignedInteger(left.EngineName) != isUnsignedInteger(right.EngineName) {
-		if widened, found := nextWiderSignedInteger(leftRank); found {
-			return widened
-		}
-	}
-	if rightRank > leftRank {
-		return right
-	}
-	return left
-}
-
 // isUnsignedInteger reports whether a ClickHouse integer engine name denotes an unsigned
 // type in the UInt8 to UInt256 range.
 //
@@ -1114,30 +1110,6 @@ func widerInteger(left, right sqlmodel.SQLType) sqlmodel.SQLType {
 // Returns bool which is true when the name denotes an unsigned integer.
 func isUnsignedInteger(engineName string) bool {
 	return strings.HasPrefix(strings.ToUpper(engineName), "UINT")
-}
-
-// nextWiderSignedInteger returns the signed integer type one width rank above the
-// supplied rank.
-//
-// It is used when mixed-sign operands of equal width must widen to a signed type. No
-// wider signed type exists for the 64-bit rank because stock ClickHouse throws rather
-// than widening to Int128.
-//
-// Takes rank (int) which is the current integer width rank.
-//
-// Returns sqlmodel.SQLType which is the next wider signed integer type.
-// Returns bool which is true when a wider signed type exists.
-func nextWiderSignedInteger(rank int) (sqlmodel.SQLType, bool) {
-	switch rank {
-	case integerRank8Bit:
-		return primitiveType("Int16"), true
-	case integerRank16Bit:
-		return primitiveType("Int32"), true
-	case integerRank32Bit:
-		return primitiveType("Int64"), true
-	default:
-		return sqlmodel.SQLType{}, false
-	}
 }
 
 // integerRank assigns a numeric rank to ClickHouse integer type names, where a higher
@@ -1213,17 +1185,121 @@ func resolveAggregateIdentity(argumentTypes []sqlmodel.SQLType) *ast.FunctionRes
 	return newAggregateResolution(argumentTypes[0])
 }
 
-// resolveSupertype types greatest and least by the least supertype of their arguments.
+// resolveGreatestLeast types greatest and least as ClickHouse does, which differs from
+// the least supertype if, coalesce and UNION use.
+//
+// A signed and an unsigned integer give the signed integer twice the unsigned one's
+// width, a UInt64 and an Int64 give the UInt64 for greatest and the Int64 for least, and
+// a float with a decimal gives a Float64.
 //
 // Takes argumentTypes ([]sqlmodel.SQLType) which are the call argument types.
+// Takes name (string) which is the lowercase function spelling, greatest or least.
 //
-// Returns *ast.FunctionResolution which is the unified resolution, or nil when no
-// arguments are supplied.
-func resolveSupertype(argumentTypes []sqlmodel.SQLType) *ast.FunctionResolution {
-	if len(argumentTypes) == 0 {
+// Returns *ast.FunctionResolution which is the resolution, or nil when there are no
+// arguments.
+func resolveGreatestLeast(argumentTypes []sqlmodel.SQLType, name string) *ast.FunctionResolution {
+	kind := extremeLeast
+	if name == functionGreatest {
+		kind = extremeGreatest
+	}
+	var current sqlmodel.SQLType
+	found := false
+	for index := range argumentTypes {
+		if argumentTypes[index].Category == sqlmodel.TypeCategoryUnknown {
+			continue
+		}
+		if !found {
+			current, found = argumentTypes[index], true
+			continue
+		}
+		current = greatestLeastPair(current, argumentTypes[index], kind)
+	}
+	if !found {
 		return nil
 	}
-	return newReadOnlyResolution(unifyBranchTypes(argumentTypes))
+	return newReadOnlyResolution(current)
+}
+
+// greatestLeastPair returns the type greatest or least gives two of its arguments.
+//
+// Takes left (sqlmodel.SQLType) which is the first type.
+// Takes right (sqlmodel.SQLType) which is the second type.
+// Takes kind (extremeKind) which says whether the call is greatest or least.
+//
+// Returns sqlmodel.SQLType which is the result type.
+func greatestLeastPair(left, right sqlmodel.SQLType, kind extremeKind) sqlmodel.SQLType {
+	switch {
+	case left.Category == right.Category && left.EngineName == right.EngineName:
+		return left
+	case left.Category == sqlmodel.TypeCategoryInteger && right.Category == sqlmodel.TypeCategoryInteger:
+		return greatestLeastInteger(left, right, kind)
+	case left.Category == sqlmodel.TypeCategoryFloat && right.Category == sqlmodel.TypeCategoryFloat:
+		return primitiveType(engineNameFloat64)
+	case !isPromotableNumericCategory(left.Category) || !isPromotableNumericCategory(right.Category):
+		return left
+	case left.Category == sqlmodel.TypeCategoryFloat || right.Category == sqlmodel.TypeCategoryFloat:
+		float, other := left, right
+		if right.Category == sqlmodel.TypeCategoryFloat {
+			float, other = right, left
+		}
+		if float.Width == widthWord && other.Category == sqlmodel.TypeCategoryInteger && integerRank(other.EngineName) <= integerRank16Bit {
+			return float
+		}
+		return primitiveType(engineNameFloat64)
+	case left.Category == sqlmodel.TypeCategoryDecimal:
+		return left
+	default:
+		return right
+	}
+}
+
+// greatestLeastInteger finds the result type of greatest or least on two integers.
+//
+// Inputs with the same signedness use the wider type. Mixed signs use a signed type twice
+// as wide as the unsigned input. UInt64 and Int64 give UInt64 for greatest and Int64 for
+// least.
+//
+// Takes left (sqlmodel.SQLType) which is the first integer type.
+// Takes right (sqlmodel.SQLType) which is the second integer type.
+// Takes kind (extremeKind) which says whether the call is greatest or least.
+//
+// Returns sqlmodel.SQLType which is the result type.
+func greatestLeastInteger(left, right sqlmodel.SQLType, kind extremeKind) sqlmodel.SQLType {
+	if isUnsignedInteger(left.EngineName) == isUnsignedInteger(right.EngineName) {
+		if integerRank(right.EngineName) > integerRank(left.EngineName) {
+			return right
+		}
+		return left
+	}
+	signed, unsigned := left, right
+	if isUnsignedInteger(left.EngineName) {
+		signed, unsigned = right, left
+	}
+	signedRank, unsignedRank := integerRank(signed.EngineName), integerRank(unsigned.EngineName)
+	if signedRank == integerRank64Bit && unsignedRank == integerRank64Bit {
+		if kind == extremeGreatest {
+			return unsigned
+		}
+		return signed
+	}
+	rank := max(unsignedRank+1, signedRank)
+	if widened, ok := signedIntegerOfRank(rank); ok {
+		return widened
+	}
+	return signed
+}
+
+// signedIntegerOfRank returns the signed integer of a width rank.
+//
+// Takes rank (int) which is the width rank.
+//
+// Returns sqlmodel.SQLType which is the signed integer type.
+// Returns bool which is false for a rank no signed integer has.
+func signedIntegerOfRank(rank int) (sqlmodel.SQLType, bool) {
+	if rank < integerRank8Bit || rank >= len(signedIntegerNames) {
+		return sqlmodel.SQLType{}, false
+	}
+	return primitiveType(signedIntegerNames[rank]), true
 }
 
 // resolveFloatResult types exp and log as ClickHouse computes them. A Float32 keeps its
@@ -1254,6 +1330,22 @@ func resolveScalarIdentity(argumentTypes []sqlmodel.SQLType) *ast.FunctionResolu
 		return nil
 	}
 	return newReadOnlyResolution(argumentTypes[0])
+}
+
+// resolveToNullable types toNullable, which returns its argument's value in a Nullable of
+// its type.
+//
+// Takes argumentTypes ([]sqlmodel.SQLType) which are the call argument types.
+//
+// Returns *ast.FunctionResolution which carries the argument's type as nullable, or nil
+// when the call has no argument.
+func resolveToNullable(argumentTypes []sqlmodel.SQLType) *ast.FunctionResolution {
+	if len(argumentTypes) == 0 {
+		return nil
+	}
+	resolution := newReadOnlyResolution(argumentTypes[0])
+	resolution.NullableBehaviour = sqlmodel.FunctionNullableCalledOnNull
+	return resolution
 }
 
 // resolveRounding types round, roundBankers, floor, ceil, trunc and their spellings,

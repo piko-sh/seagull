@@ -1,0 +1,88 @@
+[
+  {
+    "Command": "many",
+    "Filename": "renames.sql",
+    "Line": 1,
+    "Name": "ListedCTE",
+    "OutputColumns": [
+      {
+        "Name": "reading_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Unsigned": true,
+          "Width": 32
+        },
+        "SourceColumn": "reading_id",
+        "SourceQualifier": "named",
+        "SourceTable": "named"
+      },
+      {
+        "Name": "reading_label",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "reading_label",
+        "SourceQualifier": "named",
+        "SourceTable": "named"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListedCTE, command: many)\nWITH named(reading_id, reading_label) AS (SELECT id, label FROM readings)\nSELECT reading_id, reading_label FROM named;",
+    "Template": "WITH named(reading_id, reading_label) AS (SELECT id, label FROM readings)\\nSELECT ⟨c0:reading_id⟩, ⟨c1:reading_label⟩ FROM named;"
+  },
+  {
+    "Command": "many",
+    "Filename": "renames.sql",
+    "Line": 5,
+    "Name": "ListedDerived",
+    "OutputColumns": [
+      {
+        "Name": "reading_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Unsigned": true,
+          "Width": 32
+        },
+        "SourceColumn": "reading_id",
+        "SourceQualifier": "named"
+      },
+      {
+        "Name": "reading_label",
+        "SQLType": {
+          "Category": "text",
+          "EngineName": "String"
+        },
+        "SourceColumn": "reading_label",
+        "SourceQualifier": "named"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListedDerived, command: many)\nSELECT reading_id, reading_label FROM (SELECT id, label FROM readings) AS named(reading_id, reading_label);",
+    "Template": "SELECT ⟨c0:reading_id⟩, ⟨c1:reading_label⟩ FROM (SELECT id, label FROM readings) AS named(reading_id, reading_label);"
+  },
+  {
+    "Command": "many",
+    "Filename": "renames.sql",
+    "Line": 8,
+    "Name": "ListedDerivedWithoutAs",
+    "OutputColumns": [
+      {
+        "Name": "reading_id",
+        "SQLType": {
+          "Category": "integer",
+          "EngineName": "UInt32",
+          "Unsigned": true,
+          "Width": 32
+        },
+        "SourceColumn": "reading_id",
+        "SourceQualifier": "named"
+      }
+    ],
+    "ReadOnly": true,
+    "SQL": "-- sgl.query(name: ListedDerivedWithoutAs, command: many)\nSELECT named.reading_id FROM (SELECT id, label FROM readings) named(reading_id, reading_label);",
+    "Template": "SELECT ⟨c0:named.reading_id⟩ FROM (SELECT id, label FROM readings) named(reading_id, reading_label);"
+  }
+]

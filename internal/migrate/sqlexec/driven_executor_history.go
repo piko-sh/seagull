@@ -33,13 +33,15 @@ import (
 )
 
 // appliedAtLayouts lists the text forms applied_at comes back in: RFC 3339 from most
-// drivers, SQLite's datetime('now'), and Go's Time.String form, which modernc.org/sqlite
-// stores when a time.Time is bound to a TEXT column.
+// drivers, SQLite's datetime('now'), Go's Time.String form, which modernc.org/sqlite
+// stores when a time.Time is bound to a TEXT column, and the form
+// github.com/mattn/go-sqlite3 stores in the same case.
 var appliedAtLayouts = []string{
 	time.RFC3339Nano,
 	time.RFC3339,
 	"2006-01-02 15:04:05",
 	"2006-01-02 15:04:05.999999999 -0700 MST",
+	"2006-01-02 15:04:05.999999999-07:00",
 }
 
 // appliedAtFallbacks counts the applied_at values one history read could not parse, so
@@ -78,7 +80,8 @@ func (fallbacks *appliedAtFallbacks) report(ctx context.Context, table string) {
 	if fallbacks.count == 0 {
 		return
 	}
-	logging.LoggerFrom(ctx).WarnContext(ctx, "applied_at could not be read, so the zero time is reported in its place",
+	_, logger := logging.From(ctx)
+	logger.WarnContext(ctx, "applied_at could not be read, so the zero time is reported in its place",
 		slog.String("table", table),
 		slog.Int("rows", fallbacks.count),
 		slog.Int64("first_version", fallbacks.firstVersion),
@@ -93,7 +96,8 @@ func (fallbacks *appliedAtFallbacks) report(ctx context.Context, table string) {
 //
 // A table an earlier release created, which no Up has upgraded yet, lacks the
 // splitter_version and statements_hash columns; its rows are read without them, so the
-// migrations it records carry no progress digest.
+// migrations it records carry no progress digest. Any other failure of the read is
+// returned, rather than hidden by a read that leaves the progress out.
 func (executor *Executor) AppliedVersions(
 	ctx context.Context,
 ) ([]migrate.AppliedMigration, error) {
@@ -103,6 +107,9 @@ func (executor *Executor) AppliedVersions(
 		applied, readError := executor.readAppliedVersions(ctx, runner, table, executor.appliedVersionsSQL(table, true), true)
 		if readError == nil {
 			return applied, nil
+		}
+		if historyHasColumn(ctx, runner, table, statementsHashColumn) {
+			return nil, readError
 		}
 		legacy, legacyError := executor.readAppliedVersions(ctx, runner, table, executor.appliedVersionsSQL(table, false), false)
 		if legacyError != nil {

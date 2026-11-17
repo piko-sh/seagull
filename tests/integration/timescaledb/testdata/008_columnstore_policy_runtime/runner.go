@@ -88,7 +88,7 @@ func main() {
 	}
 	out := []sumEntry{}
 	for _, row := range rows {
-		out = append(out, sumEntry{Device: row.Device, Total: row.Total})
+		out = append(out, sumEntry{Device: row.Device, Total: row.Total.Ptr()})
 	}
 
 	if err := json.NewEncoder(os.Stdout).Encode(map[string]any{

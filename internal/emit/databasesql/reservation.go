@@ -34,7 +34,7 @@ var (
 
 	// preparedLocals lists the arguments in scope where prepared.go names the SQL constants
 	// of the static queries.
-	preparedLocals = []string{"ctx", "db"}
+	preparedLocals = []string{"ctx", identDB}
 
 	// driverHelpers lists the suffixes of the driver helpers the emitter declares besides
 	// those of the default reservation.
@@ -49,9 +49,10 @@ var (
 //
 // Returns emit.Reservation which holds the names.
 func (emitter *Emitter) Reserve(info *dialect.Facts, style *emit.Style) emit.Reservation {
-	locals := slices.Concat(multirow.Locals, preparedLocals)
-	helpers := slices.Concat(chvalues.Helpers, chvalues.EncodedHelpers, chvalues.NullableHelpers, chvalues.DurationHelpers, chvalues.DocumentHelpers, driverHelpers)
-	files := []string{chvalues.File, chvalues.DocumentsFile}
+	locals := slices.Concat(multirow.Locals, preparedLocals, ownedWriterLocals)
+	helpers := slices.Concat(chvalues.Helpers, chvalues.EncodedHelpers, chvalues.NullableHelpers, chvalues.DurationHelpers, chvalues.DocumentHelpers, driverHelpers,
+		appendingHelpers, batchingHelpers)
+	files := []string{chvalues.File, chvalues.DocumentsFile, duckDBAppendingFile, clickHouseBatchesFile}
 	profile := profileFor(info.Drivers, emitter.settings.driver)
 	if profile.enums.Scan != 0 {
 		locals = slices.Concat(locals, reservation.EnumLocals)

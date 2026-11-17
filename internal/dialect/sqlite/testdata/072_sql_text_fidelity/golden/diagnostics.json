@@ -1,10 +1,10 @@
 [
   {
-    "Code": "Q022",
+    "Code": "Q023",
     "Column": 1,
     "Filename": "dynamic.sql",
     "Line": 5,
-    "Message": "a dynamic: runtime query already has a WHERE clause; runtime predicates are appended with AND, not as a new WHERE",
+    "Message": "a dynamic: runtime query returns rows other than those it reads, through GROUP BY, HAVING, DISTINCT, an aggregate, window or set-returning function, its own LIMIT, or a compound; .Count(ctx) wraps the original in a subquery so the count reflects outer-result rows rather than the underlying table",
     "Severity": "hint"
   }
 ]

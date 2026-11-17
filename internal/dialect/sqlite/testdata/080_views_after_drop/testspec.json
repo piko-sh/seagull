@@ -1,0 +1,4 @@
+{
+  "description": "SQLite drops a table a view reads and leaves the view, which it no longer resolves, so a query reading the view is refused.",
+  "expectedDiagnosticCount": 3
+}

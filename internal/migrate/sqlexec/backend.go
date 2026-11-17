@@ -44,8 +44,13 @@ const (
 	LockTable
 
 	// LockNone takes no lock, so concurrent runs must be coordinated outside the migrator.
-	// It is the only mode for SQLite, ClickHouse and DuckDB.
+	// It is the only mode for ClickHouse.
 	LockNone
+
+	// LockLease holds a lease row in a lock table, which a run inserts to take the lock,
+	// renews while it runs and deletes to release it, and which another run takes over once
+	// it expires. It is the default for SQLite and DuckDB, which have no session locks.
+	LockLease
 )
 
 var (
@@ -72,6 +77,8 @@ func (mode LockMode) String() string {
 		return "advisory"
 	case LockTable:
 		return "table"
+	case LockLease:
+		return "lease"
 	case LockNone:
 		return "none"
 	default:

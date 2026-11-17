@@ -30,8 +30,7 @@ import (
 	"seagull.sh/seagull/sdk/migrate/migrate_backend_duckdb"
 )
 
-// run starts the program twice against the same database. The first start applies both
-// migrations before the program uses the schema; the second finds nothing to do.
+// run applies startup migrations twice to the same database.
 //
 // Takes database (*sql.DB) which is the database to migrate, empty or not.
 // Takes migrations (fs.FS) which holds db/migrations, the embed.FS in main.go.
@@ -78,7 +77,7 @@ func start(ctx context.Context, database *sql.DB, migrations fs.FS, boat string,
 	// DuckDB cannot add a NOT NULL column to an existing table, so 0002 adds home_port with
 	// a default only, and the column, like its field, may be NULL.
 	queries := store.New(database)
-	if err := queries.AddBoat(ctx, store.AddBoatParams{Name: boat, HomePort: new("Padstow")}); err != nil {
+	if err := queries.AddBoat(ctx, store.AddBoatParams{Name: boat, HomePort: store.NullOf("Padstow")}); err != nil {
 		return fmt.Errorf("adding %s: %w", boat, err)
 	}
 	boats, err := queries.ListBoats(ctx)
@@ -87,8 +86,8 @@ func start(ctx context.Context, database *sql.DB, migrations fs.FS, boat string,
 	}
 	for _, row := range boats {
 		homePort := "an unknown port"
-		if row.HomePort != nil {
-			homePort = *row.HomePort
+		if row.HomePort.Valid {
+			homePort = row.HomePort.V
 		}
 		fmt.Fprintf(output, "  %d %-9s of %s\n", row.ID, row.Name, homePort)
 	}

@@ -73,6 +73,9 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Compound": true
+    },
     "SQL": "-- sgl.query(name: ListAllWorkers, command: many)\nSELECT id, name, department AS org, salary AS pay FROM employees WHERE department = ?\nUNION ALL\nSELECT id, name, agency AS org, rate AS pay FROM contractors WHERE agency = ?",
     "Template": "SELECT id, name, department AS org, salary AS pay FROM employees WHERE department = ⟨p0⟩\\nUNION ALL\\nSELECT id, name, agency AS org, rate AS pay FROM contractors WHERE agency = ⟨p1⟩⟨arguments p0 p1⟩"
   },
@@ -94,6 +97,12 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Compound": true,
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(name: ListUniqueWorkerNames, command: many)\nSELECT name FROM employees\nUNION\nSELECT name FROM contractors\nORDER BY name",
     "Template": "SELECT name FROM employees\\nUNION\\nSELECT name FROM contractors\\nORDER BY name"
   }

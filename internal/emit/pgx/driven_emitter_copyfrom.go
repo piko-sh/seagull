@@ -29,6 +29,7 @@ import (
 	"seagull.sh/seagull/internal/emit/emitkit"
 	"seagull.sh/seagull/internal/gogen"
 	"seagull.sh/seagull/internal/gogen/goast"
+	"seagull.sh/seagull/internal/gogen/methods"
 )
 
 const (
@@ -43,19 +44,17 @@ var (
 
 // buildCopyFromMethod builds a query method that streams rows through pgx CopyFrom.
 //
-//	func (queries *Queries) CopyAudit(ctx context.Context, params []CopyAuditParams) (int64, error) {
-//		return queries.db.CopyFrom(ctx, pgx.Identifier{"audit", "events"}, []string{"action", "actor"},
-//			pgx.CopyFromSlice(len(params), func(i int) ([]any, error) {
-//				return []any{params[i].Action, params[i].Actor}, nil
-//			}))
-//	}
+// A nil slice bound to a NOT NULL column is sent as an empty one, as the package's other
+// methods send it, since COPY would write it as NULL.
 //
 // Takes query (*gogen.Query) which is the query being generated.
+// Takes vocabulary (gogen.Vocabulary) which names the helper that makes a nil slice
+// empty.
 // Takes binder (pgxBinder) which binds each value as the package's other methods do.
 //
 // Returns *ast.FuncDecl which is the copyfrom method declaration.
 // Returns error when the query's VALUES row is not one placeholder per named column.
-func buildCopyFromMethod(query *gogen.Query, binder pgxBinder) (*ast.FuncDecl, error) {
+func buildCopyFromMethod(query *gogen.Query, vocabulary gogen.Vocabulary, binder pgxBinder) (*ast.FuncDecl, error) {
 	columns, ok := emitkit.RowColumns(query.Analysed)
 	if !ok || len(columns) != len(query.Analysed.InsertColumns) || query.Analysed.InsertTarget.Name == "" {
 		return nil, fmt.Errorf("query %s: %w", query.Analysed.Name, errCopyFromShape)
@@ -63,10 +62,12 @@ func buildCopyFromMethod(query *gogen.Query, binder pgxBinder) (*ast.FuncDecl, e
 	parametersArgument := goastutil.CachedIdent(query.Naming.ParamsArgument)
 	values := make([]ast.Expr, len(columns))
 	for position, parameter := range columns {
-		values[position] = binder.Bind(goastutil.SelectorExprFrom(
+		analysed := &query.Analysed.Parameters[parameter]
+		field := goastutil.SelectorExprFrom(
 			&ast.IndexExpr{X: parametersArgument, Index: goastutil.CachedIdent(identRowIndex)},
 			query.Naming.ParameterFields[parameter],
-		), &query.Analysed.Parameters[parameter], query.Imports)
+		)
+		values[position] = binder.Bind(methods.NonNilAccess(&pgxConnection, vocabulary, query, analysed, field), analysed, query.Imports)
 	}
 	columnNames := make([]ast.Expr, len(query.Analysed.InsertColumns))
 	for index, column := range query.Analysed.InsertColumns {

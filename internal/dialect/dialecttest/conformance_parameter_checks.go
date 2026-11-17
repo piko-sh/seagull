@@ -30,6 +30,9 @@ import (
 	"seagull.sh/seagull/internal/sqlmodel"
 )
 
+// conformanceManyCommand selects a query returning several rows.
+const conformanceManyCommand = "many"
+
 const (
 	// namedParameterStatementFormat bounds id by two placeholders, compares a third with it
 	// and passes a fourth to lower() compared with lower(name).
@@ -245,8 +248,8 @@ func checkComparedParametersAreTyped(ctx context.Context, _ checkEnvironment, fi
 	emitter, result, err := runGenerate(ctx, engine,
 		map[string]string{"001_items.up.sql": fixture.BaseMigration},
 		map[string]string{
-			"compared.sql": directiveLine(engine, "Compared", "many") + statement,
-			"shifted.sql":  directiveLine(engine, "Shifted", "many") + comparedExpressionProbe,
+			"compared.sql": directiveLine(engine, "Compared", conformanceManyCommand) + statement,
+			"shifted.sql":  directiveLine(engine, "Shifted", conformanceManyCommand) + comparedExpressionProbe,
 		})
 	if err != nil {
 		return failed(generationFatalFormat, err)
@@ -322,7 +325,7 @@ func checkCoalescedParametersTakeTheirSiblingsType(ctx context.Context, _ checkE
 	sigil := info.Placeholders.Sigils[0]
 	statement := "SELECT name FROM items WHERE id = COALESCE(" + sigil.Render(1, info.Placeholders.BoundName("wanted"), placeholderFormType) + ", id);"
 	emitter, result, err := runGenerate(ctx, engine, map[string]string{baseMigrationFile: fixture.BaseMigration},
-		map[string]string{"coalesced.sql": directiveLine(engine, "Coalesced", "many") + statement})
+		map[string]string{"coalesced.sql": directiveLine(engine, "Coalesced", conformanceManyCommand) + statement})
 	if err != nil {
 		return failed(generationFatalFormat, err)
 	}
@@ -366,7 +369,7 @@ func checkQuantifiedArrayParametersAreArraysOfTheComparedType(ctx context.Contex
 	for _, quantified := range []string{"id = ANY(" + placeholder + ")", "id <> ALL(" + placeholder + ")"} {
 		statement := "SELECT name FROM items WHERE " + quantified + ";"
 		emitter, result, err := runGenerate(ctx, engine, map[string]string{baseMigrationFile: fixture.BaseMigration},
-			map[string]string{"quantified.sql": directiveLine(engine, "Quantified", "many") + statement})
+			map[string]string{"quantified.sql": directiveLine(engine, "Quantified", conformanceManyCommand) + statement})
 		if err != nil {
 			return failed(generationFatalFormat, err)
 		}
@@ -408,7 +411,7 @@ func checkComparedParametersAreNamedAfterTheirColumns(ctx context.Context, _ che
 	}
 	statement := fmt.Sprintf(namedParameterStatementFormat, placeholders...)
 	emitter, result, err := runGenerate(ctx, engine, map[string]string{baseMigrationFile: fixture.BaseMigration},
-		map[string]string{"named.sql": directiveLine(engine, "Named", "many") + statement})
+		map[string]string{"named.sql": directiveLine(engine, "Named", conformanceManyCommand) + statement})
 	if err != nil {
 		return failed(generationFatalFormat, err)
 	}
@@ -448,7 +451,7 @@ func checkParametersStandingForConditionsAreBooleans(ctx context.Context, _ chec
 	var problems []string
 	for _, statement := range statements {
 		emitter, result, err := runGenerate(ctx, engine, map[string]string{baseMigrationFile: fixture.BaseMigration},
-			map[string]string{"condition.sql": directiveLine(engine, "Condition", "many") + statement})
+			map[string]string{"condition.sql": directiveLine(engine, "Condition", conformanceManyCommand) + statement})
 		if err != nil {
 			return failed(generationFatalFormat, err)
 		}

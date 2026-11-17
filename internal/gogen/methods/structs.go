@@ -320,10 +320,11 @@ func columnFields(style *emit.Style, query *gogen.Query, columns []int) []*ast.F
 	tags := emitkit.FieldTags(style, sourceNames, columnTags)
 	fields := make([]*ast.Field, 0, len(columns))
 	for position, column := range columns {
+		goType := ColumnGoType(query, column)
 		fields = append(fields, &ast.Field{
 			Names: []*ast.Ident{goastutil.CachedIdent(query.Naming.ColumnFields[column])},
-			Type:  query.Imports.AddType(ColumnGoType(query, column)),
-			Tag:   goast.TagLiteral(tags[position]),
+			Type:  query.Imports.AddType(goType),
+			Tag:   goast.TagLiteral(emitkit.TagForType(tags[position], goType)),
 		})
 	}
 	return fields

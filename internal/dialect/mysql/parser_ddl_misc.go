@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strings"
 
 	"seagull.sh/seagull/internal/dialect/ast"
 	"seagull.sh/seagull/internal/dialect/dialectkit"
@@ -33,9 +34,18 @@ const (
 	checkOptionTokenCount = 3
 )
 
-// parseCreateIndex parses a CREATE [UNIQUE] INDEX statement: the index's name and type,
-// the table, an index type written after it, the key parts, and the index, ALGORITHM and
-// LOCK options after them.
+const (
+	// primaryKeyName is the name MySQL gives every primary key, which DROP INDEX and DROP
+	// CONSTRAINT may name it by.
+	primaryKeyName = "PRIMARY"
+
+	// maxKeyNameSuffixes bounds the numbered names MySQL tries for an unnamed key.
+	maxKeyNameSuffixes = 100
+)
+
+// parseCreateIndex parses a CREATE [UNIQUE | FULLTEXT | SPATIAL] INDEX statement: the
+// index's name and type, the table, an index type written after it, the key parts, and
+// the index, ALGORITHM and LOCK options after them.
 //
 // Returns *ast.CatalogueMutation which describes the new index.
 // Returns error when the statement is malformed.
@@ -45,13 +55,17 @@ func (p *parser) parseCreateIndex() (*ast.CatalogueMutation, error) {
 	}
 	p.matchOrReplace()
 
-	p.MatchKeyword(keywordUNIQUE)
+	unique := p.MatchKeyword(keywordUNIQUE)
+	fullText := !unique && p.MatchKeyword("FULLTEXT")
+	if !unique && !fullText {
+		p.MatchKeyword("SPATIAL")
+	}
 
 	if _, err := p.ExpectKeyword("INDEX"); err != nil {
 		return nil, err
 	}
 
-	p.matchIfNotExists()
+	ifNotExists := p.matchIfNotExists()
 
 	indexName, nameError := p.parseIdentifierOrKeyword()
 	if nameError != nil {
@@ -72,19 +86,23 @@ func (p *parser) parseCreateIndex() (*ast.CatalogueMutation, error) {
 	}
 
 	p.skipIndexOptions()
-	if _, err := p.parseMySQLColumnList(); err != nil {
+	columns, err := p.parseMySQLColumnList()
+	if err != nil {
 		return nil, err
 	}
 	if err := p.skipIndexStatementOptions(); err != nil {
 		return nil, err
 	}
 
-	return ast.NewCatalogueMutation(
-		ast.MutationCreateIndex,
-		schema,
-		tableName,
-		ast.WithNewName(indexName),
-	), nil
+	options := []ast.CatalogueMutationOption{
+		ast.WithIndexDefinition(indexName, columns, unique),
+		ast.WithIndexScope(ast.IndexNamesInTable),
+		ast.WithIfNotExists(ifNotExists),
+	}
+	if fullText {
+		options = append(options, ast.WithFullTextIndex())
+	}
+	return ast.NewCatalogueMutation(ast.MutationCreateIndex, schema, tableName, options...), nil
 }
 
 // parseDropIndex parses a DROP INDEX ... ON table statement and the ALGORITHM and LOCK
@@ -114,6 +132,9 @@ func (p *parser) parseDropIndex() (*ast.CatalogueMutation, error) {
 	}
 	if err := p.skipOnlineDDLOptions(); err != nil {
 		return nil, err
+	}
+	if strings.EqualFold(indexName, primaryKeyName) {
+		return droppedPrimaryKey(schema, tableName), nil
 	}
 
 	return ast.NewCatalogueMutation(
@@ -238,10 +259,30 @@ func (p *parser) analyseViewBody(columnNames []string, object string) (*ast.RawQ
 		p.recordSyntaxError(err)
 		return nil, nil, err
 	}
-	if len(columnNames) > 0 && !slices.ContainsFunc(viewAnalysis.OutputColumns, dialectkit.IsStarColumn) {
-		dialectkit.OverlayViewColumnNames(viewAnalysis, columnNames, dialectkit.UndeclaredColumnsDropped)
+	if err := p.overlayViewColumns(viewAnalysis, columnNames); err != nil {
+		return nil, nil, err
 	}
 	return viewAnalysis, nil, nil
+}
+
+// overlayViewColumns renames a view query's columns by the view's declared column list,
+// which must name every column, when the query holds no star.
+//
+// Takes viewAnalysis (*ast.RawQueryAnalysis) whose output columns are renamed in place.
+// Takes columnNames ([]string) which are the declared column names.
+//
+// Returns error, also recorded as the parser's syntax error, when the list names fewer or
+// more columns than the query gives.
+func (p *parser) overlayViewColumns(viewAnalysis *ast.RawQueryAnalysis, columnNames []string) error {
+	if len(columnNames) == 0 || slices.ContainsFunc(viewAnalysis.OutputColumns, dialectkit.IsStarColumn) {
+		return nil
+	}
+	if overlayErr := dialectkit.OverlayViewColumnNames(viewAnalysis, columnNames, dialectkit.UndeclaredColumnsRefused); overlayErr != nil {
+		err := p.syntaxErrorAt(overlayErr.Error())
+		p.recordSyntaxError(err)
+		return err
+	}
+	return nil
 }
 
 // skipOrReplace consumes an optional OR REPLACE clause.
@@ -321,6 +362,57 @@ func (p *parser) parseDropView() (*ast.CatalogueMutation, error) {
 		p.MatchKeyword(keywordCASCADE)
 	}
 	return collectAlterTableActions(drops), nil
+}
+
+// parseCreateSequence parses a MariaDB CREATE SEQUENCE statement, passing over its
+// options. A dialect without sequences records nothing.
+//
+// Returns *ast.CatalogueMutation which creates the sequence, or nil without sequences.
+// Returns error when the sequence's name is malformed.
+func (p *parser) parseCreateSequence() (*ast.CatalogueMutation, error) {
+	if !p.sequences {
+		p.Position = len(p.Tokens)
+		return nil, nil
+	}
+	for !p.AtEnd() && !p.MatchKeyword(keywordSEQUENCE) {
+		p.Advance()
+	}
+	ifNotExists := p.matchIfNotExists()
+	schema, name, nameError := p.parseSchemaQualifiedName()
+	if nameError != nil {
+		return nil, nameError
+	}
+	p.Position = len(p.Tokens)
+	return ast.NewCatalogueMutation(ast.MutationCreateSequence, schema, "", ast.WithSequence(name), ast.WithIfNotExists(ifNotExists)), nil
+}
+
+// parseDropSequence parses a MariaDB DROP SEQUENCE statement, which may name several
+// sequences. A dialect without sequences records nothing.
+//
+// Returns *ast.CatalogueMutation which drops the first sequence, carrying a drop of each
+// other one as an additional mutation, or nil without sequences.
+// Returns error when a name is malformed.
+func (p *parser) parseDropSequence() (*ast.CatalogueMutation, error) {
+	if !p.sequences {
+		p.Position = len(p.Tokens)
+		return nil, nil
+	}
+	for !p.AtEnd() && !p.MatchKeyword(keywordSEQUENCE) {
+		p.Advance()
+	}
+	ifExists := p.matchIfExists()
+	var drops []*ast.CatalogueMutation
+	for {
+		schema, name, nameError := p.parseSchemaQualifiedName()
+		if nameError != nil {
+			return nil, nameError
+		}
+		drops = append(drops, ast.NewCatalogueMutation(ast.MutationDropSequence, schema, "", ast.WithSequence(name), ast.WithIfExists(ifExists)))
+		if p.Current().Kind != tokenComma {
+			return collectAlterTableActions(drops), nil
+		}
+		p.Advance()
+	}
 }
 
 // parseDroppedNames parses the comma-separated names a DROP TABLE or DROP VIEW statement
@@ -551,6 +643,87 @@ func (p *parser) skipOnlineDDLOptions() error {
 			return nil
 		}
 	}
+}
+
+// parseAlterTableAlterColumn parses an ALTER COLUMN action, recording SET DEFAULT and
+// DROP DEFAULT and passing over any other change, such as ALTER INDEX's visibility.
+//
+// Takes schema (string) which is the schema name of the target table.
+// Takes tableName (string) which is the target table name.
+//
+// Returns *ast.CatalogueMutation which records a default change, or nil for any other
+// action.
+// Returns error when the column name is missing or the action is malformed.
+func (p *parser) parseAlterTableAlterColumn(schema, tableName string) (*ast.CatalogueMutation, error) {
+	if p.IsKeyword(keywordINDEX, keywordCHECK, keywordCONSTRAINT) {
+		return nil, p.skipAlterTableMiscAction()
+	}
+	p.MatchKeyword(keywordCOLUMN)
+	columnName, nameError := p.parseIdentifierOrKeyword()
+	if nameError != nil {
+		return nil, nameError
+	}
+	present := p.changesColumnDefault(keywordSET)
+	if !present && !p.changesColumnDefault(keywordDROP) {
+		return nil, p.skipAlterTableMiscAction()
+	}
+	if err := p.skipAlterTableMiscAction(); err != nil {
+		return nil, err
+	}
+	return ast.NewCatalogueMutation(
+		ast.MutationAlterTableAlterColumn,
+		schema,
+		tableName,
+		ast.WithColumnName(columnName),
+		ast.WithColumnDefault(present),
+	), nil
+}
+
+// changesColumnDefault reports whether the action ahead is SET DEFAULT or DROP DEFAULT.
+//
+// Takes verb (string) which is SET or DROP.
+//
+// Returns bool which is true when the verb and DEFAULT follow.
+func (p *parser) changesColumnDefault(verb string) bool {
+	return p.IsKeyword(verb) && p.Peek().IsKeyword(tokenIdentifier, keywordDEFAULT)
+}
+
+// parseDroppedConstraint parses the name a DROP CONSTRAINT, DROP CHECK or DROP FOREIGN
+// KEY action drops.
+//
+// Takes schema (string) which is the schema name of the target table.
+// Takes tableName (string) which is the target table name.
+//
+// Returns *ast.CatalogueMutation which drops the named constraint.
+// Returns error when the name is missing.
+func (p *parser) parseDroppedConstraint(schema, tableName string) (*ast.CatalogueMutation, error) {
+	p.matchIfExists()
+	constraintName, nameError := p.parseIdentifierOrKeyword()
+	if nameError != nil {
+		return nil, nameError
+	}
+	if strings.EqualFold(constraintName, primaryKeyName) {
+		return droppedPrimaryKey(schema, tableName), nil
+	}
+	return ast.NewCatalogueMutation(
+		ast.MutationAlterTableDropConstraint,
+		schema,
+		tableName,
+		ast.WithConstraintName(constraintName),
+	), nil
+}
+
+// droppedPrimaryKey drops a table's primary key, as DROP PRIMARY KEY does and dropping
+// the index or constraint by its name PRIMARY does.
+//
+// Takes schema (string) which is the schema name of the target table.
+// Takes tableName (string) which is the target table name.
+//
+// Returns *ast.CatalogueMutation which drops the key.
+func droppedPrimaryKey(schema, tableName string) *ast.CatalogueMutation {
+	mutation := ast.NewCatalogueMutation(ast.MutationAlterTableDropConstraint, schema, tableName)
+	mutation.DropsPrimaryKey = true
+	return mutation
 }
 
 // replacing returns the mutations a CREATE OR REPLACE makes: the drop of the object the

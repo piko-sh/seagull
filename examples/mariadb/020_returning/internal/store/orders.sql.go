@@ -14,7 +14,7 @@ type CancelOrderRow struct {
 
 func (queries *Queries) CancelOrder(ctx context.Context, id int64) (CancelOrderRow, error) {
 	var row CancelOrderRow
-	err := queries.writer.QueryRowContext(ctx, cancelOrderSQL, id).Scan(&row.Item, &row.Quantity)
+	err := queries.writer.QueryRowContext(ctx, cancelOrderSQL, id).Scan(&row.Item, sglScanNumber(&row.Quantity))
 	if err != nil {
 		return CancelOrderRow{}, err
 	}
@@ -37,7 +37,7 @@ type PlaceOrderRow struct {
 
 func (queries *Queries) PlaceOrder(ctx context.Context, params PlaceOrderParams) (PlaceOrderRow, error) {
 	var row PlaceOrderRow
-	err := queries.writer.QueryRowContext(ctx, placeOrderSQL, params.Item, params.Quantity).Scan(&row.ID, &row.Status, &row.PricePence)
+	err := queries.writer.QueryRowContext(ctx, placeOrderSQL, params.Item, params.Quantity).Scan(&row.ID, &row.Status, sglScanNumber(&row.PricePence))
 	if err != nil {
 		return PlaceOrderRow{}, err
 	}
@@ -71,7 +71,7 @@ func (queries *Queries) ServedOrders(ctx context.Context) ([]ServedOrdersRow, er
 	var results []ServedOrdersRow
 	if rows.Next() {
 		var row ServedOrdersRow
-		scanArgs := []any{&row.ID, &row.Item, &row.Quantity}
+		scanArgs := []any{&row.ID, &row.Item, sglScanNumber(&row.Quantity)}
 		for more := true; more; more = rows.Next() {
 			row = ServedOrdersRow{}
 			if err := rows.Scan(scanArgs...); err != nil {

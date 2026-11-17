@@ -284,9 +284,6 @@ func unboundPlaceholderProblems(_ *spanCorpus, subject spanSubject) []string {
 // Returns []string which describes each problem.
 func placeholderSpanProblems(corpus *spanCorpus, subject spanSubject) []string {
 	spans := subject.analysis.Spans.Placeholders
-	if len(spans) == 0 && len(subject.analysis.ParameterReferences) == 0 {
-		return nil
-	}
 	covered := make([]int, len(spans))
 	problems := placeholderCoverageProblems(subject, spans, covered)
 	texts := make([]string, len(spans))

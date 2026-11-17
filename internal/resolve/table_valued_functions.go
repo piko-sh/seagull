@@ -24,6 +24,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strings"
 
 	"seagull.sh/seagull/internal/diag"
 	"seagull.sh/seagull/internal/dialect"
@@ -156,7 +157,7 @@ func resolveTableValuedFunctionColumns(
 	typers callTypers,
 ) ([]ast.ScopedColumn, *Error, error) {
 	if len(reference.ColumnDefinitions) > 0 && reference.ColumnDefinitions[0].TypeName != "" {
-		return definedColumns(engine, catalogue, reference.ColumnDefinitions), nil, nil
+		return definedColumns(engine, catalogue, reference.ColumnDefinitions), redundantDefinitions(ctx, engine, catalogue, reference, typers), nil
 	}
 	if len(reference.Functions) > 0 {
 		return resolveFunctionCallsColumns(ctx, engine, catalogue, reference, typers)
@@ -378,4 +379,56 @@ func applyTableValuedFunctionAliases(
 	return newError(diag.CodeCompoundColumnCount,
 		"table-valued function %q exposes %d columns but %d column aliases were supplied; surplus aliases are ignored",
 		reference.FunctionName, len(columns), len(reference.ColumnDefinitions))
+}
+
+// redundantDefinitions reports typed column definitions written for a function whose
+// columns are fixed, which an engine accepts only for a function whose columns are known
+// only when it runs, such as one returning record, and refuses for any other, as
+// PostgreSQL refuses unnest(...) AS t(name text).
+//
+// Takes engine (dialect.DialectPort) which resolves built-in functions.
+// Takes catalogue (*sqlmodel.Catalogue) which holds user-defined functions.
+// Takes reference (ast.RawTableValuedFunctionReference) which is the reference.
+// Takes typers (callTypers) which type the call's arguments.
+//
+// Returns *Error which describes the refused definitions, or nil when the function's
+// columns are unknown until it runs, as a record's are, or cannot be resolved.
+func redundantDefinitions(ctx context.Context, engine dialect.DialectPort, catalogue *sqlmodel.Catalogue, reference ast.RawTableValuedFunctionReference, typers callTypers) *Error {
+	if len(reference.Functions) > 1 {
+		return newError(diag.CodeExpressionTypeError,
+			"a reference of several function calls takes no column definition list of its own; name its columns without types, as AS %s(%s)",
+			reference.Alias, definitionNames(reference.ColumnDefinitions)).withSeverity(diag.SeverityError)
+	}
+	if len(reference.Functions) > 0 || reference.FunctionName == "" {
+		return nil
+	}
+	columns, problem, err := functionColumns(ctx, engine, catalogue, tableFunctionCall{
+		functionName: reference.FunctionName,
+		arguments:    reference.Arguments,
+		columnName:   reference.Alias,
+	}, typers)
+	if err != nil || problem != nil || len(columns) == 0 {
+		return nil
+	}
+	for index := range columns {
+		if columns[index].SQLType.Category != sqlmodel.TypeCategoryUnknown {
+			return newError(diag.CodeExpressionTypeError,
+				"%s returns columns of its own, so it takes no column definition list; name its columns without types, as AS %s(%s)",
+				reference.FunctionName, reference.Alias, definitionNames(reference.ColumnDefinitions)).withSeverity(diag.SeverityError)
+		}
+	}
+	return nil
+}
+
+// definitionNames lists the names of column definitions, separated by commas.
+//
+// Takes definitions ([]ast.TVFColumnDefinition) which are the definitions.
+//
+// Returns string which is the list.
+func definitionNames(definitions []ast.TVFColumnDefinition) string {
+	names := make([]string, len(definitions))
+	for index := range definitions {
+		names[index] = definitions[index].Name
+	}
+	return strings.Join(names, ", ")
 }

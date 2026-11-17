@@ -1,0 +1,3 @@
+{
+  "description": "OrderBy with NULLS FIRST or NULLS LAST places NULL as asked, also on a SELECT DISTINCT query, although MariaDB has no NULLS FIRST or NULLS LAST syntax."
+}

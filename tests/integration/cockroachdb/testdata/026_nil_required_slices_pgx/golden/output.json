@@ -1,0 +1,39 @@
+{
+  "ListBlobs": [
+    {
+      "data_length": 0,
+      "id": 1,
+      "maybe_missing": true,
+      "num_count": 0,
+      "tag_count": 0
+    },
+    {
+      "data_length": 0,
+      "id": 2,
+      "maybe_missing": true,
+      "num_count": 0,
+      "tag_count": 0
+    },
+    {
+      "data_length": 0,
+      "id": 3,
+      "maybe_missing": true,
+      "num_count": 0,
+      "tag_count": 0
+    },
+    {
+      "data_length": 0,
+      "id": 4,
+      "maybe_missing": true,
+      "num_count": 0,
+      "tag_count": 0
+    },
+    {
+      "data_length": 0,
+      "id": 5,
+      "maybe_missing": true,
+      "num_count": 0,
+      "tag_count": 0
+    }
+  ]
+}

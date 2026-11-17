@@ -1,0 +1,3 @@
+{
+  "description": "A WITH expression alias stands for the expression it names: max(id) is a UInt32, 2 * id a UInt64, and an alias whose expression holds a placeholder stays a value of unknown type."
+}

@@ -237,7 +237,7 @@ func runCheck(t *testing.T, table *knownfailure.Table, current *subject, entry c
 	if entry.toolchain && testing.Short() {
 		t.Skip("the check needs the go command; skipped under -short")
 	}
-	ctx := logging.ContextWithLogger(t.Context(), slog.New(slog.NewTextHandler(t.Output(),
+	ctx := logging.WithLogger(t.Context(), slog.New(slog.NewTextHandler(t.Output(),
 		&slog.HandlerOptions{AddSource: false, Level: slog.LevelWarn, ReplaceAttr: withoutTime})))
 	report := table.Judge(entry.name, guardedRun(ctx, current, entry), table.Lookup(current.info.Name, entry.name))
 	if report.Skip != "" {

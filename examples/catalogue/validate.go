@@ -176,6 +176,24 @@ func (c *Curriculum) checkCell(name string, concept *Concept, columnID string, c
 	return problems
 }
 
+// readyVariants lists the variant directories that exist and pass their own checks,
+// sorted.
+//
+// Takes examplesDirectory (string) which is the examples directory.
+//
+// Returns []string which holds the directories, relative to examplesDirectory.
+func (c *Curriculum) readyVariants(examplesDirectory string) []string {
+	ready := make([]string, 0, len(c.VariantDirectories()))
+	for relative, ref := range c.VariantDirectories() {
+		directory := filepath.Join(examplesDirectory, relative)
+		if isVariantDirectory(directory) && len(c.checkVariant(directory, ref)) == 0 {
+			ready = append(ready, relative)
+		}
+	}
+	slices.Sort(ready)
+	return ready
+}
+
 // checkDirectories checks that every variant cell has a matching directory and that every
 // variant directory belongs to a cell.
 //

@@ -39,6 +39,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        1
+      ]
+    },
     "SQL": "-- sgl.query(name: ListProducts, command: many)\nSELECT id, name, price FROM products ORDER BY name;",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1:name⟩, ⟨c2:price⟩ FROM products ORDER BY name;"
   }

@@ -59,3 +59,43 @@ func TestJoinKindStringIsItsKeyword(t *testing.T) {
 	require.Equal(t, "LEFT", ast.JoinLeft.String())
 	require.Equal(t, "ASOF LEFT", ast.JoinKind{Keyword: "ASOF LEFT", Nullable: ast.JoinSideRight, Filters: false}.String())
 }
+
+func TestLeavesRightMissingForJoinsThatKeepUnmatchedLeftRows(t *testing.T) {
+	t.Parallel()
+
+	require.True(t, ast.JoinLeft.LeavesRightMissing())
+	require.True(t, ast.JoinFull.LeavesRightMissing())
+	require.False(t, ast.JoinInner.LeavesRightMissing())
+	require.False(t, ast.JoinRight.LeavesRightMissing())
+	require.False(t, ast.JoinCross.LeavesRightMissing())
+}
+
+func TestEncloseGroupRelabelsOnlyUnderAJoinThatLeavesTheGroupMissing(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name  string
+		outer ast.JoinKind
+		want  ast.JoinKind
+	}{
+		{name: "a left join relabels the group", outer: ast.JoinLeft, want: ast.JoinLeft},
+		{name: "a full join relabels the group", outer: ast.JoinFull, want: ast.JoinFull},
+		{name: "an inner join keeps the group's joins", outer: ast.JoinInner, want: ast.JoinInner},
+		{name: "a right join keeps the group's joins", outer: ast.JoinRight, want: ast.JoinInner},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			joins := []ast.JoinClause{{Kind: ast.JoinInner}}
+			derived := []ast.RawDerivedTableReference{{JoinKind: ast.JoinInner}}
+			functions := []ast.RawTableValuedFunctionReference{{JoinKind: ast.JoinInner}}
+
+			ast.EncloseGroup(testCase.outer, joins, derived, functions)
+
+			require.Equal(t, testCase.want, joins[0].Kind)
+			require.Equal(t, testCase.want, derived[0].JoinKind)
+			require.Equal(t, testCase.want, functions[0].JoinKind)
+		})
+	}
+}

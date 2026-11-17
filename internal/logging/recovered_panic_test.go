@@ -88,7 +88,7 @@ func TestLogRecoveredPanicWritesOneWarningThroughTheContextLogger(t *testing.T) 
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 			var logs bytes.Buffer
-			ctx := logging.ContextWithLogger(t.Context(), slog.New(slog.NewJSONHandler(&logs, nil)))
+			ctx := logging.WithLogger(t.Context(), slog.New(slog.NewJSONHandler(&logs, nil)))
 
 			panicAndLog(ctx, testCase.operation, testCase.recovered)
 
@@ -120,7 +120,7 @@ func TestAContextThatCannotBeReadFallsBackToTheDefaultLogger(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			var logger *slog.Logger
-			require.NotPanics(t, func() { logger = logging.LoggerFrom(testCase.ctx) })
+			require.NotPanics(t, func() { _, logger = logging.From(testCase.ctx) })
 			assert.Same(t, slog.Default(), logger)
 			require.NotPanics(t, func() { panicAndLog(testCase.ctx, "probe", "boom") })
 		})

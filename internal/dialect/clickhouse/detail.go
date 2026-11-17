@@ -23,6 +23,11 @@ import "seagull.sh/seagull/internal/dialect/ast"
 // queryDetail is what the ClickHouse dialect records about a query beyond the neutral
 // analysis: the options of clauses only ClickHouse has. The analyser never reads it.
 type queryDetail struct {
+	// expressionAliasValues maps each WITH expression name to the expression it names, for
+	// an expression the parser reads whole and that holds no placeholder, so a reference to
+	// the name is typed as the expression.
+	expressionAliasValues map[string]ast.Expression
+
 	// groupingSets is the text of a GROUP BY GROUPING SETS body.
 	groupingSets string
 

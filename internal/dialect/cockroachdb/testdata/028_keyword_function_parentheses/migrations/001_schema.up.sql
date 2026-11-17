@@ -1,0 +1,1 @@
+CREATE TABLE events (id INT8 PRIMARY KEY);

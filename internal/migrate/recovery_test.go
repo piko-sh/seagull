@@ -20,6 +20,7 @@ package migrate_test
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -608,4 +609,27 @@ func TestPlanRepairGrowsLinearlyWithTheHistory(t *testing.T) {
 			scaling.Linear(t, planOver(testCase.smaller), planOver(testCase.larger))
 		})
 	}
+}
+
+func TestRepairAcceptsAPlanThatWentThroughJSON(t *testing.T) {
+	t.Parallel()
+
+	store := repairHistory()
+	migrator := newRecoveryMigrator(t, store, threeMigrations())
+	plan, err := migrator.PlanRepair(t.Context())
+	require.NoError(t, err)
+	encoded, err := json.Marshal(plan)
+	require.NoError(t, err)
+	var decoded migrate.RepairPlan
+	require.NoError(t, json.Unmarshal(encoded, &decoded))
+	if decoded.Missing == nil {
+		decoded.Missing = []int64{}
+	}
+	if decoded.Changed == nil {
+		decoded.Changed = []migrate.ChangedMigration{}
+	}
+
+	_, err = migrator.Repair(t.Context(), migrate.RepairOptions{Plan: &decoded, Completed: map[int64]int{2: 1}})
+
+	require.NoError(t, err, "a plan whose empty lists were written differently is still the current plan")
 }

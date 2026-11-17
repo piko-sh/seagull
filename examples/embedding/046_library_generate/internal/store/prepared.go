@@ -10,6 +10,8 @@ import (
 	"sync"
 )
 
+const sglStatementClosed = "sql: statement is closed"
+
 type PreparedDBTX struct {
 	db    *sql.DB
 	stmts map[string]*sql.Stmt
@@ -65,7 +67,7 @@ func (prepared *PreparedDBTX) WrapDBTX(inner any) any {
 	if !ok {
 		return inner
 	}
-	return &preparedTx{source: prepared, transaction: transaction}
+	return &preparedTx{source: prepared, transaction: transaction, statements: nil, mu: sync.Mutex{}}
 }
 
 func (prepared *PreparedDBTX) cachedStatement(query string) *sql.Stmt {
@@ -77,30 +79,69 @@ func (prepared *PreparedDBTX) cachedStatement(query string) *sql.Stmt {
 type preparedTx struct {
 	source      *PreparedDBTX
 	transaction *sql.Tx
+	statements  map[*sql.Stmt]*sql.Stmt
+	mu          sync.Mutex
 }
 
 func (bound *preparedTx) ExecContext(ctx context.Context, query string, arguments ...any) (sql.Result, error) {
-	statement := bound.source.cachedStatement(query)
+	statement, cached := bound.bind(ctx, query)
 	if statement == nil {
 		return bound.transaction.ExecContext(ctx, query, arguments...)
 	}
-	return bound.transaction.StmtContext(ctx, statement).ExecContext(ctx, arguments...)
+	result, err := statement.ExecContext(ctx, arguments...)
+	if sglEndedWith(err) {
+		return bound.transaction.StmtContext(ctx, cached).ExecContext(ctx, arguments...)
+	}
+	return result, err
 }
 
 func (bound *preparedTx) QueryContext(ctx context.Context, query string, arguments ...any) (*sql.Rows, error) {
-	statement := bound.source.cachedStatement(query)
+	statement, cached := bound.bind(ctx, query)
 	if statement == nil {
 		return bound.transaction.QueryContext(ctx, query, arguments...)
 	}
-	return bound.transaction.StmtContext(ctx, statement).QueryContext(ctx, arguments...)
+	rows, err := statement.QueryContext(ctx, arguments...)
+	if sglEndedWith(err) {
+		return bound.transaction.StmtContext(ctx, cached).QueryContext(ctx, arguments...)
+	}
+	return rows, err
 }
 
 func (bound *preparedTx) QueryRowContext(ctx context.Context, query string, arguments ...any) *sql.Row {
-	statement := bound.source.cachedStatement(query)
+	statement, cached := bound.bind(ctx, query)
 	if statement == nil {
 		return bound.transaction.QueryRowContext(ctx, query, arguments...)
 	}
-	return bound.transaction.StmtContext(ctx, statement).QueryRowContext(ctx, arguments...)
+	row := statement.QueryRowContext(ctx, arguments...)
+	if sglEndedWith(row.Err()) {
+		return bound.transaction.StmtContext(ctx, cached).QueryRowContext(ctx, arguments...)
+	}
+	return row
+}
+
+func (bound *preparedTx) bind(ctx context.Context, query string) (transactional, cached *sql.Stmt) {
+	cached = bound.source.cachedStatement(query)
+	if cached == nil {
+		return nil, nil
+	}
+	bound.mu.Lock()
+	transactional, found := bound.statements[cached]
+	bound.mu.Unlock()
+	if found {
+		return transactional, cached
+	}
+
+	fresh := bound.transaction.StmtContext(ctx, cached)
+	bound.mu.Lock()
+	defer bound.mu.Unlock()
+	if transactional, found := bound.statements[cached]; found {
+		return transactional, cached
+	}
+	if bound.statements == nil {
+		bound.statements = make(map[*sql.Stmt]*sql.Stmt)
+	}
+	bound.statements[cached] = fresh
+	return fresh, cached
 }
 
 func Prepare(ctx context.Context, db *sql.DB) (*PreparedDBTX, error) {
@@ -124,4 +165,8 @@ func sglCloseStatements(stmts map[string]*sql.Stmt) error {
 		}
 	}
 	return errors.Join(closeErrors...)
+}
+
+func sglEndedWith(err error) bool {
+	return err != nil && err.Error() == sglStatementClosed
 }

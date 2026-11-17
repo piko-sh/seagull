@@ -66,22 +66,26 @@ func buildBatchMethod(query *gogen.Query, vocabulary gogen.Vocabulary, binder pg
 		field := goastutil.SelectorExprFrom(goastutil.CachedIdent(identItem), query.Naming.ParameterFields[argument.Parameter])
 		parameter := &query.Analysed.Parameters[argument.Parameter]
 		queueArguments = append(queueArguments,
-			binder.Bind(pgxEnums.Bound(field, query.Analysed, parameter, query.Types, vocabulary), parameter, query.Imports))
+			binder.Bind(pgxEnums.Bound(methods.NonNilAccess(&pgxConnection, vocabulary, query, parameter, field), query.Analysed, parameter, query.Types, vocabulary), parameter, query.Imports))
 	}
 	parametersArgument := goastutil.CachedIdent(query.Naming.ParamsArgument)
+	queueRows := &ast.RangeStmt{
+		Key: nil, Value: nil, Tok: token.ILLEGAL,
+		X: parametersArgument,
+		Body: goastutil.BlockStmt(goastutil.ExprStmt(goastutil.CallExpr(
+			goastutil.SelectorExprFrom(goastutil.CachedIdent(goast.IdentBatch), "Queue"), queueArguments...))),
+	}
+	if len(query.Rendered.Arguments) > 0 {
+		queueRows.Key = goastutil.CachedIdent(goast.IdentBlank)
+		queueRows.Value = goastutil.CachedIdent(identItem)
+		queueRows.Tok = token.DEFINE
+	}
 	body := []ast.Stmt{
 		goastutil.DefineStmt(goast.IdentBatch, goastutil.AddressExpr(goastutil.CompositeLit(pgxSelector(query, "Batch"),
 			goastutil.KeyValueIdent("QueuedQueries", goastutil.CallExpr(goastutil.CachedIdent("make"),
 				&ast.ArrayType{Elt: goastutil.StarExpr(pgxSelector(query, "QueuedQuery"))},
 				goastutil.IntLit(0), goastutil.CallExpr(goastutil.CachedIdent("len"), parametersArgument)))))),
-		&ast.RangeStmt{
-			Key:   goastutil.CachedIdent(goast.IdentBlank),
-			Value: goastutil.CachedIdent(identItem),
-			Tok:   token.DEFINE,
-			X:     parametersArgument,
-			Body: goastutil.BlockStmt(goastutil.ExprStmt(goastutil.CallExpr(
-				goastutil.SelectorExprFrom(goastutil.CachedIdent(goast.IdentBatch), "Queue"), queueArguments...))),
-		},
+		queueRows,
 		goastutil.DefineStmt(goast.IdentResults, goastutil.CallExpr(
 			goastutil.SelectorExprFrom(goastutil.SelectorExprFrom(goastutil.CachedIdent(goast.IdentQueriesReceiver), pgxConnection.Writer), "SendBatch"),
 			goastutil.CachedIdent(goast.IdentCtx), goastutil.CachedIdent(goast.IdentBatch))),

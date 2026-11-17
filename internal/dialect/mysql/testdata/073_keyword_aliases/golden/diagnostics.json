@@ -1,0 +1,22 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 13,
+    "EndColumn": 21,
+    "EndLine": 5,
+    "Filename": "aliases.sql",
+    "Line": 5,
+    "Message": "failed to analyse query \"AsReserved\": syntax error near \"interval\": this engine reserves INTERVAL here; quote it to use it as an alias",
+    "Severity": "error"
+  },
+  {
+    "Code": "Q010",
+    "Column": 10,
+    "EndColumn": 14,
+    "EndLine": 8,
+    "Filename": "aliases.sql",
+    "Line": 8,
+    "Message": "failed to analyse query \"BareReserved\": syntax error near \"rank\": this engine reserves RANK here; quote it to use it as an alias",
+    "Severity": "error"
+  }
+]

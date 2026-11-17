@@ -50,6 +50,12 @@ const (
 	// IdentNil represents the nil literal.
 	IdentNil = "nil"
 
+	// FieldNullValid is the generated Null type's field reporting that it holds a value.
+	FieldNullValid = "Valid"
+
+	// FieldNullValue is the generated Null type's field holding the value.
+	FieldNullValue = "V"
+
 	// IdentResults represents the results variable name.
 	IdentResults = "results"
 

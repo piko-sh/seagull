@@ -1,0 +1,4 @@
+{
+  "description": "An argument of unknown type chooses among overloads as PostgreSQL does (live on 17): scale($1) with the built-in scale(numeric) and a user scale(integer) is not unique, so it warns Q005; pick($1) takes the text overload, as the string category wins; weigh($1) over integer, numeric and double precision takes double precision, the preferred numeric type; a cast settles the choice.",
+  "expectedDiagnosticCount": 1
+}

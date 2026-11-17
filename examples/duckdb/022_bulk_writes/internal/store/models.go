@@ -3,9 +3,9 @@
 package store
 
 type Readings struct {
-	ID       int64   `json:"id"`
-	Station  string  `json:"station"`
-	Minute   int32   `json:"minute"`
-	HeightCm int32   `json:"height_cm"`
-	Note     *string `json:"note"`
+	ID       int64        `json:"id"`
+	Station  string       `json:"station"`
+	Minute   int32        `json:"minute"`
+	HeightCm int32        `json:"height_cm"`
+	Note     Null[string] `json:"note"`
 }

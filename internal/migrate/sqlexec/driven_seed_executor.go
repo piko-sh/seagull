@@ -21,13 +21,18 @@ package sqlexec
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
 	"seagull.sh/seagull/internal/migrate"
 	"seagull.sh/seagull/internal/observe"
 )
+
+// utf8ByteOrderMark is the byte order mark an editor may write at the start of a file.
+const utf8ByteOrderMark = "\uFEFF"
 
 const (
 	// seedPlaceholderVersion holds the 1-based index for the version column.
@@ -115,14 +120,24 @@ func newSeedExecutor(database *sql.DB, backend Backend, options ...ExecutorOptio
 }
 
 // EnsureSeedTable creates the seed history table ("<ns>_seeds", default "sgl_seeds") if
-// it does not exist.
+// it does not exist. As for the migration history, a table is created only when a read of
+// it fails, so a user who may write the tables but not create one can seed.
 //
 // Returns error when the table cannot be created.
 func (e *SeedExecutor) EnsureSeedTable(ctx context.Context) error {
 	table := e.seedTable()
-	_, err := e.runner().ExecContext(ctx, e.backend.engine.createSeedTable(table))
-	if err != nil {
+	if err := ensureTable(ctx, e.runner(), table, e.backend.engine.createSeedTable(table)); err != nil {
 		return fmt.Errorf("creating %s table: %w", table, err)
+	}
+	if err := upgradeAppliedAt(ctx, e.runner(), e.backend.engine.appliedAtUpgrade, table); err != nil {
+		return fmt.Errorf("upgrading %s table: %w", table, err)
+	}
+	if e.backend.engine.createProgressTable == nil {
+		return nil
+	}
+	progress := e.seedProgressTable()
+	if err := ensureTable(ctx, e.runner(), progress, e.backend.engine.createProgressTable(progress)); err != nil {
+		return fmt.Errorf("creating %s table: %w", progress, err)
 	}
 	return nil
 }
@@ -168,7 +183,17 @@ func (e *SeedExecutor) ExecuteSeed(ctx context.Context, seed migrate.SeedRecord)
 
 	runner := e.runner()
 	if !e.backend.engine.transactionalSeeds {
+		if e.backend.engine.createProgressTable != nil {
+			return e.applySeedResumably(ctx, runner, seed, start)
+		}
 		return e.applySeed(ctx, runner, seed, start)
+	}
+	statements, refused, checkError := e.seedRefusedInTransaction(ctx, seed)
+	if checkError != nil {
+		return checkError
+	}
+	if refused {
+		return e.applySeedStatements(ctx, runner, seed, statements, start)
 	}
 
 	transaction, beginError := runner.BeginTx(ctx, nil)
@@ -248,6 +273,12 @@ func (e *SeedExecutor) ClearSeedHistory(ctx context.Context) error {
 	_, err := e.runner().ExecContext(ctx, e.clearSeedHistorySQL())
 	if err != nil {
 		return fmt.Errorf("clearing seed history: %w", err)
+	}
+	if e.backend.engine.createProgressTable == nil {
+		return nil
+	}
+	if _, err := e.runner().ExecContext(ctx, e.clearTableSQL(e.seedProgressTable())); err != nil {
+		return fmt.Errorf("clearing seed progress: %w", err)
 	}
 	return nil
 }
@@ -364,11 +395,104 @@ func (*SeedExecutor) readAppliedSeeds(ctx context.Context, runner queryRunner, t
 //
 // Returns string which is the statement to run.
 func (e *SeedExecutor) clearSeedHistorySQL() string {
-	table := e.seedTable()
+	return e.clearTableSQL(e.seedTable())
+}
+
+// clearTableSQL returns the statement that empties a seed bookkeeping table, honouring
+// the engine's own statement when it has one.
+//
+// Takes table (string) which is the table as the run names it.
+//
+// Returns string which is the statement to run.
+func (e *SeedExecutor) clearTableSQL(table string) string {
 	if e.backend.engine.clearSeedHistory != nil {
 		return e.backend.engine.clearSeedHistory(table)
 	}
 	return "DELETE FROM " + table
+}
+
+// seedProgressTable names the seed progress table as the run names its tables.
+//
+// Returns string which is the table name to interpolate.
+//
+// Concurrency: reads the held run under the seed executor mutex.
+func (e *SeedExecutor) seedProgressTable() string {
+	e.mutex.Lock()
+	defer e.mutex.Unlock()
+	return qualifiedTable(e.backend.engine, e.held, e.backend.Names().SeedProgress)
+}
+
+// applySeedResumably runs a seed and records progress after each statement.
+//
+// On engines without transactional seeds, a stopped seed resumes after its last completed
+// statement. A later run of the same completed version starts over. A seed changed since
+// it stopped is rejected with migrate.ErrSeedChangedSinceInterrupted.
+//
+// Takes runner (execContextRunner) which executes the SQL.
+// Takes seed (migrate.SeedRecord) which holds the seed SQL and metadata.
+// Takes start (time.Time) which marks when execution began, for the recorded duration.
+//
+// Returns error when the seed changed since it stopped, a statement fails, or its
+// progress or history cannot be recorded.
+func (e *SeedExecutor) applySeedResumably(ctx context.Context, runner execContextRunner, seed migrate.SeedRecord, start time.Time) error {
+	statements, splitError := e.backend.engine.split(ctx, string(seed.Content))
+	if splitError != nil {
+		return fmt.Errorf("splitting seed statements: %w", splitError)
+	}
+	resumeAfter, err := e.seedProgress(ctx, seed, len(statements))
+	if err != nil {
+		return err
+	}
+	progressSQL := e.backend.engine.progressInsertSQL(e.seedProgressTable())
+	record := func(index int) error {
+		if _, err := runner.ExecContext(ctx, progressSQL, seed.Version, seed.Checksum, index); err != nil {
+			return fmt.Errorf("recording seed %d (%s) progress: %w", seed.Version, seed.Name, err)
+		}
+		return nil
+	}
+	for index := resumeAfter + 1; index < len(statements); index++ {
+		if cancelError := contextStopped(ctx); cancelError != nil {
+			return fmt.Errorf("seed cancelled before statement %d: %w", index+1, cancelError)
+		}
+		if _, err := runner.ExecContext(ctx, statements[index]); err != nil {
+			return fmt.Errorf("executing seed statement %d/%d: %w", index+1, len(statements), err)
+		}
+		if err := record(index); err != nil {
+			return err
+		}
+	}
+	if err := e.recordSeed(ctx, runner, seed, start); err != nil {
+		return err
+	}
+	return record(progressFinished)
+}
+
+// seedProgress reads the last statement a seed completed in an earlier run that stopped
+// partway.
+//
+// Takes seed (migrate.SeedRecord) which is the seed.
+// Takes statementCount (int) which is how many statements the seed splits into now.
+//
+// Returns int which is the zero-based index of the last completed statement, or -1 when
+// no earlier run completed one or the last run finished.
+// Returns error when the progress cannot be read or the seed changed since it stopped.
+func (e *SeedExecutor) seedProgress(ctx context.Context, seed migrate.SeedRecord, statementCount int) (int, error) {
+	query := e.backend.engine.progressReadSQL(e.seedProgressTable())
+	var checksum string
+	var last int
+	switch err := e.runner().QueryRowContext(ctx, query, seed.Version).Scan(&checksum, &last); {
+	case errors.Is(err, sql.ErrNoRows):
+		return progressFinished, nil
+	case err != nil:
+		return 0, fmt.Errorf("reading seed %d (%s) progress: %w", seed.Version, seed.Name, err)
+	case last < 0:
+		return progressFinished, nil
+	case checksum != seed.Checksum || last >= statementCount:
+		return 0, fmt.Errorf("seed %d (%s) completed statement %d before it stopped: %w", seed.Version, seed.Name, last+1,
+			migrate.ErrSeedChangedSinceInterrupted)
+	default:
+		return last, nil
+	}
 }
 
 // applySeed runs the seed SQL and records its history row on the given runner, which is
@@ -383,18 +507,67 @@ func (e *SeedExecutor) applySeed(ctx context.Context, runner execContextRunner, 
 	if executionError := e.executeSeedSQL(ctx, runner, seed.Content); executionError != nil {
 		return executionError
 	}
+	return e.recordSeed(ctx, runner, seed, start)
+}
 
+// applySeedStatements runs a seed's statements one at a time, even where the driver runs
+// a whole file in one call, then records its history row.
+//
+// Takes runner (execContextRunner) which executes the SQL.
+// Takes seed (migrate.SeedRecord) which holds the seed's metadata.
+// Takes statements ([]string) which holds the seed's statements, already split.
+// Takes start (time.Time) which marks when execution began, for the recorded duration.
+//
+// Returns error when a statement or the history insert fails.
+func (e *SeedExecutor) applySeedStatements(
+	ctx context.Context,
+	runner execContextRunner,
+	seed migrate.SeedRecord,
+	statements []string,
+	start time.Time,
+) error {
+	if executionError := executeSeedStatements(ctx, runner, statements); executionError != nil {
+		return executionError
+	}
+	return e.recordSeed(ctx, runner, seed, start)
+}
+
+// recordSeed inserts a seed's history row.
+//
+// Takes runner (execContextRunner) which executes the SQL.
+// Takes seed (migrate.SeedRecord) which holds the seed's metadata.
+// Takes start (time.Time) which marks when execution began, for the recorded duration.
+//
+// Returns error when the insert fails.
+func (e *SeedExecutor) recordSeed(ctx context.Context, runner execContextRunner, seed migrate.SeedRecord, start time.Time) error {
 	durationMs := e.clock.Now().Sub(start).Milliseconds()
-
-	insertSQL := e.renderSeedInsertSQL()
-
-	if _, insertError := runner.ExecContext(ctx, insertSQL,
+	if _, insertError := runner.ExecContext(ctx, e.renderSeedInsertSQL(),
 		seed.Version, seed.Name, seed.Checksum, durationMs,
 	); insertError != nil {
 		return fmt.Errorf("recording seed %d (%s): %w", seed.Version, seed.Name, insertError)
 	}
-
 	return nil
+}
+
+// seedRefusedInTransaction reports whether a seed holds a statement the engine refuses
+// inside a transaction, such as PostgreSQL's VACUUM.
+//
+// It recognises them as the migration runner does. Such a seed runs without a
+// transaction, a statement at a time, and is recorded once it has run, as on an engine
+// whose seeds cannot share a transaction with their record.
+//
+// Takes seed (migrate.SeedRecord) which holds the seed's SQL.
+//
+// Returns []string which holds the seed's statements.
+// Returns bool which is true when the seed must run without a transaction.
+// Returns error when the seed cannot be split or the engine's rules panic.
+func (e *SeedExecutor) seedRefusedInTransaction(ctx context.Context, seed migrate.SeedRecord) ([]string, bool, error) {
+	statements, err := e.backend.engine.split(ctx, strings.TrimPrefix(string(seed.Content), utf8ByteOrderMark))
+	if err != nil {
+		return nil, false, fmt.Errorf("splitting seed %d (%s): %w", seed.Version, seed.Name, err)
+	}
+	refused, err := e.backend.engine.requiresNoTransaction(ctx, statements)
+	return statements, refused, err
 }
 
 // renderSeedInsertSQL builds the engine's idempotent INSERT for the seed history table.
@@ -412,8 +585,10 @@ func (e *SeedExecutor) renderSeedInsertSQL() string {
 
 // executeSeedSQL executes the seed SQL content against the given runner.
 //
-// Engines whose driver runs several statements in one call take the whole file; the
-// others split it and run each statement separately.
+// Engines whose driver runs several statements in one call take the whole file, without a
+// leading byte order mark an editor may have written, which the engine would read as part
+// of the first statement. The others split it and run each statement separately, and the
+// splitter skips the mark.
 //
 // Takes runner (execContextRunner) which executes the SQL.
 // Takes content ([]byte) which holds the raw seed SQL.
@@ -421,7 +596,7 @@ func (e *SeedExecutor) renderSeedInsertSQL() string {
 // Returns error when any statement fails to execute.
 func (e *SeedExecutor) executeSeedSQL(ctx context.Context, runner execContextRunner, content []byte) error {
 	if e.backend.engine.multiStatementSeeds {
-		if _, err := runner.ExecContext(ctx, string(content)); err != nil {
+		if _, err := runner.ExecContext(ctx, strings.TrimPrefix(string(content), utf8ByteOrderMark)); err != nil {
 			return fmt.Errorf("executing seed SQL: %w", err)
 		}
 		return nil
@@ -431,7 +606,17 @@ func (e *SeedExecutor) executeSeedSQL(ctx context.Context, runner execContextRun
 	if splitError != nil {
 		return fmt.Errorf("splitting seed statements: %w", splitError)
 	}
+	return executeSeedStatements(ctx, runner, statements)
+}
 
+// executeSeedStatements runs a seed's statements one at a time, stopping at the first
+// that fails or when ctx ends.
+//
+// Takes runner (execContextRunner) which executes the SQL.
+// Takes statements ([]string) which holds the seed's statements.
+//
+// Returns error when ctx ends or a statement fails.
+func executeSeedStatements(ctx context.Context, runner execContextRunner, statements []string) error {
 	for index, statement := range statements {
 		if cancelError := contextStopped(ctx); cancelError != nil {
 			return fmt.Errorf("seed cancelled before statement %d: %w", index+1, cancelError)
@@ -440,6 +625,5 @@ func (e *SeedExecutor) executeSeedSQL(ctx context.Context, runner execContextRun
 			return fmt.Errorf("executing seed statement %d/%d: %w", index+1, len(statements), err)
 		}
 	}
-
 	return nil
 }

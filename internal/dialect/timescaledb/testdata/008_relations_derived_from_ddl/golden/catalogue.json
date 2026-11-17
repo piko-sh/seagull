@@ -37,6 +37,19 @@
               }
             }
           ],
+          "Constraints": [
+            {
+              "Columns": [
+                "id"
+              ],
+              "Kind": "primary-key",
+              "Name": "snapshots_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql",
+                "Statement": 8
+              }
+            }
+          ],
           "Name": "snapshots",
           "Origin": {
             "Filename": "001_schema.up.sql",

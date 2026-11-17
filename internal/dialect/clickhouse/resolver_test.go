@@ -167,7 +167,7 @@ func TestResolveIfMixedSignEqualWidthWidensToSigned(t *testing.T) {
 	}
 }
 
-func TestResolveIfMixedSign64BitKeepsLeftOperand(t *testing.T) {
+func TestResolveIfOfAUInt64AndAnInt64HasNoCommonType(t *testing.T) {
 	t.Parallel()
 	resolver := newFunctionResolver()
 	argumentTypes := []sqlmodel.SQLType{
@@ -178,8 +178,8 @@ func TestResolveIfMixedSign64BitKeepsLeftOperand(t *testing.T) {
 	resolution, err := resolver.ResolveFunctionCall(t.Context(), nil, "if", "", argumentTypes)
 	require.NoError(t, err)
 	require.NotNil(t, resolution, "expected a resolution for if(bool, Int64, UInt64)")
-	assert.Equal(t, "Int64", resolution.ReturnType.EngineName,
-		"Int64 vs UInt64 is out of scope (stock ClickHouse throws); expected the left operand Int64")
+	assert.Equal(t, sqlmodel.TypeCategoryUnknown, resolution.ReturnType.Category,
+		"no integer holds both an Int64 and a UInt64: ClickHouse reads the pair as a Variant, or refuses it")
 }
 
 func TestResolveCoalesceReturnsFirstNonNullType(t *testing.T) {
@@ -944,29 +944,34 @@ func TestResolveFloatResultKeepsAFloat32(t *testing.T) {
 	assert.Nil(t, resolveFloatResult(nil))
 }
 
-func TestResolveSupertypeTypesGreatestByTheLeastSupertype(t *testing.T) {
+func TestResolveGreatestLeastTypesAsTheServerDoes(t *testing.T) {
 	t.Parallel()
 
 	decimal := sqlmodel.NewSQLType(sqlmodel.TypeCategoryDecimal, "Decimal(12, 3)")
 	testCases := []struct {
 		name      string
-		arguments []sqlmodel.SQLType
+		function  string
 		want      string
+		arguments []sqlmodel.SQLType
 	}{
-		{name: "two integers meet in the wider", arguments: []sqlmodel.SQLType{primitiveType("Int16"), primitiveType("Int32")}, want: "Int32"},
-		{name: "a short integer and a Float32 meet in the Float32", arguments: []sqlmodel.SQLType{primitiveType("Int16"), primitiveType("Float32")}, want: "Float32"},
-		{name: "a wide integer and a Float32 meet in Float64", arguments: []sqlmodel.SQLType{primitiveType("Float32"), primitiveType("Int32")}, want: "Float64"},
-		{name: "a decimal and a float meet in Float64", arguments: []sqlmodel.SQLType{decimal, primitiveType("Float32")}, want: "Float64"},
-		{name: "an integer and a decimal meet in the decimal", arguments: []sqlmodel.SQLType{primitiveType("Int64"), decimal}, want: "Decimal(12, 3)"},
+		{name: "two integers meet in the wider", function: "greatest", arguments: []sqlmodel.SQLType{primitiveType("Int16"), primitiveType("Int32")}, want: "Int32"},
+		{name: "a short integer and a Float32 meet in the Float32", function: "greatest", arguments: []sqlmodel.SQLType{primitiveType("Int16"), primitiveType("Float32")}, want: "Float32"},
+		{name: "a wide integer and a Float32 meet in Float64", function: "least", arguments: []sqlmodel.SQLType{primitiveType("Float32"), primitiveType("Int32")}, want: "Float64"},
+		{name: "a decimal and a float meet in Float64", function: "greatest", arguments: []sqlmodel.SQLType{decimal, primitiveType("Float32")}, want: "Float64"},
+		{name: "an integer and a decimal meet in the decimal", function: "least", arguments: []sqlmodel.SQLType{primitiveType("Int64"), decimal}, want: "Decimal(12, 3)"},
+		{name: "a signed and an unsigned integer meet in twice the unsigned width", function: "greatest", arguments: []sqlmodel.SQLType{primitiveType("UInt16"), primitiveType("Int8")}, want: "Int32"},
+		{name: "a UInt64 and an Int8 meet in an Int128", function: "least", arguments: []sqlmodel.SQLType{primitiveType("UInt64"), primitiveType("Int8")}, want: "Int128"},
+		{name: "greatest of a UInt64 and an Int64 is a UInt64", function: "greatest", arguments: []sqlmodel.SQLType{primitiveType("UInt64"), primitiveType("Int64")}, want: "UInt64"},
+		{name: "least of a UInt64 and an Int64 is an Int64", function: "least", arguments: []sqlmodel.SQLType{primitiveType("Int64"), primitiveType("UInt64")}, want: "Int64"},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, testCase.want, resolveSupertype(testCase.arguments).ReturnType.EngineName)
+			assert.Equal(t, testCase.want, resolveGreatestLeast(testCase.arguments, testCase.function).ReturnType.EngineName)
 		})
 	}
-	assert.Nil(t, resolveSupertype(nil))
+	assert.Nil(t, resolveGreatestLeast(nil, "greatest"))
 }
 
 func TestResolveCoalesceTypesOnlyUpToTheFirstNonNullableArgument(t *testing.T) {

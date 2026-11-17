@@ -210,6 +210,11 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        0
+      ]
+    },
     "SQL": "-- sgl.query(name: BooksAfter, command: many)\nSELECT id, title FROM books WHERE (published, id) \u003e (?, ?) ORDER BY published, id;",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1:title⟩ FROM books WHERE (published, id) \u003e (⟨p0⟩, ⟨p1⟩) ORDER BY published, id;⟨arguments p0 p1⟩"
   },

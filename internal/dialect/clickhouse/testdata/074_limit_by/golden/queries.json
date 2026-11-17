@@ -41,6 +41,12 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Named": [
+        1,
+        2
+      ]
+    },
     "SQL": "-- sgl.query(LatestPerCat, many)\nSELECT id, cat, ts FROM t ORDER BY cat, ts DESC LIMIT 3 BY cat;",
     "Template": "SELECT ⟨c0:id⟩, ⟨c1:cat⟩, ⟨c2:ts⟩ FROM t ORDER BY cat, ts DESC LIMIT 3 BY cat;"
   }

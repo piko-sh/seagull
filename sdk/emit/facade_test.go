@@ -53,6 +53,7 @@ func TestEmitFacadeAPI(t *testing.T) {
 		"QueryParameter": emit.QueryParameter{},
 		"OutputColumn":   emit.OutputColumn{},
 		"AllowedColumn":  emit.AllowedColumn{},
+		"ResultShape":    emit.ResultShape{},
 		"SQLTemplate":    emit.SQLTemplate{},
 		"SQLSegment":     emit.SQLSegment{},
 

@@ -23,3 +23,8 @@ import "errors"
 // errNotRegularFile is returned when a path names something other than a regular file,
 // such as a directory, a named pipe or a device.
 var errNotRegularFile = errors.New("not a regular file")
+
+// errMisnamedMigration marks a file named so that it would never run. That is a file that
+// looks like a migration but does not follow {version}_{name}.up.sql or .down.sql, or a
+// migration in the seed directory.
+var errMisnamedMigration = errors.New("misnamed migration file")

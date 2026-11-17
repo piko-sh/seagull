@@ -16,9 +16,9 @@ GROUP BY buoy
 ORDER BY buoy;`
 
 type FirstAndLastRow struct {
-	Buoy             string   `json:"buoy"`
-	FirstTemperature *float64 `json:"first_temperature"`
-	LastTemperature  *float64 `json:"last_temperature"`
+	Buoy             string        `json:"buoy"`
+	FirstTemperature Null[float64] `json:"first_temperature"`
+	LastTemperature  Null[float64] `json:"last_temperature"`
 }
 
 func (queries *Queries) FirstAndLast(ctx context.Context) ([]FirstAndLastRow, error) {
@@ -28,12 +28,16 @@ func (queries *Queries) FirstAndLast(ctx context.Context) ([]FirstAndLastRow, er
 	}
 	defer rows.Close()
 	var results []FirstAndLastRow
-	for rows.Next() {
+	if rows.Next() {
 		var row FirstAndLastRow
-		if err := rows.Scan(&row.Buoy, &row.FirstTemperature, &row.LastTemperature); err != nil {
-			return nil, err
+		scanArgs := []any{&row.Buoy, &row.FirstTemperature, &row.LastTemperature}
+		for more := true; more; more = rows.Next() {
+			row = FirstAndLastRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -57,9 +61,9 @@ type GapfilledHourlyParams struct {
 }
 
 type GapfilledHourlyRow struct {
-	Bucket  *time.Time `json:"bucket"`
-	Mean    *float64   `json:"mean"`
-	Carried *float64   `json:"carried"`
+	Bucket  Null[time.Time] `json:"bucket"`
+	Mean    Null[float64]   `json:"mean"`
+	Carried Null[float64]   `json:"carried"`
 }
 
 func (queries *Queries) GapfilledHourly(ctx context.Context, params GapfilledHourlyParams) ([]GapfilledHourlyRow, error) {
@@ -69,12 +73,16 @@ func (queries *Queries) GapfilledHourly(ctx context.Context, params GapfilledHou
 	}
 	defer rows.Close()
 	var results []GapfilledHourlyRow
-	for rows.Next() {
+	if rows.Next() {
 		var row GapfilledHourlyRow
-		if err := rows.Scan(&row.Bucket, &row.Mean, &row.Carried); err != nil {
-			return nil, err
+		scanArgs := []any{&row.Bucket, &row.Mean, &row.Carried}
+		for more := true; more; more = rows.Next() {
+			row = GapfilledHourlyRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -89,8 +97,8 @@ GROUP BY bucket
 ORDER BY bucket;`
 
 type HourlyAveragesRow struct {
-	Bucket time.Time `json:"bucket"`
-	Mean   *float64  `json:"mean"`
+	Bucket time.Time     `json:"bucket"`
+	Mean   Null[float64] `json:"mean"`
 }
 
 func (queries *Queries) HourlyAverages(ctx context.Context, buoy string) ([]HourlyAveragesRow, error) {
@@ -100,12 +108,16 @@ func (queries *Queries) HourlyAverages(ctx context.Context, buoy string) ([]Hour
 	}
 	defer rows.Close()
 	var results []HourlyAveragesRow
-	for rows.Next() {
+	if rows.Next() {
 		var row HourlyAveragesRow
-		if err := rows.Scan(&row.Bucket, &row.Mean); err != nil {
-			return nil, err
+		scanArgs := []any{&row.Bucket, &row.Mean}
+		for more := true; more; more = rows.Next() {
+			row = HourlyAveragesRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

@@ -106,9 +106,9 @@ const (
 	//
 	// The generated <query>CountSQL constant wraps the original SELECT in `SELECT COUNT(*)
 	// FROM (<original>) sub` because the query contains GROUP BY, HAVING, DISTINCT, an
-	// aggregate, window or set-returning function, or a compound query. Wrapping makes
-	// .Count(ctx) return the outer-result-row cardinality rather than the inner-table
-	// cardinality.
+	// aggregate, window or set-returning function, a compound query, or a clause that picks
+	// its own rows such as LIMIT. Wrapping makes .Count(ctx) return the outer-result-row
+	// cardinality rather than the inner-table cardinality.
 	CodeCountSemanticsWrapped = "Q023"
 
 	// CodeCountRewriteUnavailable is a warning.
@@ -378,4 +378,22 @@ const (
 	// CodeViewDerivationUnsettled indicates that deriving again the columns of views that
 	// follow their tables did not settle within the limit on rounds.
 	CodeViewDerivationUnsettled = "Q071"
+
+	// CodeRuntimeBuilderChangesData indicates a dynamic: runtime query whose statement
+	// changes data, which each of the builder's terminals, Count among them, would run
+	// again.
+	CodeRuntimeBuilderChangesData = "Q072"
+
+	// CodeMigrationTransactionControl indicates a migration that writes BEGIN, COMMIT,
+	// ROLLBACK or another statement that controls a transaction the runner owns.
+	CodeMigrationTransactionControl = "Q073"
+
+	// CodeFullTextWithoutIndex indicates a full-text search over columns no full-text index
+	// of the table covers exactly, which the engine refuses when the query runs.
+	CodeFullTextWithoutIndex = "Q074"
+
+	// CodeRuntimeBuilderRowNames indicates a dynamic: runtime query that picks its own rows
+	// but whose output columns lack names no other column has, so its rows cannot be read
+	// from a derived table by name.
+	CodeRuntimeBuilderRowNames = "Q075"
 )

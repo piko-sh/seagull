@@ -12,10 +12,10 @@ import (
 const beachRecordsSQL = `SELECT beach, gulls, thefts, last_theft FROM beach_records ORDER BY beach;`
 
 type BeachRecordsRow struct {
-	Beach     string     `json:"beach"`
-	Gulls     uint64     `json:"gulls"`
-	Thefts    uint64     `json:"thefts"`
-	LastTheft *time.Time `json:"last_theft"`
+	Beach     string          `json:"beach"`
+	Gulls     uint64          `json:"gulls"`
+	Thefts    uint64          `json:"thefts"`
+	LastTheft Null[time.Time] `json:"last_theft"`
 }
 
 func (queries *Queries) BeachRecords(ctx context.Context) ([]BeachRecordsRow, error) {
@@ -25,12 +25,16 @@ func (queries *Queries) BeachRecords(ctx context.Context) ([]BeachRecordsRow, er
 	}
 	defer rows.Close()
 	var results []BeachRecordsRow
-	for rows.Next() {
+	if rows.Next() {
 		var row BeachRecordsRow
-		if err := rows.Scan(&row.Beach, &row.Gulls, &row.Thefts, &row.LastTheft); err != nil {
-			return nil, err
+		scanArgs := []any{&row.Beach, &row.Gulls, &row.Thefts, &row.LastTheft}
+		for more := true; more; more = rows.Next() {
+			row = BeachRecordsRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -54,9 +58,9 @@ ORDER BY family.generation, family.id
 SETTINGS join_use_nulls = 1;`
 
 type FamilyTreeRow struct {
-	Name       string  `json:"name"`
-	Generation uint8   `json:"generation"`
-	Parent     *string `json:"parent"`
+	Name       string       `json:"name"`
+	Generation uint8        `json:"generation"`
+	Parent     Null[string] `json:"parent"`
 }
 
 func (queries *Queries) FamilyTree(ctx context.Context, root uint64) ([]FamilyTreeRow, error) {
@@ -66,12 +70,16 @@ func (queries *Queries) FamilyTree(ctx context.Context, root uint64) ([]FamilyTr
 	}
 	defer rows.Close()
 	var results []FamilyTreeRow
-	for rows.Next() {
+	if rows.Next() {
 		var row FamilyTreeRow
-		if err := rows.Scan(&row.Name, &row.Generation, &row.Parent); err != nil {
-			return nil, err
+		scanArgs := []any{&row.Name, &row.Generation, &row.Parent}
+		for more := true; more; more = rows.Next() {
+			row = FamilyTreeRow{}
+			if err := rows.Scan(scanArgs...); err != nil {
+				return nil, err
+			}
+			results = append(results, row)
 		}
-		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -85,7 +93,7 @@ VALUES ({p_id:UInt64}, {p_name:String}, {p_parent_id:Nullable(UInt64)}, {p_beach
 type HatchGullParams struct {
 	ID       uint64
 	Name     string
-	ParentID *uint64
+	ParentID Null[uint64]
 	Beach    string
 }
 

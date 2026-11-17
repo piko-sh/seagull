@@ -12,16 +12,16 @@ FROM landings
 WHERE id = ?1;`
 
 type GetLandingRow struct {
-	ID       int64     `json:"id"`
-	Species  string    `json:"species"`
-	Boxes    int64     `json:"boxes"`
-	Fish     int64     `json:"fish"`
-	WeightG  int64     `json:"weight_g"`
-	LengthCm float64   `json:"length_cm"`
-	OnIce    bool      `json:"on_ice"`
-	LandedAt time.Time `json:"landed_at"`
-	Tag      []byte    `json:"tag"`
-	Notes    *string   `json:"notes"`
+	ID       int64        `json:"id"`
+	Species  string       `json:"species"`
+	Boxes    int64        `json:"boxes"`
+	Fish     int64        `json:"fish"`
+	WeightG  int64        `json:"weight_g"`
+	LengthCm float64      `json:"length_cm"`
+	OnIce    bool         `json:"on_ice"`
+	LandedAt time.Time    `json:"landed_at"`
+	Tag      []byte       `json:"tag"`
+	Notes    Null[string] `json:"notes"`
 }
 
 func (queries *Queries) GetLanding(ctx context.Context, id int64) (GetLandingRow, error) {
@@ -46,7 +46,7 @@ type RecordLandingParams struct {
 	OnIce    bool
 	LandedAt time.Time
 	Tag      []byte
-	Notes    *string
+	Notes    Null[string]
 }
 
 type RecordLandingRow struct {
@@ -55,7 +55,7 @@ type RecordLandingRow struct {
 
 func (queries *Queries) RecordLanding(ctx context.Context, params RecordLandingParams) (RecordLandingRow, error) {
 	var row RecordLandingRow
-	err := queries.writer.QueryRowContext(ctx, recordLandingSQL, params.Species, params.Boxes, params.Fish, params.WeightG, params.LengthCm, params.OnIce, params.LandedAt, params.Tag, params.Notes).Scan(&row.ID)
+	err := queries.writer.QueryRowContext(ctx, recordLandingSQL, params.Species, params.Boxes, params.Fish, params.WeightG, params.LengthCm, params.OnIce, params.LandedAt, sglNonNil(params.Tag), params.Notes).Scan(&row.ID)
 	if err != nil {
 		return RecordLandingRow{}, err
 	}

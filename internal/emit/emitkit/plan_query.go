@@ -57,6 +57,16 @@ const (
 	// suffixCountConstant ends the name of a runtime builder's count constant.
 	suffixCountConstant = "CountSQL"
 
+	// suffixFilteredConstant ends the name of a runtime builder's filtered SQL constant.
+	suffixFilteredConstant = "FilteredSQL"
+
+	// suffixFilteredCountConstant ends the name of a runtime builder's filtered count
+	// constant.
+	suffixFilteredCountConstant = "FilteredCountSQL"
+
+	// suffixFilteredColumns ends the name of a runtime builder's output column variable.
+	suffixFilteredColumns = "FilteredColumns"
+
 	// prefixColumnLocal starts the local a grouped query scans a column of no embed into.
 	prefixColumnLocal = "col"
 
@@ -119,6 +129,13 @@ func (p *queryPlanner) planPackageLevel() {
 	}
 	if p.query.DynamicRuntime {
 		p.naming.AllowedColumns = p.claimValue(camel + suffixAllowedColumns)
+	}
+	if filtersResult(p.query) {
+		p.naming.FilteredConstant = p.claimValue(camel + suffixFilteredConstant)
+		if p.query.FilteredCountTemplate != nil {
+			p.naming.FilteredCountConstant = p.claimValue(camel + suffixFilteredCountConstant)
+		}
+		p.naming.FilteredColumns = p.claimValue(camel + suffixFilteredColumns)
 	}
 	if takesParamsStruct(p.query) {
 		p.naming.Params = p.claim(method + suffixParams)
@@ -374,6 +391,9 @@ func inlinesParameter(query *sqlmodel.AnalysedQuery) bool {
 //
 // Returns bool which is true when the query declares a Params struct.
 func takesParamsStruct(query *sqlmodel.AnalysedQuery) bool {
+	if query.Command == sqlmodel.QueryCommandBatch || query.Command == sqlmodel.QueryCommandCopyFrom {
+		return true
+	}
 	return len(query.Parameters) > 0 && !inlinesParameter(query)
 }
 
@@ -402,6 +422,16 @@ func needsRow(query *sqlmodel.AnalysedQuery) bool {
 // Returns bool which is true when the query declares a count constant.
 func countsRows(query *sqlmodel.AnalysedQuery) bool {
 	return query.DynamicRuntime && query.CountTemplate != nil
+}
+
+// filtersResult reports whether a runtime builder query's conditions filter its result
+// rows through a template of their own.
+//
+// Takes query (*sqlmodel.AnalysedQuery) which is the query.
+//
+// Returns bool which is true when the query declares a filtered SQL constant.
+func filtersResult(query *sqlmodel.AnalysedQuery) bool {
+	return query.DynamicRuntime && query.FilteredTemplate != nil
 }
 
 // groupsRows reports whether a query groups its rows by a key, scanning every column into

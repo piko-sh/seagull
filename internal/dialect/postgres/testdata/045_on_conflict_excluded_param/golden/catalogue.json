@@ -46,6 +46,18 @@
               }
             }
           ],
+          "Constraints": [
+            {
+              "Columns": [
+                "key"
+              ],
+              "Kind": "primary-key",
+              "Name": "counters_pkey",
+              "Origin": {
+                "Filename": "001_schema.up.sql"
+              }
+            }
+          ],
           "Name": "counters",
           "Origin": {
             "Filename": "001_schema.up.sql"

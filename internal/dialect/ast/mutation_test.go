@@ -328,6 +328,51 @@ func TestNewCatalogueMutation(t *testing.T) {
 			},
 		},
 		{
+			name:    "a column given a default",
+			options: []CatalogueMutationOption{WithColumnDefault(true)},
+			want: func() *CatalogueMutation {
+				mutation := &CatalogueMutation{}
+				mutation.SetsDefault = true
+				return mutation
+			},
+		},
+		{
+			name:    "a column's default dropped",
+			options: []CatalogueMutationOption{WithColumnDefault(false)},
+			want: func() *CatalogueMutation {
+				mutation := &CatalogueMutation{}
+				mutation.DropsDefault = true
+				return mutation
+			},
+		},
+		{
+			name:    "an index definition marked full-text",
+			options: []CatalogueMutationOption{WithIndexDefinition("idx", []string{"title"}, true), WithFullTextIndex()},
+			want: func() *CatalogueMutation {
+				mutation := &CatalogueMutation{}
+				mutation.NewName = "idx"
+				mutation.Index = &sqlmodel.Index{Name: "idx", Columns: []string{"title"}, IsUnique: true, IsPrimary: false, IsFullText: true, Origin: sqlmodel.MigrationOrigin{}}
+				return mutation
+			},
+		},
+		{
+			name:    "a full-text mark with no index",
+			options: []CatalogueMutationOption{WithFullTextIndex()},
+			want: func() *CatalogueMutation {
+				return &CatalogueMutation{}
+			},
+		},
+		{
+			name:    "an index scope and a column index policy",
+			options: []CatalogueMutationOption{WithIndexScope(IndexNamesInTable), WithDroppedColumnIndexes(ColumnIndexesTrim)},
+			want: func() *CatalogueMutation {
+				mutation := &CatalogueMutation{}
+				mutation.IndexScope = IndexNamesInTable
+				mutation.DroppedColumnIndexes = ColumnIndexesTrim
+				return mutation
+			},
+		},
+		{
 			name:    "a column's type with array dimensions",
 			options: []CatalogueMutationOption{WithColumnName("tags"), WithColumnType(text, 2)},
 			want: func() *CatalogueMutation {
@@ -431,4 +476,15 @@ func TestObjectKindString_NamesEachKind(t *testing.T) {
 			assert.Equal(t, testCase.want, testCase.kind.String())
 		})
 	}
+}
+
+func TestWithIndexDefinitionCopiesTheColumns(t *testing.T) {
+	t.Parallel()
+
+	columns := []string{"a", "b"}
+	mutation := NewCatalogueMutation(MutationCreateIndex, "", "t", WithIndexDefinition("idx", columns, false))
+	columns[0] = "changed"
+
+	require.NotNil(t, mutation.Index)
+	assert.Equal(t, []string{"a", "b"}, mutation.Index.Columns)
 }

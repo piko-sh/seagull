@@ -440,7 +440,7 @@ func (p *parser) parseCreateView() (*ast.CatalogueMutation, error) {
 
 	declaredColumns := p.tryParseViewColumnList()
 	p.MatchKeyword("AS")
-	mutation.ViewDefinition = p.analyseViewBody(declaredColumns)
+	mutation.ViewDefinition = p.analyseViewBody(declaredColumns, dialectkit.UndeclaredColumnsRefused)
 	if mutation.ViewDefinition != nil {
 		mutation.Columns = dialectkit.ColumnsFromNames(declaredColumns)
 	}
@@ -484,11 +484,15 @@ func (p *parser) tryParseViewColumnList() []string {
 //
 // Takes declaredColumns ([]string) which are the explicit view column names that override
 // the analyser's output names when present.
+// Takes undeclared (dialectkit.UndeclaredColumns) which says whether a declared list
+// shorter than the query is taken. A plain view's list renames the query's columns by
+// position, and the engine refuses one of another length. A materialised view's list is
+// the target table's schema, which it matches by name.
 //
 // Returns *ast.RawQueryAnalysis which is the analysed SELECT body, or nil when the body
 // is empty, not a SELECT, or cannot be analysed; a body that fails only because it nests
 // too deeply is recorded as the parser's syntax error rather than dropped.
-func (p *parser) analyseViewBody(declaredColumns []string) *ast.RawQueryAnalysis {
+func (p *parser) analyseViewBody(declaredColumns []string, undeclared dialectkit.UndeclaredColumns) *ast.RawQueryAnalysis {
 	remainingTokens := p.Tokens[p.Position:]
 	if len(remainingTokens) == 0 {
 		p.consumeRemainder()
@@ -509,7 +513,10 @@ func (p *parser) analyseViewBody(declaredColumns []string) *ast.RawQueryAnalysis
 	p.consumeRemainder()
 
 	if len(declaredColumns) > 0 {
-		dialectkit.OverlayViewColumnNames(viewAnalysis, declaredColumns, dialectkit.UndeclaredColumnsKept)
+		if overlayErr := dialectkit.OverlayViewColumnNames(viewAnalysis, declaredColumns, undeclared); overlayErr != nil {
+			p.recordSyntaxError(dialectkit.NewParseError(p.Current(), overlayErr.Error()))
+			return nil
+		}
 	}
 	return viewAnalysis
 }
@@ -616,7 +623,7 @@ func (p *parser) parseMaterializedViewBody(mutation *ast.CatalogueMutation, decl
 		p.consumeRemainder()
 		return mutation
 	}
-	mutation.ViewDefinition = p.analyseViewBody(declaredColumns)
+	mutation.ViewDefinition = p.analyseViewBody(declaredColumns, dialectkit.UndeclaredColumnsKept)
 	if mutation.ViewDefinition != nil {
 		mutation.Columns = dialectkit.ColumnsFromNames(declaredColumns)
 	}

@@ -23,6 +23,6 @@ type PlacesArea struct {
 }
 
 type PlacesSearch struct {
-	Name        *string `json:"name"`
-	Description *string `json:"description"`
+	Name        Null[string] `json:"name"`
+	Description Null[string] `json:"description"`
 }

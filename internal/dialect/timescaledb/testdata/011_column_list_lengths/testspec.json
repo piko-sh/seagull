@@ -1,0 +1,4 @@
+{
+  "description": "TimescaleDB, as PostgreSQL, takes a shorter CTE or derived table column list, renaming the leading columns, and refuses one naming more.",
+  "expectedDiagnosticCount": 2
+}

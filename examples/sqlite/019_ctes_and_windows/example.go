@@ -27,17 +27,7 @@ import (
 	"seagull.sh/seagull/examples/sqlite/019_ctes_and_windows/internal/store"
 )
 
-// run hatches a colony of gulls, records their snack thefts and reads them back three
-// ways. Seagull follows each column's type and nullability through the SQL:
-//
-//   - FamilyTree's recursive CTE starts from one gull and joins its chicks generation by
-//     generation; generation is an integer from 0 AS generation and generation + 1, and
-//     parent is *string because the LEFT JOIN finds no parent for the first gull;
-//   - TheftLeague counts thefts in a CTE, then ranks gulls on each beach with RANK() and
-//     totals the beach with SUM() OVER; RANK is never NULL, while SUM is nullable, as SQL
-//     sums no rows to NULL;
-//   - BeachRecords reads the beach_records view from the migration as if it were a table,
-//     and its columns keep the types the view's own SELECT gives them.
+// run reads gull thefts with CTE and window queries.
 //
 // Takes database (*sql.DB) which is a migrated database.
 // Takes output (io.Writer) which receives the three listings.
@@ -47,12 +37,12 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 	queries := store.New(database)
 
 	gulls := []store.HatchGullParams{
-		{Name: "Steven", ParentID: nil, Beach: "Porthmeor"},
-		{Name: "Gwen", ParentID: new(int64(1)), Beach: "Porthmeor"},
-		{Name: "Jago", ParentID: new(int64(1)), Beach: "Porthminster"},
-		{Name: "Kerensa", ParentID: new(int64(2)), Beach: "Porthmeor"},
-		{Name: "Tristan", ParentID: nil, Beach: "Porthminster"},
-		{Name: "Morwenna", ParentID: nil, Beach: "Gwithian"},
+		{Name: "Steven", ParentID: store.Null[int64]{}, Beach: "Porthmeor"},
+		{Name: "Gwen", ParentID: store.NullOf(int64(1)), Beach: "Porthmeor"},
+		{Name: "Jago", ParentID: store.NullOf(int64(1)), Beach: "Porthminster"},
+		{Name: "Kerensa", ParentID: store.NullOf(int64(2)), Beach: "Porthmeor"},
+		{Name: "Tristan", ParentID: store.Null[int64]{}, Beach: "Porthminster"},
+		{Name: "Morwenna", ParentID: store.Null[int64]{}, Beach: "Gwithian"},
 	}
 	for _, gull := range gulls {
 		if err := queries.HatchGull(ctx, gull); err != nil {
@@ -103,14 +93,14 @@ func run(ctx context.Context, database *sql.DB, output io.Writer) error {
 	return nil
 }
 
-// orNull formats a nullable field, or returns NULL when the field is nil.
+// orNull formats a nullable field, or returns NULL when it holds none.
 //
-// Takes value (*T) which is a nullable field.
+// Takes value (store.Null[T]) which is a nullable field.
 //
 // Returns string which is the text to print.
-func orNull[T any](value *T) string {
-	if value == nil {
+func orNull[T any](value store.Null[T]) string {
+	if !value.Valid {
 		return "NULL"
 	}
-	return fmt.Sprint(*value)
+	return fmt.Sprint(value.V)
 }

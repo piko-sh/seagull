@@ -53,7 +53,7 @@ SELECT lower(category) AS kind, count(*) AS total, max(date(quote_date)) AS late
 FROM quotes GROUP BY lower(category) HAVING count(*) > ? AND max(price) < ? ORDER BY count(*) DESC, lower(category);
 
 -- sgl.query(name: Subtotals, command: many)
-SELECT category, count(*) AS total FROM quotes GROUP BY category WITH ROLLUP ORDER BY category;
+SELECT category, count(*) AS total FROM quotes GROUP BY category WITH ROLLUP;
 
 -- sgl.query(name: DistinctKinds, command: many)
 SELECT DISTINCT lower(category) AS kind FROM quotes ORDER BY lower(category);

@@ -38,9 +38,11 @@ func fullyPopulatedQuery() *sqlmodel.AnalysedQuery {
 		Arguments: []int{0},
 	}
 	return &sqlmodel.AnalysedQuery{
-		Name:          "ListThings",
-		Template:      template,
-		CountTemplate: new(template),
+		Name:                  "ListThings",
+		Template:              template,
+		CountTemplate:         new(template),
+		FilteredTemplate:      new(template),
+		FilteredCountTemplate: new(template),
 		Parameters: []sqlmodel.QueryParameter{{
 			Name:            "limit",
 			DefaultLimit:    new(10),
@@ -59,6 +61,7 @@ func fullyPopulatedQuery() *sqlmodel.AnalysedQuery {
 		GroupByKey:     []string{"id"},
 		InsertColumns:  []string{"id"},
 		AllowedColumns: []sqlmodel.AllowedColumn{{Name: "id", SQLType: fullyPopulatedType()}},
+		ResultShape:    sqlmodel.ResultShape{Named: []int{0}, Distinct: true},
 	}
 }
 
@@ -103,8 +106,11 @@ func TestChangingAClonedQueryLeavesTheOriginal(t *testing.T) {
 		{name: "a template segment", change: func(query *sqlmodel.AnalysedQuery) { query.Template.Segments[0].Children[0].Text = "x" }},
 		{name: "a template's star columns", change: func(query *sqlmodel.AnalysedQuery) { query.Template.Segments[0].Star[0].Name = "x" }},
 		{name: "the count template", change: func(query *sqlmodel.AnalysedQuery) { query.CountTemplate.Arguments[0] = 9 }},
+		{name: "the filtered template", change: func(query *sqlmodel.AnalysedQuery) { query.FilteredTemplate.Arguments[0] = 9 }},
+		{name: "the filtered count template", change: func(query *sqlmodel.AnalysedQuery) { query.FilteredCountTemplate.Arguments[0] = 9 }},
 		{name: "the group-by key", change: func(query *sqlmodel.AnalysedQuery) { query.GroupByKey[0] = "x" }},
 		{name: "the insert columns", change: func(query *sqlmodel.AnalysedQuery) { query.InsertColumns[0] = "x" }},
+		{name: "the result columns the ORDER BY names", change: func(query *sqlmodel.AnalysedQuery) { query.ResultShape.Named[0] = 9 }},
 		{name: "an allowed column's precision", change: func(query *sqlmodel.AnalysedQuery) {
 			*query.AllowedColumns[0].SQLType.Precision = 99
 		}},

@@ -33,7 +33,7 @@ var testConnectionString string
 
 func startMySQLContainer(ctx context.Context) (testcontainers.Container, string, error) {
 	request := testcontainers.ContainerRequest{
-		Image:        "mysql:8.4",
+		Image:        "mysql:9.7.4",
 		ExposedPorts: []string{"3306/tcp"},
 		Env: map[string]string{
 			"MYSQL_ROOT_PASSWORD": "test",

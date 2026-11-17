@@ -1,0 +1,4 @@
+{
+  "description": "A statement that stops inside a clause or an operator is refused: an ORDER BY key followed by stray words, a LIMIT or OFFSET with no row count, and an AND with no right side.",
+  "expectedDiagnosticCount": 4
+}

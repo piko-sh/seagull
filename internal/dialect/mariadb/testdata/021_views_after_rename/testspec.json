@@ -1,0 +1,4 @@
+{
+  "description": "MariaDB resolves a view's tables by name, so once a table a view reads is renamed a query reading the view is refused.",
+  "expectedDiagnosticCount": 3
+}

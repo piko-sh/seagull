@@ -359,6 +359,25 @@ func TestSeedService_Reseed(t *testing.T) {
 	assert.Equal(t, []int64{1, 2, 3}, executedVersions)
 }
 
+func TestSeedService_ReseedLeavesTheHistoryWhenTheSeedsCannotBeRead(t *testing.T) {
+	t.Parallel()
+
+	reader := threeSeedFileReader()
+	reader.ReadDirErrors = map[string]error{"seeds": errors.New("permission denied")}
+	cleared := false
+	executor := &mockSeedExecutor{
+		clearSeedHistoryFn: func(_ context.Context) error {
+			cleared = true
+			return nil
+		},
+	}
+	service := newSeeder(executor, reader, "seeds", defaultSettings(t))
+
+	_, err := service.Reseed(t.Context())
+	require.ErrorContains(t, err, "permission denied")
+	assert.False(t, cleared, "a reseed that cannot read its seeds must not clear the history first")
+}
+
 func TestSeedService_Status(t *testing.T) {
 	reader := threeSeedFileReader()
 	content1 := reader.Files["seeds/001_authors.sql"]

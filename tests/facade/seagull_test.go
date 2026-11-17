@@ -55,10 +55,8 @@ const (
     title      TEXT    NOT NULL,
     completed  INTEGER NOT NULL DEFAULT 0
 );`
-
 	tasksQueries = `-- sgl.query(ListTasks, many)
 SELECT id, title, completed FROM tasks ORDER BY id;
-
 -- sgl.query(CreateTask, one)
 INSERT INTO tasks (title) VALUES (?) RETURNING id, title, completed;
 `
@@ -813,7 +811,7 @@ func TestColumnTypeOverridesReachModelsAndParameters(t *testing.T) {
 
 	notes := fileContent(t, result.Files, "notes.sql.go")
 	assert.Contains(t, notes, "FindNotes(ctx context.Context, body2 body.Body)")
-	assert.Regexp(t, `type AddNoteParams struct \{\s+Body\s+body\.Body\s+Summary\s+\*string`, notes)
+	assert.Regexp(t, `type AddNoteParams struct \{\s+Body\s+body\.Body\s+Summary\s+Null\[string\]`, notes)
 	assert.Contains(t, notes, "FindNotesLike(ctx context.Context, bodyLike string)")
 	assert.Contains(t, notes, "FindNotesTyped(ctx context.Context, raw string)")
 	assert.Regexp(t, `type RenameTaskParams struct \{\s+Title\s+title\.Title\s+Title2\s+title\.Title`, notes)
@@ -829,14 +827,14 @@ func TestSQLTypeOverridesMapEnums(t *testing.T) {
 		wantUnmapped []string
 	}{
 		{name: "unqualified follows the search path", sqlType: "mood",
-			wantMapped:   []string{`Current\s+mood\.Mood`, `Previous\s+\*mood\.Mood`, `SetPrevious\(ctx context\.Context, feeling mood\.Mood\)`},
-			wantUnmapped: []string{`Logged\s+\*AuditMood`, `type AuditMood string`}},
+			wantMapped:   []string{`Current\s+mood\.Mood`, `Previous\s+Null\[mood\.Mood\]`, `SetPrevious\(ctx context\.Context, feeling mood\.Mood\)`},
+			wantUnmapped: []string{`Logged\s+Null\[AuditMood\]`, `type AuditMood string`}},
 		{name: "qualified by the search path schema", sqlType: "public.mood",
-			wantMapped:   []string{`Current\s+mood\.Mood`, `Previous\s+\*mood\.Mood`},
-			wantUnmapped: []string{`Logged\s+\*AuditMood`}},
+			wantMapped:   []string{`Current\s+mood\.Mood`, `Previous\s+Null\[mood\.Mood\]`},
+			wantUnmapped: []string{`Logged\s+Null\[AuditMood\]`}},
 		{name: "qualified by another schema", sqlType: "audit.mood",
-			wantMapped:   []string{`Logged\s+\*mood\.Mood`},
-			wantUnmapped: []string{`Current\s+Mood`, `Previous\s+\*Mood`, `MoodHappy\s+Mood = "happy"`}},
+			wantMapped:   []string{`Logged\s+Null\[mood\.Mood\]`},
+			wantUnmapped: []string{`Current\s+Mood`, `Previous\s+Null\[Mood\]`, `MoodHappy\s+Mood = "happy"`}},
 	}
 	for _, testCase := range tests {
 		t.Run(testCase.name, func(t *testing.T) {

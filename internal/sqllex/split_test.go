@@ -448,7 +448,7 @@ func TestProceduralBlockSeesLeadingWords(t *testing.T) {
 	})
 	_, err := sqllex.Split(rules, `create "quoted" 'text' or Replace begin; begin; x begin`)
 	require.NoError(t, err)
-	require.Equal(t, [][]string{{"CREATE", "OR", "REPLACE"}, {"X"}}, seen)
+	require.Equal(t, [][]string{{"CREATE", "OR", "REPLACE"}, {"BEGIN"}, {"X"}}, seen)
 }
 
 func TestProceduralBlockLeadingWordLimit(t *testing.T) {

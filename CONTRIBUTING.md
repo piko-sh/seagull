@@ -63,6 +63,8 @@ what a target does lives in that script's header comment.
 | `make test-integration`                                      | every suite under `tests/integration`; `ARGS=postgres` runs one                            |
 | `make test-examples`, `test-tutorials`                       | every examples module and the tutorial checkpoints; the server engines skip without a DSN  |
 | `make test-wasm`                                             | test the WASM runtime natively and under Node, then self-test it                           |
+| `make test-fuzz`                                             | list or run local fuzz campaigns; `ARGS` selects targets and budgets                       |
+| `make test-fuzz-tools`                                       | test the Go fuzz tool and the fuzz runner                                                  |
 | `make build-wasm`, `build-wasm-clean`                        | build, optimise and compress the WASM runtime into `bin/wasm`, or remove it                |
 | `make lint-go`, `lint-scripts`, `lint-vet`, `lint-vet-tags`  | golangci-lint (layering included), shellcheck, and vet on one or every build configuration |
 | `make generate-all` and `generate-*` (each with `-validate`) | regenerate or validate each generated artefact                                             |

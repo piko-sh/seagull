@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "Q010",
+    "Column": 10,
+    "EndColumn": 14,
+    "EndLine": 2,
+    "Filename": "aliases.sql",
+    "Line": 2,
+    "Message": "failed to analyse query \"BareYear\": syntax error near \"year\": this engine reserves YEAR here; quote it to use it as an alias",
+    "Severity": "error"
+  }
+]

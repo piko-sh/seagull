@@ -585,15 +585,6 @@ func TestApplyDDL_CreateView(t *testing.T) {
 				assert.Empty(t, mutation.UnanalysedParts)
 			},
 		},
-		{
-			name: "view declared column list longer than projection does not panic",
-			sql:  "CREATE VIEW v (a, b, c) AS SELECT 1",
-			assertions: func(t *testing.T, mutation *ast.CatalogueMutation) {
-				assert.Equal(t, ast.MutationCreateView, mutation.Kind)
-				assert.Equal(t, "v", mutation.TableName)
-				require.Len(t, mutation.Columns, 3)
-			},
-		},
 	}
 
 	for _, testCase := range tests {
@@ -1912,6 +1903,23 @@ func TestApplyDDL_AcceptsTheClausesSQLiteAccepts(t *testing.T) {
 
 			require.NoError(t, err)
 			assert.NotNil(t, mutation)
+		})
+	}
+}
+
+func TestApplyDDL_ViewColumnListsOfAnotherLengthAreRefused(t *testing.T) {
+	t.Parallel()
+
+	for _, statement := range []string{
+		"CREATE VIEW v (a, b, c) AS SELECT 1",
+		"CREATE VIEW v (a) AS SELECT 1, 2",
+	} {
+		t.Run(statement, func(t *testing.T) {
+			t.Parallel()
+
+			_, err := applyDDLError(t, statement)
+
+			require.ErrorContains(t, err, "the view's column list has")
 		})
 	}
 }

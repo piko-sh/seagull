@@ -63,7 +63,7 @@ func TestCallHookReturnsAStackFreeErrorAndLogsThePanicOnce(t *testing.T) {
 			t.Parallel()
 
 			var logs bytes.Buffer
-			ctx := logging.ContextWithLogger(t.Context(), slog.New(slog.NewJSONHandler(&logs, nil)))
+			ctx := logging.WithLogger(t.Context(), slog.New(slog.NewJSONHandler(&logs, nil)))
 
 			err := callHook(ctx, "before-run hook", testCase.operation)
 

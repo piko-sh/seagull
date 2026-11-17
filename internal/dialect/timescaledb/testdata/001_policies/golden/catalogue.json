@@ -61,6 +61,10 @@
           ],
           "Indexes": [
             {
+              "Columns": [
+                "device_id",
+                "time"
+              ],
               "Name": "conditions_device_time_idx",
               "Origin": {
                 "Filename": "001_schema.up.sql",

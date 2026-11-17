@@ -74,35 +74,35 @@ func main() {
 	queries := db.New(conn)
 	output := results{}
 	output.record("add_without_discount", func() (any, error) {
-		return "added", queries.AddPrice(ctx, db.AddPriceParams{ID: 1, Amount: *decimal("10.00"), Discount: nil, Label: new("plain")})
+		return "added", queries.AddPrice(ctx, db.AddPriceParams{ID: 1, Amount: *decimal("10.00"), Discount: db.Null[apd.Decimal]{}, Label: db.NullOf("plain")})
 	})
 	output.record("add_with_discount", func() (any, error) {
-		return "added", queries.AddPrice(ctx, db.AddPriceParams{ID: 2, Amount: *decimal("20.00"), Discount: decimal("2.50"), Label: new("reduced")})
+		return "added", queries.AddPrice(ctx, db.AddPriceParams{ID: 2, Amount: *decimal("20.00"), Discount: db.NullFrom(decimal("2.50")), Label: db.NullOf("reduced")})
 	})
 	output.record("add_batch", func() (any, error) {
 		return "added", queries.AddPrices(ctx, []db.AddPricesParams{
-			{ID: 3, Amount: *decimal("30.00"), Discount: nil, Label: nil},
-			{ID: 4, Amount: *decimal("40.00"), Discount: decimal("4.00"), Label: nil},
+			{ID: 3, Amount: *decimal("30.00"), Discount: db.Null[apd.Decimal]{}, Label: db.Null[string]{}},
+			{ID: 4, Amount: *decimal("40.00"), Discount: db.NullFrom(decimal("4.00")), Label: db.Null[string]{}},
 		})
 	})
 	output.record("copy_rows", func() (any, error) {
 		return "copied", queries.CopyPrices(ctx, []db.CopyPricesParams{
-			{ID: 5, Amount: *decimal("50.00"), Discount: nil, Label: nil},
-			{ID: 6, Amount: *decimal("60.00"), Discount: decimal("6.25"), Label: nil},
+			{ID: 5, Amount: *decimal("50.00"), Discount: db.Null[apd.Decimal]{}, Label: db.Null[string]{}},
+			{ID: 6, Amount: *decimal("60.00"), Discount: db.NullFrom(decimal("6.25")), Label: db.Null[string]{}},
 		})
 	})
 	output.record("set_discount", func() (any, error) {
-		return queries.SetDiscount(ctx, db.SetDiscountParams{Discount: decimal("1.25"), ID: 1})
+		return queries.SetDiscount(ctx, db.SetDiscountParams{Discount: db.NullFrom(decimal("1.25")), ID: 1})
 	})
 	output.record("clear_discount", func() (any, error) {
-		return queries.SetDiscount(ctx, db.SetDiscountParams{Discount: nil, ID: 4})
+		return queries.SetDiscount(ctx, db.SetDiscountParams{Discount: db.Null[apd.Decimal]{}, ID: 4})
 	})
 	output.record("stored_discounts", func() (any, error) {
 		var stored string
 		return stored, conn.QueryRowContext(ctx, "SELECT string_agg(coalesce(discount::text, 'NULL'), ',' ORDER BY id) FROM prices").Scan(&stored)
 	})
-	output.record("with_discount", func() (any, error) { return queries.PricesWithDiscount(ctx, decimal("2.50")) })
-	output.record("with_no_discount", func() (any, error) { return queries.PricesWithDiscount(ctx, nil) })
+	output.record("with_discount", func() (any, error) { return queries.PricesWithDiscount(ctx, db.NullFrom(decimal("2.50"))) })
+	output.record("with_no_discount", func() (any, error) { return queries.PricesWithDiscount(ctx, db.Null[apd.Decimal]{}) })
 	output.record("amounts_in", func() (any, error) {
 		return queries.PricesIn(ctx, db.PricesInParams{Amounts: []apd.Decimal{*decimal("20.00"), *decimal("60.00")}})
 	})
@@ -116,18 +116,18 @@ func main() {
 		return queries.SearchPrices(ctx, db.SearchPricesParams{MaxAmount: nil, MaxDiscount: decimal("2.5")})
 	})
 	output.record("browse_from_discount", func() (any, error) {
-		rows, err := queries.BrowsePrices(decimal("2.00")).OrderBy("id", "ASC").All(ctx)
+		rows, err := queries.BrowsePrices(db.NullFrom(decimal("2.00"))).OrderBy("id", "ASC").All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		listed := make([]map[string]any, 0, len(rows))
 		for index := range rows {
-			listed = append(listed, map[string]any{"id": rows[index].ID, "amount": rows[index].Amount.String(), "discount": text(rows[index].Discount)})
+			listed = append(listed, map[string]any{"id": rows[index].ID, "amount": rows[index].Amount.String(), "discount": text(rows[index].Discount.Ptr())})
 		}
 		return listed, nil
 	})
 	output.record("browse_below_amount", func() (any, error) {
-		rows, err := queries.BrowsePrices(decimal("2.00")).Where("amount", "<", *decimal("30")).All(ctx)
+		rows, err := queries.BrowsePrices(db.NullFrom(decimal("2.00"))).Where("amount", "<", *decimal("30")).All(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -137,17 +137,17 @@ func main() {
 		}
 		return identifiers, nil
 	})
-	output.record("browse_from_no_discount", func() (any, error) { return queries.BrowsePrices(nil).Count(ctx) })
+	output.record("browse_from_no_discount", func() (any, error) { return queries.BrowsePrices(db.Null[apd.Decimal]{}).Count(ctx) })
 	output.record("list_prices", func() (any, error) {
-		rows, err := queries.ListPrices(ctx, decimal("0"))
+		rows, err := queries.ListPrices(ctx, db.NullFrom(decimal("0")))
 		if err != nil {
 			return nil, err
 		}
 		listed := make([]map[string]any, 0, len(rows))
 		for index := range rows {
 			listed = append(listed, map[string]any{
-				"id": rows[index].ID, "amount": rows[index].Amount.String(), "discount": text(rows[index].Discount),
-				"effective": text(rows[index].Effective),
+				"id": rows[index].ID, "amount": rows[index].Amount.String(), "discount": text(rows[index].Discount.Ptr()),
+				"effective": text(rows[index].Effective.Ptr()),
 			})
 		}
 		return listed, nil

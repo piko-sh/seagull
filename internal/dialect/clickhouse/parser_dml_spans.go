@@ -19,6 +19,8 @@
 package clickhouse
 
 import (
+	"errors"
+
 	"seagull.sh/seagull/internal/dialect/ast"
 	"seagull.sh/seagull/internal/dialect/clickhouse/lexical"
 	"seagull.sh/seagull/internal/dialect/dialectkit"
@@ -203,6 +205,26 @@ func (p *parser) reparseExpression(first, end int) []ast.Expression {
 		return nil
 	}
 	return []ast.Expression{scratch.parseExpression()}
+}
+
+// wholeExpression reports whether the tokens from first to end form one expression, so a
+// clause scan that took stray words into a key is caught.
+//
+// Takes first (int) which is the index of the first token.
+// Takes end (int) which is one past the index of the last token.
+//
+// Returns bool which is true when the expression parser consumes every token, or when the
+// tokens cannot be reparsed.
+func (p *parser) wholeExpression(first, end int) bool {
+	scratch, ok := p.reparser(first, end)
+	if !ok || scratch.AtEnd() {
+		return true
+	}
+	scratch.parseExpression()
+	if errors.Is(scratch.syntaxError, dialectkit.ErrParseDepth) {
+		return true
+	}
+	return scratch.AtEnd()
 }
 
 // reparseList extracts the comma-separated expressions among tokens already visited by a

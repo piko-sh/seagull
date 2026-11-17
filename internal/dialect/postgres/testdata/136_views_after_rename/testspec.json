@@ -1,0 +1,4 @@
+{
+  "description": "PostgreSQL keeps a view reading a renamed table, so a query reading the view is generated.",
+  "expectedDiagnosticCount": 0
+}

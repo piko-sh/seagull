@@ -72,7 +72,7 @@ func main() {
 	first := uuid.MustParse("0b9f8e2c-6d1a-4f3e-9a7b-5c4d3e2f1a0b")
 	output.record("add_full_ledger", func() (any, error) {
 		return "added", queries.AddLedger(ctx, db.AddLedgerParams{
-			ID: 1, Ident: first, Price: "12.50", Refund: &refund, Opens: "09:15:00+02", Closes: &closes, Flags: "101", Mask: &mask,
+			ID: 1, Ident: first, Price: "12.50", Refund: db.NullOf(refund), Opens: "09:15:00+02", Closes: db.NullOf(closes), Flags: "101", Mask: db.NullOf(mask),
 			Span: "1 day 02:03:04", Moments: pointers(moment, day), Days: pointers(day),
 			Amounts: pointers(*apd.New(150, -2), *apd.New(-7, 0)), Blobs: [][]byte{{0x01, 0x02, 0xff}, {}},
 			Rates: pointers[kinds.Rate]("0.125", "3"),
@@ -80,7 +80,7 @@ func main() {
 	})
 	output.record("add_sparse_ledger", func() (any, error) {
 		return "added", queries.AddLedger(ctx, db.AddLedgerParams{
-			ID: 2, Ident: uuid.MustParse("7d3c2b1a-0f9e-4d8c-8b7a-6f5e4d3c2b1a"), Price: "12.50", Refund: nil, Opens: "00:00:00+00", Closes: nil, Flags: "000", Mask: nil,
+			ID: 2, Ident: uuid.MustParse("7d3c2b1a-0f9e-4d8c-8b7a-6f5e4d3c2b1a"), Price: "12.50", Refund: db.Null[string]{}, Opens: "00:00:00+00", Closes: db.Null[string]{}, Flags: "000", Mask: db.Null[string]{},
 			Span: "00:00:01", Moments: []*time.Time{}, Days: nil, Amounts: []*apd.Decimal{}, Blobs: nil, Rates: []*kinds.Rate{},
 		})
 	})

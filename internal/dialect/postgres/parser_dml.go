@@ -52,7 +52,11 @@ func (p *parser) analyseSelect() (*ast.RawQueryAnalysis, error) {
 
 	mark := len(p.clauseExpressions)
 	dialectkit.RecordOrderByPlaceAt(p.spans, p.Tokens, p.Position)
+	orderByStart := p.Position
 	p.parseOrderByIfPresent()
+	if len(analysis.CompoundBranches) == 0 && p.distinctOnKeys != nil && p.Position > orderByStart {
+		p.checkDistinctOnOrder(orderByStart, p.Position, analysis.OutputColumns)
+	}
 	p.parseSelectTail()
 	analysis.ClauseExpressions = append(analysis.ClauseExpressions, p.takeClauseExpressions(mark)...)
 
@@ -350,6 +354,7 @@ func (p *parser) gathered() dialectkit.Gathered {
 // Takes analysis (*ast.RawQueryAnalysis) which receives the final state.
 func (p *parser) finaliseSelectAnalysis(analysis *ast.RawQueryAnalysis) {
 	analysis.ReadOnly = !*p.rowLocked && !p.hasDataModifyingCTE
+	analysis.ChangesData = analysis.ChangesData || p.hasDataModifyingCTE
 	p.finaliseAnalysis(analysis)
 }
 
@@ -432,6 +437,7 @@ func (p *parser) parseOrderByIfPresent() {
 	_ = p.requireKeyword(keywordBY)
 	listStart := p.Position
 	p.parseOrderByList()
+	p.checkSortList(listStart, p.Position)
 	p.recordClauseExpressions(ast.ClauseOrderBy, p.reparse(listStart, p.Position, true, false))
 	dialectkit.RecordTokenRange(p.spans, dialectkit.SpanOrderBy, p.Tokens, start, p.Position)
 }
@@ -448,6 +454,7 @@ func (p *parser) parseLimitOffsetIfPresent() {
 // Takes analysis (*ast.RawQueryAnalysis) which receives parameter references, derived
 // tables, and table-valued function records.
 func (p *parser) finaliseAnalysis(analysis *ast.RawQueryAnalysis) {
+	analysis.RowLimited = analysis.RowLimited || p.rowLimited
 	analysis.ParameterReferences = p.parameterReferences
 	analysis.RawDerivedTables = p.rawDerivedTables
 	analysis.PredicateSubqueries = p.predicateSubqueries
@@ -909,8 +916,11 @@ func (p *parser) parseDistinctOn() {
 		return
 	}
 	p.Advance()
+	p.distinctOnKeys = []string{}
 	for !p.AtEnd() && p.Current().Kind != tokenRightParen {
+		start := p.Position
 		p.parseExpression()
+		p.distinctOnKeys = append(p.distinctOnKeys, canonicalTokens(p.Tokens[start:p.Position]))
 		if p.Current().Kind != tokenComma {
 			break
 		}

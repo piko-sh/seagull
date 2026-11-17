@@ -78,15 +78,10 @@ go test . -count=1
 
 ## Step 3: Observe a diagnostic
 
-Temporarily introduce a syntax error in the practice application's query file:
+In `../01_first_query/db/queries/tasks.sql`, change the first word of the
+`ListTasks` query from `SELECT` to `SELEC`. Then run:
 
 ```sh
-python3 - <<'PYTHON'
-from pathlib import Path
-path = Path("../01_first_query/db/queries/tasks.sql")
-text = path.read_text()
-path.write_text(text.replace("SELECT id, title, completed", "SELEC id, title, completed"))
-PYTHON
 go run .
 ```
 
@@ -96,15 +91,9 @@ The tool stops at the SQL diagnostic:
 Q010
 ```
 
-Restore the query and run again:
+Change `SELEC` back to `SELECT` in the query file, then run again:
 
 ```sh
-python3 - <<'PYTHON'
-from pathlib import Path
-path = Path("../01_first_query/db/queries/tasks.sql")
-text = path.read_text()
-path.write_text(text.replace("SELEC id, title, completed", "SELECT id, title, completed"))
-PYTHON
 go run .
 ```
 

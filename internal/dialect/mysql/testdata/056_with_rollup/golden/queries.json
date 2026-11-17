@@ -109,6 +109,9 @@
       }
     ],
     "ReadOnly": true,
+    "ResultShape": {
+      "Ordinal": true
+    },
     "SQL": "-- sgl.query(name: PositionalRollup, command: many)\nSELECT UPPER(region) AS area, COUNT(*) AS sales\nFROM sales\nGROUP BY 1 WITH ROLLUP;",
     "Template": "SELECT ⟨c0 aliased:UPPER(region)⟩ AS area, ⟨c1 aliased:COUNT(*)⟩ AS sales\\nFROM sales\\nGROUP BY 1 WITH ROLLUP;"
   }

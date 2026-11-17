@@ -33,7 +33,7 @@ var testConnectionString string
 
 func startCockroachDBContainer(ctx context.Context) (testcontainers.Container, string, error) {
 	request := testcontainers.ContainerRequest{
-		Image:        "cockroachdb/cockroach:latest-v25.1",
+		Image:        "cockroachdb/cockroach:v26.4.0",
 		ExposedPorts: []string{"26257/tcp"},
 		Cmd:          []string{"start-single-node", "--insecure"},
 		WaitingFor: wait.ForLog("CockroachDB node starting").

@@ -21,6 +21,7 @@ package dialectkit
 import (
 	"errors"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"sync"
@@ -37,6 +38,17 @@ const (
 
 	// specFlagCalledOnNull marks a signature that is called even with NULL arguments.
 	specFlagCalledOnNull = "called-on-null"
+
+	// specFlagEmptyTextNulls names the zero-based argument whose empty string makes the
+	// result NULL.
+	specFlagEmptyTextNulls = "empty-text-nulls"
+
+	// specFlagZeroNulls names the zero-based argument whose zero makes the result NULL.
+	specFlagZeroNulls = "zero-nulls"
+
+	// specFlagNonNumericNulls names the zero-based argument whose text that is no number
+	// makes the result NULL.
+	specFlagNonNumericNulls = "non-numeric-nulls"
 
 	// specFlagNullingArgument names the zero-based argument whose NULL alone makes the
 	// result NULL.
@@ -98,6 +110,12 @@ const (
 //   - null-on-null, never-null or called-on-null: the NULL behaviour, overriding the
 //     dialect's default;
 //   - nulling-argument=N: the result is NULL only when the zero-based argument N is NULL;
+//   - empty-text-nulls=N: an empty string as the zero-based argument N also makes the
+//     result NULL, so it is nullable unless the call writes that argument as a literal;
+//   - zero-nulls=N: a zero as the zero-based argument N also makes the result NULL, so it
+//     is nullable unless the call writes that argument as a literal;
+//   - non-numeric-nulls=N: text that is no number as the zero-based argument N also makes
+//     the result NULL, so it is nullable when that argument is text or bytes;
 //   - aggregate: the signature is an aggregate;
 //   - variadic=N: the last argument repeats, and a call passes at least N arguments;
 //   - min-arguments=N: a call passes at least N arguments;
@@ -192,6 +210,13 @@ type specSignature struct {
 	// returnType is the index of the result type's spelling.
 	returnType int
 
+	// emptyTextNulls is the one-based argument empty-text-nulls or zero-nulls names, or
+	// zero. Both flags share it, as both leave a call with a literal there non-null.
+	emptyTextNulls int
+
+	// nonNumericNulls is the one-based argument non-numeric-nulls names, or zero.
+	nonNumericNulls int
+
 	// nullingArgument is the zero-based argument whose NULL alone makes the result NULL,
 	// read when nullability is FunctionNullableNullWhenArgumentNull.
 	nullingArgument int
@@ -260,6 +285,8 @@ func (s *specSignature) function(
 	function.MinArguments = s.minArguments
 	function.ReturnsSet = s.returnsSet
 	function.ReturnTypeFromArgument = s.returnTypeFromArgument
+	function.NullUnlessLiteral = s.emptyTextNulls
+	function.NullOnNonNumeric = s.nonNumericNulls
 	return function
 }
 
@@ -274,6 +301,14 @@ func (s *specSignature) applyFlag(flag string) error {
 	switch key {
 	case specFlagNullOnNull, specFlagNeverNull, specFlagCalledOnNull:
 		return s.setNullability(flag, specNullability(key), hasValue)
+	case specFlagEmptyTextNulls, specFlagZeroNulls:
+		position, err := specArgumentPosition(flag, value, hasValue)
+		s.emptyTextNulls = position
+		return err
+	case specFlagNonNumericNulls:
+		position, err := specArgumentPosition(flag, value, hasValue)
+		s.nonNumericNulls = position
+		return err
 	case specFlagNullingArgument:
 		position, err := specCount(flag, value, hasValue)
 		if err != nil {
@@ -347,13 +382,20 @@ func (s *specSignature) setNullability(flag string, nullability sqlmodel.Functio
 
 // validate checks that the positions the flags name fall within the argument list.
 //
-// Returns error when nulling-argument or return-type-from names a missing argument.
+// Returns error when nulling-argument, return-type-from, empty-text-nulls, zero-nulls or
+// non-numeric-nulls names a missing argument.
 func (s *specSignature) validate() error {
 	if s.nullability == sqlmodel.FunctionNullableNullWhenArgumentNull && s.nullingArgument >= len(s.arguments) {
 		return fmt.Errorf("nulling-argument=%d names no argument", s.nullingArgument)
 	}
 	if s.returnTypeFromArgument > len(s.arguments) {
 		return fmt.Errorf("return-type-from=%d names no argument", s.returnTypeFromArgument)
+	}
+	if s.emptyTextNulls > len(s.arguments) {
+		return fmt.Errorf("%s=%d names no argument", specFlagEmptyTextNulls, s.emptyTextNulls-1)
+	}
+	if s.nonNumericNulls > len(s.arguments) {
+		return fmt.Errorf("%s=%d names no argument", specFlagNonNumericNulls, s.nonNumericNulls-1)
 	}
 	return nil
 }
@@ -587,6 +629,27 @@ func specCount(flag string, value string, hasValue bool) (int, error) {
 		return 0, fmt.Errorf("flag %q needs a non-negative whole number", flag)
 	}
 	return count, nil
+}
+
+// specArgumentPosition reads a flag's zero-based argument position and gives it
+// one-based, so zero can mean the flag is absent.
+//
+// Takes flag (string) which is the whole flag, for the error message.
+// Takes value (string) which is the text after =.
+// Takes hasValue (bool) which is true when the flag was given a value.
+//
+// Returns int which is the one-based position, or zero on error.
+// Returns error when the value is not a non-negative whole number or is too large to give
+// one-based.
+func specArgumentPosition(flag string, value string, hasValue bool) (int, error) {
+	position, err := specCount(flag, value, hasValue)
+	if err != nil {
+		return 0, err
+	}
+	if position == math.MaxInt {
+		return 0, fmt.Errorf("flag %q names an argument position that is too large", flag)
+	}
+	return position + 1, nil
 }
 
 // isSpecSpace reports whether a byte separates words in a spec line.

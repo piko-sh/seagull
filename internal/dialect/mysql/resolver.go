@@ -19,6 +19,7 @@
 package mysql
 
 import (
+	"slices"
 	"strings"
 
 	"seagull.sh/seagull/internal/dialect/ast"
@@ -35,21 +36,6 @@ const (
 	// minArgumentsSingleArgumentFunction caps single-argument resolver entry.
 	minArgumentsSingleArgumentFunction = 1
 
-	// promotionRankText ranks text categories highest during promotion.
-	promotionRankText = 4
-
-	// promotionRankFloat ranks float below text but above decimal.
-	promotionRankFloat = 3
-
-	// promotionRankDecimal ranks decimal above integer in promotion order.
-	promotionRankDecimal = 2
-
-	// promotionRankInteger is the lowest numeric promotion rank.
-	promotionRankInteger = 1
-
-	// promotionRankDefault applies to unrecognised type categories.
-	promotionRankDefault = 0
-
 	// doubleTypeName names DOUBLE in the type table, the type MySQL reads a value of no
 	// numeric type as in a numeric function.
 	doubleTypeName = "double"
@@ -61,6 +47,11 @@ const (
 	// its unit and interval.
 	timestampAddShiftedArgument = 2
 )
+
+// doubleSummedCategories lists the argument categories SUM and AVG add up as a DOUBLE.
+var doubleSummedCategories = []sqlmodel.SQLTypeCategory{
+	sqlmodel.TypeCategoryFloat, sqlmodel.TypeCategoryText, sqlmodel.TypeCategoryUnknown,
+}
 
 // shiftedDateArguments maps each function that shifts a date and time to the position of
 // the value it shifts: the first argument, or for TIMESTAMPADD the one after its unit and
@@ -129,15 +120,13 @@ func (*functionResolver) ResolveFunctionCall(
 		return resolveFloorCeil(argumentTypes)
 	case "mod":
 		return resolveMod(argumentTypes)
-	case "sum":
-		return resolveSum(argumentTypes)
-	case "avg":
-		return resolveAvg()
+	case "sum", "avg":
+		return resolveSumOrAvg(argumentTypes)
 	case "min", "max", "bit_and", "bit_or", "bit_xor":
 		return resolveIdentityAggregate(argumentTypes)
 	case "count":
 		return resolveCount()
-	case "nullif", "first_value", "last_value", "lag", "lead":
+	case "nullif", "first_value", "last_value", "nth_value", "lag", "lead":
 		return resolveIdentityFunction(argumentTypes)
 	default:
 		return resolveTemporalFunction(strings.ToLower(name), argumentTypes)
@@ -650,47 +639,26 @@ func widerFloat(left sqlmodel.SQLType, right sqlmodel.SQLType) sqlmodel.SQLType 
 	return sqlmodel.NewFloatType("double", widthDouble)
 }
 
-// resolveSum computes the return type for the SUM aggregate.
+// resolveSumOrAvg types SUM and AVG as MySQL and MariaDB do. A float, text or untyped
+// argument is summed as a DOUBLE, and every other argument, such as an integer, a
+// DECIMAL, a YEAR, a BIT or a temporal value, is summed exactly as a DECIMAL.
 //
 // Takes argumentTypes ([]sqlmodel.SQLType) which carries the actual argument types at the
 // call site.
 //
-// Returns *ast.FunctionResolution which describes the aggregate result type, or nil when
-// no argument is present.
-// Returns error when resolution fails.
-func resolveSum(argumentTypes []sqlmodel.SQLType) (*ast.FunctionResolution, error) {
+// Returns *ast.FunctionResolution which describes the aggregate, or nil when no argument
+// is present.
+// Returns error which is always nil.
+func resolveSumOrAvg(argumentTypes []sqlmodel.SQLType) (*ast.FunctionResolution, error) {
 	if len(argumentTypes) < minArgumentsSingleArgumentFunction {
 		return nil, nil
 	}
-
-	argumentType := argumentTypes[0]
-	var returnType sqlmodel.SQLType
-
-	switch argumentType.Category {
-	case sqlmodel.TypeCategoryFloat:
+	returnType := sqlmodel.NewSQLType(sqlmodel.TypeCategoryDecimal, "decimal")
+	if slices.Contains(doubleSummedCategories, argumentTypes[0].Category) {
 		returnType = sqlmodel.NewFloatType("double", widthDouble)
-	default:
-		returnType = sqlmodel.NewSQLType(sqlmodel.TypeCategoryDecimal, "decimal")
 	}
-
 	return &ast.FunctionResolution{
 		ReturnType:        returnType,
-		NullableBehaviour: sqlmodel.FunctionNullableCalledOnNull,
-		NullingArgument:   0,
-		DataAccess:        sqlmodel.DataAccessReadOnly,
-		IsAggregate:       true,
-		ReturnsSet:        false,
-		ElementsKnown:     false,
-	}, nil
-}
-
-// resolveAvg computes the return type for the AVG aggregate.
-//
-// Returns *ast.FunctionResolution which describes the double-typed aggregate result.
-// Returns error when resolution fails.
-func resolveAvg() (*ast.FunctionResolution, error) {
-	return &ast.FunctionResolution{
-		ReturnType:        sqlmodel.NewFloatType("double", widthDouble),
 		NullableBehaviour: sqlmodel.FunctionNullableCalledOnNull,
 		NullingArgument:   0,
 		DataAccess:        sqlmodel.DataAccessReadOnly,
@@ -836,11 +804,8 @@ func resolveCount() (*ast.FunctionResolution, error) {
 	}, nil
 }
 
-// promoteTypes returns the wider of two SQL types under MySQL rules.
-//
-// When both types share the same category the wider integer or float is returned, and the
-// first of any other pair. Otherwise the category hierarchy (text > float > decimal >
-// integer) determines the result.
+// promoteTypes returns the type MySQL gives two SQL types together, as promoteForMySQL
+// does, with an unknown type giving way to the other.
 //
 // Takes left (sqlmodel.SQLType) which is the left operand type.
 // Takes right (sqlmodel.SQLType) which is the right operand type.
@@ -850,48 +815,8 @@ func promoteTypes(left sqlmodel.SQLType, right sqlmodel.SQLType) sqlmodel.SQLTyp
 	if left.Category == sqlmodel.TypeCategoryUnknown {
 		return right
 	}
-
 	if right.Category == sqlmodel.TypeCategoryUnknown {
 		return left
 	}
-
-	if left.Category == right.Category {
-		switch {
-		case left.Category == sqlmodel.TypeCategoryInteger && promotionRank(right) > promotionRank(left):
-			return right
-		case left.Category == sqlmodel.TypeCategoryFloat && right.Width > left.Width:
-			return right
-		default:
-			return left
-		}
-	}
-
-	leftRank := typePromotionRank(left.Category)
-	rightRank := typePromotionRank(right.Category)
-
-	if leftRank >= rightRank {
-		return left
-	}
-
-	return right
-}
-
-// typePromotionRank returns the comparison rank for a type category.
-//
-// Takes category (sqlmodel.SQLTypeCategory) which is the category to rank.
-//
-// Returns int which is the rank used for promotion comparisons.
-func typePromotionRank(category sqlmodel.SQLTypeCategory) int {
-	switch category {
-	case sqlmodel.TypeCategoryText:
-		return promotionRankText
-	case sqlmodel.TypeCategoryDecimal:
-		return promotionRankDecimal
-	case sqlmodel.TypeCategoryFloat:
-		return promotionRankFloat
-	case sqlmodel.TypeCategoryInteger:
-		return promotionRankInteger
-	default:
-		return promotionRankDefault
-	}
+	return promoteForMySQL(left, right)
 }

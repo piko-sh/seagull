@@ -1,0 +1,4 @@
+{
+  "description": "CockroachDB has no ROLLUP, CUBE or GROUPING SETS grouping, so queries using them are refused.",
+  "expectedDiagnosticCount": 3
+}

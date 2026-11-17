@@ -105,7 +105,75 @@ func TestSQLiteLegacyDirtyMigrationIsUpgradedAndNotResumed(t *testing.T) {
 	var recordedVersion int
 	var statementsHash string
 	require.NoError(t, database.QueryRowContext(ctx, "SELECT splitter_version, statements_hash FROM sgl_migrations WHERE version = 1").Scan(&recordedVersion, &statementsHash))
-	require.Equal(t, 1, recordedVersion)
+	require.Equal(t, 2, recordedVersion, "this release splits statements by splitter version 2")
 	require.Len(t, statementsHash, 64)
 	require.Equal(t, []harness.HistoryEntry{{Version: 1, Dirty: false, LastStatement: 1}}, harness.ReadHistory(t, database))
+}
+
+func TestSQLiteRollbackThatStopsPartWayLeavesTheMigrationDirty(t *testing.T) {
+	ctx := t.Context()
+	database := openMigrationDatabase(t)
+	files := fstest.MapFS{
+		"migrations/0001_boats.up.sql":   {Data: []byte("CREATE TABLE boats (id INTEGER PRIMARY KEY);\nCREATE TABLE harbours (id INTEGER PRIMARY KEY);\n")},
+		"migrations/0001_boats.down.sql": {Data: []byte("-- sgl.migration(no_transaction: true)\nDROP TABLE harbours;\nDROP TABLE no_such_table;\nDROP TABLE boats;\n")},
+	}
+	migrator, err := migrate.NewMigrator(database, migrate_backend_sqlite.New(), files, "migrations")
+	require.NoError(t, err)
+	_, err = migrator.Up(ctx)
+	require.NoError(t, err)
+
+	_, err = migrator.Down(ctx, 1)
+	require.Error(t, err, "the second statement of the down migration fails")
+
+	history := harness.ReadHistory(t, database)
+	require.Len(t, history, 1, "the half-rolled-back migration is still recorded")
+	require.True(t, history[0].Dirty, "a rollback that stopped part-way is recorded dirty rather than applied")
+
+	var dirty *migrate.DirtyMigrationError
+	require.ErrorAs(t, migrator.Validate(ctx), &dirty, "validate reports the half-rolled-back migration")
+	_, err = migrator.Up(ctx)
+	require.ErrorAs(t, err, &dirty, "up never resumes the up migration over a half-dropped schema")
+	_, err = migrator.Down(ctx, 1)
+	require.Error(t, err, "a second rollback refuses the dirty migration")
+}
+
+func TestSQLiteMigrationThatControlsItsTransactionIsRefusedBeforeItRuns(t *testing.T) {
+	ctx := t.Context()
+	database := openMigrationDatabase(t)
+	files := fstest.MapFS{
+		"migrations/0001_boats.up.sql": {Data: []byte("CREATE TABLE boats (id INTEGER PRIMARY KEY);\nCOMMIT;\nCREATE TABLE harbours (id INTEGER PRIMARY KEY);\n")},
+	}
+	migrator, err := migrate.NewMigrator(database, migrate_backend_sqlite.New(), files, "migrations")
+	require.NoError(t, err)
+
+	_, err = migrator.Up(ctx)
+
+	require.ErrorIs(t, err, migrate.ErrTransactionControl)
+	var tables int
+	require.NoError(t, database.QueryRowContext(ctx, "SELECT count(*) FROM sqlite_master WHERE name IN ('boats', 'harbours')").Scan(&tables))
+	require.Zero(t, tables, "nothing of the refused migration ran")
+	require.Empty(t, harness.ReadHistory(t, database))
+}
+
+func TestSQLiteSeedWithAByteOrderMarkApplies(t *testing.T) {
+	ctx := t.Context()
+	database := openMigrationDatabase(t)
+	files := fstest.MapFS{
+		"migrations/0001_boats.up.sql": {Data: []byte("CREATE TABLE boats (id INTEGER PRIMARY KEY);\n")},
+		"seeds/0001_boats.sql":         {Data: []byte("\xEF\xBB\xBFINSERT INTO boats (id) VALUES (1);\r\nINSERT INTO boats (id) VALUES (2);\r\n")},
+	}
+	migrator, err := migrate.NewMigrator(database, migrate_backend_sqlite.New(), files, "migrations")
+	require.NoError(t, err)
+	_, err = migrator.Up(ctx)
+	require.NoError(t, err)
+	seeder, err := migrate.NewSeeder(database, migrate_backend_sqlite.New(), files, "seeds")
+	require.NoError(t, err)
+
+	applied, err := seeder.Apply(ctx)
+
+	require.NoError(t, err, "a seed file an editor saved with a byte order mark and CRLF line endings applies")
+	require.Equal(t, 1, applied)
+	var boats int
+	require.NoError(t, database.QueryRowContext(ctx, "SELECT count(*) FROM boats").Scan(&boats))
+	require.Equal(t, 2, boats)
 }

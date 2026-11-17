@@ -23,11 +23,11 @@ import (
 	"seagull.sh/seagull/sdk/migrate"
 )
 
-// New returns the backend for SQLite: ? placeholders, transactional DDL and no lock,
-// since SQLite serialises writers itself.
+// New returns the backend for SQLite: ? placeholders, transactional DDL and a lease lock,
+// since SQLite has no session locks.
 //
 // Takes options (...migrate.BackendOption) which set the namespace and history table;
-// only [migrate.LockNone] is supported.
+// [migrate.LockLease] is the default, and [migrate.LockNone] is also supported.
 //
 // Returns migrate.Backend which is ready for [migrate.NewMigrator], [migrate.NewSeeder]
 // or [migrate.NewExecutor].

@@ -41,7 +41,7 @@ Run `sgl generate` and construct `store.New(database)`. The generated row has an
 			fmt.Fprintln(output, "  nothing ordered yet")
 		}
 		for _, line := range order.OrderLines {
-			fmt.Fprintf(output, "  %d x %s\n", *line.Quantity, *line.Dish)
+			fmt.Fprintf(output, "  %d x %s\n", line.Quantity.V, line.Dish.V)
 		}
 	}
 ```
